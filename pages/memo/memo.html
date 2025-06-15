@@ -20,7 +20,6 @@
     <!-- 4) memo 固有スタイル -->
     <link rel="stylesheet" href="memo.css" />
   </head>
-
   <body>
     <header>
       <!-- href はページ間の相対パス -->
@@ -31,11 +30,34 @@
         <i class="bi bi-gear-fill"></i>
       </a>
     </header>
+    <!-- ② サブナビ：ヘッダー下に配置 -->
+    <div class="card-nav">
+      <button class="nav-btn active" id="btn-memolist">MEMO一覧</button>
+      <button class="nav-btn" id="btn-clipboard">クリップボード</button>
+    </div>
 
-    <main>
-      <h1>メモ一覧</h1>
-    </main>
+    <!-- カード状背景 -->
+    <div class="card-container">
+      <!-- 新規追加ボタン -->
+      <button class="btn-new-memo">
+        <i class="bi bi-plus-lg"></i> 新しいMEMOを追加
+      </button>
 
+      <!-- MEMOリスト -->
+      <ul class="memo-list">
+        <!-- JavaScriptでここに<li>を動的挿入します -->
+      </ul>
+    </div>
+
+    <!-- フッター -->
+    <footer class="memo-footer">
+      <button class="footer-btn">
+        <i class="bi bi-lock-fill"></i> 暗号化フォルダ
+      </button>
+      <button class="footer-btn">
+        <i class="bi bi-archive-fill"></i> アーカイブ
+      </button>
+    </footer>
     <!-- 5) Bootstrap 本体 JS (バンドル) -->
     <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 

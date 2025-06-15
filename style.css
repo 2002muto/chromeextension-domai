@@ -17,15 +17,18 @@ body {
 }
 
 /* 全体の縦横スクロールバーを非表示に */
-body,
+/* body,
 .setting-container {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE10+ */
+  Firefox
+  scrollbar-width: none;
+  IE10+
+  -ms-overflow-style: none;
 }
 body::-webkit-scrollbar,
 .setting-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
+  Chrome, Safari, Opera
+  display: none;
+} */
 
 /* ② nav-btn 共通：未選択時は #555555、縦 padding も増やす */
 .nav-btn {

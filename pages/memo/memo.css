@@ -1,0 +1,135 @@
+/* File: pages/memo/memo.css */
+
+/* カード状背景 */
+.card-container {
+  background: #2d3748;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  /* margin: 0 32px 32px; サブナビ下から余白を取りたいので上マージンは 0 */
+  margin: 32px 16px 0; /* ヘッダー下から余白を取りたいので上マージンは 0 */
+  padding: 24px; /* 本来の内側余白だけ残す */
+}
+
+/* 新規追加ボタン */
+.btn-new-memo {
+  display: block;
+  width: 100%;
+  background: linear-gradient(90deg, #078ab9, #024881);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: filter 0.25s;
+}
+.btn-new-memo:hover {
+  filter: brightness(1.2);
+}
+
+/* MEMOリスト */
+.memo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.memo-list li {
+  background: #3a3f4a;
+  color: #e2e8f0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.memo-list li .star {
+  margin-right: 12px;
+  cursor: pointer;
+}
+.memo-list li .star.on {
+  color: gold;
+}
+.memo-list li .star.off {
+  color: rgba(255, 255, 255, 0.3);
+}
+.memo-list li .title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.memo-list li .actions {
+  margin-left: 12px;
+  cursor: pointer;
+}
+
+/* フッター */
+.memo-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 32px;
+}
+.memo-footer .footer-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #424242, #272727);
+  color: #fff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: filter 0.25s;
+}
+.memo-footer .footer-btn i {
+  margin-right: 6px;
+}
+.memo-footer .footer-btn:hover {
+  filter: brightness(1.2);
+}
+.footer-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0;
+  color: #fff;
+  background-color: #2d3748;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.25s;
+  background: linear-gradient(90deg, #424242, #272727);
+  margin: 16px 8px 32px 8px;
+  border-radius: 4px;
+}
+/* File: pages/memo/memo.css */
+/* サブナビ */
+.card-nav {
+  display: flex;
+  gap: 8px;
+  margin: 32px 32px 0px; /* ヘッダー下／左右に余白 */
+}
+/* — サブナビの透明/白切り替え — */
+.card-nav .nav-btn {
+  flex: 1 0 0;
+  border-radius: 4px;
+  background: transparent; /* 未選択は透明 */
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
+  transition: background-color 0.2s, color 0.2s;
+  /* ホバーで上に動く効果を打ち消し */
+  transform: none !important;
+}
+.card-nav .nav-btn:hover {
+  /* 上に浮かないよう、何も入れない */
+}
+
+/* — クリック（.active）時だけ白背景に — */
+.card-nav .nav-btn.active {
+  background: #ffffff;
+  border: none;
+  color: #374151;
+}
