@@ -1,0 +1,78 @@
+<!-- File: pages/setting/setting.html -->
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Setting</title>
+
+    <!-- 1) Bootstrap 本体 CSS -->
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap/css/bootstrap.min.css"
+    />
+    <!-- 2) Bootstrap Icons CSS -->
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap-icons/bootstrap-icons.css"
+    />
+    <!-- 3) 共通スタイル -->
+    <link rel="stylesheet" href="../../style.css" />
+    <!-- 4) setting 固有スタイル -->
+    <link rel="stylesheet" href="setting.css" />
+  </head>
+
+  <body>
+    <!-- 共通ヘッダー -->
+    <header>
+      <a href="../memo/memo.html" class="nav-btn" id="btn-memo"> MEMO</a>
+      <a href="../prompt/prompt.html" class="nav-btn" id="btn-prompt">
+        PROMPT</a
+      >
+      <a href="../ai/ai.html" class="nav-btn" id="btn-ai"> AI</a>
+      <a href="setting.html" class="nav-btn active" id="btn-setting">
+        <i class="bi bi-gear-fill"></i>
+      </a>
+    </header>
+
+    <!-- 2カラムレイアウト -->
+    <main class="setting-container">
+        <nav class="setting-nav">
+        <!-- カード全体 -->
+        <div class="setting-card">
+          <!-- ナビメニュー -->
+          <nav class="setting-nav">
+            <button class="setting-btn "    id="btn-backup">            バックアップ</button>
+            <button class="setting-btn"            id="btn-backup-install">  バックアップのインストール</button>
+            <button class="setting-btn"            id="btn-api-key">         APIキーの設定</button>
+          </nav>
+
+          <!-- 詳細パネル -->
+          <section class="setting-detail">
+            <div class="detail-panel show">
+
+                この拡張機能は、アカウント登録不要、無料で⼀切の機能制限なく使⽤できます。<br /><br />
+                この拡張は、情報漏洩やバックドアの懸念を排除するため、クラウドサーバーへの通信を完全に断ち、各端末のストレージに情報を保存することで
+                完全にスタンドアロンで動く設計にしています。<br /><br />
+                また、ユーザビリティを最優先に考え、UI/UXの劣化を防ぐ広告掲載も⾏っておりません。<br /><br />
+                この拡張機能が、皆さまの業務効率化を⽀援することを⼼から願っています。<br /><br />
+
+              <a href="#" class="donation-link">⇒ Please Donation</a>
+            </div>
+          </section>
+        </div> <!-- /.setting-card -->
+      </main>
+
+    <!-- 共通フッター -->
+    <footer class="bottom-footer">
+      <button class="footer-btn">
+        <i class="bi bi-envelope"></i> お問合せ
+      </button>
+      <button class="footer-btn"><i class="bi bi-share-fill"></i> 共有</button>
+    </footer>
+
+    <!-- 5) Bootstrap 本体 JS -->
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- 6) setting 用スクリプト（後で実装） -->
+    <script src="setting.js"></script>
+  </body>
+</html>

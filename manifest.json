@@ -1,11 +1,27 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Extension Domai",
-  "version": "1.0",
-  "description": "ドメインに対して何か処理をする Chrome 拡張の例です。",
-  "permissions": ["tabs"],
+  "name": "domai Extension",
+  "version": "1.0.0",
+  "permissions": ["storage", "activeTab", "scripting", "sidePanel"],
+  "host_permissions": ["<all_urls>"],
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Domai"
+  },
+  "side_panel": {
+    "default_path": "pages/memo/memo.html",
+    "open_panel_on_action_click": true
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }
