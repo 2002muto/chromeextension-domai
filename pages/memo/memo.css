@@ -1,86 +1,116 @@
 /* File: pages/memo/memo.css */
+/* =============================
+   MEMO & Clipboard スタイル
+   ============================= */
 
-/* カード状背景 */
+/* ─── ベース設定 ─── */
+body {
+  margin: 0;
+}
 .card-container {
   background: #2d3748;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  /* margin: 0 32px 32px; サブナビ下から余白を取りたいので上マージンは 0 */
-  margin: 32px 16px 0; /* ヘッダー下から余白を取りたいので上マージンは 0 */
-  padding: 24px; /* 本来の内側余白だけ残す */
-}
-
-/* 新規追加ボタン */
-.btn-new-memo {
-  display: block;
-  width: 100%;
-  background: linear-gradient(90deg, #078ab9, #024881);
-  color: #fff;
-  border: none;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 1rem;
-  margin-bottom: 24px;
-  cursor: pointer;
-  transition: filter 0.25s;
-}
-.btn-new-memo:hover {
-  filter: brightness(1.2);
-}
-
-/* MEMOリスト */
-.memo-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.memo-list li {
-  background: #3a3f4a;
-  color: #e2e8f0;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  margin-bottom: 12px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-.memo-list li .star {
-  margin-right: 12px;
-  cursor: pointer;
-}
-.memo-list li .star.on {
-  color: gold;
-}
-.memo-list li .star.off {
-  color: rgba(255, 255, 255, 0.3);
-}
-.memo-list li .title {
-  flex: 1;
-  white-space: nowrap;
+  margin: 24px 16px 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
 }
-.memo-list li .actions {
-  margin-left: 12px;
-  cursor: pointer;
+.card-container.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* フッター */
-.memo-footer {
+/* ─── サブナビ ─── */
+.card-nav {
   display: flex;
   gap: 8px;
-  margin-top: 32px;
+  margin: 32px 16px 0;
 }
+.card-nav .nav-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.card-nav .nav-btn.active {
+  background: #fff;
+  color: #374151;
+  border: none;
+}
+
+/* ─── コンテンツ領域 ─── */
+.memo-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px;
+  /* footer 固定時に重ならない余白 */
+  padding-bottom: calc(24px + 16px + 48px + 16px);
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.memo-content.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 編集モード時は footer を下部に固定 */
+.memo-content.edit-mode + .memo-footer {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  width: calc(100% - 32px);
+  margin: 0;
+  z-index: 10;
+}
+/* クリップボード時はカード内スクロールバーを隠す */
+.memo-content.clipboard-mode {
+  overflow-y: visible;
+}
+.memo-content.clipboard-mode::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── footer ─── */
+/* File: pages/memo/memo.css */
+
+/* ─── フッター (setting.css ベースに更新) ─── */
+.memo-footer {
+  /* setting.css の bottom-footer を踏襲 */
+  position: static;
+  bottom: auto;
+  left: auto;
+  width: auto;
+  z-index: auto;
+  margin: 32px 16px; /* カードとの隙間を確保 */
+  padding: 8px 4px; /* setting.css と同じ余白 */
+  display: flex;
+  gap: 8px; /* 横並び＆隙間 */
+  background: transparent;
+  box-sizing: border-box;
+}
+
+/* ─── フッター内ボタン ─── */
 .memo-footer .footer-btn {
+  /* setting.css の .footer-btn をそのまま適用 */
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(90deg, #424242, #272727);
   color: #fff;
+  background: linear-gradient(90deg, #424242, #272727);
   border: none;
   padding: 12px 0;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   transition: filter 0.25s;
 }
@@ -90,46 +120,211 @@
 .memo-footer .footer-btn:hover {
   filter: brightness(1.2);
 }
-.footer-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 0;
+
+/* ■ 保存／削除ボタンも同様に */
+.memo-footer .save-btn {
+  background: #00a31e;
   color: #fff;
-  background-color: #2d3748;
-  border: none;
-  cursor: pointer;
-  transition: filter 0.25s;
-  background: linear-gradient(90deg, #424242, #272727);
-  margin: 16px 8px 32px 8px;
-  border-radius: 4px;
 }
-/* File: pages/memo/memo.css */
-/* サブナビ */
-.card-nav {
-  display: flex;
-  gap: 8px;
-  margin: 32px 32px 0px; /* ヘッダー下／左右に余白 */
+.memo-footer .save-btn:hover {
+  filter: brightness(1.15);
 }
-/* — サブナビの透明/白切り替え — */
-.card-nav .nav-btn {
-  flex: 1 0 0;
-  border-radius: 4px;
-  background: transparent; /* 未選択は透明 */
-  border: 1px solid rgba(255, 255, 255, 0.6);
+.memo-footer .delete-btn {
+  background: #910002;
   color: #fff;
-  transition: background-color 0.2s, color 0.2s;
-  /* ホバーで上に動く効果を打ち消し */
-  transform: none !important;
 }
-.card-nav .nav-btn:hover {
-  /* 上に浮かないよう、何も入れない */
+.memo-footer .delete-btn:hover {
+  filter: brightness(1.15);
 }
 
-/* — クリック（.active）時だけ白背景に — */
-.card-nav .nav-btn.active {
-  background: #ffffff;
+/* ─── 新規 MEMO 追加 ─── */
+.btn-new-memo {
+  width: 100%;
+  background: linear-gradient(90deg, #078ab9, #024881);
+  color: #fff;
   border: none;
-  color: #374151;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: filter 0.25s;
+  margin-bottom: 16px;
+}
+.btn-new-memo:hover {
+  filter: brightness(1.1);
+}
+
+/* ─── MEMO一覧 ─── */
+.memo-list {
+  list-style: none !important;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.memo-item {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
+  padding: 12px;
+  border-radius: 6px;
+}
+.memo-item .star {
+  font-size: 1.2rem;
+  margin-right: 12px;
+  cursor: pointer;
+}
+.memo-item .star.off {
+  color: #eeeeee;
+}
+.memo-item .star.on {
+  color: #f2c533;
+}
+.memo-item .title {
+  flex: 1;
+  color: #e2e8f0;
+  font-size: 1rem;
+}
+.memo-item .actions {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* ─── MEMO入力画面 ─── */
+.form-title {
+  margin: 16px 16px 8px;
+  font-size: 1.125rem;
+  color: #0fff17;
+}
+.memo-input-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #2d3748;
+  padding: 24px;
+  border-radius: 8px;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.memo-input-form .input-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.memo-input-form .star-input {
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+.memo-input-form .star-input.off {
+  color: #eeeeee;
+}
+.memo-input-form .star-input.on {
+  color: #f2c533;
+}
+.memo-input-form .title-input {
+  flex: 1;
+  background: #3a3f4a;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  color: #e2e8f0;
+}
+.memo-input-form .text-input {
+  flex: 1;
+  min-height: 0;
+  background: #3a3f4a;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  color: #e2e8f0;
+  resize: vertical;
+}
+
+/* ─── クリップボード ─── */
+/* 見出し */
+.clipboard-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e2e8f0;
+  font-size: 1.125rem;
+  margin-bottom: 16px;
+}
+/* リスト */
+.clipboard-list {
+  list-style: none !important;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.clipboard-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
+  padding: 8px;
+  border-radius: 6px;
+}
+.clipboard-copy {
+  background: #00a31e;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+}
+.clipboard-input {
+  flex: 1;
+  background: #3a3f4a;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clipboard-archive {
+  background: linear-gradient(90deg, #424242, #272727);
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.clipboard-archive:hover {
+  filter: brightness(1.2);
+}
+.btn-add-clip {
+  width: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: filter 0.25s;
+}
+.btn-add-clip:hover {
+  filter: brightness(1.1);
+}
+.clipboard-hint {
+  color: #cbd5e0;
+  font-size: 0.875rem;
+  text-align: center;
+}
+/* ドラッグ可能なリストアイテム */
+.memo-item {
+  cursor: move;
+}
+
+/* ドラッグオーバー時のハイライト */
+.memo-item.drag-over {
+  border: 2px dashed rgba(255, 255, 255, 0.6);
 }

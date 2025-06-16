@@ -1,6 +1,6 @@
 /* File: pages/setting/setting.css */
 
-/* ■ カード状コンテナ */
+/* ■ カード状コンテナ: 設定内容全体を囲む */
 .setting-card {
   display: flex;
   flex-direction: column;
@@ -9,117 +9,53 @@
   padding: 16px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  width: 100%;
-  box-sizing: border-box;
-
-  /* ─── 初期は隠して、下から少しオフセット ─── */
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
-/* ─── ロード時・切り替え時に付与するクラス ─── */
 .setting-card.show {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* 2カラムレイアウト */
+/* ■ コンテナ間の余白確保 */
 .setting-container {
   display: flex;
+  flex-direction: column;
   gap: 16px;
   padding: 16px;
 }
 
-/* 左ナビメニュー */
+/* ■ メニュー項目 */
 .setting-nav {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
-/* メニュー項目ボタン */
 .setting-btn {
   background: linear-gradient(90deg, #666666, #3f3f3f);
   color: #fff;
   border: none;
-  padding: 16px;
+  padding: 12px;
   text-align: left;
   border-radius: 6px;
   cursor: pointer;
   transition: filter 0.25s;
 }
-.setting-btn.active,
-.setting-btn:hover {
+.setting-btn:hover,
+.setting-btn.active {
   filter: brightness(1.2);
 }
 
-/* 右詳細パネル */
+/* ■ 詳細パネル */
 .setting-detail {
   width: 100%;
-  margin-top: 16px; /* メニューと距離 */
 }
 .detail-panel {
   background: #1a202c;
   color: #e2e8f0;
   padding: 16px;
   border-radius: 6px;
-}
-.detail-panel h2 {
-  margin-top: 0;
-}
-.donation-link {
-  color: #48bb78;
-  text-decoration: none;
-}
-.donation-link:hover {
-  text-decoration: underline;
-}
-
-/* フッターボタン */
-.bottom-footer {
-  display: flex;
-  gap: 8px;
-}
-.footer-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 0;
-  color: #fff;
-  background-color: #2d3748;
-  border: none;
-  cursor: pointer;
-  transition: filter 0.25s;
-  background: linear-gradient(90deg, #424242, #272727);
-  margin: 16px 8px 32px 8px;
-  border-radius: 4px;
-}
-.footer-btn i {
-  margin-right: 6px;
-}
-.footer-btn:hover {
-  filter: brightness(1.2);
-}
-/* ■ フェードイン用アニメーション定義 */
-/* File: pages/setting/setting.css */
-
-/* ── 既存の @keyframes や .detail-panel 定義の下に追加 ── */
-
-/* フェードイン用アニメーション */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 詳細パネル用のベーススタイル（初期は非表示／下位置） */
-.detail-panel {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -128,14 +64,39 @@
   opacity: 1;
   transform: translateY(0);
 }
-
-/* フェードイン時にクラスを付与 */
-.detail-panel.fade-in {
-  animation: fadeInUp 0.3s ease-out forwards;
+.detail-panel a.donation-link {
+  color: #bdff61;
+  text-decoration: none;
 }
-/* ■ 詳細テキストの折り返し対応 */
-.detail-panel p {
-  white-space: pre-wrap; /* 改行コードも尊重しつつ */
-  overflow-wrap: break-word; /* 単語途中でも折り返す */
-  hyphens: auto; /* 英語ならハイフンで自動分割（日本語は不要） */
+.detail-panel a.donation-link:hover {
+  text-decoration: underline;
+}
+
+/* ■ カードの下に通常フローで配置するフッター */
+.bottom-footer {
+  position: static; /* 固定解除 */
+  display: flex;
+  gap: 8px;
+  margin: 24px 8px 16px; /* カード下との間隔 */
+  /* padding-bottom: 16px; 下部に余裕 */
+  background: transparent;
+}
+.footer-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #424242, #272727);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.25s;
+}
+.footer-btn i {
+  margin-right: 6px;
+}
+.footer-btn:hover {
+  filter: brightness(1.2);
 }

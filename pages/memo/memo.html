@@ -4,33 +4,29 @@
   <head>
     <meta charset="UTF-8" />
     <title>Memo</title>
-
-    <!-- 1) Bootstrap 本体 CSS -->
     <link
       rel="stylesheet"
       href="../../vendor/bootstrap/css/bootstrap.min.css"
     />
-    <!-- 2) Bootstrap Icons CSS -->
     <link
       rel="stylesheet"
       href="../../vendor/bootstrap-icons/bootstrap-icons.css"
     />
-    <!-- 3) 共通スタイル -->
     <link rel="stylesheet" href="../../style.css" />
-    <!-- 4) memo 固有スタイル -->
     <link rel="stylesheet" href="memo.css" />
   </head>
   <body>
+    <!-- 共通ヘッダー -->
     <header>
-      <!-- href はページ間の相対パス -->
-      <a href="memo.html" class="nav-btn active" id="btn-memo"> MEMO</a>
+      <a href="memo.html" class="nav-btn active" id="btn-memo">MEMO</a>
       <a href="../prompt/prompt.html" class="nav-btn" id="btn-prompt">PROMPT</a>
-      <a href="../ai/ai.html" class="nav-btn" id="btn-ai"> AI</a>
+      <a href="../ai/ai.html" class="nav-btn" id="btn-ai">AI</a>
       <a href="../setting/setting.html" class="nav-btn" id="btn-setting">
         <i class="bi bi-gear-fill"></i>
       </a>
     </header>
-    <!-- ② サブナビ：ヘッダー下に配置 -->
+
+    <!-- サブナビ -->
     <div class="card-nav">
       <button class="nav-btn active" id="btn-memolist">MEMO一覧</button>
       <button class="nav-btn" id="btn-clipboard">クリップボード</button>
@@ -38,18 +34,10 @@
 
     <!-- カード状背景 -->
     <div class="card-container">
-      <!-- 新規追加ボタン -->
-      <button class="btn-new-memo">
-        <i class="bi bi-plus-lg"></i> 新しいMEMOを追加
-      </button>
-
-      <!-- MEMOリスト -->
-      <ul class="memo-list">
-        <!-- JavaScriptでここに<li>を動的挿入します -->
-      </ul>
+      <div class="memo-content"></div>
     </div>
 
-    <!-- フッター -->
+    <!-- フッター（常にカードの下に追従） -->
     <footer class="memo-footer">
       <button class="footer-btn">
         <i class="bi bi-lock-fill"></i> 暗号化フォルダ
@@ -58,10 +46,8 @@
         <i class="bi bi-archive-fill"></i> アーカイブ
       </button>
     </footer>
-    <!-- 5) Bootstrap 本体 JS (バンドル) -->
-    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-    <!-- 6) ページ固有スクリプト -->
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="memo.js"></script>
   </body>
 </html>
