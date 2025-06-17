@@ -254,6 +254,7 @@ body {
   gap: 12px;
 }
 .clipboard-item {
+  cursor: move;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -271,6 +272,10 @@ body {
   cursor: pointer;
 }
 
+/* ドラッグオーバー時のハイライト */
+.clipboard-item.drag-over {
+  border: 2px dashed rgba(255, 255, 255, 0.6);
+}
 /* ─── クリップボード用テキストエリア ─── */
 .clipboard-textarea {
   flex: 1;

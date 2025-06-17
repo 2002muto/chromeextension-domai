@@ -16,7 +16,42 @@ const MEMO_KEY = "memos";
 const CLIP_KEY = "clips";
 let memos = [];
 let clips = [];
+let dragClipIndex = null;
 
+function handleClipDragStart(e) {
+  dragClipIndex = Number(this.dataset.index);
+  console.log("clip dragStart:", dragClipIndex);
+  e.dataTransfer.effectAllowed = "move";
+}
+
+function handleClipDragOver(e) {
+  e.preventDefault(); // drop を許可
+  this.classList.add("drag-over");
+}
+
+function handleClipDragLeave() {
+  this.classList.remove("drag-over");
+}
+
+async function handleClipDrop(e) {
+  e.stopPropagation();
+  const dropIndex = Number(this.dataset.index);
+  console.log("clip drop from", dragClipIndex, "to", dropIndex);
+  if (dragClipIndex === null || dragClipIndex === dropIndex) return;
+  // 配列を移動
+  const [moved] = clips.splice(dragClipIndex, 1);
+  clips.splice(dropIndex, 0, moved);
+  console.log("new clip order:", clips);
+  await saveStorage(CLIP_KEY, clips);
+  renderClipboardView();
+}
+
+function handleClipDragEnd() {
+  document
+    .querySelectorAll(".clipboard-item")
+    .forEach((el) => el.classList.remove("drag-over"));
+  dragClipIndex = null;
+}
 // ───────────────────────────────────────
 // Storage ラッパー（Promise 化）
 // ───────────────────────────────────────
@@ -251,7 +286,14 @@ async function renderClipboardView() {
     clips.forEach((txt, i) => {
       const li = document.createElement("li");
       li.className = "clipboard-item";
-
+      // ─── DnD を有効化 ───
+      li.draggable = true;
+      li.dataset.index = i;
+      li.addEventListener("dragstart", handleClipDragStart);
+      li.addEventListener("dragover", handleClipDragOver);
+      li.addEventListener("dragleave", handleClipDragLeave);
+      li.addEventListener("drop", handleClipDrop);
+      li.addEventListener("dragend", handleClipDragEnd);
       // コピーボタン
       const copy = document.createElement("button");
       copy.className = "clipboard-copy";
