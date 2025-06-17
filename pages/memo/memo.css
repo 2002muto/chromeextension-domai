@@ -47,11 +47,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: calc(100vh - 200px);
+  max-height: none !important;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
   padding: 24px;
-  /* footer 固定時に重ならない余白 */
   padding-bottom: calc(24px + 16px + 48px + 16px);
   box-sizing: border-box;
   opacity: 0;
@@ -62,7 +63,6 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
-
 /* 編集モード時は footer を下部に固定 */
 .memo-content.edit-mode + .memo-footer {
   position: fixed;
@@ -72,36 +72,29 @@ body {
   margin: 0;
   z-index: 10;
 }
-/* クリップボード時はカード内スクロールバーを隠す */
+/* クリップボードモードでは内部スクロールバーを隠す */
 .memo-content.clipboard-mode {
   overflow-y: visible;
 }
 .memo-content.clipboard-mode::-webkit-scrollbar {
   display: none;
 }
+.memo-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
 
-/* ─── footer ─── */
-/* File: pages/memo/memo.css */
-
-/* ─── フッター (setting.css ベースに更新) ─── */
+/* ─── フッター (setting.css ベース) ─── */
 .memo-footer {
-  /* setting.css の bottom-footer を踏襲 */
   position: static;
-  bottom: auto;
-  left: auto;
-  width: auto;
-  z-index: auto;
-  margin: 32px 16px; /* カードとの隙間を確保 */
-  padding: 8px 4px; /* setting.css と同じ余白 */
+  margin: 32px 16px;
+  padding: 8px 4px;
   display: flex;
-  gap: 8px; /* 横並び＆隙間 */
+  gap: 8px;
   background: transparent;
   box-sizing: border-box;
 }
-
-/* ─── フッター内ボタン ─── */
 .memo-footer .footer-btn {
-  /* setting.css の .footer-btn をそのまま適用 */
   flex: 1;
   display: flex;
   align-items: center;
@@ -120,18 +113,15 @@ body {
 .memo-footer .footer-btn:hover {
   filter: brightness(1.2);
 }
-
-/* ■ 保存／削除ボタンも同様に */
+/* 保存／削除ボタン */
 .memo-footer .save-btn {
   background: #00a31e;
-  color: #fff;
 }
 .memo-footer .save-btn:hover {
   filter: brightness(1.15);
 }
 .memo-footer .delete-btn {
   background: #910002;
-  color: #fff;
 }
 .memo-footer .delete-btn:hover {
   filter: brightness(1.15);
@@ -157,8 +147,8 @@ body {
 /* ─── MEMO一覧 ─── */
 .memo-list {
   list-style: none !important;
-  padding: 0;
   margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -169,6 +159,10 @@ body {
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
   padding: 12px;
   border-radius: 6px;
+  cursor: move;
+}
+.memo-item.drag-over {
+  border: 2px dashed rgba(255, 255, 255, 0.6);
 }
 .memo-item .star {
   font-size: 1.2rem;
@@ -243,7 +237,6 @@ body {
 }
 
 /* ─── クリップボード ─── */
-/* 見出し */
 .clipboard-header {
   display: flex;
   align-items: center;
@@ -252,11 +245,10 @@ body {
   font-size: 1.125rem;
   margin-bottom: 16px;
 }
-/* リスト */
 .clipboard-list {
   list-style: none !important;
-  padding: 0;
   margin: 0 0 16px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -268,6 +260,7 @@ body {
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
   padding: 8px;
   border-radius: 6px;
+  overflow: hidden;
 }
 .clipboard-copy {
   background: #00a31e;
@@ -277,16 +270,35 @@ body {
   color: #fff;
   cursor: pointer;
 }
-.clipboard-input {
+
+/* ─── クリップボード用テキストエリア ─── */
+.clipboard-textarea {
   flex: 1;
+  min-width: 0; /* 親幅内で縮む */
+  box-sizing: border-box; /* padding を含めて高さ幅計算 */
+
+  padding: 16px 8px; /* 上下 4px ／左右 8px */
+  line-height: 1.2em; /* 行間を少しタイトに */
+  min-height: 1.2em; /* デフォルトは 1 行分 */
+  max-height: 8em; /* 任意：最大 8 行分 */
+  white-space: pre-wrap; /* Enter で改行、折り返しも有効 */
+  word-break: break-word; /* 単語長いときも折り返す */
+
+  overflow-x: hidden; /* 横スクロール禁止 */
+  overflow-y: auto; /* 縦は溢れたらスクロール */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  resize: vertical; /* ユーザーによる上下リサイズのみ */
   background: #3a3f4a;
+  color: #e2e8f0;
   border: none;
   border-radius: 4px;
-  padding: 8px;
-  color: #e2e8f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+/* Chrome/Safari/Opera のスクロールバー非表示 */
+.clipboard-textarea::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 .clipboard-archive {
   background: linear-gradient(90deg, #424242, #272727);
@@ -318,13 +330,4 @@ body {
   color: #cbd5e0;
   font-size: 0.875rem;
   text-align: center;
-}
-/* ドラッグ可能なリストアイテム */
-.memo-item {
-  cursor: move;
-}
-
-/* ドラッグオーバー時のハイライト */
-.memo-item.drag-over {
-  border: 2px dashed rgba(255, 255, 255, 0.6);
 }

@@ -1,16 +1,15 @@
 // File: pages/memo/memo.js
+
 "use strict";
 
 /*
- * Memo & Clipboard SPA — 完全新版
- * - MEMO一覧: 星 on/off、矢印アイコン、グラデカード
- * - MEMO入力: 見出し緑、星トグル、入力欄、緑/赤ボタン
- * - クリップボード: 見出し、カードリスト、+クリップを追加、ヒント
- * - console.log 付きステップバイステップ
- */
-
-/*
- * MEMO & Clipboard SPA — ドラッグ＆ドロップ修正版
+ * pages/memo/memo.js
+ * MEMO & Clipboard SPA — 完全版
+ * - MEMO一覧: 星 on/off、ドラッグ＆ドロップ、アーカイブアイコン
+ * - MEMO入力: 編集フォーム、星トグル、保存・削除
+ * - クリップボード: テキストエリアリスト、自動リサイズ、追加・削除
+ * - モード切り替えクラスで footer の固定／スクロール制御
+ * - console.log でデバッグ容易
  */
 
 const MEMO_KEY = "memos";
@@ -19,17 +18,41 @@ let memos = [];
 let clips = [];
 
 // ───────────────────────────────────────
-// Storage ラッパー
+// Storage ラッパー（Promise 化）
 // ───────────────────────────────────────
 function loadStorage(key) {
-  return new Promise((res) =>
-    chrome.storage.local.get([key], (o) => res(o[key] || []))
-  );
+  return new Promise((resolve) => {
+    chrome.storage.local.get([key], (result) => {
+      resolve(result[key] || []);
+    });
+  });
 }
+
 function saveStorage(key, arr) {
-  return new Promise((res) =>
-    chrome.storage.local.set({ [key]: arr }, () => res())
-  );
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [key]: arr }, () => {
+      resolve();
+    });
+  });
+}
+
+// ───────────────────────────────────────
+// Footer 描画共通化
+// ───────────────────────────────────────
+function setFooter(mode) {
+  const footer = document.querySelector(".memo-footer");
+  footer.style.display = "flex";
+  if (mode === "list" || mode === "clipboard") {
+    footer.innerHTML = `
+      <button class="footer-btn"><i class="bi bi-lock-fill"></i> 暗号化フォルダ</button>
+      <button class="footer-btn"><i class="bi bi-archive-fill"></i> アーカイブ</button>
+    `;
+  } else if (mode === "edit") {
+    footer.innerHTML = `
+      <button class="footer-btn save-btn"><i class="bi bi-save"></i> 保存して戻る</button>
+      <button class="footer-btn delete-btn"><i class="bi bi-trash"></i> 削除して戻る</button>
+    `;
+  }
 }
 
 // ───────────────────────────────────────
@@ -39,7 +62,7 @@ let dragSrcIndex = null;
 
 function handleDragStart(e) {
   dragSrcIndex = Number(this.dataset.index);
-  console.log("drag start:", dragSrcIndex);
+  console.log("dragStart index=", dragSrcIndex);
   e.dataTransfer.effectAllowed = "move";
 }
 
@@ -61,7 +84,7 @@ async function handleDrop(e) {
   const [moved] = memos.splice(dragSrcIndex, 1);
   memos.splice(dropIndex, 0, moved);
   console.log(
-    "after drop order:",
+    "new memo order after drop:",
     memos.map((x) => x.title)
   );
   await saveStorage(MEMO_KEY, memos);
@@ -79,299 +102,309 @@ function handleDragEnd() {
 // MEMO一覧描画
 // ───────────────────────────────────────
 async function renderListView() {
-  memos = await loadStorage(MEMO_KEY);
+  console.log("renderListView: start");
+  try {
+    memos = await loadStorage(MEMO_KEY);
 
-  // 既存のタイトルフォーム削除
-  document.querySelector(".form-title")?.remove();
+    // 既存のフォームタイトルを削除
+    document.querySelector(".form-title")?.remove();
 
-  // サブナビ切替
-  document
-    .querySelectorAll(".card-nav .nav-btn")
-    .forEach((b) => b.classList.remove("active"));
-  document.getElementById("btn-memolist").classList.add("active");
+    // サブナビ切替
+    document
+      .querySelectorAll(".card-nav .nav-btn")
+      .forEach((btn) => btn.classList.remove("active"));
+    document.getElementById("btn-memolist").classList.add("active");
 
-  // フッターセット
-  const footer = document.querySelector(".memo-footer");
-  footer.style.display = "flex";
-  footer.innerHTML = `
-    <button class="footer-btn"><i class="bi bi-lock-fill"></i> 暗号化フォルダ</button>
-    <button class="footer-btn"><i class="bi bi-archive-fill"></i> アーカイブ</button>
-  `;
+    // フッター：一覧モード
+    setFooter("list");
 
-  // フェードイン
-  const card = document.querySelector(".card-container");
-  const content = document.querySelector(".memo-content");
-  [card, content].forEach((el) => {
-    el.classList.remove("show");
-    void el.offsetWidth;
-    el.classList.add("show");
-  });
-
-  // 新規追加＋リスト領域
-  content.innerHTML = `
-    <button class="btn-new-memo"><i class="bi bi-plus-lg"></i> 新しいMEMOを追加</button>
-    <ul class="memo-list"></ul>
-  `;
-  content
-    .querySelector(".btn-new-memo")
-    .addEventListener("click", () => renderInputForm());
-
-  // リスト描画
-  const ul = content.querySelector(".memo-list");
-  ul.innerHTML = "";
-  memos.forEach((m, i) => {
-    const li = document.createElement("li");
-    li.className = "memo-item";
-    li.setAttribute("draggable", "true");
-    li.dataset.index = i;
-
-    // ドラッグイベント
-    li.addEventListener("dragstart", handleDragStart);
-    li.addEventListener("dragover", handleDragOver);
-    li.addEventListener("dragleave", handleDragLeave);
-    li.addEventListener("drop", handleDrop);
-    li.addEventListener("dragend", handleDragEnd);
-
-    // 星アイコン
-    const star = document.createElement("i");
-    star.className = m.starred
-      ? "bi bi-star-fill star on"
-      : "bi bi-star-fill star off";
-    star.addEventListener("click", (e) => {
-      e.stopPropagation();
-      m.starred = !m.starred;
-      console.log(`toggle star id=${m.id} → ${m.starred}`);
-      memos.splice(i, 1);
-      if (m.starred) memos.unshift(m);
-      else memos.push(m);
-      console.log(
-        "after star order:",
-        memos.map((x) => x.title)
-      );
-      saveStorage(MEMO_KEY, memos).then(renderListView);
+    // カード＆コンテンツフェードイン、モード解除
+    const card = document.querySelector(".card-container");
+    const content = document.querySelector(".memo-content");
+    content.classList.remove("edit-mode", "clipboard-mode");
+    [card, content].forEach((el) => {
+      el.classList.remove("show");
+      void el.offsetWidth;
+      el.classList.add("show");
     });
-    li.appendChild(star);
 
-    // タイトル
-    const span = document.createElement("span");
-    span.className = "title";
-    span.textContent = m.title;
-    li.appendChild(span);
+    // 新規追加ボタン ＋ 空のリスト
+    content.innerHTML = `
+      <button class="btn-new-memo"><i class="bi bi-plus-lg"></i> 新しいMEMOを追加</button>
+      <ul class="memo-list"></ul>
+    `;
+    content
+      .querySelector(".btn-new-memo")
+      .addEventListener("click", () => renderInputForm());
 
-    // アーカイブアイコン
-    const archive = document.createElement("i");
-    archive.className = "bi bi-archive-fill actions";
-    archive.addEventListener("click", (e) => e.stopPropagation());
-    li.appendChild(archive);
+    // リスト描画
+    const ul = content.querySelector(".memo-list");
+    ul.innerHTML = "";
+    memos.forEach((m, i) => {
+      const li = document.createElement("li");
+      li.className = "memo-item";
+      li.draggable = true;
+      li.dataset.index = i;
 
-    // クリックで編集
-    li.addEventListener("click", () => renderInputForm(m.id));
+      // ドラッグイベント登録
+      li.addEventListener("dragstart", handleDragStart);
+      li.addEventListener("dragover", handleDragOver);
+      li.addEventListener("dragleave", handleDragLeave);
+      li.addEventListener("drop", handleDrop);
+      li.addEventListener("dragend", handleDragEnd);
 
-    ul.appendChild(li);
-  });
+      // 星アイコン
+      const star = document.createElement("i");
+      star.className = m.starred
+        ? "bi bi-star-fill star on"
+        : "bi bi-star-fill star off";
+      star.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        m.starred = !m.starred;
+        console.log(`toggle star id=${m.id} → ${m.starred}`);
+        // 並び替え：先頭 or 末尾
+        const idx = Number(li.dataset.index);
+        memos.splice(idx, 1);
+        if (m.starred) memos.unshift(m);
+        else memos.push(m);
+        console.log(
+          "new order after star:",
+          memos.map((x) => x.title)
+        );
+        await saveStorage(MEMO_KEY, memos);
+        renderListView();
+      });
+      li.appendChild(star);
+
+      // タイトル表示
+      const span = document.createElement("span");
+      span.className = "title";
+      span.textContent = m.title;
+      li.appendChild(span);
+
+      // アーカイブアイコン
+      const archive = document.createElement("i");
+      archive.className = "bi bi-archive-fill actions";
+      archive.addEventListener("click", (e) => e.stopPropagation());
+      li.appendChild(archive);
+
+      // クリックで編集モード
+      li.addEventListener("click", () => renderInputForm(m.id));
+
+      ul.appendChild(li);
+    });
+  } catch (err) {
+    console.error("renderListView error:", err);
+  }
+  console.log("renderListView: end");
 }
 
-// --- クリップボード 描画 ---
+// ───────────────────────────────────────
+// クリップボード描画
+// ───────────────────────────────────────
 async function renderClipboardView() {
   console.log("renderClipboardView: start");
-  clips = await loadStorage(CLIP_KEY);
-  document.querySelector(".form-title")?.remove();
+  try {
+    clips = await loadStorage(CLIP_KEY);
+    document.querySelector(".form-title")?.remove();
 
-  // サブナビ切替
-  document
-    .querySelectorAll(".card-nav .nav-btn")
-    .forEach((b) => b.classList.remove("active"));
-  document.getElementById("btn-clipboard").classList.add("active");
+    // サブナビ切替
+    document
+      .querySelectorAll(".card-nav .nav-btn")
+      .forEach((btn) => btn.classList.remove("active"));
+    document.getElementById("btn-clipboard").classList.add("active");
 
-  // フッターセット
-  const footer = document.querySelector(".memo-footer");
-  footer.style.display = "flex";
-  footer.innerHTML = `
-    <button class="footer-btn"><i class="bi bi-lock-fill"></i> 暗号化フォルダ</button>
-    <button class="footer-btn"><i class="bi bi-archive-fill"></i> アーカイブ</button>
-  `;
+    // フッター：クリップボードモード
+    setFooter("clipboard");
 
-  // フェードイン
-  const card = document.querySelector(".card-container");
-  const content = document.querySelector(".memo-content");
-  [card, content].forEach((el) => {
-    el.classList.remove("show");
-    void el.offsetWidth;
-    el.classList.add("show");
-  });
-
-  // 見出し + リスト + 追加 + ヒント
-  content.innerHTML = `
-    <h2 class="clipboard-header">
-      <i class="bi bi-clipboard-fill"></i> フォーム用クリップボード
-    </h2>
-    <ul class="clipboard-list"></ul>
-    <button class="btn-add-clip">+ クリップを追加</button>
-    <p class="clipboard-hint">※ 選択中のテキストエリアに入力されます</p>
-  `;
-  content.querySelector(".btn-add-clip").addEventListener("click", () => {
-    clips.push("");
-    saveStorage(CLIP_KEY, clips);
-    renderClipboardView();
-  });
-
-  // クリップアイテム
-  const ul = content.querySelector(".clipboard-list");
-  ul.innerHTML = "";
-  clips.forEach((txt, i) => {
-    const li = document.createElement("li");
-    li.className = "clipboard-item";
-
-    // コピーアイコン
-    const copy = document.createElement("button");
-    copy.className = "clipboard-copy";
-    copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
-    copy.addEventListener("click", () => console.log("copy:", txt));
-    li.appendChild(copy);
-
-    // テキスト欄
-    const input = document.createElement("input");
-    input.className = "clipboard-input";
-    input.value = txt;
-    input.placeholder = "テキストを入力";
-    input.addEventListener("change", () => {
-      clips[i] = input.value;
-      saveStorage(CLIP_KEY, clips);
+    // フェードイン + モードクラス付与
+    const card = document.querySelector(".card-container");
+    const content = document.querySelector(".memo-content");
+    content.classList.remove("edit-mode");
+    content.classList.add("clipboard-mode");
+    [card, content].forEach((el) => {
+      el.classList.remove("show");
+      void el.offsetWidth;
+      el.classList.add("show");
     });
-    li.appendChild(input);
 
-    // アーカイブアイコン
-    const arch = document.createElement("button");
-    arch.className = "clipboard-archive";
-    arch.innerHTML = '<i class="bi bi-archive-fill"></i>';
-    arch.addEventListener("click", () => {
-      clips.splice(i, 1);
-      saveStorage(CLIP_KEY, clips);
-      renderClipboardView();
+    // 見出し＋リスト＋追加ボタン＋ヒント
+    content.innerHTML = `
+      <h2 class="clipboard-header">
+        <i class="bi bi-clipboard-fill"></i> フォーム用クリップボード
+      </h2>
+      <ul class="clipboard-list"></ul>
+      <button class="btn-add-clip">+ クリップを追加</button>
+      <p class="clipboard-hint">※ 選択中のテキストエリアに入力されます</p>
+    `;
+    content
+      .querySelector(".btn-add-clip")
+      .addEventListener("click", async () => {
+        clips.push("");
+        await saveStorage(CLIP_KEY, clips);
+        renderClipboardView();
+      });
+
+    // リスト描画
+    const ul = content.querySelector(".clipboard-list");
+    ul.innerHTML = "";
+    clips.forEach((txt, i) => {
+      const li = document.createElement("li");
+      li.className = "clipboard-item";
+
+      // コピーボタン
+      const copy = document.createElement("button");
+      copy.className = "clipboard-copy";
+      copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
+      copy.addEventListener("click", () => console.log("copy:", txt));
+      li.appendChild(copy);
+
+      // テキストエリア
+      const textarea = document.createElement("textarea");
+      textarea.setAttribute("rows", "1"); // 常に1行スタート
+      textarea.className = "clipboard-textarea";
+      textarea.value = txt;
+      textarea.placeholder = "テキストを入力";
+      // 入力時のみ縦拡張
+      textarea.addEventListener("input", () => {
+        clips[i] = textarea.value;
+        saveStorage(CLIP_KEY, clips);
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+      });
+      li.appendChild(textarea);
+
+      // アーカイブボタン（削除）
+      const arch = document.createElement("button");
+      arch.className = "clipboard-archive";
+      arch.innerHTML = '<i class="bi bi-archive-fill"></i>';
+      arch.addEventListener("click", async () => {
+        clips.splice(i, 1);
+        await saveStorage(CLIP_KEY, clips);
+        renderClipboardView();
+      });
+      li.appendChild(arch);
+      // リストへ追加してから高さを再計算する
+      ul.appendChild(li);
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
     });
-    li.appendChild(arch);
-
-    ul.appendChild(li);
-  });
-
+  } catch (err) {
+    console.error("renderClipboardView error:", err);
+  }
   console.log("renderClipboardView: end");
 }
 
+// ───────────────────────────────────────
+// MEMO入力／編集フォーム描画
+// ───────────────────────────────────────
 async function renderInputForm(id) {
   console.log("renderInputForm: start, id=", id);
+  try {
+    memos = await loadStorage(MEMO_KEY);
 
-  // ① 最新データをロード
-  memos = await loadStorage(MEMO_KEY);
-  console.log("renderInputForm: loaded memos", memos);
+    // サブナビは常に表示
+    document.querySelector(".card-nav").style.display = "flex";
 
-  // ② サブナビ表示（そのまま）
-  document.querySelector(".card-nav").style.display = "flex";
+    // フッター：編集モード
+    setFooter("edit");
 
-  // ③ フッターを「保存／削除」に切り替え
-  const footer = document.querySelector(".memo-footer");
-  footer.style.display = "flex";
-  footer.innerHTML = `
-    <button class="footer-btn save-btn">
-      <i class="bi bi-save"></i> 保存して戻る
-    </button>
-    <button class="footer-btn delete-btn">
-      <i class="bi bi-trash"></i> 削除して戻る
-    </button>
-  `;
+    // フォームタイトル
+    const card = document.querySelector(".card-container");
+    let titleEl = document.querySelector(".form-title");
+    if (!titleEl) {
+      titleEl = document.createElement("h2");
+      titleEl.className = "form-title";
+      card.parentNode.insertBefore(titleEl, card);
+    }
+    titleEl.textContent = id ? "MEMO編集画面" : "MEMO入力画面";
 
-  // ④ フォーム見出し
-  const card = document.querySelector(".card-container");
-  let titleEl = document.querySelector(".form-title");
-  if (!titleEl) {
-    titleEl = document.createElement("h2");
-    titleEl.className = "form-title";
-    card.parentNode.insertBefore(titleEl, card);
-  }
-  titleEl.textContent = id ? "MEMO編集画面" : "MEMO入力画面";
-
-  // ⑤ フォーム本体をカードに描画
-  const content = document.querySelector(".memo-content");
-  content.innerHTML = `
-    <div class="memo-input-form">
-      <div class="input-header">
-        <i class="bi bi-star-fill star-input off"></i>
-        <input type="text" class="title-input" placeholder="タイトル" />
+    // フォーム本体
+    const content = document.querySelector(".memo-content");
+    content.innerHTML = `
+      <div class="memo-input-form">
+        <div class="input-header">
+          <i class="bi bi-star-fill star-input off"></i>
+          <input type="text" class="title-input" placeholder="タイトル" />
+        </div>
+        <textarea class="text-input" placeholder="テキストを入力…"></textarea>
       </div>
-      <textarea class="text-input" placeholder="テキストを入力…"></textarea>
-    </div>
-  `;
+    `;
 
-  // ⑥ 既存データがある場合はフォームへセット
-  if (id !== undefined) {
-    const memo = memos.find((m) => m.id === id);
-    console.log("renderInputForm: editing memo", memo);
-    if (memo) {
-      // タイトル／本文
-      content.querySelector(".title-input").value = memo.title;
-      content.querySelector(".text-input").value = memo.content;
-      // 星の状態
-      let starred = memo.starred;
-      const starIcon = content.querySelector(".star-input");
-      starIcon.classList.toggle("on", starred);
-      starIcon.classList.toggle("off", !starred);
-      // toggle イベントで使えるように保持
-      starIcon.dataset.starred = starred;
+    // 既存データがあればセット
+    const starIcon = content.querySelector(".star-input");
+    if (id !== undefined) {
+      const memo = memos.find((m) => m.id === id);
+      if (memo) {
+        content.querySelector(".title-input").value = memo.title;
+        content.querySelector(".text-input").value = memo.content;
+        starIcon.classList.toggle("on", memo.starred);
+        starIcon.classList.toggle("off", !memo.starred);
+        starIcon.dataset.starred = memo.starred;
+      }
     }
+
+    // 編集モードクラス＋フェードイン
+    content.classList.remove("clipboard-mode");
+    content.classList.add("edit-mode");
+    [card, content].forEach((el) => {
+      el.classList.remove("show");
+      void el.offsetWidth;
+      el.classList.add("show");
+    });
+
+    // 星トグル
+    starIcon.dataset.starred = (starIcon.dataset.starred === "true").toString();
+    starIcon.addEventListener("click", () => {
+      const cur = starIcon.dataset.starred === "true";
+      starIcon.dataset.starred = (!cur).toString();
+      starIcon.classList.toggle("on", !cur);
+      starIcon.classList.toggle("off", cur);
+      console.log("star toggled:", !cur);
+    });
+
+    // 保存ボタン
+    document.querySelector(".save-btn").addEventListener("click", async () => {
+      const title =
+        content.querySelector(".title-input").value.trim() || "無題";
+      const body = content.querySelector(".text-input").value.trim();
+      const starred = starIcon.dataset.starred === "true";
+
+      if (id !== undefined) {
+        // 更新
+        const idx = memos.findIndex((m) => m.id === id);
+        memos[idx] = { id, title, content: body, starred };
+        console.log("update memo:", memos[idx]);
+      } else {
+        // 新規
+        const newMemo = { id: Date.now(), title, content: body, starred };
+        memos.push(newMemo);
+        console.log("add memo:", newMemo);
+      }
+      await saveStorage(MEMO_KEY, memos);
+      renderListView();
+    });
+
+    // 削除／キャンセルボタン
+    document
+      .querySelector(".delete-btn")
+      .addEventListener("click", async () => {
+        if (id !== undefined) {
+          memos = memos.filter((m) => m.id !== id);
+          console.log("delete memo id=", id);
+          await saveStorage(MEMO_KEY, memos);
+        }
+        renderListView();
+      });
+  } catch (err) {
+    console.error("renderInputForm error:", err);
   }
-
-  // ⑦ フェードイン（カード＋内容）
-  [card, content].forEach((el) => {
-    el.classList.remove("show");
-    void el.offsetWidth;
-    el.classList.add("show");
-  });
-
-  // ⑧ 星トグル処理
-  const starIcon = content.querySelector(".star-input");
-  starIcon.addEventListener("click", () => {
-    const current = starIcon.dataset.starred === "true";
-    starIcon.dataset.starred = (!current).toString();
-    starIcon.classList.toggle("on", !current);
-    starIcon.classList.toggle("off", current);
-    console.log("renderInputForm: starred toggled", !current);
-  });
-
-  // ⑨ 保存ボタン
-  footer.querySelector(".save-btn").addEventListener("click", () => {
-    const title = content.querySelector(".title-input").value.trim() || "無題";
-    const body = content.querySelector(".text-input").value.trim();
-    const starred = starIcon.dataset.starred === "true";
-
-    if (id !== undefined) {
-      // 更新
-      const idx = memos.findIndex((m) => m.id === id);
-      memos[idx] = { id, title, content: body, starred };
-      console.log("renderInputForm: update memo", memos[idx]);
-    } else {
-      // 新規
-      const newMemo = { id: Date.now(), title, content: body, starred };
-      memos.push(newMemo);
-      console.log("renderInputForm: add memo", newMemo);
-    }
-
-    saveStorage(MEMO_KEY, memos);
-    renderListView();
-  });
-
-  // ⑩ 削除／キャンセルボタン
-  footer.querySelector(".delete-btn").addEventListener("click", () => {
-    if (id !== undefined) {
-      memos = memos.filter((m) => m.id !== id);
-      saveStorage(MEMO_KEY, memos);
-      console.log("renderInputForm: delete memo id=", id);
-    }
-    renderListView();
-  });
-
   console.log("renderInputForm: end");
 }
 
-// --- 初期化 ---
+// ───────────────────────────────────────
+// 初期化
+// ───────────────────────────────────────
 window.addEventListener("DOMContentLoaded", async () => {
   console.log("DOMContentLoaded fired");
   document
