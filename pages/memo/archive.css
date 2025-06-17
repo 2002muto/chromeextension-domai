@@ -1,0 +1,68 @@
+/* File: pages/memo/archive.css */
+
+/* カードを白背景に切り替える */
+.card-container.archive {
+  background: #f0f4f8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* サブナビ：アーカイブ/MEMO ⇔ クリップ */
+.sub-archive-nav {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+.sub-archive-nav .nav-btn {
+  flex: 1;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+.sub-archive-nav .nav-btn.active {
+  background: #2b6cb0;
+  color: white;
+}
+
+/* アーカイブリスト */
+.archive-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.archive-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #4a5568;
+  color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.archive-list li input[type="checkbox"] {
+  margin-right: 8px;
+}
+.archive-list li .restore-btn {
+  background: none;
+  border: none;
+  color: #48bb78;
+  cursor: pointer;
+}
+
+/* フッター：戻る／一括削除 */
+.bottom-footer.archive {
+  /* existing .bottom-footer と同じ位置固定 */
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #2d3748;
+}
+.bottom-footer.archive .footer-btn {
+  flex: 1;
+}

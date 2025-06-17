@@ -13,11 +13,11 @@
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
+/* show が付いたらフェードイン＆スライドアップ */
 .setting-card.show {
   opacity: 1;
   transform: translateY(0);
 }
-
 /* ■ コンテナ間の余白確保 */
 .setting-container {
   display: flex;
@@ -56,6 +56,7 @@
   color: #e2e8f0;
   padding: 16px;
   border-radius: 6px;
+  opacity: 0;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.3s ease, transform 0.3s ease;
