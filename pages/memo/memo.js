@@ -157,17 +157,19 @@ async function renderListView() {
     const card = document.querySelector(".card-container");
     const content = document.querySelector(".memo-content");
     content.classList.remove("edit-mode", "clipboard-mode");
-    [card, content].forEach((el) => {
-      el.classList.remove("show");
-      void el.offsetWidth;
-      el.classList.add("show");
-    });
-
+    // アニメ用クラスをリセット→再発火
+    card.classList.remove("animate");
+    void card.offsetWidth;
+    card.classList.add("animate");
     // 新規追加ボタン ＋ 空のリスト
     content.innerHTML = `
       <button class="btn-new-memo"><i class="bi bi-plus-lg"></i> 新しいMEMOを追加</button>
       <ul class="memo-list"></ul>
     `;
+    // ─── content をフェードイン ───
+    content.classList.remove("show");
+    void content.offsetWidth;
+    content.classList.add("show");
     content
       .querySelector(".btn-new-memo")
       .addEventListener("click", () => renderInputForm());
@@ -253,15 +255,14 @@ async function renderClipboardView() {
     setFooter("clipboard");
 
     // フェードイン + モードクラス付与
+    // ─── カード背景を下からふわっ  クリップモード付与 ───
     const card = document.querySelector(".card-container");
     const content = document.querySelector(".memo-content");
     content.classList.remove("edit-mode");
     content.classList.add("clipboard-mode");
-    [card, content].forEach((el) => {
-      el.classList.remove("show");
-      void el.offsetWidth;
-      el.classList.add("show");
-    });
+    card.classList.remove("animate");
+    void card.offsetWidth;
+    card.classList.add("animate");
 
     // 見出し＋リスト＋追加ボタン＋ヒント
     content.innerHTML = `
@@ -272,6 +273,10 @@ async function renderClipboardView() {
       <button class="btn-add-clip">+ クリップを追加</button>
       <p class="clipboard-hint">※ 選択中のテキストエリアに入力されます</p>
     `;
+    // ─── content をフェードイン ───
+    content.classList.remove("show");
+    void content.offsetWidth;
+    content.classList.add("show");
     content
       .querySelector(".btn-add-clip")
       .addEventListener("click", async () => {

@@ -13,15 +13,17 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   margin: 24px 16px 0;
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s, transform 0.5s;
+  opacity: 1;
+  transform: translateY(0);
 }
 .card-container.show {
   opacity: 1;
   transform: translateY(0);
 }
-
+/* アニメーションを発火させるためのクラス */
+.card-container.animate {
+  animation: slideUpFade 0.4s ease-out both;
+}
 /* ─── サブナビ ─── */
 .card-nav {
   display: flex;
@@ -335,4 +337,15 @@ body {
   color: #cbd5e0;
   font-size: 0.875rem;
   text-align: center;
+}
+/* ─── カード背景ふわっアニメ ─── */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
