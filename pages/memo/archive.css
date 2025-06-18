@@ -2,8 +2,10 @@
 
 /* カードを白背景に切り替える */
 .card-container.archive {
-  background: #f0f4f8;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* 通常モードの背景色 */
+  background: #2d3748;
+  /* 通常モードのシャドウ */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* サブナビ：アーカイブ/MEMO ⇔ クリップ */
@@ -52,17 +54,46 @@
   cursor: pointer;
 }
 
-/* フッター：戻る／一括削除 */
+/* File: pages/memo/archive.css */
+
+/* フッターを固定し、2つの大きなボタンを並べる */
 .bottom-footer.archive {
-  /* existing .bottom-footer と同じ位置固定 */
   position: fixed;
   bottom: 0;
   width: 100%;
   display: flex;
   gap: 8px;
-  padding: 12px;
+  padding: 12px 16px;
   background: #2d3748;
+  box-sizing: border-box;
 }
+
+/* フッターボタン共通 */
 .bottom-footer.archive .footer-btn {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.25s;
+  background: #910002;
+}
+.bottom-footer.archive .footer-btn:hover {
+  filter: brightness(1.2);
+}
+
+/* 戻るボタン：ダークグラデ */
+.bottom-footer.archive .back-btn {
+  /* background: linear-gradient(90deg, #424242, #272727); */
+  background: #910002;
+}
+
+/* アーカイブモード時のフッター（一括削除ボタン）の背景を #910002 にする */
+.memo-footer.archive .delete-all-btn {
+  background: #910002;
 }
