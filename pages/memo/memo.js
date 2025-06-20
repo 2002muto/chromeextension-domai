@@ -316,15 +316,24 @@ async function renderClipboardView() {
     copy.className = "clipboard-copy";
     copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
     copy.addEventListener("click", () => {
+      // ★修正★ 最新の textarea の値を取得して送信
+      const currentText = ta.value;
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (!tabs.length) return;
-        chrome.tabs
-          .sendMessage(tabs[0].id, {
-            type: "INSERT_CLIP",
-            text: txt, // その行のテキスト
-          })
-          .catch((err) => console.warn("sendMessage failed:", err));
-        console.log("copy:", txt);
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { type: "INSERT_CLIP", text: currentText },
+          (resp) => {
+            if (chrome.runtime.lastError) {
+              console.warn(
+                "sendMessage failed:",
+                chrome.runtime.lastError.message
+              );
+            } else {
+              console.log("copy:", currentText);
+            }
+          }
+        );
       });
     });
 
