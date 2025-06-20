@@ -28,30 +28,71 @@
   color: white;
 }
 
-/* アーカイブリスト */
+/* pages/memo/archive.css */
+
+/* ───────────────────────────────
+   アーカイブリスト全体
+──────────────────────────────── */
 .archive-list {
   list-style: none;
+  margin: 0;
   padding: 0;
-  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.archive-list li {
+
+/* ───────────────────────────────
+   各行（カード）
+──────────────────────────────── */
+/* File: pages/memo/archive.css */
+/* --- アーカイブ行（3 カラムレイアウト） --- */
+.archive-item {
+  display: flex; /* 横並び */
+  align-items: center; /* 垂直中央 */
+  padding: 12px 16px;
+  gap: 12px; /* 左チェックとタイトルの間 */
+  border-radius: 6px;
+  background: linear-gradient(90deg, #515b6e, #3f4656);
+  box-shadow: 0 0 4px #0004 inset;
+}
+
+/* 左：チェックボックス */
+.archive-item .arch-check {
+  flex: 0 0 24px; /* 幅固定 24px */
+  height: 24px;
+  accent-color: #ccc;
+}
+
+/* 中央：タイトル */
+.archive-item .arch-title {
+  flex: 1 1 auto; /* 余白をすべて占める */
+  text-align: center; /* 中央寄せ */
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 右：アップロード（復元）アイコン */
+.archive-item .restore-btn {
+  flex: 0 0 32px; /* 幅固定 32px */
+  margin-left: auto; /* 右端に押し出す */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: #4a5568;
-  color: #fff;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
-.archive-list li input[type="checkbox"] {
-  margin-right: 8px;
-}
-.archive-list li .restore-btn {
-  background: none;
+  justify-content: center;
   border: none;
-  color: #48bb78;
+  border-radius: 4px;
+  background: #06c94a;
   cursor: pointer;
+  transition: filter 0.2s;
+}
+.archive-item .restore-btn:hover {
+  filter: brightness(1.1);
+}
+.archive-item .restore-btn i {
+  font-size: 1rem;
+  color: #fff;
 }
 
 /* File: pages/memo/archive.css */

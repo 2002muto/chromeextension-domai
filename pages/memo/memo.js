@@ -7,6 +7,7 @@
 // ───────────────────────────────────────
 const MEMO_KEY = "memos";
 const CLIP_KEY = "clips";
+const CLIP_ARCH_KEY = "clips_arch";
 let memos = [];
 let clips = [];
 
@@ -110,6 +111,12 @@ function setFooter(mode) {
       <button class="footer-btn encrypt-btn">暗号化フォルダ</button>
       <button id="btn-archive-toggle" class="footer-btn archive-toggle">アーカイブ</button>
     `;
+  } else if (mode === "edit") {
+    /* ← 追加：MEMO入力／編集画面用フッター */
+    foot.innerHTML = `
+      <button class="footer-btn save-btn"><i class="bi bi-save"></i> 保存して戻る</button>
+      <button class="footer-btn delete-btn"><i class="bi bi-trash"></i> 削除して戻る</button>
+    `;
   }
 }
 
@@ -123,7 +130,23 @@ async function renderListView() {
 
   // load memos
   memos = await loadStorage(MEMO_KEY);
-
+  /* --- nav が無い場合は生成しておく ---------------------- */
+  /* --- nav が無い場合は生成しておく ---------------------- */
+  let nav = document.querySelector(".card-nav");
+  if (!nav) {
+    const nav = document.createElement("div");
+    nav.className = "card-nav";
+    nav.innerHTML = `
+        <button class="nav-btn" id="btn-memolist">MEMO一覧</button>
+        <button class="nav-btn" id="btn-clipboard">クリップボード</button>
+      `;
+    document.querySelector(".top-nav").after(nav);
+    // .top-nav が無い場合でも必ず挿入
+    const ref = document.querySelector(".top-nav") || document.body.firstChild;
+    ref.parentNode.insertBefore(nav, ref.nextSibling);
+  }
+  /* ------------------------------------------------------- */
+  /* ------------------------------------------------------- */
   // reset sub-nav
   document
     .querySelectorAll(".card-nav .nav-btn")
@@ -162,54 +185,63 @@ async function renderListView() {
   // populate list items
   const ul = content.querySelector(".memo-list");
   ul.innerHTML = "";
-  memos.forEach((m, i) => {
-    const li = document.createElement("li");
-    li.className = "memo-item";
-    li.draggable = true;
-    li.dataset.index = i;
+  memos
+    .filter((m) => !m.archived) // ← 追加：一覧は未アーカイブのみ
+    .forEach((m, i) => {
+      const li = document.createElement("li");
+      li.className = "memo-item";
+      li.draggable = true;
+      li.dataset.index = i;
 
-    // DnD handlers
-    li.addEventListener("dragstart", handleDragStart);
-    li.addEventListener("dragover", handleDragOver);
-    li.addEventListener("dragleave", handleDragLeave);
-    li.addEventListener("drop", handleDrop);
-    li.addEventListener("dragend", handleDragEnd);
+      // DnD handlers
+      li.addEventListener("dragstart", handleDragStart);
+      li.addEventListener("dragover", handleDragOver);
+      li.addEventListener("dragleave", handleDragLeave);
+      li.addEventListener("drop", handleDrop);
+      li.addEventListener("dragend", handleDragEnd);
 
-    // ★ star
-    const star = document.createElement("i");
-    star.className = m.starred
-      ? "bi bi-star-fill star on"
-      : "bi bi-star-fill star off";
-    star.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      m.starred = !m.starred;
-      console.log(`star toggle id=${m.id} → ${m.starred}`);
-      // move starred to top / unstar to bottom
-      const idx = +li.dataset.index;
-      memos.splice(idx, 1);
-      if (m.starred) memos.unshift(m);
-      else memos.push(m);
-      await saveStorage(MEMO_KEY, memos);
-      renderListView();
+      // ★ star
+      const star = document.createElement("i");
+      star.className = m.starred
+        ? "bi bi-star-fill star on"
+        : "bi bi-star-fill star off";
+      star.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        m.starred = !m.starred;
+        console.log(`star toggle id=${m.id} → ${m.starred}`);
+        // move starred to top / unstar to bottom
+        const idx = +li.dataset.index;
+        memos.splice(idx, 1);
+        if (m.starred) memos.unshift(m);
+        else memos.push(m);
+        await saveStorage(MEMO_KEY, memos);
+        renderListView();
+      });
+      li.appendChild(star);
+
+      // title
+      const span = document.createElement("span");
+      span.className = "title";
+      span.textContent = m.title;
+      li.appendChild(span);
+
+      // archive-icon (just UI, no action)
+      const arch = document.createElement("i");
+      arch.className = "bi bi-archive-fill actions";
+      arch.title = "アーカイブへ移動";
+      arch.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        m.archived = true;
+        await saveStorage(MEMO_KEY, memos);
+        renderListView(); // 再描画で一覧から消える
+      });
+      li.appendChild(arch);
+
+      // click row → edit
+      li.addEventListener("click", () => renderInputForm(m.id));
+
+      ul.appendChild(li);
     });
-    li.appendChild(star);
-
-    // title
-    const span = document.createElement("span");
-    span.className = "title";
-    span.textContent = m.title;
-    li.appendChild(span);
-
-    // archive-icon (just UI, no action)
-    const arch = document.createElement("i");
-    arch.className = "bi bi-archive-fill actions";
-    li.appendChild(arch);
-
-    // click row → edit
-    li.addEventListener("click", () => renderInputForm(m.id));
-
-    ul.appendChild(li);
-  });
 
   console.log("renderListView: end");
 }
@@ -301,16 +333,28 @@ async function renderClipboardView() {
     });
     li.appendChild(ta);
 
-    // delete-archive button
+    /*─────────────────────────────────────────*/
+    /* ② renderClipboardView 内の「アーカイブ」 */
+    /*   アイコン・クリック処理を差し替え       */
+    /*─────────────────────────────────────────*/
+    // delete-archive button  ←★差し替え★
     const del = document.createElement("button");
     del.className = "clipboard-archive";
     del.innerHTML = '<i class="bi bi-archive-fill"></i>';
     del.addEventListener("click", async () => {
-      clips.splice(i, 1);
-      await saveStorage(CLIP_KEY, clips);
-      renderClipboardView();
+      /*--- アーカイブへ移動 ---*/
+      const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
+      await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
+
+      const arch = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
+      arch.push(removed); // ④ 末尾に追加
+      await saveStorage(CLIP_ARCH_KEY, arch); // ⑤ 保存（アーカイブを更新）
+
+      console.log("[CLIP] archived →", removed);
+      renderClipboardView(); // ⑥ 再描画
     });
     li.appendChild(del);
+    /*─────────────────────────────────────────*/
 
     ul.appendChild(li);
     // ensure correct initial height
@@ -401,7 +445,13 @@ async function renderInputForm(id) {
       console.log("update memo:", memos[idx]);
     } else {
       // add new
-      const newM = { id: Date.now(), title, content: body, starred };
+      const newM = {
+        id: Date.now(),
+        title,
+        content: body,
+        starred,
+        archived: false,
+      };
       memos.push(newM);
       console.log("add memo:", newM);
     }
@@ -464,39 +514,83 @@ function renderArchiveNav(type) {
 
 // Renders the actual archive list inside .memo-content
 async function renderArchiveList() {
-  console.log("renderArchiveList: start");
-  // apply 'archive' class to card for white background (CSS picks this up)
-  document.querySelector(".card-container").classList.add("archive");
+  console.log("renderArchiveList: start", archiveType);
 
-  // clear & fade-in
+  document.querySelector(".card-container").classList.add("archive");
   const content = document.querySelector(".memo-content");
   content.classList.remove("show");
   void content.offsetWidth;
   content.classList.add("show");
 
-  // load either memos or clips
-  const key = archiveType === "memo" ? MEMO_KEY : CLIP_KEY;
-  const items = await loadStorage(key);
+  /* 1) ストレージ読み込み */
+  const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY; // ★ 修正
+  const rawItems = await loadStorage(key);
+  const listData =
+    archiveType === "memo" ? rawItems.filter((m) => m.archived) : rawItems;
 
-  // build list
-  content.innerHTML = `<ul class="archive-list"></ul>`;
+  /* 2) HTML 骨格 */
+  content.innerHTML = `
+    <label class="select-all-label">
+      <input type="checkbox" id="chk-select-all" /> 全て選択する
+    </label>
+    <ul class="archive-list"></ul>`;
   const ul = content.querySelector(".archive-list");
-  items.forEach((it, idx) => {
+
+  /* 3) 行生成 */
+  listData.forEach((it, idx) => {
     const li = document.createElement("li");
-    // checkbox
+    li.className = "archive-item";
+
+    /* 左：チェック */
     const cb = document.createElement("input");
     cb.type = "checkbox";
+    cb.className = "arch-check";
     cb.dataset.index = idx;
     li.appendChild(cb);
-    // label
+
+    /* 中央：タイトル */
     const span = document.createElement("span");
-    span.textContent = archiveType === "memo" ? it.title : it;
+    span.className = "arch-title";
+    span.textContent = archiveType === "memo" ? it.title || "無題" : it;
     li.appendChild(span);
+
+    /* 右：復元ボタン */
+    const btn = document.createElement("button");
+    btn.className = "restore-btn";
+    btn.innerHTML = '<i class="bi bi-upload"></i>';
+    btn.title = "復元";
+    btn.addEventListener("click", async () => {
+      console.log("[ARCH] restore idx:", idx);
+
+      if (archiveType === "memo") {
+        /* MEMO: archived → false */
+        const memos = await loadStorage(MEMO_KEY);
+        const target = memos.find((m) => m.id === it.id);
+        if (target) target.archived = false;
+        await saveStorage(MEMO_KEY, memos);
+      } else {
+        /* CLIP: アーカイブ → アクティブへ移動 */
+        const act = await loadStorage(CLIP_KEY);
+        const arch = await loadStorage(CLIP_ARCH_KEY);
+        act.push(arch.splice(idx, 1)[0]);
+        await saveStorage(CLIP_KEY, act);
+        await saveStorage(CLIP_ARCH_KEY, arch);
+      }
+      renderArchiveList(); // 再描画
+    });
+    li.appendChild(btn);
+
     ul.appendChild(li);
   });
+
+  /* 4) 全選択チェック */
+  content.querySelector("#chk-select-all").onchange = (e) =>
+    ul
+      .querySelectorAll(".arch-check")
+      .forEach((c) => (c.checked = e.target.checked));
+
   console.log("renderArchiveList: end");
 }
-
 // Replace footer with Back & Delete-All for archive mode
 function renderArchiveFooter() {
   console.log("renderArchiveFooter: start");
@@ -506,19 +600,40 @@ function renderArchiveFooter() {
     <button class="footer-btn back-btn">戻る</button>
     <button class="footer-btn delete-all-btn"> 一括削除</button>
   `;
-  foot.style.display = "flex";
+  footer.style.display = "flex";
 
   // Back → go back to last mode (we’ll default to MEMO list)
-  foot.querySelector(".back-btn").addEventListener("click", () => {
+  footer.querySelector(".back-btn").addEventListener("click", () => {
+    // 1) Archive 表示を解除
     document.querySelector(".card-container").classList.remove("archive");
-    renderListView();
+    document.querySelector(".sub-archive-nav")?.remove();
+    footer.classList.remove("archive");
+
+    // 2) MEMO/CLIP ナビを復元してイベント再登録
+    const nav = document.querySelector(".card-nav");
+    nav.innerHTML = `
+     <button class="nav-btn" id="btn-memolist">MEMO一覧</button>
+     <button class="nav-btn" id="btn-clipboard">クリップボード</button>
+   `;
+    document
+      .getElementById("btn-memolist")
+      .addEventListener("click", renderListView);
+    document
+      .getElementById("btn-clipboard")
+      .addEventListener("click", renderClipboardView);
+
+    // 3) 画面遷移
+    if (archiveType === "memo") renderListView();
+    else renderClipboardView();
   });
   // Delete All → clear storage & re-render archive list
-  foot.querySelector(".delete-all-btn").addEventListener("click", async () => {
-    const key = archiveType === "memo" ? MEMO_KEY : CLIP_KEY;
-    await saveStorage(key, []);
-    renderArchiveList();
-  });
+  footer
+    .querySelector(".delete-all-btn")
+    .addEventListener("click", async () => {
+      const key = archiveType === "memo" ? MEMO_KEY : CLIP_KEY;
+      await saveStorage(key, []);
+      renderArchiveList();
+    });
   console.log("renderArchiveFooter: end");
 }
 

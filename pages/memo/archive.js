@@ -1,156 +1,188 @@
-// File: pages/memo/archive.js
-
+/pages/memo/archive.js
 "use strict";
 
-const MEMO_KEY = "memos";
-const CLIP_KEY = "clips";
-let archiveType = "memo"; // "memo" or "clip"
+/* ─────────────────────────────────────────────
+   Archive (アーカイブ/MEMO・クリップボード) モジュール
+   ほかの JS と衝突しないよう IIFE で包む
+──────────────────────────────────────────── */
+(() => {
+  /* ストレージキーは memo.js と同値に合わせる */
+  const MEMO_KEY = "memos";
+  const CLIP_KEY = "clips";
+  const CLIP_ARCH_KEY = "clips_arch";
+  /* memo or clip どちらを表示しているか */
+  let archiveType = "memo"; // "memo" | "clip"
 
-/** Promiseラッパー */
-function loadStorage(key) {
-  return new Promise((res) =>
-    chrome.storage.local.get([key], (o) => res(o[key] || []))
-  );
-}
-function saveStorage(key, arr) {
-  return new Promise((res) =>
-    chrome.storage.local.set({ [key]: arr }, () => res())
-  );
-}
-
-/** Archive モード開始（btn-archive に data-type="memo"/"clip" を付けておく） */
-function startArchiveMode(type) {
-  archiveType = type;
-  const card = document.querySelector(".card-container");
-
-  // 1) カード背景を切り替え
-  card.classList.add("archive");
-
-  // 2) サブナビを差し替え
-  let nav = document.querySelector(".sub-archive-nav");
-  if (!nav) {
-    nav = document.createElement("div");
-    nav.className = "sub-archive-nav";
-    nav.innerHTML = `
-      <div class="nav-btn" id="arch-memo">アーカイブ/MEMO</div>
-      <div class="nav-btn" id="arch-clip">アーカイブ/クリップボード</div>
-    `;
-    card.parentNode.insertBefore(nav, card);
-    // 切替リスナ
-    nav.querySelector("#arch-memo").addEventListener("click", () => {
-      archiveType = "memo";
-      renderArchiveList();
-      setArchiveNavActive();
-    });
-    nav.querySelector("#arch-clip").addEventListener("click", () => {
-      archiveType = "clip";
-      renderArchiveList();
-      setArchiveNavActive();
-    });
-  }
-  setArchiveNavActive();
-
-  // 3) リスト描画
-  renderArchiveList();
-
-  // 4) フッター描画
-  renderArchiveFooter();
-}
-
-/** サブナビの active 切り替え */
-function setArchiveNavActive() {
-  document.querySelectorAll(".sub-archive-nav .nav-btn").forEach((b) => {
-    b.classList.toggle(
-      "active",
-      (archiveType === "memo" && b.id === "arch-memo") ||
-        (archiveType === "clip" && b.id === "arch-clip")
+  /* ------------ Storage Helper -------------- */
+  const loadStorage = (key) =>
+    new Promise((res) =>
+      chrome.storage.local.get([key], (o) => res(o[key] || []))
     );
-  });
-}
 
-/** アーカイブリストを描画 */
-async function renderArchiveList() {
-  const key = archiveType === "memo" ? MEMO_KEY : CLIP_KEY;
-  const items = await loadStorage(key);
+  const saveStorage = (key, arr) =>
+    new Promise((res) =>
+      chrome.storage.local.set({ [key]: arr }, () => res())
+    );
 
-  let ul = document.querySelector(".archive-list");
-  if (!ul) {
-    ul = document.createElement("ul");
-    ul.className = "archive-list";
-    document.querySelector(".card-container .card").appendChild(ul);
+  /* ───────── アーカイブモード開始 ───────── */
+  function startArchiveMode(type = "memo") {
+    archiveType = type;
+
+    /* カードに archive クラスを付与 */
+    document.querySelector(".card-container").classList.add("archive");
+
+    /* ① サブナビを生成 or 更新 */
+    renderArchiveNav();
+
+    /* ② リスト本体を描画 */
+    renderArchiveList();
+
+    /* ③ アーカイブ用フッターに差し替え */
+    renderArchiveFooter();
   }
-  ul.innerHTML = "";
 
-  items.forEach((it, i) => {
+  /* ----------------------------------------- */
+  function renderArchiveNav() {
+    let nav = document.querySelector(".sub-archive-nav");
+    if (!nav) {
+      nav = document.createElement("div");
+      nav.className = "sub-archive-nav";
+      nav.innerHTML = `
+        <div class="nav-btn" id="arch-memo">アーカイブ/MEMO</div>
+        <div class="nav-btn" id="arch-clip">アーカイブ/クリップボード</div>
+      `;
+      document
+        .querySelector(".card-container")
+        .parentNode.insertBefore(nav, document.querySelector(".card-container"));
+      /* イベント登録は初回だけ */
+      nav.querySelector("#arch-memo").addEventListener("click", () => {
+        archiveType = "memo";
+        setArchiveNavActive(); // active 切替
+        renderArchiveList();
+      });
+      nav.querySelector("#arch-clip").addEventListener("click", () => {
+        archiveType = "clip";
+        setArchiveNavActive();
+        renderArchiveList();
+      });
+    }
+    setArchiveNavActive();
+  }
+
+  /* active クラス切替 */
+  function setArchiveNavActive() {
+    document.querySelectorAll(".sub-archive-nav .nav-btn").forEach((b) => {
+      b.classList.toggle(
+        "active",
+        (archiveType === "memo" && b.id === "arch-memo") ||
+          (archiveType === "clip" && b.id === "arch-clip")
+      );
+    });
+  }
+
+  /* ───────── リスト描画 ───────── */
+async function renderArchiveList() {
+  console.log("▶ renderArchiveList start", archiveType);
+
+  /* 1) 対象データ取得 */
+  const key   = archiveType === "memo" ? MEMO_KEY      : CLIP_ARCH_KEY;
+  const items = await loadStorage(key);
+  const list  =
+    archiveType === "memo" ? items.filter((m) => m.archived) : items;
+
+  /* 2) HTML 骨格 */
+  const content = document.querySelector(".memo-content");
+  content.innerHTML = `
+    <label class="select-all">
+      <input type="checkbox" class="arch-select-all"> 全て選択する
+    </label>
+    <ul class="archive-list"></ul>`;
+  const ul = content.querySelector(".archive-list");
+
+  /* 全選択 */
+  content.querySelector(".arch-select-all").onchange = (e) =>
+    ul.querySelectorAll(".arch-check").forEach((c) => (c.checked = e.target.checked));
+
+  /* 3) 行生成 */
+  list.forEach((it, idx) => {
     const li = document.createElement("li");
-    // チェックボックス
+    li.className = "archive-item";
+
+    /* 左：チェック */
     const cb = document.createElement("input");
     cb.type = "checkbox";
-    cb.dataset.index = i;
+    cb.className = "arch-check";
+    cb.dataset.index = idx;
     li.appendChild(cb);
-    // タイトル
+
+    /* 中：タイトル／本文 */
     const span = document.createElement("span");
-    span.textContent = archiveType === "memo" ? it.title : it;
+    span.className = "arch-title";
+    span.textContent =
+      archiveType === "memo" ? it.title || "無題" : it;
     li.appendChild(span);
-    // 復元ボタン
+
+    /* 右：復元ボタン */
     const btn = document.createElement("button");
     btn.className = "restore-btn";
-    btn.textContent = "↩︎";
-    btn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      items.splice(i, 1);
-      await saveStorage(key, items);
-      renderArchiveList();
-    });
+    btn.innerHTML = '<i class="bi bi-upload"></i>';
+    btn.title = "復元";
+    btn.onclick = async () => {
+      console.log("[ARCH] restore idx=", idx, "type=", archiveType);
+
+      if (archiveType === "memo") {
+        /* MEMO: archived → false */
+        const memos = await loadStorage(MEMO_KEY);
+        const target = memos.find((m) => m.id === it.id);
+        if (target) target.archived = false;
+        await saveStorage(MEMO_KEY, memos);
+      } else {
+        /* CLIP: アーカイブ配列 → 現役配列へ移動 */
+        const act  = await loadStorage(CLIP_KEY);
+        const arch = await loadStorage(CLIP_ARCH_KEY);
+        act.push(arch.splice(idx, 1)[0]);           // ① act に追加 & arch から削除
+        await saveStorage(CLIP_KEY, act);           // ② act 保存
+        await saveStorage(CLIP_ARCH_KEY, arch);     // ③ arch 保存
+      }
+      renderArchiveList();                          // ④ 再描画
+    };
     li.appendChild(btn);
 
     ul.appendChild(li);
   });
+  console.log("▶ renderArchiveList end");
 }
+/*─────────────────────────────────────────*/
 
-/** アーカイブモード用フッターを描画 */
-function renderArchiveFooter() {
-  const footer = document.querySelector(".memo-footer");
-  // const footer = document.querySelector(".bottom-footer");
-  footer.classList.add("archive");
-  footer.innerHTML = `
-    <button class="footer-btn back-btn">
-      <i class="bi bi-arrow-left-circle"></i> 戻る
-    </button>
-    <button class="footer-btn delete-all-btn">
-      <i class="bi bi-trash"></i> 一括削除
-    </button>
-  `;
+  /* ───────── フッター描画 ───────── */
+  function renderArchiveFooter() {
+    const footer = document.querySelector(".memo-footer");
+    footer.classList.add("archive");
+    footer.style.display = "flex";
+    footer.innerHTML = `
+      <button class="footer-btn back-btn">
+        <i class="bi bi-arrow-left-circle"></i> 戻る
+      </button>
+      <button class="footer-btn delete-all-btn">
+        <i class="bi bi-trash"></i> 一括削除
+      </button>`;
 
-  // ↓ここを修正（archiveType に応じて正しく呼び出し）
-  footer.querySelector(".back-btn").addEventListener("click", () => {
-    // 1) Archiveモードを解除
-    document.querySelector(".card-container").classList.remove("archive");
-    document.querySelector(".sub-archive-nav")?.remove();
-    footer.classList.remove("archive");
-    // 2) 元の画面に戻す
-    if (archiveType === "memo") {
-      renderListView();
-    } else {
-      renderClipboardView();
-    }
-  });
+    /* 戻る */
+    footer.querySelector(".back-btn").onclick = () => {
+      document.querySelector(".card-container").classList.remove("archive");
+      document.querySelector(".sub-archive-nav")?.remove();
+      footer.classList.remove("archive");
+      renderListView(); // MEMO一覧に戻す
+    };
 
-  // 一括削除ボタンのロジックはそのまま
-  footer
-    .querySelector(".delete-all-btn")
-    .addEventListener("click", async () => {
-      const key = archiveType === "memo" ? MEMO_KEY : CLIP_KEY;
+    /* 一括削除 */
+    footer.querySelector(".delete-all-btn").onclick = async () => {
+      const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY; // ★変更
       await saveStorage(key, []);
       renderArchiveList();
-    });
-}
+    };
+  }
 
-// DOMContentLoaded で archive-toggle ボタンを拾って startArchiveMode をバインド
-window.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("#btn-archive").forEach((btn) => {
-    // memo.js の setFooter で生成される <button id="btn-archive">
-    btn.addEventListener("click", () => startArchiveMode("memo"));
-  });
-  // もし クリップボード画面にも archive ボタンを出したいなら同様に data-type="clip" としてバインド
-});
+  /* Public API として window へ */
+  window.startArchiveMode = startArchiveMode;
+})();
