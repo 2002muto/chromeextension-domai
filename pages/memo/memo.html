@@ -1,0 +1,58 @@
+<!-- File: pages/memo/memo.html -->
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Memo</title>
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap/css/bootstrap.min.css"
+    />
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="memo.css" />
+    <link rel="stylesheet" href="archive.css" />
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap-icons/bootstrap-icons.css"
+    />
+  </head>
+  <body>
+    <!-- 共通ヘッダー -->
+    <header>
+      <a href="memo.html" class="nav-btn active" id="btn-memo">MEMO</a>
+      <a href="../prompt/prompt.html" class="nav-btn" id="btn-prompt">PROMPT</a>
+      <a href="../ai/ai.html" class="nav-btn" id="btn-ai">AI</a>
+      <a href="../setting/setting.html" class="nav-btn" id="btn-setting">
+        <i class="bi bi-gear-fill"></i>
+      </a>
+    </header>
+
+    <!-- サブナビ -->
+    <div class="card-nav">
+      <button class="nav-btn active" id="btn-memolist">MEMO一覧</button>
+      <button class="nav-btn" id="btn-clipboard">クリップボード</button>
+    </div>
+
+    <!-- カード状背景 -->
+    <div class="card-container">
+      <div class="memo-content"></div>
+    </div>
+
+    <!-- フッター（常にカードの下に追従） -->
+    <footer class="memo-footer">
+      <button class="footer-btn">
+        <i class="bi bi-lock-fill"></i> 暗号化フォルダ
+      </button>
+      <button class="footer-btn">
+        <i class="bi bi-archive-fill"></i> アーカイブ
+      </button>
+    </footer>
+
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="memo.js"></script>
+    <script src="archive.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+  </body>
+</html>

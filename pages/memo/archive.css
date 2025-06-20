@@ -1,0 +1,140 @@
+/* File: pages/memo/archive.css */
+
+/* カードを白背景に切り替える */
+.card-container.archive {
+  /* 通常モードの背景色 */
+  background: #2d3748;
+  /* 通常モードのシャドウ */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* サブナビ：アーカイブ/MEMO ⇔ クリップ */
+.sub-archive-nav {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+.sub-archive-nav .nav-btn {
+  flex: 1;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+.sub-archive-nav .nav-btn.active {
+  background: #2b6cb0;
+  color: white;
+}
+
+/* pages/memo/archive.css */
+
+/* ───────────────────────────────
+   アーカイブリスト全体
+──────────────────────────────── */
+.archive-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ───────────────────────────────
+   各行（カード）
+──────────────────────────────── */
+/* File: pages/memo/archive.css */
+/* --- アーカイブ行（3 カラムレイアウト） --- */
+.archive-item {
+  display: flex; /* 横並び */
+  align-items: center; /* 垂直中央 */
+  padding: 12px 16px;
+  gap: 12px; /* 左チェックとタイトルの間 */
+  border-radius: 6px;
+  background: linear-gradient(90deg, #515b6e, #3f4656);
+  box-shadow: 0 0 4px #0004 inset;
+}
+
+/* 左：チェックボックス */
+.archive-item .arch-check {
+  flex: 0 0 24px; /* 幅固定 24px */
+  height: 24px;
+  accent-color: #ccc;
+}
+
+/* 中央：タイトル */
+.archive-item .arch-title {
+  flex: 1 1 auto; /* 余白をすべて占める */
+  text-align: center; /* 中央寄せ */
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 右：アップロード（復元）アイコン */
+.archive-item .restore-btn {
+  flex: 0 0 32px; /* 幅固定 32px */
+  margin-left: auto; /* 右端に押し出す */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: #06c94a;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.archive-item .restore-btn:hover {
+  filter: brightness(1.1);
+}
+.archive-item .restore-btn i {
+  font-size: 1rem;
+  color: #fff;
+}
+
+/* File: pages/memo/archive.css */
+
+/* フッターを固定し、2つの大きなボタンを並べる */
+.bottom-footer.archive {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #2d3748;
+  box-sizing: border-box;
+}
+
+/* フッターボタン共通 */
+.bottom-footer.archive .footer-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.25s;
+  background: #910002;
+}
+.bottom-footer.archive .footer-btn:hover {
+  filter: brightness(1.2);
+}
+
+/* 戻るボタン：ダークグラデ */
+.bottom-footer.archive .back-btn {
+  /* background: linear-gradient(90deg, #424242, #272727); */
+  background: #910002;
+}
+
+/* アーカイブモード時のフッター（一括削除ボタン）の背景を #910002 にする */
+.memo-footer.archive .delete-all-btn {
+  background: #910002;
+}

@@ -1,0 +1,103 @@
+/* File: pages/setting/setting.css */
+
+/* ■ カード状コンテナ: 設定内容全体を囲む */
+.setting-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #2d3748;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+/* show が付いたらフェードイン＆スライドアップ */
+.setting-card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* ■ コンテナ間の余白確保 */
+.setting-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* ■ メニュー項目 */
+.setting-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.setting-btn {
+  background: linear-gradient(90deg, #666666, #3f3f3f);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: filter 0.25s;
+}
+.setting-btn:hover,
+.setting-btn.active {
+  filter: brightness(1.2);
+}
+
+/* ■ 詳細パネル */
+.setting-detail {
+  width: 100%;
+}
+.detail-panel {
+  background: #1a202c;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 6px;
+  opacity: 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.detail-panel.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.detail-panel a.donation-link {
+  color: #bdff61;
+  text-decoration: none;
+}
+.detail-panel a.donation-link:hover {
+  text-decoration: underline;
+}
+
+/* ■ カードの下に通常フローで配置するフッター */
+.bottom-footer {
+  position: static; /* 固定解除 */
+  display: flex;
+  gap: 8px;
+  margin: 24px 8px 16px; /* カード下との間隔 */
+  /* padding-bottom: 16px; 下部に余裕 */
+  background: transparent;
+}
+.footer-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #424242, #272727);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.25s;
+}
+.footer-btn i {
+  margin-right: 6px;
+}
+.footer-btn:hover {
+  filter: brightness(1.2);
+}

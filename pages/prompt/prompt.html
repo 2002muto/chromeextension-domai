@@ -1,0 +1,46 @@
+<!-- File: pages/memo/memo.html -->
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>プロンプト</title>
+
+    <!-- 1) Bootstrap 本体 CSS -->
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap/css/bootstrap.min.css"
+    />
+
+    <!-- 2) Bootstrap Icons CSS -->
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap-icons/bootstrap-icons.css"
+    />
+
+    <!-- 3) 共通スタイル（グラデ＆nav-btn） -->
+    <link rel="stylesheet" href="../../style.css" />
+
+    <!-- 4) ページ固有スタイル -->
+    <link rel="stylesheet" href="memo.css" />
+  </head>
+  <body>
+    <header>
+      <a href="../memo/memo.html" class="nav-btn" id="btn-memo"> MEMO</a>
+      <a href="prompt.html" class="nav-btn active" id="btn-prompt">PROMPT</a>
+      <a href="../ai/ai.html" class="nav-btn" id="btn-ai"> AI</a>
+      <a href="../setting/setting.html" class="nav-btn" id="btn-setting">
+        <i class="bi bi-gear-fill"></i>
+      </a>
+    </header>
+
+    <main>
+      <h1>プロンプト</h1>
+    </main>
+
+    <!-- 5) Bootstrap 本体 JS (バンドル) -->
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 6) ページ固有スクリプト -->
+    <script src="prompt.js"></script>
+  </body>
+</html>

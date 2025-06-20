@@ -1,0 +1,82 @@
+/* File: style.css */
+
+/* ① ヘッダー全体の上下 padding を少し増やす */
+header {
+  display: flex;
+  align-items: center;
+  padding: 32px 8px 0; /* 上32px, 左右8px, 下0 */
+  gap: 8px;
+  /* background: #001f3f; */
+}
+
+/* サイドパネル全体の背景色 */
+body {
+  background-color: #314559;
+  margin: 0; /* 余白リセット */
+  min-height: 100vh; /* コンテンツ長に合わせて伸びる */
+}
+
+/* 全体の縦横スクロールバーを非表示に */
+/* body,
+.setting-container {
+  Firefox
+  scrollbar-width: none;
+  IE10+
+  -ms-overflow-style: none;
+}
+body::-webkit-scrollbar,
+.setting-container::-webkit-scrollbar {
+  Chrome, Safari, Opera
+  display: none;
+} */
+
+/* ② nav-btn 共通：未選択時は #555555、縦 padding も増やす */
+.nav-btn {
+  display: flex; /* フレックスで中央揃え */
+  flex: 1 0 auto;
+  justify-content: center; /* 横中央 */
+  padding: 8px 0; /* もともと6px→8pxに */
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #555555; /* 未選択時 */
+  transition: filter 0.25s, transform 0.25s;
+  text-decoration: none; /* 下線を消す */
+}
+
+.nav-btn:link,
+.nav-btn:visited {
+  text-decoration: none; /* リンク状態でも下線なし */
+}
+.nav-btn:hover {
+  filter: brightness(1.2);
+  transform: translateY(-2px);
+}
+
+/* ③ 選択中(.active)だけグラデを書く */
+/* 例：HTMLで <div class="nav-btn active" id="btn-memo"> とする */
+#btn-memo.active {
+  background: linear-gradient(90deg, #078ab9, #024881);
+}
+#btn-prompt.active {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+#btn-ai.active {
+  background: linear-gradient(90deg, #af008f, #6b00d9);
+}
+#btn-setting.active {
+  background: linear-gradient(90deg, #fff04b, #99902d);
+}
+
+/* ④ 設定ボタンだけ固定幅に */
+#btn-setting {
+  /* grow:0, shrink:0, basis:48px */
+  flex: 0 0 48px;
+  width: 48px;
+  flex: 0 0 48px !important;
+}
+
+/* ⑤ main との間にマージンを入れる */
+main {
+  margin-top: 16px; /* ヘッダーとのスペース */
+}
