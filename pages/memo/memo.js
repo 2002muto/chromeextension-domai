@@ -311,14 +311,24 @@ async function renderClipboardView() {
     li.addEventListener("dragleave", handleClipDragLeave);
     li.addEventListener("drop", handleClipDrop);
     li.addEventListener("dragend", handleClipDragEnd);
-
-    // copy button
+    // 挿入ボタン（Arrow-left-square-fill）
     const copy = document.createElement("button");
     copy.className = "clipboard-copy";
     copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
-    copy.addEventListener("click", () => console.log("copy:", txt));
-    li.appendChild(copy);
+    copy.addEventListener("click", () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs.length) return;
+        chrome.tabs
+          .sendMessage(tabs[0].id, {
+            type: "INSERT_CLIP",
+            text: txt, // その行のテキスト
+          })
+          .catch((err) => console.warn("sendMessage failed:", err));
+        console.log("copy:", txt);
+      });
+    });
 
+    li.appendChild(copy);
     // auto-resize textarea
     const ta = document.createElement("textarea");
     ta.className = "clipboard-textarea";
@@ -630,7 +640,7 @@ function renderArchiveFooter() {
   footer
     .querySelector(".delete-all-btn")
     .addEventListener("click", async () => {
-      const key = archiveType === "memo" ? MEMO_KEY : CLIP_KEY;
+      const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY;
       await saveStorage(key, []);
       renderArchiveList();
     });

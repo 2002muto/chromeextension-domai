@@ -2,16 +2,15 @@
   "manifest_version": 3,
   "name": "domai Extension",
   "version": "1.0.0",
-  "permissions": ["storage", "activeTab", "scripting", "sidePanel"],
-  "host_permissions": ["<all_urls>"],
-  "action": {
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    },
-    "default_title": "Domai"
-  },
+  "permissions": ["sidePanel", "storage", "scripting", "activeTab", "tabs"],
+  "host_permissions": ["https://chat.openai.com/*", "<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"],
+      "run_at": "document_end"
+    }
+  ],
   "side_panel": {
     "default_path": "pages/memo/memo.html",
     "open_panel_on_action_click": true
