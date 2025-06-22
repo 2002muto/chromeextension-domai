@@ -435,11 +435,15 @@ async function renderInputForm(id) {
   // animate form
   content.classList.remove("clipboard-mode");
   content.classList.add("edit-mode");
-  [card, content].forEach((el) => {
-    el.classList.remove("show");
-    void el.offsetWidth;
-    el.classList.add("show");
-  });
+
+  /* ▼▼ 追加：カード本体にも“下からふわっ”アニメ ▼▼ */
+  card.classList.remove("animate");
+  void card.offsetWidth; // 1フレーム reflow
+  card.classList.add("animate");
+
+  content.classList.remove("show");
+  void content.offsetWidth;
+  content.classList.add("show");
 
   // star toggle in form
   starIcon.dataset.starred = (starIcon.dataset.starred === "true").toString();
