@@ -1,6 +1,12 @@
-/* File: pages/prompt/prompt.css */
+/* // File: pages/prompt/prompt.css */
+/*═══════════════════════════════════════════════════════════════
+  PROMPT 画面  ─ 編集 / 一覧 共通スタイル
+  2024-06 リファクタ – コメント付きフルコード
+═══════════════════════════════════════════════════════════════*/
 
-/* ─── ＋新しいプロンプトボタン ─── */
+/*--------------------------------------------------------------
+  A. ＋ 新しいプロンプトを追加（一覧ビュー）
+--------------------------------------------------------------*/
 .btn-add-prompt {
   width: 100%;
   padding: 12px;
@@ -17,14 +23,16 @@
   filter: brightness(1.1);
 }
 
-/* ─── プロンプト一覧（memo-item と同じ質感） ─── */
+/*--------------------------------------------------------------
+  B. プロンプト一覧カード
+--------------------------------------------------------------*/
 .prompt-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .prompt-item {
   display: flex;
@@ -32,21 +40,21 @@
   gap: 12px;
   padding: 12px;
   border-radius: 6px;
-  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
+  background: linear-gradient(90deg, #4a4d58, #363940);
+  border: 1px solid #ffffff0f;
 }
-/* 左：スター */
+/* 左：スターアイコン */
 .prompt-item .star {
   font-size: 1.2rem;
-  margin-right: 12px;
   cursor: pointer;
 }
 .prompt-item .star.off {
   color: #eeeeee;
-} /* グレー（未スター）*/
+}
 .prompt-item .star.on {
   color: #f2c533;
-} /* ゴールド（スター済）*/
-/* タイトル */
+}
+/* 中央：タイトル */
 .prompt-title {
   flex: 1;
   color: #e2e8f0;
@@ -57,47 +65,224 @@
 /* 右：一括出力 & アーカイブ */
 .prompt-action {
   background: #06c94a;
+  color: #fff;
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
-  color: #fff;
   cursor: pointer;
 }
 .prompt-archive {
-  background: linear-gradient(90deg, #424242, #272727);
+  background: #3b3b3b;
+  color: #fff;
   border: none;
   padding: 8px;
   border-radius: 4px;
-  color: #fff;
   cursor: pointer;
 }
 .prompt-action:hover,
 .prompt-archive:hover {
   filter: brightness(1.15);
 }
-/* pages/prompt/prompt.css（追記分のみ） */
 
-/*―― 編集用フッターのカスタム色 ――*/
+/*--------------------------------------------------------------
+  C. 編集ビュー（プロンプト編集中）
+--------------------------------------------------------------*/
+
+/* ① カード外枠 */
+.edit-card {
+  background: linear-gradient(180deg, #1f2835 0%, #19212f 100%);
+  border: 1px solid #ffffff14;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+/* ② 共通ラベル */
+.form-label {
+  color: #d0d5e0;
+  font-weight: 600;
+}
+
+/* ③ タイトル ＜input＞ & 各 textarea
+      - 背景 #3A3F4A
+      - 白文字 #FFFFFF
+      - Bootstrap の既定色を強制上書きするために !important
+----------------------------------------------------------------*/
+#e-title,
+.edit-card input.form-control,
+.edit-card textarea.form-control,
+.prompt-field textarea.form-control,
+textarea.field-text,
+.field-textarea {
+  background: #3a3f4a !important; /* rgb(58,63,74) */
+  border: 1px solid #4a5163 !important;
+  color: #ffffff !important; /* 白文字 */
+}
+#e-title::placeholder,
+.field-textarea::placeholder {
+  color: #707987; /* 薄グレー */
+}
+
+/* ④ プロンプトブロック */
+.prompt-field {
+  position: relative;
+  padding-bottom: 18px; /* 下余白 */
+  margin-bottom: 14px; /* ブロック間余白 */
+  border-bottom: 1px dashed #3d4556; /* 区切り線 */
+}
+
+/* ON/OFF スイッチとラベル */
+.form-switch .form-check-input {
+  width: 40px;
+  height: 20px;
+  cursor: pointer;
+}
+/*══════════════ トグルスイッチの配色カスタム ══════════════*/
+/* ① スイッチ本体 (チェック時: 緑) */
+.form-switch .form-check-input:checked {
+  background-color: #00a31e;
+  border-color: #00a31e;
+}
+/* ② ラベル文字色 */
+.toggle-label.on {
+  color: #00a31e;
+} /* 有効  → 緑 */
+.toggle-label.off {
+  color: #9ea5b3;
+} /* 無効  → グレー */
+.text-success {
+  color: #0fff17 !important;
+}
+.text-muted {
+  color: #7e8696 !important;
+}
+/* ≡≡ 複製ボタン (Copy) を #0FFF17 にカスタム ≡≡ */
+.btn-dup {
+  background: #00a31e !important; /* 通常時：緑 */
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600;
+  padding: 8px 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px #0003;
+  transition: background 0.15s;
+}
+.btn-dup:hover,
+.btn-dup:focus {
+  background: #1aff2e !important; /* ホバー時：15% 明るい緑 */
+  color: #ffffff !important;
+}
+.btn-dup i {
+  pointer-events: none;
+}
+
+/*══════════════ 削除ボタン（赤縁アイコン） ══════════════*/
+.btn-remove-field {
+  /* position: absolute;
+  right: -9px;
+  top: -9px; */
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ff3344;
+  background: transparent;
+  color: #ff3344;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.btn-remove-field i {
+  pointer-events: none;
+}
+.btn-remove-field:hover {
+  background: #ff3344;
+  color: #fff;
+}
+
+/*══════════════ 行ヘッダーの余白調整 ══════════════*/
+.pf-head strong {
+  font-weight: 600;
+  color: #e8ecf2;
+}
+
+/* ⑤ ＋ プロンプトを追加ボタン */
+.btn-add-field {
+  background: #7b7a7a; /* 指定色 */
+  color: #fff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.btn-add-field:hover {
+  filter: brightness(1.1);
+}
+
+/*--------------------------------------------------------------
+  D. 編集ビュー用フッター
+--------------------------------------------------------------*/
 .footer-btn.btn-back-edit {
+  flex: 1;
+  padding: 14px 0;
   background: #303030;
   color: #fff;
-  padding: 10px 16px;
-  border-radius: 6px;
 }
 .footer-btn.btn-save-edit {
-  background: #00a31e; /* 指定色 */
+  flex: 1;
+  padding: 14px 0;
+  background: #00a31e;
   color: #fff;
-  padding: 10px 32px;
-  border-radius: 6px;
 }
 .footer-btn i {
   margin-right: 4px;
 }
 
-/* フォームヘッダーのレイアウト */
+/*--------------------------------------------------------------
+  E. フォームヘッダー（タイトル行）
+--------------------------------------------------------------*/
 .form-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 0 8px 0;
+  margin: 16px 16px 8px;
 }
+/*════════════════════════════════════════════
+  🔲 フォーカス時の枠線を “白” に固定
+  （Bootstrap の青い枠線＋シャドウを無効化）
+════════════════════════════════════════════*/
+.edit-card input.form-control:focus,
+.edit-card textarea.form-control:focus,
+#e-title:focus,
+.field-textarea:focus {
+  border-color: #ffffff !important; /* ← 枠線を白に */
+  box-shadow: none !important; /* ← 青いアウトラインを消す */
+}
+
+/*════════════ ドラッグ＆ドロップ視覚効果 ════════════*/
+/* 握っている要素 */
+/* 掴んでいる要素 */
+.dragging {
+  opacity: 0.6;
+  transform: scale(0.96);
+  cursor: grabbing !important;
+  box-shadow: 0 4px 12px #0006;
+}
+/* ドロップ候補だけ点線 */
+.drag-over {
+  outline: 2px dashed #7b8799;
+  outline-offset: -4px;
+}
+
+/* 掴めるカーソル */
+.prompt-item,
+.prompt-field {
+  cursor: grab;
+}
+
+/*--------------------------------------------------------------
+  ここより下は将来の追加スタイル用に空けておく
+--------------------------------------------------------------*/
