@@ -345,61 +345,76 @@ function renderEdit(idx, isNew = false) {
  *  5.  実行ビュー
 ==============================================================*/
 function renderRun(idx) {
-  const card = $(".card-container"),
-    body = $(".memo-content"),
-    footer = $(".memo-footer"),
-    root = card.parentNode;
-  const obj = prompts[idx];
+  console.log("[renderRun] idx =", idx);
 
-  /* header */
+  /* ── 共通要素 ────────────────────────────────*/
+  const card = $(".card-container");
+  const body = $(".memo-content");
+  const footer = $(".memo-footer");
+  const root = card.parentNode;
+  const obj = prompts[idx]; // 選択したプロンプトオブジェクト
+
+  /* ── ヘッダー（タイトル + 編集ボタン） ──────────────────*/
   root.querySelector(".form-header")?.remove();
-  const h = ce(
+  const header = ce(
     "div",
-    "form-header",
+    "form-header d-flex justify-content-between align-items-center mb-2 px-2",
     `
-    <h2 class="fw-bold fs-4 mb-0">${obj.title}</h2>
-    <button class="btn btn-success btn-sm px-3"><i class="bi bi-pencil-fill me-1"></i>編集</button>`
+      <h2 class="fw-bold fs-4 mb-0">${obj.title}</h2>
+      <button class="btn btn-success btn-sm px-3">
+        <i class="bi bi-pencil-fill me-1"></i> 編集
+      </button>`
   );
-  h.querySelector("button").onclick = () => {
-    h.remove();
-    renderEdit(idx);
+  header.querySelector("button").onclick = () => {
+    header.remove();
+    renderEdit(idx); // 編集ビューへ戻る
   };
-  root.insertBefore(h, card);
+  root.insertBefore(header, card);
 
-  /* footer */
+  /* ── フッター ──────────────────────────────────*/
   footer.innerHTML = `
-    <button class="footer-btn btn-back-run"><i class="bi bi-caret-left-fill"></i> 戻る</button>
-    <button class="footer-btn btn-history"><i class="bi bi-list"></i> 実行履歴</button>`;
-  $(".btn-back-run", footer).onclick = () => {
-    h.remove();
+    <button class="footer-btn btn-back-run">
+      <i class="bi bi-caret-left-fill"></i> 戻る
+    </button>
+    <button class="footer-btn btn-history">
+      <i class="bi bi-list"></i> 実行履歴
+    </button>`;
+  $(".btn-back-run").onclick = () => {
+    header.remove();
     renderList();
   };
-  $(".btn-history", footer).onclick = () => console.log("履歴画面は後日");
+  $(".btn-history").onclick = () => console.log("[TODO] 履歴画面");
 
-  /* body */
+  /* ── 本体 ──────────────────────────────────────*/
   body.innerHTML = `
     <div class="prompt-run-box">
       ${obj.fields.map((f, i) => block(i + 1, f)).join("")}
-      <button class="btn-exec w-100 mt-3" style="background:#00A31E;color:#fff;">一括入力</button>
+      <button class="btn-exec w-100 mt-3"
+              style="background:#00A31E;color:#fff;">一括入力</button>
+
       <div class="form-check form-switch mt-3">
-        <input class="form-check-input" type="checkbox" id="hist-sw" checked>
-        <label class="form-check-label text-success" for="hist-sw">履歴を保存</label>
+        <input id="hist-sw" class="form-check-input" type="checkbox" checked>
+        <label for="hist-sw" class="form-check-label text-success">
+          履歴を保存
+        </label>
       </div>
     </div>`;
-  fx(card, body);
+  fx(card, body); // アニメ
 
-  /* 個別 COPY */
-  body.querySelectorAll(".btn-copy").forEach((b, i) => {
-    b.onclick = () =>
-      sendToFocused(
-        `${obj.fields[i].text}\n${
-          body.querySelectorAll(".extra")[i].value
-        }`.trim()
-      );
+  /*──────────────── 個別 COPY ────────────────────*/
+  body.querySelectorAll(".btn-copy").forEach((btn) => {
+    btn.onclick = () => {
+      const i = +btn.dataset.idx; // 対応フィールドindex
+      const txt = `${obj.fields[i].text}\n${
+        body.querySelectorAll(".extra")[i].value
+      }`.trim();
+      sendToFocused(txt);
+      console.log("[COPY] prompt", i + 1, "sent");
+    };
   });
 
-  /* 一括入力 */
-  $(".btn-exec", body).onclick = async () => {
+  /*──────────────── 一括入力 ────────────────────*/
+  $(".btn-exec").onclick = async () => {
     const txt = obj.fields
       .map((f, i) => {
         if (!f.on) return "";
@@ -408,7 +423,9 @@ function renderRun(idx) {
       })
       .filter(Boolean)
       .join("\n\n");
+
     sendToFocused(txt);
+    console.log("[EXEC] batch sent");
 
     if ($("#hist-sw").checked) {
       runs.push({
@@ -422,26 +439,34 @@ function renderRun(idx) {
     }
   };
 
+  /*────────────── 内部ヘルパ ──────────────*/
   function block(no, f) {
+    /* 見出し + COPY ボタン */
     return `
       <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <strong>プロンプト${no}</strong>
-          <button class="btn btn-outline-light btn-sm btn-copy"><i class="bi bi-clipboard"></i> COPY</button>
+          <strong>プロンプト ${no}</strong>
+          <button class="btn-copy" data-idx="${no - 1}">
+            <i class="bi bi-copy"></i> COPY
+          </button>
         </div>
+
         <p class="mb-2" style="white-space:pre-line;">${f.text}</p>
-        <textarea class="form-control extra" rows="3" placeholder="プロンプト追加入力（都度）"></textarea>
+
+        <textarea rows="3"
+                  class="form-control extra"
+                  placeholder="プロンプト追加入力（都度）"></textarea>
       </div>`;
   }
 
+  /* Active フォーカス中の textarea/input へ文字列を送る  */
   function sendToFocused(text) {
-    chrome.tabs.query({ active: true, currentWindow: true }, (t) => {
-      if (!t.length) return;
-      chrome.tabs.sendMessage(t[0].id, { type: "INSERT_CLIP", text });
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs.length) return;
+      chrome.tabs.sendMessage(tabs[0].id, { type: "INSERT_CLIP", text });
     });
   }
 }
-
 /* ━━━━━━━━━━━━━━━ 6. DOM helper ━━━━━━━━━━━━━━━ */
 function ce(tag, cls = "", html = "") {
   const e = document.createElement(tag);
