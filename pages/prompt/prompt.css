@@ -286,3 +286,59 @@ textarea.field-text,
 /*--------------------------------------------------------------
   ここより下は将来の追加スタイル用に空けておく
 --------------------------------------------------------------*/
+.memo-footer .btn-history {
+  background: #eeeeee !important; /* 指定色 */
+  color: #000 !important; /* 黒文字 */
+  border: none;
+}
+.memo-footer .btn-history:hover {
+  filter: brightness(0.95); /* 軽いホバー効果 */
+}
+
+.form-header h2 {
+  color: #ffffff !important;
+} /* タイトル */
+.prompt-run-box strong {
+  color: #ffffff !important;
+} /* プロンプトn */
+.prompt-run-box textarea {
+  /* 追加入力エリア */
+  background: #3a3f4a !important; /* 指定カラー */
+  color: #ffffff !important; /* 白文字で可読性確保 */
+  border: 1px solid #4a5163 !important;
+}
+
+.prompt-run-box p {
+  color: #ffffff !important; /* 白文字で統一 */
+}
+
+.btn-copy {
+  background: none !important; /* 背景を透明に */
+  border: none !important; /* 枠線を除去   */
+  color: #ffffff !important; /* アイコンも文字も白 */
+  padding: 0; /* 余白リセット */
+  display: inline-flex;
+  align-items: center;
+  gap: 2px; /* アイコンと文字を詰める */
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-copy:hover {
+  opacity: 0.8;
+} /* 軽いホバー効果 */
+
+.btn-copy i {
+  pointer-events: none;
+} /* アイコンクリックもボタン扱い */
+
+.btn-edit {
+  background: #00a31e !important; /* 指定色 */
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  transition: filter 0.15s;
+}
+.btn-edit:hover {
+  filter: brightness(1.1);
+}
