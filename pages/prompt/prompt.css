@@ -331,3 +331,14 @@ textarea.field-text,
 .btn-copy i {
   pointer-events: none;
 } /* アイコンクリックもボタン扱い */
+
+.btn-edit {
+  background: #00a31e !important; /* 指定色 */
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  transition: filter 0.15s;
+}
+.btn-edit:hover {
+  filter: brightness(1.1);
+}

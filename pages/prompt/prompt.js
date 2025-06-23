@@ -361,7 +361,7 @@ function renderRun(idx) {
     "form-header d-flex justify-content-between align-items-center mb-2 px-2",
     `
       <h2 class="fw-bold fs-4 mb-0">${obj.title}</h2>
-      <button class="btn btn-success btn-sm px-3">
+      <button class="btn btn-edit btn-sm px-3">
         <i class="bi bi-pencil-fill me-1"></i> 編集
       </button>`
   );
