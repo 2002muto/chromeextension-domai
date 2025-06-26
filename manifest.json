@@ -8,7 +8,9 @@
     {
       "matches": ["<all_urls>"],
       "js": ["contentScript.js", "edgeSensor.js"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames": true,
+      "match_about_blank": true
     }
   ],
   "side_panel": {

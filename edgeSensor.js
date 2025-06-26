@@ -1,36 +1,42 @@
-// edgeSensor.js
+// edgeSensor.js  v3  (Left & Right sensors)
 // -------------------------------------------------------------
-// ページ右端 4px 幅のセンサー領域を生成し、マウスが 300ms 滞在すると
-// background.js へ {type:"OPEN_PANEL"} を送信して sidePanel を表示。
+// ① 画面左右端 4px 幅のセンサーを 2 本配置
+// ② 300ms 滞在で background へ {type:"OPEN_PANEL", side:"left|right"} を送信
 // -------------------------------------------------------------
 (() => {
   console.log("[edgeSensor] injected");
 
-  /* 1. センサー DIV を注入 */
-  const sensor = document.createElement("div");
-  sensor.id = "domai-edge-sensor";
-  Object.assign(sensor.style, {
-    position: "fixed",
-    top: 0,
-    right: 0,
-    width: "4px",
-    height: "100vh",
-    zIndex: 2147483647, // 最前面
-    pointerEvents: "auto",
-  });
-  document.documentElement.appendChild(sensor);
+  const SIDES = ["left", "right"]; // センサーを置く 2 方向
+  const WIDTH = 4; // 4px 幅
+  const DELAY = 300; // 300ms 滞在
 
-  /* 2. ホバー検知 */
-  let timer = null;
-  sensor.addEventListener("mouseenter", () => {
-    console.log("[edgeSensor] mouseenter");
-    timer = setTimeout(() => {
-      console.log("[edgeSensor] hover 300ms → open panel");
-      chrome.runtime.sendMessage({ type: "OPEN_PANEL" });
-    }, 100);
-  });
-  sensor.addEventListener("mouseleave", () => {
-    console.log("[edgeSensor] mouseleave");
-    clearTimeout(timer);
+  SIDES.forEach((side) => {
+    const sensor = document.createElement("div");
+    sensor.id = `domai-edge-sensor-${side}`;
+    Object.assign(sensor.style, {
+      position: "fixed",
+      top: 0,
+      [side]: 0, // left:0  または  right:0
+      width: WIDTH + "px",
+      height: "100vh",
+      zIndex: 2147483647,
+      pointerEvents: "auto",
+    });
+    document.documentElement.appendChild(sensor);
+
+    let timer = null;
+    sensor.addEventListener("mouseenter", () => {
+      timer = setTimeout(() => {
+        console.log(`[edgeSensor] ${side} hover ${DELAY}ms → open panel`);
+        try {
+          chrome.runtime.sendMessage({ type: "OPEN_PANEL", side });
+        } catch (e) {
+          if (e.message?.includes("context invalidated"))
+            console.warn("[edgeSensor] context invalidated – safe to ignore");
+          else console.error("[edgeSensor] sendMessage failed", e);
+        }
+      }, DELAY);
+    });
+    sensor.addEventListener("mouseleave", () => clearTimeout(timer));
   });
 })();

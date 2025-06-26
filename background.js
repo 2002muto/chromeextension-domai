@@ -1,52 +1,61 @@
 /****************************************************************************************
- * Background v4 – 右端ホバーごとに「そのウィンドウ右端」に拡張ポップアップを表示
- *  - sidePanel API は使用せず常に popup で統一
- *  - 各ウィンドウにつき同時に 1 つだけ開く
- *  - 閉じられたら自動で再度開けるよう管理配列から削除
+ * BG v7 – FOCUS_TAB / GET_LAST_PAGE_TAB / OPEN_PANEL
  ****************************************************************************************/
+const WIDTH = 420;
+const popups = new Map(); // baseWin.id → popup.id
+let lastTab = null; // 直近入力フォーカスのページタブ
 
-/* 右端センサー (edgeSensor.js) から届くメッセージ名 */
-const MSG_OPEN = "OPEN_PANEL";
+// 1) タブ切り替え（アクティブタブ変更）を監視
+chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
+  console.log(`[BG] onActivated → window ${windowId}, tab ${tabId}`);
+  lastTab = tabId;
+});
 
-/* 開いた popup windowId を windowId キーで保持 */
-const popupMap = new Map(); // key: baseWindowId, value: popupWindowId
+// 2) 既存の FOCUS_TAB／GET_LAST_PAGE_TAB 処理
+chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
+  if (msg.type === "FOCUS_TAB" && sender.tab?.id) {
+    console.log(`[BG] FOCUS_TAB received from tab ${sender.tab.id}`);
+    lastTab = sender.tab.id;
+    return;
+  }
 
-/*────────────────── 受信 ─────────────────*/
-chrome.runtime.onMessage.addListener((msg, sender) => {
-  if (msg.type !== MSG_OPEN) return;
+  if (msg.type === "GET_LAST_PAGE_TAB") {
+    console.log(`[BG] GET_LAST_PAGE_TAB → returning tab ${lastTab}`);
+    sendRes({ tabId: lastTab });
+    return true; // 非同期レスポンスを許可
+  }
 
-  /* 送信元タブの所属ウィンドウを特定 */
-  chrome.windows.get(sender.tab.windowId, { populate: false }, (baseWin) => {
-    if (!baseWin) return;
+  /* edgeSensor → パネル要求 */
+  if (msg.type !== "OPEN_PANEL") return;
 
-    /* 既にそのウィンドウ用 popup があれば focus して終了 */
-    const existing = popupMap.get(baseWin.id);
+  chrome.windows.get(sender.tab.windowId, {}, (w) => {
+    if (!w) return;
+
+    /* すでに popup を開いていれば再利用 */
+    const existing = popups.get(w.id);
     if (existing) {
       chrome.windows.update(existing, { focused: true });
       return;
     }
 
-    /* 新規 popup を作成 */
-    const W = 420; // 幅
+    /* popup 生成 */
+    const leftPos = msg.side === "left" ? w.left : w.left + w.width - WIDTH;
     chrome.windows.create(
       {
         url: chrome.runtime.getURL("pages/prompt/prompt.html"),
         type: "popup",
-        width: W,
-        height: baseWin.height,
-        top: baseWin.top,
-        left: baseWin.left + baseWin.width - W,
+        width: WIDTH,
+        height: w.height,
+        top: w.top,
+        left: leftPos,
         focused: true,
       },
-      (pop) => {
-        popupMap.set(baseWin.id, pop.id);
-        console.log(`[BG] popup opened for Win${baseWin.id} → Popup${pop.id}`);
-
-        /* popup が閉じられたら管理表から削除 */
-        chrome.windows.onRemoved.addListener(function handler(closedId) {
-          if (closedId === pop.id) {
-            popupMap.delete(baseWin.id);
-            chrome.windows.onRemoved.removeListener(handler);
+      (p) => {
+        popups.set(w.id, p.id);
+        chrome.windows.onRemoved.addListener(function cleanup(id) {
+          if (id === p.id) {
+            popups.delete(w.id);
+            chrome.windows.onRemoved.removeListener(cleanup);
           }
         });
       }
