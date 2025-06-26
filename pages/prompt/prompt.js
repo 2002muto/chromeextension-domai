@@ -263,44 +263,94 @@ function fx(card, content) {
 }
 
 /* ══════════════════════════════════════════════════════
-   7. ★ 重複の無い sendToFocused() – 1 定義のみ
+   7. ★ sendToFocused() – 全フレーム先送り & 万能 execScript
 ══════════════════════════════════════════════════════ */
 function sendToFocused(text) {
   const reqId = Date.now() + "_" + Math.random().toString(36).slice(2, 7);
   console.log("[sendToFocused] len", text.length);
 
-  /* 1️⃣ “いま見えているウィンドウ” の activeTab だけ取得 */
+  /* ❶ 現ウィンドウのアクティブタブ取得 */
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    if (!tab) return clipboardFallback();
+    if (!tab) return clipboard();
 
+    /* ── A. broadcast to all frames first ── */
     chrome.tabs.sendMessage(
       tab.id,
       { type: "INSERT_CLIP", text, requestId: reqId },
-      { frameId: 0 }, // ← top-frame 限定で 1 回
+      /* options 省略 → 全フレーム */
       () => {
         if (!chrome.runtime.lastError) {
-          console.log("[deliver] OK tab", tab.id);
+          console.log("[deliver] OK via msg all-frames");
           return;
         }
         console.warn(
-          "[deliver] failed:",
-          chrome.runtime.lastError.message,
-          "→ clipboard"
+          "[deliver] msg all-frames failed:",
+          chrome.runtime.lastError.message
         );
-        clipboardFallback();
+
+        /* ── B. execScript on every frame ── */
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tab.id, allFrames: true }, // ★ すべてのフレーム
+            args: [text, reqId],
+            func: (t, id) => {
+              if (window._lastReq === id) return;
+              window._lastReq = id;
+
+              /* a) まず現在の activeElement を試す */
+              let el = document.activeElement;
+              const isEditable = (n) =>
+                n &&
+                (n.isContentEditable ||
+                  n instanceof HTMLTextAreaElement ||
+                  (n instanceof HTMLInputElement &&
+                    /^(text|search|url|email|number|tel|password)$/i.test(
+                      n.type
+                    )));
+
+              /* b) 無ければ入力候補を探して focus */
+              if (!isEditable(el)) {
+                el = document.querySelector(
+                  'div[contenteditable="true"][role="textbox"], textarea, input[type="text"]'
+                );
+                if (el) el.focus();
+              }
+              if (!isEditable(el)) throw "no-editable-element";
+
+              /* c) 挿入 */
+              if (el.isContentEditable) {
+                document.execCommand("insertText", false, t);
+              } else {
+                el.setRangeText(t, el.selectionStart, el.selectionEnd, "end");
+              }
+            },
+          },
+          () => {
+            if (!chrome.runtime.lastError) {
+              console.log("[deliver] OK via execScript allFrames");
+              return;
+            }
+            console.warn(
+              "[deliver] execScript failed:",
+              chrome.runtime.lastError.message
+            );
+            clipboard(); // ─ C. 最終 fallback
+          }
+        );
       }
     );
   });
 
-  function clipboardFallback() {
+  /* ── C. Clipboard fallback ── */
+  function clipboard() {
     navigator.clipboard
       .writeText(text)
       .then(() => console.warn("[fallback] Copied to clipboard"))
-      .catch(() => console.error("clipboard write failed"));
+      .catch(() => console.error("[fallback] clipboard write failed"));
   }
 }
 
 /*━━━━━━━━━━ トースト通知（簡易版）━━━━━━━━━━*/
 function toast(msg) {
-  console.log(msg); // ★UI 実装していない場合は Console へ
+  console.log(msg);
 }
