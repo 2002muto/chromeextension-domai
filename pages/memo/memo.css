@@ -230,6 +230,8 @@ body {
 .memo-input-form .text-input {
   flex: 1;
   min-height: 0;
+  /* Default height for better usability */
+  min-height: 200px;
   background: #3a3f4a;
   border: none;
   border-radius: 4px;

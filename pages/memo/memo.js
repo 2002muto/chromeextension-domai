@@ -419,6 +419,12 @@ async function renderInputForm(id) {
     </div>
   `;
 
+  // Locate the textarea element for further manipulation
+  const ta = content.querySelector('.text-input');
+  console.log('Initialized MEMO textarea', ta);
+  // Ensure minimum height via JS as well
+  ta.style.minHeight = '200px';
+
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
   if (id !== undefined) {
