@@ -26,6 +26,40 @@ const draftKey = (promptId, fieldIdx) => `draft_${promptId}_${fieldIdx}`;
 /* ━━━━━━━━━ 1. グローバル状態 ━━━━━━━━━ */
 let prompts = []; // カード一覧
 let runs = []; // 実行履歴
+let dragPromptIndex = null; // ドラッグ元インデックス
+
+// ───────────────────────────────────────
+// Drag & Drop handlers for prompt list
+// ───────────────────────────────────────
+function handlePromptDragStart(e) {
+  dragPromptIndex = +this.dataset.index;
+  console.log("[PRM] drag start:", dragPromptIndex);
+  e.dataTransfer.effectAllowed = "move";
+  this.classList.add("dragging");
+}
+function handlePromptDragOver(e) {
+  e.preventDefault();
+  this.classList.add("drag-over");
+}
+function handlePromptDragLeave() {
+  this.classList.remove("drag-over");
+}
+async function handlePromptDrop(e) {
+  e.stopPropagation();
+  const dropIndex = +this.dataset.index;
+  console.log(`[PRM] drop from ${dragPromptIndex} to ${dropIndex}`);
+  if (dragPromptIndex === null || dragPromptIndex === dropIndex) return;
+  const [moved] = prompts.splice(dragPromptIndex, 1);
+  prompts.splice(dropIndex, 0, moved);
+  await save(PROMPT_KEY, prompts);
+  renderList();
+}
+function handlePromptDragEnd() {
+  document
+    .querySelectorAll(".prompt-item")
+    .forEach((el) => el.classList.remove("drag-over", "dragging"));
+  dragPromptIndex = null;
+}
 
 /* ━━━━━━━━━ 2. 初期化 ━━━━━━━━━ */
 document.addEventListener("DOMContentLoaded", async () => {
@@ -75,11 +109,17 @@ async function renderList() {
   console.log("[renderList] end");
 
   /*─── 内部：1 カード生成 ───────────────────*/
-  function cardNode(o) {
+  function cardNode(o, i) {
     const li = ce("li", "prompt-item");
     li.draggable = true;
+    li.dataset.index = i;
 
-    /* DnD 省略（元コードそのまま） … */
+    // Drag & drop handlers
+    li.addEventListener("dragstart", handlePromptDragStart);
+    li.addEventListener("dragover", handlePromptDragOver);
+    li.addEventListener("dragleave", handlePromptDragLeave);
+    li.addEventListener("drop", handlePromptDrop);
+    li.addEventListener("dragend", handlePromptDragEnd);
 
     const star = ce("i", `bi bi-star-fill star ${o.star ? "on" : "off"}`);
     star.onclick = async () => {
