@@ -266,66 +266,37 @@ function fx(card, content) {
    7. ★ 重複の無い sendToFocused() – 1 定義のみ
 ══════════════════════════════════════════════════════ */
 function sendToFocused(text) {
-  /* ① BG → ② activeTab → ③ allTabs → ④ clipboard の“階段” */
-  chrome.runtime.sendMessage({ type: "GET_LAST_PAGE_TAB" }, (res) => {
-    if (res?.tabId) return inject(res.tabId);
+  const reqId = Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+  console.log("[sendToFocused] len", text.length);
 
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-      const page = tabs.find((t) => !t.url.startsWith("chrome-extension://"));
-      if (page) return inject(page.id);
+  /* 1️⃣ “いま見えているウィンドウ” の activeTab だけ取得 */
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    if (!tab) return clipboardFallback();
 
-      chrome.tabs.query({}, (all) => {
-        const pg = all.find((t) => !t.url.startsWith("chrome-extension://"));
-        if (pg) return inject(pg.id);
-        fallbackClipboard();
-      });
-    });
-  });
-
-  /*── メッセージ → inlineInject → clipboard ──*/
-  function inject(tabId) {
     chrome.tabs.sendMessage(
-      tabId,
-      { type: "INSERT_CLIP", text },
-      { frameId: 0 },
+      tab.id,
+      { type: "INSERT_CLIP", text, requestId: reqId },
+      { frameId: 0 }, // ← top-frame 限定で 1 回
       () => {
-        if (!chrome.runtime.lastError) return; // 🎉 success
-        chrome.scripting.executeScript(
-          {
-            target: { tabId },
-            args: [text],
-            func: (t) => {
-              const el = document.activeElement;
-              const ok =
-                el &&
-                (el.isContentEditable ||
-                  el instanceof HTMLTextAreaElement ||
-                  (el instanceof HTMLInputElement &&
-                    /^(text|search|url|email|tel|number|password)$/.test(
-                      el.type
-                    )));
-              if (!ok) throw "no-editable";
-              if (el.isContentEditable) {
-                document.execCommand("insertText", false, t);
-              } else {
-                el.setRangeText(t, el.selectionStart, el.selectionEnd, "end");
-              }
-              el.dispatchEvent(new Event("input", { bubbles: true }));
-              el.dispatchEvent(new Event("change", { bubbles: true }));
-            },
-          },
-          () => {
-            if (chrome.runtime.lastError) fallbackClipboard();
-          }
+        if (!chrome.runtime.lastError) {
+          console.log("[deliver] OK tab", tab.id);
+          return;
+        }
+        console.warn(
+          "[deliver] failed:",
+          chrome.runtime.lastError.message,
+          "→ clipboard"
         );
+        clipboardFallback();
       }
     );
-  }
-  function fallbackClipboard() {
+  });
+
+  function clipboardFallback() {
     navigator.clipboard
       .writeText(text)
-      .then(() => toast("📋 コピーしました – ページで Ctrl+V"))
-      .catch(() => console.warn("clipboard failed"));
+      .then(() => console.warn("[fallback] Copied to clipboard"))
+      .catch(() => console.error("clipboard write failed"));
   }
 }
 
