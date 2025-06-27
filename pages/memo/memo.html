@@ -53,12 +53,14 @@
     <div class="memo-content"></div>
 
     <!-- フッター（常にカードの下に追従） -->
-    <footer class="memo-footer">
-      <button class="footer-btn archive-btn">
-        <i class="bi bi-archive"></i> アーカイブ
+    <footer class="memo-footer" style="display: flex">
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
+        <i class="bi bi-archive"></i>
+        <span class="nav-text">アーカイブ</span>
       </button>
-      <button class="footer-btn backup-btn">
-        <i class="bi bi-download"></i> バックアップ
+      <button class="nav-btn encrypt-btn">
+        <i class="bi bi-download"></i>
+        <span class="nav-text">バックアップ</span>
       </button>
     </footer>
 

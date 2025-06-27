@@ -14,8 +14,11 @@
     }
   ],
   "side_panel": {
-    "default_path": "pages/memo/memo.html",
-    "open_panel_on_action_click": true
+    "default_path": "pages/memo/memo.html"
+  },
+  "action": {
+    "default_popup": "",
+    "default_title": "domai Extension"
   },
   "background": {
     "service_worker": "background.js"

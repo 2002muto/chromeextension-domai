@@ -1,9 +1,21 @@
 /****************************************************************************************
- * BG v7 – FOCUS_TAB / GET_LAST_PAGE_TAB / OPEN_PANEL
+ * BG v8 – FOCUS_TAB / GET_LAST_PAGE_TAB / SIDE_PANEL_CONTROL
  ****************************************************************************************/
 const WIDTH = 420;
 const popups = new Map(); // baseWin.id → popup.id
 let lastTab = null; // 直近入力フォーカスのページタブ
+
+// 0) 拡張機能アイコンクリック時のサイドパネル制御
+chrome.action.onClicked.addListener(async (tab) => {
+  console.log(`[BG] Extension icon clicked on tab ${tab.id}`);
+  try {
+    // サイドパネルを開く
+    await chrome.sidePanel.open({ tabId: tab.id });
+    console.log(`[BG] Side panel opened for tab ${tab.id}`);
+  } catch (error) {
+    console.error("[BG] Failed to open side panel:", error);
+  }
+});
 
 // 1) タブ切り替え（アクティブタブ変更）を監視
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {

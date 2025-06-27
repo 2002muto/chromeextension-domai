@@ -103,60 +103,97 @@ body {
   max-width: fit-content; /* 横幅が大きくなっても左に追従 */
 }
 
-.memo-footer .footer-btn {
+/* フッターのnav-btnをヘッダーと同じスタイルに */
+.memo-footer .nav-btn {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  width: 36px;
+  height: 36px;
   color: #fff;
-  border-radius: 18px;
+  border-radius: 50%; /* 円形 */
   cursor: pointer;
-  background-color: #555555;
-  transition: all 0.3s ease;
-  border: none;
+  background-color: #555555; /* 未選択時 */
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-decoration: none;
   font-size: 14px;
   flex: none;
-  padding: 8px 16px;
+  overflow: hidden;
+  transform-origin: center center;
+  border: none;
+}
+
+.memo-footer .nav-btn i {
+  font-size: 14px;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* テキストは通常時は非表示 */
+.memo-footer .nav-btn .nav-text {
+  position: absolute;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(10px) scale(0.8);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   white-space: nowrap;
 }
 
-.memo-footer .footer-btn i {
-  font-size: 14px;
-}
-
-.memo-footer .footer-btn .btn-text {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.memo-footer .footer-btn:hover {
+.memo-footer .nav-btn:hover {
   filter: brightness(1.2);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* フッターボタンのホバー時展開 */
+.memo-footer .nav-btn:hover {
+  width: 100px;
+  border-radius: 18px;
+  padding: 0;
+  justify-content: center;
+  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ホバー時のアイコンを非表示に */
+.memo-footer .nav-btn:hover i {
+  display: none;
+}
+
+/* ホバー時のテキストを中央配置 */
+.memo-footer .nav-btn:hover .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
 }
 
 /* 戻る／保存／削除ボタンの色分け */
-.memo-footer .back-btn {
-  background-color: #6c757d;
+.memo-footer .nav-btn.back-btn {
+  background-color: #7e7e7e;
 }
-.memo-footer .save-btn {
+.memo-footer .nav-btn.save-btn {
   background-color: #00a31e;
 }
-.memo-footer .delete-btn {
+.memo-footer .nav-btn.delete-btn {
+  background-color: #910002;
+}
+.memo-footer .nav-btn.delete-all-btn {
   background-color: #910002;
 }
 
 /* 一覧表示用フッターの色分け */
-.memo-footer .encrypt-btn {
+.memo-footer .nav-btn.encrypt-btn {
   background-color: #0d6efd;
 }
-.memo-footer .archive-toggle {
+.memo-footer .nav-btn.archive-toggle {
   background-color: #6c757d;
 }
-.memo-footer .archive-btn {
+.memo-footer .nav-btn.archive-btn {
   background-color: #2c2c2c;
 }
-.memo-footer .backup-btn {
+.memo-footer .nav-btn.backup-btn {
   background-color: #2c2c2c;
 }
 
