@@ -4,8 +4,9 @@
 header {
   display: flex;
   align-items: center;
-  padding: 32px 8px 0; /* 上32px, 左右8px, 下0 */
-  gap: 8px;
+  justify-content: flex-start; /* 中央揃えから左寄せに変更 */
+  padding: 16px 16px 0; /* 左右のパディングを増やして、壁からの余白を確保 */
+  gap: 12px; /* アイコン間のスペースはそのまま */
   /* background: #001f3f; */
 }
 
@@ -30,50 +31,209 @@ body::-webkit-scrollbar,
   display: none;
 } */
 
-/* ② nav-btn 共通：未選択時は #555555、縦 padding も増やす */
+/* ② nav-btn 共通：通常時は円形アイコンのみ */
 .nav-btn {
-  display: flex; /* フレックスで中央揃え */
-  flex: 1 0 auto;
-  justify-content: center; /* 横中央 */
-  padding: 8px 0; /* もともと6px→8pxに */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; /* 48pxから36pxに縮小 */
+  height: 36px; /* 48pxから36pxに縮小 */
   color: #fff;
-  border-radius: 4px;
+  border-radius: 50%; /* 円形 */
   cursor: pointer;
   background-color: #555555; /* 未選択時 */
-  transition: filter 0.25s, transform 0.25s;
-  text-decoration: none; /* 下線を消す */
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-decoration: none;
+  font-size: 14px; /* 18pxから14pxに縮小 */
+  flex: none; /* フレックス解除 */
+  overflow: hidden;
+  transform-origin: center center; /* 中心を基点に */
+}
+
+.nav-btn i {
+  font-size: 14px; /* 18pxから14pxに縮小 */
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* テキストは通常時は非表示 */
+.nav-btn .nav-text {
+  position: absolute;
+  font-size: 11px; /* 12pxから11pxに縮小 */
+  font-weight: bold;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(10px) scale(0.8);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  white-space: nowrap;
 }
 
 .nav-btn:link,
 .nav-btn:visited {
-  text-decoration: none; /* リンク状態でも下線なし */
+  text-decoration: none;
 }
+
 .nav-btn:hover {
   filter: brightness(1.2);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* ★ ホバー時の共通スタイル */
+#btn-memo:hover:not(.active),
+#btn-prompt:hover:not(.active),
+#btn-ai:hover:not(.active),
+#btn-setting:hover:not(.active) {
+  width: 100px; /* 120pxから100pxに縮小 */
+  border-radius: 18px; /* 24pxから18pxに縮小 */
+  padding: 0;
+  justify-content: center;
+  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ホバー時のアイコンを非表示に */
+#btn-memo:hover:not(.active) i,
+#btn-prompt:hover:not(.active) i,
+#btn-ai:hover:not(.active) i,
+#btn-setting:hover:not(.active) i {
+  display: none;
+}
+
+/* ホバー時のテキストを中央配置 */
+#btn-memo:hover:not(.active) .nav-text,
+#btn-prompt:hover:not(.active) .nav-text,
+#btn-ai:hover:not(.active) .nav-text,
+#btn-setting:hover:not(.active) .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
+}
+
+/* ★ クリック時の展開状態 - 中心から左右に拡張 */
+.nav-btn.expanded {
+  width: 100px; /* 120pxから100pxに縮小 */
+  border-radius: 18px; /* 24pxから18pxに縮小 */
+  padding: 0;
+  justify-content: center;
+  transform: scaleX(1);
+  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 中心から拡張するアニメーション */
+@keyframes expandCenter {
+  0% {
+    width: 36px; /* 48pxから36pxに縮小 */
+    border-radius: 50%;
+    transform: scaleX(1);
+  }
+  30% {
+    width: 36px; /* 48pxから36pxに縮小 */
+    border-radius: 40%;
+    transform: scaleX(1.3);
+  }
+  60% {
+    width: 75px; /* 90pxから75pxに縮小 */
+    border-radius: 22px; /* 30pxから22pxに縮小 */
+    transform: scaleX(1.1);
+  }
+  100% {
+    width: 100px; /* 120pxから100pxに縮小 */
+    border-radius: 18px; /* 24pxから18pxに縮小 */
+    transform: scaleX(1);
+  }
+}
+
+/* クリック時のみアイコンを完全に非表示 */
+.nav-btn.expanded i {
+  display: none;
+}
+
+.nav-btn.expanded .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
+}
+
+/* ★ アクティブ状態：テキストのみ表示 */
+.nav-btn.active {
+  width: 100px; /* 120pxから100pxに縮小 */
+  border-radius: 18px; /* 24pxから18pxに縮小 */
+  padding: 0;
+  justify-content: center;
+}
+
+/* アクティブ状態のアイコンも完全に非表示 */
+.nav-btn.active i {
+  display: none;
+}
+
+.nav-btn.active .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ホバー時のツールチップは不要 */
+.nav-btn::after {
+  display: none;
+}
+
+/* クリック時のメッセージ表示（AI専用） */
+.nav-btn::before {
+  content: attr(data-click-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 150, 255, 0.9);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 150, 255, 0.3);
+}
+
+.nav-btn.clicked::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(5px);
 }
 
 /* ③ 選択中(.active)だけグラデを書く */
-/* 例：HTMLで <div class="nav-btn active" id="btn-memo"> とする */
 #btn-memo.active {
-  background: linear-gradient(90deg, #078ab9, #024881);
-}
-#btn-prompt.active {
-  background: linear-gradient(90deg, #667eea, #764ba2);
-}
-#btn-ai.active {
-  background: linear-gradient(90deg, #af008f, #6b00d9);
-}
-#btn-setting.active {
-  background: linear-gradient(90deg, #fff04b, #99902d);
+  background: linear-gradient(135deg, #078ab9, #024881);
+  box-shadow: 0 4px 12px rgba(7, 138, 185, 0.3);
 }
 
-/* ④ 設定ボタンだけ固定幅に */
+#btn-prompt.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+#btn-ai.active {
+  background: linear-gradient(135deg, #af008f, #6b00d9);
+  box-shadow: 0 4px 12px rgba(175, 0, 143, 0.3);
+}
+
+#btn-setting.active {
+  background: linear-gradient(135deg, #fff04b, #99902d);
+  box-shadow: 0 4px 12px rgba(255, 240, 75, 0.3);
+}
+
+/* ④ 設定ボタン */
 #btn-setting {
-  /* grow:0, shrink:0, basis:48px */
-  flex: 0 0 48px;
-  width: 48px;
-  flex: 0 0 48px !important;
+  /* width: 48px; */ /* 削除：共通のサイズを使用 */
+  /* height: 48px; */ /* 削除：共通のサイズを使用 */
 }
 
 /* ⑤ main との間にマージンを入れる */
