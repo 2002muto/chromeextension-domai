@@ -426,6 +426,90 @@ async function renderInputForm(id) {
   ta.style.resize = "vertical";
   console.log("Enable vertical resize for MEMO textarea");
 
+  // クリックした位置にカーソルを移動する機能を追加
+  ta.addEventListener("click", function (e) {
+    // クリック座標からカーソル位置を計算
+    const rect = ta.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // 一時的に空のdivを作成してテキストの描画を模擬
+    const mirror = document.createElement("div");
+    const computedStyle = window.getComputedStyle(ta);
+
+    // textareaのスタイルをコピー
+    mirror.style.cssText = `
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: ${
+        ta.offsetWidth -
+        parseInt(computedStyle.paddingLeft) -
+        parseInt(computedStyle.paddingRight)
+      }px;
+      height: auto;
+      font-family: ${computedStyle.fontFamily};
+      font-size: ${computedStyle.fontSize};
+      font-weight: ${computedStyle.fontWeight};
+      line-height: ${computedStyle.lineHeight};
+      letter-spacing: ${computedStyle.letterSpacing};
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      overflow: hidden;
+    `;
+
+    document.body.appendChild(mirror);
+
+    const text = ta.value;
+    const lines = text.split("\n");
+    const lineHeight =
+      parseInt(computedStyle.lineHeight) ||
+      parseInt(computedStyle.fontSize) * 1.2;
+    const paddingTop = parseInt(computedStyle.paddingTop) || 0;
+
+    // クリックされた行を計算
+    const clickedLine = Math.floor((y - paddingTop) / lineHeight);
+
+    if (clickedLine >= 0 && clickedLine < lines.length) {
+      // その行の開始位置を計算
+      let position = 0;
+      for (let i = 0; i < clickedLine; i++) {
+        position += lines[i].length + 1; // +1 for newline character
+      }
+
+      // その行内での位置を計算
+      const lineText = lines[clickedLine];
+      mirror.textContent = lineText;
+
+      let charPosition = 0;
+      for (let i = 0; i <= lineText.length; i++) {
+        mirror.textContent = lineText.substring(0, i);
+        if (mirror.offsetWidth > x) {
+          charPosition = Math.max(0, i - 1);
+          break;
+        }
+        charPosition = i;
+      }
+
+      const finalPosition = position + charPosition;
+
+      // カーソル位置を設定
+      ta.setSelectionRange(finalPosition, finalPosition);
+      ta.focus();
+    } else if (clickedLine >= lines.length) {
+      // 最後の行より下をクリックした場合、最後の行の末尾に移動
+      const lastPosition = text.length;
+      ta.setSelectionRange(lastPosition, lastPosition);
+      ta.focus();
+    }
+
+    // 一時的なelementを削除
+    document.body.removeChild(mirror);
+  });
+
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
   if (id !== undefined) {
@@ -452,7 +536,7 @@ async function renderInputForm(id) {
   content.classList.remove("clipboard-mode");
   content.classList.add("edit-mode");
 
-  /* ▼▼ 追加：カード本体にも“下からふわっ”アニメ ▼▼ */
+  /* ▼▼ 追加：カード本体にも"下からふわっ"アニメ ▼▼ */
   content.classList.remove("animate");
   void content.offsetWidth; // 1フレーム reflow
   content.classList.add("animate");
@@ -660,7 +744,7 @@ function renderArchiveFooter() {
   `;
   footer.style.display = "flex";
 
-  // Back → go back to last mode (we’ll default to MEMO list)
+  // Back → go back to last mode (we'll default to MEMO list)
   footer.querySelector(".back-btn").addEventListener("click", () => {
     // 1) Archive 表示を解除
     document.querySelector(".memo-content").classList.remove("archive");

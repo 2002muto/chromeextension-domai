@@ -44,6 +44,7 @@ body {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s, transform 0.5s;
+  min-height: calc(100vh - 140px); /* ヘッダーとフッターを除いた高さ */
 }
 .memo-content.show {
   opacity: 1;
@@ -61,6 +62,12 @@ body {
   width: calc(100% - 32px);
   margin: 0;
   z-index: 10;
+}
+
+/* 編集モード時のコンテンツ高さ調整 */
+.memo-content.edit-mode {
+  min-height: calc(100vh - 120px); /* フッター分の余白を確保 */
+  padding-bottom: 80px; /* フッター重複回避 */
 }
 /* クリップボードモードでは内部スクロールバーを隠す */
 .memo-content.clipboard-mode {
@@ -184,22 +191,22 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   background: #2d2d2d; /* より暗いグレー */
   padding: 0; /* パディングをリセット */
   border-radius: 8px;
   min-height: 0;
   box-sizing: border-box;
   overflow: hidden; /* 内容がはみ出ないように */
+  height: 100%; /* 親要素の高さを最大活用 */
 }
 
 .memo-input-form .input-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 6px 8px;
   background: #2d2d2d; /* ヘッダー背景 */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* 細い区切り線 */
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* 隙間の広い白い点線 */
 }
 
 .memo-input-form .star-input {
@@ -223,19 +230,24 @@ body {
   border: none;
   padding: 8px 0; /* 左右のパディングを削除 */
   color: #ffffff; /* より明るい色に */
-  font-size: 1.1rem; /* サイズを少し大きく */
+  font-size: 0.85rem; /* さらに文字サイズを小さく */
   font-weight: 500; /* やや太く */
+  outline: none; /* フォーカス時の光る効果を無効化 */
 }
 
 .memo-input-form .text-input {
   flex: 1;
-  min-height: 300px; /* より大きな初期高さ */
-  background: #2d2d2d;
+  background: transparent; /* title-inputと同じ透明背景 */
   border: none;
-  padding: 20px;
-  color: #e2e8f0;
+  padding: 6px 8px; /* 統一されたパディング */
+  color: #ffffff; /* title-inputと同じ明るい白色 */
+  font-size: 0.85rem; /* さらに文字サイズを小さく */
+  font-weight: 500; /* title-inputと同じフォント太さ */
   resize: none; /* リサイズ不要 */
-  line-height: 1.6; /* 行間を広げる */
+  min-height: 0; /* flex: 1 で自動拡張 */
+  height: 100%; /* 利用可能な高さを最大活用 */
+  box-sizing: border-box;
+  outline: none; /* フォーカス時の光る効果を無効化 */
 }
 
 /* ─── クリップボード ─── */
