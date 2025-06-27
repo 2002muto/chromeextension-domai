@@ -235,6 +235,14 @@ body {
   outline: none; /* フォーカス時の光る効果を無効化 */
 }
 
+/* textareaコンテナ */
+.memo-input-form .textarea-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .memo-input-form .text-input {
   flex: 1;
   background: transparent; /* title-inputと同じ透明背景 */
@@ -248,6 +256,46 @@ body {
   height: 100%; /* 利用可能な高さを最大活用 */
   box-sizing: border-box;
   outline: none; /* フォーカス時の光る効果を無効化 */
+
+  /* スクロールバーを非表示にする */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Chrome/Safari/Opera のスクロールバー非表示 */
+.memo-input-form .text-input::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* 一番上に戻るボタン */
+.scroll-to-top-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: transparent; /* 背景を透明に */
+  border: none;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  display: none; /* 初期状態では非表示 */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7); /* 白色で少し透明感を追加 */
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.scroll-to-top-btn:hover {
+  color: #ffffff; /* ホバー時は完全に白色 */
+  transform: translateY(-2px);
+}
+
+.scroll-to-top-btn:active {
+  transform: translateY(0);
 }
 
 /* ─── クリップボード ─── */

@@ -413,7 +413,12 @@ async function renderInputForm(id) {
         <i class="bi bi-star star-input off"></i>
         <input type="text" class="title-input" placeholder="タイトル" />
       </div>
-      <textarea class="text-input" placeholder="テキストを入力..."></textarea>
+      <div class="textarea-container">
+        <textarea class="text-input" placeholder="テキストを入力..."></textarea>
+        <button class="scroll-to-top-btn" title="一番上に戻る">
+          <i class="bi bi-arrow-up-square"></i>
+        </button>
+      </div>
     </div>
   `;
 
@@ -535,6 +540,28 @@ async function renderInputForm(id) {
     // 一時的なelementを削除
     document.body.removeChild(mirror);
   });
+
+  // 一番上に戻るボタンの機能を追加
+  const scrollToTopBtn = content.querySelector(".scroll-to-top-btn");
+  scrollToTopBtn.addEventListener("click", () => {
+    ta.setSelectionRange(0, 0);
+    ta.focus();
+    ta.scrollTop = 0;
+    console.log("Scrolled to top of textarea");
+  });
+
+  // テキストの量に応じてボタンの表示/非表示を制御
+  function updateScrollButtonVisibility() {
+    const lines = ta.value.split("\n").length;
+    const isLongText = lines > 10; // 10行以上の場合に表示
+    scrollToTopBtn.style.display = isLongText ? "flex" : "none";
+  }
+
+  // 初期状態でボタンの表示を設定
+  updateScrollButtonVisibility();
+
+  // テキスト変更時にボタンの表示を更新
+  ta.addEventListener("input", updateScrollButtonVisibility);
 
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
