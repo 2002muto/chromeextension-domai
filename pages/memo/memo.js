@@ -416,6 +416,7 @@ async function renderInputForm(id) {
       <div class="textarea-container">
         <textarea class="text-input" placeholder="テキストを入力..."></textarea>
         <div class="textarea-buttons">
+          <div class="char-counter">0</div>
           <button class="copy-text-btn" title="テキストをコピー">
             <i class="bi bi-copy"></i>
           </button>
@@ -614,6 +615,13 @@ async function renderInputForm(id) {
     const lines = ta.value.split("\n").length;
     const isLongText = lines > 10; // 10行以上の場合に表示
 
+    // 文字数カウント：改行文字を除外した実際の文字数を表示
+    const charCountWithoutNewlines = ta.value.replace(/\n/g, "").length;
+
+    // 文字数カウンターを更新
+    const charCounter = content.querySelector(".char-counter");
+    charCounter.textContent = `${charCountWithoutNewlines}文字`;
+
     // コピーボタン：テキストがある場合に表示
     copyBtn.style.display = hasText ? "flex" : "none";
 
@@ -624,8 +632,38 @@ async function renderInputForm(id) {
   // 初期状態でボタンの表示を設定
   updateButtonVisibility();
 
-  // テキスト変更時にボタンの表示を更新
+  // 文字数カウンターの確実な更新のための包括的イベント監視
+  let lastValue = ta.value;
+
+  // 基本的なイベント監視
   ta.addEventListener("input", updateButtonVisibility);
+  ta.addEventListener("paste", () => setTimeout(updateButtonVisibility, 10));
+  ta.addEventListener("cut", updateButtonVisibility);
+  ta.addEventListener("compositionend", updateButtonVisibility);
+  ta.addEventListener("focus", updateButtonVisibility);
+  ta.addEventListener("blur", updateButtonVisibility);
+  ta.addEventListener("keyup", updateButtonVisibility);
+  ta.addEventListener("keydown", updateButtonVisibility);
+  ta.addEventListener("change", updateButtonVisibility);
+  ta.addEventListener("propertychange", updateButtonVisibility);
+
+  // ドラッグ&ドロップ対応
+  ta.addEventListener("drop", () => setTimeout(updateButtonVisibility, 10));
+  ta.addEventListener("dragend", updateButtonVisibility);
+
+  // 定期的な監視（最強の保険として）
+  const charCountInterval = setInterval(() => {
+    if (ta.value !== lastValue) {
+      lastValue = ta.value;
+      updateButtonVisibility();
+      console.log("文字数カウンター：定期監視で差分検出", ta.value.length);
+    }
+  }, 100); // 100msごとにチェック
+
+  // メモリリーク防止：ページ離脱時にインターバルをクリア
+  window.addEventListener("beforeunload", () => {
+    clearInterval(charCountInterval);
+  });
 
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
@@ -646,6 +684,9 @@ async function renderInputForm(id) {
         starIcon.classList.remove("bi-star-fill");
         starIcon.classList.add("bi-star");
       }
+
+      // 既存メモ編集時は文字数カウンターを更新
+      updateButtonVisibility();
     }
   }
 

@@ -275,8 +275,18 @@ body {
   bottom: 12px;
   right: 12px;
   display: flex;
+  align-items: center;
   gap: 8px;
   z-index: 10;
+}
+
+/* 文字数カウンター */
+.char-counter {
+  font-size: 12px;
+  color: #bbb;
+  padding: 4px 8px;
+  white-space: nowrap;
+  user-select: none;
 }
 
 /* 共通ボタンスタイル */
