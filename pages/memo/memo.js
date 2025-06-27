@@ -417,6 +417,26 @@ async function renderInputForm(id) {
         <textarea class="text-input" placeholder="テキストを入力..."></textarea>
         <div class="textarea-buttons">
           <div class="char-counter">0</div>
+          <div class="font-size-controls">
+            <button class="font-size-btn font-decrease" title="文字を小さく">
+              a
+            </button>
+            <div class="font-size-dropdown">
+              <span class="font-size-indicator" title="クリックでサイズ選択">16px</span>
+              <div class="font-size-options">
+                <div class="font-option" data-size="24">24px</div>
+                <div class="font-option" data-size="22">22px</div>
+                <div class="font-option" data-size="20">20px</div>
+                <div class="font-option" data-size="18">18px</div>
+                <div class="font-option" data-size="16">16px</div>
+                <div class="font-option" data-size="14">14px</div>
+                <div class="font-option" data-size="12">12px</div>
+              </div>
+            </div>
+            <button class="font-size-btn font-increase" title="文字を大きく">
+              A
+            </button>
+          </div>
           <button class="copy-text-btn" title="テキストをコピー">
             <i class="bi bi-copy"></i>
           </button>
@@ -546,6 +566,81 @@ async function renderInputForm(id) {
     // 一時的なelementを削除
     document.body.removeChild(mirror);
   });
+
+  // フォントサイズ調整機能を追加
+  let currentFontSize = parseInt(localStorage.getItem("memoFontSize")) || 16;
+  const fontSizeIndicator = content.querySelector(".font-size-indicator");
+  const fontDecreaseBtn = content.querySelector(".font-decrease");
+  const fontIncreaseBtn = content.querySelector(".font-increase");
+  const fontSizeDropdown = content.querySelector(".font-size-dropdown");
+  const fontSizeOptions = content.querySelector(".font-size-options");
+
+  // 初期フォントサイズを設定
+  ta.style.fontSize = `${currentFontSize}px`;
+  fontSizeIndicator.textContent = `${currentFontSize}px`;
+
+  // フォントサイズ減少ボタン
+  fontDecreaseBtn.addEventListener("click", () => {
+    if (currentFontSize > 12) {
+      currentFontSize -= 2;
+      updateFontSize();
+      console.log(`Font size decreased to ${currentFontSize}px`);
+    }
+  });
+
+  // フォントサイズ増加ボタン
+  fontIncreaseBtn.addEventListener("click", () => {
+    if (currentFontSize < 24) {
+      currentFontSize += 2;
+      updateFontSize();
+      console.log(`Font size increased to ${currentFontSize}px`);
+    }
+  });
+
+  function updateFontSize() {
+    ta.style.fontSize = `${currentFontSize}px`;
+    fontSizeIndicator.textContent = `${currentFontSize}px`;
+    localStorage.setItem("memoFontSize", currentFontSize);
+
+    // ボタンの有効/無効状態を更新
+    fontDecreaseBtn.disabled = currentFontSize <= 12;
+    fontIncreaseBtn.disabled = currentFontSize >= 24;
+
+    // ドロップダウンの選択状態を更新
+    content.querySelectorAll(".font-option").forEach((option) => {
+      option.classList.toggle(
+        "active",
+        parseInt(option.dataset.size) === currentFontSize
+      );
+    });
+  }
+
+  // ドロップダウン機能
+  fontSizeIndicator.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fontSizeOptions.classList.toggle("show");
+    console.log("Font size dropdown toggled");
+  });
+
+  // ドロップダウンオプション選択
+  content.querySelectorAll(".font-option").forEach((option) => {
+    option.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const newSize = parseInt(option.dataset.size);
+      currentFontSize = newSize;
+      updateFontSize();
+      fontSizeOptions.classList.remove("show");
+      console.log(`Font size selected: ${newSize}px`);
+    });
+  });
+
+  // ドロップダウン外クリックで閉じる
+  document.addEventListener("click", () => {
+    fontSizeOptions.classList.remove("show");
+  });
+
+  // 初期ボタン状態を設定
+  updateFontSize();
 
   // 一番上に戻るボタンの機能を追加
   const scrollToTopBtn = content.querySelector(".scroll-to-top-btn");
