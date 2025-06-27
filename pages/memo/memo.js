@@ -473,6 +473,21 @@ async function renderInputForm(id) {
     // クリックされた行を計算
     const clickedLine = Math.floor((y - paddingTop) / lineHeight);
 
+    console.log(
+      `Clicked line: ${clickedLine}, total lines: ${lines.length}, text length: ${text.length}`
+    );
+
+    // 完全に空のtextareaで任意の行をクリックした場合
+    if (text.length === 0 && clickedLine > 0) {
+      const newText = "\n".repeat(clickedLine);
+      ta.value = newText;
+      ta.setSelectionRange(newText.length, newText.length);
+      ta.focus();
+      console.log(`Empty textarea: added ${clickedLine} newlines`);
+      document.body.removeChild(mirror);
+      return;
+    }
+
     if (clickedLine >= 0 && clickedLine < lines.length) {
       // その行の開始位置を計算
       let position = 0;
@@ -500,10 +515,21 @@ async function renderInputForm(id) {
       ta.setSelectionRange(finalPosition, finalPosition);
       ta.focus();
     } else if (clickedLine >= lines.length) {
-      // 最後の行より下をクリックした場合、最後の行の末尾に移動
-      const lastPosition = text.length;
-      ta.setSelectionRange(lastPosition, lastPosition);
+      // 最後の行より下をクリックした場合、必要な改行を追加
+      const currentText = ta.value;
+      const neededNewlines = clickedLine - lines.length + 1;
+      const newText = currentText + "\n".repeat(neededNewlines);
+
+      ta.value = newText;
+
+      // 新しい行の開始位置にカーソルを設定
+      const newPosition = newText.length;
+      ta.setSelectionRange(newPosition, newPosition);
       ta.focus();
+
+      console.log(
+        `Added ${neededNewlines} newlines, cursor at position ${newPosition}`
+      );
     }
 
     // 一時的なelementを削除
