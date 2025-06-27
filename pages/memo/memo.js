@@ -159,13 +159,12 @@ async function renderListView() {
     .getElementById("btn-archive-toggle")
     .addEventListener("click", () => renderArchiveNav("memo"));
 
-  // animate card + content
-  const card = document.querySelector(".card-container");
+  // animate content
   const content = document.querySelector(".memo-content");
   content.classList.remove("edit-mode", "clipboard-mode");
-  card.classList.remove("animate");
-  void card.offsetWidth;
-  card.classList.add("animate");
+  content.classList.remove("animate");
+  void content.offsetWidth;
+  content.classList.add("animate");
 
   // render new-memo button + empty list
   content.innerHTML = `
@@ -267,13 +266,12 @@ async function renderClipboardView() {
     .addEventListener("click", () => renderArchiveNav("clip"));
 
   // animate
-  const card = document.querySelector(".card-container");
   const content = document.querySelector(".memo-content");
   content.classList.remove("edit-mode");
   content.classList.add("clipboard-mode");
-  card.classList.remove("animate");
-  void card.offsetWidth;
-  card.classList.add("animate");
+  content.classList.remove("animate");
+  void content.offsetWidth;
+  content.classList.add("animate");
 
   // header + list + add + hint
   content.innerHTML = `
@@ -398,12 +396,12 @@ async function renderInputForm(id) {
   setFooter("edit");
 
   // form title
-  const card = document.querySelector(".card-container");
+  const contentElement = document.querySelector(".memo-content");
   let h2 = document.querySelector(".form-title");
   if (!h2) {
     h2 = document.createElement("h2");
     h2.className = "form-title";
-    card.parentNode.insertBefore(h2, card);
+    contentElement.parentNode.insertBefore(h2, contentElement);
   }
   h2.textContent = id ? "MEMO編集画面" : "MEMO入力画面";
 
@@ -412,21 +410,21 @@ async function renderInputForm(id) {
   content.innerHTML = `
     <div class="memo-input-form">
       <div class="input-header">
-        <i class="bi bi-star-fill star-input off"></i>
+        <i class="bi bi-star star-input off"></i>
         <input type="text" class="title-input" placeholder="タイトル" />
       </div>
-      <textarea class="text-input" placeholder="テキストを入力…"></textarea>
+      <textarea class="text-input" placeholder="テキストを入力..."></textarea>
     </div>
   `;
 
   // Locate the textarea element for further manipulation
-  const ta = content.querySelector('.text-input');
-  console.log('Initialized MEMO textarea', ta);
+  const ta = content.querySelector(".text-input");
+  console.log("Initialized MEMO textarea", ta);
   // Ensure minimum height via JS as well
-  ta.style.minHeight = '200px';
+  ta.style.minHeight = "200px";
   // Explicitly allow vertical resizing
-  ta.style.resize = 'vertical';
-  console.log('Enable vertical resize for MEMO textarea');
+  ta.style.resize = "vertical";
+  console.log("Enable vertical resize for MEMO textarea");
 
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
@@ -438,6 +436,15 @@ async function renderInputForm(id) {
       starIcon.classList.toggle("on", existing.starred);
       starIcon.classList.toggle("off", !existing.starred);
       starIcon.dataset.starred = existing.starred;
+
+      // 既存メモ編集時のアイコン設定
+      if (existing.starred) {
+        starIcon.classList.remove("bi-star");
+        starIcon.classList.add("bi-star-fill");
+      } else {
+        starIcon.classList.remove("bi-star-fill");
+        starIcon.classList.add("bi-star");
+      }
     }
   }
 
@@ -446,21 +453,40 @@ async function renderInputForm(id) {
   content.classList.add("edit-mode");
 
   /* ▼▼ 追加：カード本体にも“下からふわっ”アニメ ▼▼ */
-  card.classList.remove("animate");
-  void card.offsetWidth; // 1フレーム reflow
-  card.classList.add("animate");
+  content.classList.remove("animate");
+  void content.offsetWidth; // 1フレーム reflow
+  content.classList.add("animate");
 
   content.classList.remove("show");
   void content.offsetWidth;
   content.classList.add("show");
 
-  // star toggle in form
-  starIcon.dataset.starred = (starIcon.dataset.starred === "true").toString();
+  // star toggle in form - デフォルトは未選択状態
+  if (id === undefined) {
+    // 新規作成時は必ず未選択状態
+    starIcon.dataset.starred = "false";
+    starIcon.classList.add("off");
+    starIcon.classList.remove("on");
+  } else {
+    starIcon.dataset.starred = (starIcon.dataset.starred === "true").toString();
+  }
   starIcon.addEventListener("click", () => {
     const cur = starIcon.dataset.starred === "true";
     starIcon.dataset.starred = (!cur).toString();
     starIcon.classList.toggle("on", !cur);
     starIcon.classList.toggle("off", cur);
+
+    // アイコンの種類も切り替え
+    if (!cur) {
+      // 選択状態：塗りつぶし + 黄色
+      starIcon.classList.remove("bi-star");
+      starIcon.classList.add("bi-star-fill");
+    } else {
+      // 未選択状態：枠のみ + グレー
+      starIcon.classList.remove("bi-star-fill");
+      starIcon.classList.add("bi-star");
+    }
+
     console.log("form star toggled:", !cur);
   });
 
@@ -548,7 +574,7 @@ function renderArchiveNav(type) {
 async function renderArchiveList() {
   console.log("renderArchiveList: start", archiveType);
 
-  document.querySelector(".card-container").classList.add("archive");
+  document.querySelector(".memo-content").classList.add("archive");
   const content = document.querySelector(".memo-content");
   content.classList.remove("show");
   void content.offsetWidth;
@@ -637,7 +663,7 @@ function renderArchiveFooter() {
   // Back → go back to last mode (we’ll default to MEMO list)
   footer.querySelector(".back-btn").addEventListener("click", () => {
     // 1) Archive 表示を解除
-    document.querySelector(".card-container").classList.remove("archive");
+    document.querySelector(".memo-content").classList.remove("archive");
     document.querySelector(".sub-archive-nav")?.remove();
     footer.classList.remove("archive");
 
