@@ -5,7 +5,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: flex-start; /* 中央揃えから左寄せに変更 */
-  padding: 32px 32px 0; /* 左右のパディングを増やして、壁からの余白を確保 */
+  padding: 16px 16px 0; /* 左右のパディングを増やして、壁からの余白を確保 */
   gap: 12px; /* アイコン間のスペースはそのまま */
   /* background: #001f3f; */
 }
