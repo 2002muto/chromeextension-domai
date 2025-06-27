@@ -415,9 +415,14 @@ async function renderInputForm(id) {
       </div>
       <div class="textarea-container">
         <textarea class="text-input" placeholder="テキストを入力..."></textarea>
-        <button class="scroll-to-top-btn" title="一番上に戻る">
-          <i class="bi bi-arrow-up-square"></i>
-        </button>
+        <div class="textarea-buttons">
+          <button class="copy-text-btn" title="テキストをコピー">
+            <i class="bi bi-copy"></i>
+          </button>
+          <button class="scroll-to-top-btn" title="一番上に戻る">
+            <i class="bi bi-arrow-up-square"></i>
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -550,18 +555,77 @@ async function renderInputForm(id) {
     console.log("Scrolled to top of textarea");
   });
 
+  // コピーボタンの機能を追加
+  const copyBtn = content.querySelector(".copy-text-btn");
+  copyBtn.addEventListener("click", async () => {
+    const textToCopy = ta.value;
+
+    if (textToCopy.trim() === "") {
+      console.log("No text to copy");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      console.log("Text copied to clipboard");
+
+      // コピー成功時の視覚的フィードバック
+      const icon = copyBtn.querySelector("i");
+      const originalClass = icon.className;
+
+      // アイコンをチェックマークに変更してグレーにする
+      icon.className = "bi bi-check";
+      copyBtn.classList.add("copied");
+
+      // 1秒後に元に戻す
+      setTimeout(() => {
+        icon.className = originalClass;
+        copyBtn.classList.remove("copied");
+      }, 1000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+
+      // 失敗時のフィードバック（古いブラウザ対応）
+      try {
+        ta.select();
+        document.execCommand("copy");
+        console.log("Text copied using fallback method");
+
+        // 成功時の視覚的フィードバック
+        const icon = copyBtn.querySelector("i");
+        const originalClass = icon.className;
+
+        icon.className = "bi bi-check";
+        copyBtn.classList.add("copied");
+
+        setTimeout(() => {
+          icon.className = originalClass;
+          copyBtn.classList.remove("copied");
+        }, 1000);
+      } catch (fallbackErr) {
+        console.error("Fallback copy also failed: ", fallbackErr);
+      }
+    }
+  });
+
   // テキストの量に応じてボタンの表示/非表示を制御
-  function updateScrollButtonVisibility() {
+  function updateButtonVisibility() {
+    const hasText = ta.value.trim().length > 0;
     const lines = ta.value.split("\n").length;
     const isLongText = lines > 10; // 10行以上の場合に表示
+
+    // コピーボタン：テキストがある場合に表示
+    copyBtn.style.display = hasText ? "flex" : "none";
+
+    // スクロールボタン：10行以上の場合に表示
     scrollToTopBtn.style.display = isLongText ? "flex" : "none";
   }
 
   // 初期状態でボタンの表示を設定
-  updateScrollButtonVisibility();
+  updateButtonVisibility();
 
   // テキスト変更時にボタンの表示を更新
-  ta.addEventListener("input", updateScrollButtonVisibility);
+  ta.addEventListener("input", updateButtonVisibility);
 
   // preload data when editing
   const starIcon = content.querySelector(".star-input");

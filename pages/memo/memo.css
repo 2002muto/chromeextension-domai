@@ -269,12 +269,20 @@ body {
   display: none;
 }
 
-/* 一番上に戻るボタン */
-.scroll-to-top-btn {
+/* textareaボタンコンテナ */
+.textarea-buttons {
   position: absolute;
   bottom: 12px;
   right: 12px;
-  background: transparent; /* 背景を透明に */
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+/* 共通ボタンスタイル */
+.copy-text-btn,
+.scroll-to-top-btn {
+  background: transparent;
   border: none;
   border-radius: 6px;
   width: 36px;
@@ -283,19 +291,30 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.7); /* 白色で少し透明感を追加 */
+  color: rgba(255, 255, 255, 0.7);
   font-size: 1.2rem;
   transition: all 0.3s ease;
-  z-index: 10;
 }
 
+.copy-text-btn:hover,
 .scroll-to-top-btn:hover {
-  color: #ffffff; /* ホバー時は完全に白色 */
+  color: #ffffff;
   transform: translateY(-2px);
 }
 
+.copy-text-btn:active,
 .scroll-to-top-btn:active {
   transform: translateY(0);
+}
+
+/* コピー完了時のスタイル */
+.copy-text-btn.copied {
+  color: #6b7280; /* グレー色 */
+}
+
+.copy-text-btn.copied:hover {
+  color: #6b7280; /* ホバー時もグレーを維持 */
+  transform: none; /* アニメーションを無効化 */
 }
 
 /* ─── クリップボード ─── */
