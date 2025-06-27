@@ -85,43 +85,81 @@ body {
 .memo-footer {
   position: static;
   margin: 32px 16px;
-  padding: 8px 4px;
+  padding: 16px 16px 0;
   display: flex;
-  gap: 8px;
+  gap: 12px;
   background: transparent;
   box-sizing: border-box;
+  align-items: center;
+  justify-content: flex-start;
 }
+
 .memo-footer .footer-btn {
-  flex: 1;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 36px;
+  height: 36px;
   color: #fff;
-  background: linear-gradient(90deg, #424242, #272727);
-  border: none;
-  padding: 12px 0;
-  border-radius: 4px;
+  border-radius: 50%;
   cursor: pointer;
-  transition: filter 0.25s;
+  background-color: #555555;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: none;
+  font-size: 14px;
+  flex: none;
+  overflow: hidden;
+  transform-origin: center center;
 }
+
 .memo-footer .footer-btn i {
-  margin-right: 6px;
+  font-size: 14px;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+
+.memo-footer .footer-btn .btn-text {
+  position: absolute;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(10px) scale(0.8);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  white-space: nowrap;
+}
+
 .memo-footer .footer-btn:hover {
   filter: brightness(1.2);
+  transform: translateY(-2px) scale(1.05);
+  width: 100px;
+  border-radius: 18px;
+  padding: 0;
+  justify-content: center;
+  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
-/* 保存／削除ボタン */
+
+.memo-footer .footer-btn:hover i {
+  display: none;
+}
+
+.memo-footer .footer-btn:hover .btn-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
+}
+
+/* 戻る／保存／削除ボタンの色分け */
+.memo-footer .back-btn {
+  background-color: #6c757d;
+}
 .memo-footer .save-btn {
-  background: #00a31e;
-}
-.memo-footer .save-btn:hover {
-  filter: brightness(1.15);
+  background-color: #00a31e;
 }
 .memo-footer .delete-btn {
-  background: #910002;
-}
-.memo-footer .delete-btn:hover {
-  filter: brightness(1.15);
+  background-color: #910002;
 }
 
 /* ─── 新規 MEMO 追加 ─── */
@@ -332,8 +370,19 @@ body {
   display: flex;
   align-items: center;
   gap: 0px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  padding-bottom: 2px;
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.font-size-controls::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .font-size-btn {
@@ -377,12 +426,15 @@ body {
 .font-size-indicator {
   font-size: 14px;
   color: #bbb;
-  padding: 6px 8px;
+  padding: 6px 6px;
   white-space: nowrap;
   user-select: none;
   cursor: pointer;
   transition: color 0.2s ease;
   border-radius: 4px;
+  min-width: 32px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .font-size-indicator:hover {

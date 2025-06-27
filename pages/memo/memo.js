@@ -114,8 +114,18 @@ function setFooter(mode) {
   } else if (mode === "edit") {
     /* ← 追加：MEMO入力／編集画面用フッター */
     foot.innerHTML = `
-      <button class="footer-btn save-btn"><i class="bi bi-save"></i> 保存して戻る</button>
-      <button class="footer-btn delete-btn"><i class="bi bi-trash"></i> 削除して戻る</button>
+      <button class="footer-btn back-btn">
+        <i class="bi bi-arrow-left-circle"></i>
+        <span class="btn-text">戻る</span>
+      </button>
+      <button class="footer-btn save-btn">
+        <i class="bi bi-save"></i>
+        <span class="btn-text">保存</span>
+      </button>
+      <button class="footer-btn delete-btn">
+        <i class="bi bi-trash"></i>
+        <span class="btn-text">削除</span>
+      </button>
     `;
   }
 }
@@ -825,6 +835,12 @@ async function renderInputForm(id) {
     }
 
     console.log("form star toggled:", !cur);
+  });
+
+  // back handler (何もせずに戻る)
+  document.querySelector(".back-btn").addEventListener("click", () => {
+    console.log("Back without saving");
+    renderListView();
   });
 
   // save handler
