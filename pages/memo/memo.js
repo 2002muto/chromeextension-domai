@@ -108,8 +108,14 @@ function setFooter(mode) {
   foot.style.display = "flex";
   if (mode === "list" || mode === "clipboard") {
     foot.innerHTML = `
-      <button class="footer-btn encrypt-btn">暗号化フォルダ</button>
-      <button id="btn-archive-toggle" class="footer-btn archive-toggle">アーカイブ</button>
+      <button class="footer-btn encrypt-btn">
+        <i class="bi bi-download"></i>
+        <span class="btn-text">バックアップ</span>
+      </button>
+      <button id="btn-archive-toggle" class="footer-btn archive-toggle">
+        <i class="bi bi-archive"></i>
+        <span class="btn-text">アーカイブ</span>
+      </button>
     `;
   } else if (mode === "edit") {
     /* ← 追加：MEMO入力／編集画面用フッター */
