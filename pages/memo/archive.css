@@ -1,11 +1,9 @@
 /* File: pages/memo/archive.css */
 
-/* カードを白背景に切り替える */
-.card-container.archive {
-  /* 通常モードの背景色 */
+/* アーカイブモード時のスタイル */
+.memo-content.archive {
+  /* アーカイブ時の背景色（必要に応じて） */
   background: #2d3748;
-  /* 通常モードのシャドウ */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* サブナビ：アーカイブ/MEMO ⇔ クリップ */

@@ -26,8 +26,8 @@
   function startArchiveMode(type = "memo") {
     archiveType = type;
 
-    /* カードに archive クラスを付与 */
-    document.querySelector(".card-container").classList.add("archive");
+    /* コンテンツに archive クラスを付与 */
+    document.querySelector(".memo-content").classList.add("archive");
 
     /* ① サブナビを生成 or 更新 */
     renderArchiveNav();
@@ -50,11 +50,8 @@
         <div class="nav-btn" id="arch-clip">アーカイブ/クリップボード</div>
       `;
       document
-        .querySelector(".card-container")
-        .parentNode.insertBefore(
-          nav,
-          document.querySelector(".card-container")
-        );
+        .querySelector(".memo-content")
+        .parentNode.insertBefore(nav, document.querySelector(".memo-content"));
       /* イベント登録は初回だけ */
       nav.querySelector("#arch-memo").addEventListener("click", () => {
         archiveType = "memo";
@@ -171,7 +168,7 @@
 
     /* 戻る */
     footer.querySelector(".back-btn").onclick = () => {
-      document.querySelector(".card-container").classList.remove("archive");
+      document.querySelector(".memo-content").classList.remove("archive");
       document.querySelector(".sub-archive-nav")?.remove();
       footer.classList.remove("archive");
       renderListView(); // MEMO一覧に戻す

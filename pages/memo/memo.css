@@ -7,23 +7,7 @@
 body {
   margin: 0;
 }
-.card-container {
-  background: #2d3748;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  margin: 24px 16px 0;
-  overflow: hidden;
-  opacity: 1;
-  transform: translateY(0);
-}
-.card-container.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-/* アニメーションを発火させるためのクラス */
-.card-container.animate {
-  animation: slideUpFade 0.4s ease-out both;
-}
+/* カード状背景スタイルは削除（背景のみに変更） */
 /* ─── サブナビ ─── */
 .card-nav {
   display: flex;
@@ -60,10 +44,15 @@ body {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s, transform 0.5s;
+  min-height: calc(100vh - 140px); /* ヘッダーとフッターを除いた高さ */
 }
 .memo-content.show {
   opacity: 1;
   transform: translateY(0);
+}
+/* アニメーションを発火させるためのクラス */
+.memo-content.animate {
+  animation: slideUpFade 0.4s ease-out both;
 }
 /* 編集モード時は footer を下部に固定 */
 .memo-content.edit-mode + .memo-footer {
@@ -73,6 +62,12 @@ body {
   width: calc(100% - 32px);
   margin: 0;
   z-index: 10;
+}
+
+/* 編集モード時のコンテンツ高さ調整 */
+.memo-content.edit-mode {
+  min-height: calc(100vh - 120px); /* フッター分の余白を確保 */
+  padding-bottom: 80px; /* フッター重複回避 */
 }
 /* クリップボードモードでは内部スクロールバーを隠す */
 .memo-content.clipboard-mode {
@@ -189,55 +184,147 @@ body {
 
 /* ─── MEMO入力画面 ─── */
 .form-title {
-  margin: 16px 16px 8px;
-  font-size: 1.125rem;
-  color: #0fff17;
+  display: none; /* 不要なタイトルを非表示 */
 }
+
 .memo-input-form {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background: #2d3748;
-  padding: 24px;
+  background: #2d2d2d; /* より暗いグレー */
+  padding: 0; /* パディングをリセット */
   border-radius: 8px;
   min-height: 0;
   box-sizing: border-box;
+  overflow: hidden; /* 内容がはみ出ないように */
+  height: 100%; /* 親要素の高さを最大活用 */
 }
+
 .memo-input-form .input-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  padding: 6px 8px;
+  background: #2d2d2d; /* ヘッダー背景 */
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* 隙間の広い白い点線 */
 }
+
 .memo-input-form .star-input {
   font-size: 1.4rem;
   cursor: pointer;
+  order: 2; /* タイトルの後ろに配置 */
+  margin-left: auto; /* 右端に寄せる */
 }
+
 .memo-input-form .star-input.off {
-  color: #eeeeee;
+  color: rgba(255, 255, 255, 0.3); /* より薄い色に */
 }
+
 .memo-input-form .star-input.on {
   color: #f2c533;
 }
+
 .memo-input-form .title-input {
   flex: 1;
-  background: #3a3f4a;
+  background: transparent; /* 背景を透明に */
   border: none;
-  border-radius: 4px;
-  padding: 8px;
-  color: #e2e8f0;
+  padding: 8px 0; /* 左右のパディングを削除 */
+  color: #ffffff; /* より明るい色に */
+  font-size: 0.85rem; /* さらに文字サイズを小さく */
+  font-weight: 500; /* やや太く */
+  outline: none; /* フォーカス時の光る効果を無効化 */
 }
+
+/* textareaコンテナ */
+.memo-input-form .textarea-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .memo-input-form .text-input {
-  /* allow natural height so user can freely resize */
-  flex: none;
-  /* Default height for better usability */
-  min-height: 200px;
-  background: #3a3f4a;
+  flex: 1;
+  background: transparent; /* title-inputと同じ透明背景 */
   border: none;
-  border-radius: 4px;
-  padding: 8px;
-  color: #e2e8f0;
-  resize: vertical;
+  padding: 6px 8px; /* 統一されたパディング */
+  color: #ffffff; /* title-inputと同じ明るい白色 */
+  font-size: 0.85rem; /* さらに文字サイズを小さく */
+  font-weight: 500; /* title-inputと同じフォント太さ */
+  resize: none; /* リサイズ不要 */
+  min-height: 0; /* flex: 1 で自動拡張 */
+  height: 100%; /* 利用可能な高さを最大活用 */
+  box-sizing: border-box;
+  outline: none; /* フォーカス時の光る効果を無効化 */
+
+  /* スクロールバーを非表示にする */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Chrome/Safari/Opera のスクロールバー非表示 */
+.memo-input-form .text-input::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* textareaボタンコンテナ */
+.textarea-buttons {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+/* 文字数カウンター */
+.char-counter {
+  font-size: 12px;
+  color: #bbb;
+  padding: 4px 8px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* 共通ボタンスタイル */
+.copy-text-btn,
+.scroll-to-top-btn {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  display: none; /* 初期状態では非表示 */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.copy-text-btn:hover,
+.scroll-to-top-btn:hover {
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.copy-text-btn:active,
+.scroll-to-top-btn:active {
+  transform: translateY(0);
+}
+
+/* コピー完了時のスタイル */
+.copy-text-btn.copied {
+  color: #6b7280; /* グレー色 */
+}
+
+.copy-text-btn.copied:hover {
+  color: #6b7280; /* ホバー時もグレーを維持 */
+  transform: none; /* アニメーションを無効化 */
 }
 
 /* ─── クリップボード ─── */

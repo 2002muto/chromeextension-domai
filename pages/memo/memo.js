@@ -159,13 +159,12 @@ async function renderListView() {
     .getElementById("btn-archive-toggle")
     .addEventListener("click", () => renderArchiveNav("memo"));
 
-  // animate card + content
-  const card = document.querySelector(".card-container");
+  // animate content
   const content = document.querySelector(".memo-content");
   content.classList.remove("edit-mode", "clipboard-mode");
-  card.classList.remove("animate");
-  void card.offsetWidth;
-  card.classList.add("animate");
+  content.classList.remove("animate");
+  void content.offsetWidth;
+  content.classList.add("animate");
 
   // render new-memo button + empty list
   content.innerHTML = `
@@ -267,13 +266,12 @@ async function renderClipboardView() {
     .addEventListener("click", () => renderArchiveNav("clip"));
 
   // animate
-  const card = document.querySelector(".card-container");
   const content = document.querySelector(".memo-content");
   content.classList.remove("edit-mode");
   content.classList.add("clipboard-mode");
-  card.classList.remove("animate");
-  void card.offsetWidth;
-  card.classList.add("animate");
+  content.classList.remove("animate");
+  void content.offsetWidth;
+  content.classList.add("animate");
 
   // header + list + add + hint
   content.innerHTML = `
@@ -398,12 +396,12 @@ async function renderInputForm(id) {
   setFooter("edit");
 
   // form title
-  const card = document.querySelector(".card-container");
+  const contentElement = document.querySelector(".memo-content");
   let h2 = document.querySelector(".form-title");
   if (!h2) {
     h2 = document.createElement("h2");
     h2.className = "form-title";
-    card.parentNode.insertBefore(h2, card);
+    contentElement.parentNode.insertBefore(h2, contentElement);
   }
   h2.textContent = id ? "MEMO編集画面" : "MEMO入力画面";
 
@@ -412,21 +410,260 @@ async function renderInputForm(id) {
   content.innerHTML = `
     <div class="memo-input-form">
       <div class="input-header">
-        <i class="bi bi-star-fill star-input off"></i>
+        <i class="bi bi-star star-input off"></i>
         <input type="text" class="title-input" placeholder="タイトル" />
       </div>
-      <textarea class="text-input" placeholder="テキストを入力…"></textarea>
+      <div class="textarea-container">
+        <textarea class="text-input" placeholder="テキストを入力..."></textarea>
+        <div class="textarea-buttons">
+          <div class="char-counter">0</div>
+          <button class="copy-text-btn" title="テキストをコピー">
+            <i class="bi bi-copy"></i>
+          </button>
+          <button class="scroll-to-top-btn" title="一番上に戻る">
+            <i class="bi bi-arrow-up-square"></i>
+          </button>
+        </div>
+      </div>
     </div>
   `;
 
   // Locate the textarea element for further manipulation
-  const ta = content.querySelector('.text-input');
-  console.log('Initialized MEMO textarea', ta);
+  const ta = content.querySelector(".text-input");
+  console.log("Initialized MEMO textarea", ta);
   // Ensure minimum height via JS as well
-  ta.style.minHeight = '200px';
+  ta.style.minHeight = "200px";
   // Explicitly allow vertical resizing
-  ta.style.resize = 'vertical';
-  console.log('Enable vertical resize for MEMO textarea');
+  ta.style.resize = "vertical";
+  console.log("Enable vertical resize for MEMO textarea");
+
+  // クリックした位置にカーソルを移動する機能を追加
+  ta.addEventListener("click", function (e) {
+    // クリック座標からカーソル位置を計算
+    const rect = ta.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // 一時的に空のdivを作成してテキストの描画を模擬
+    const mirror = document.createElement("div");
+    const computedStyle = window.getComputedStyle(ta);
+
+    // textareaのスタイルをコピー
+    mirror.style.cssText = `
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: ${
+        ta.offsetWidth -
+        parseInt(computedStyle.paddingLeft) -
+        parseInt(computedStyle.paddingRight)
+      }px;
+      height: auto;
+      font-family: ${computedStyle.fontFamily};
+      font-size: ${computedStyle.fontSize};
+      font-weight: ${computedStyle.fontWeight};
+      line-height: ${computedStyle.lineHeight};
+      letter-spacing: ${computedStyle.letterSpacing};
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      overflow: hidden;
+    `;
+
+    document.body.appendChild(mirror);
+
+    const text = ta.value;
+    const lines = text.split("\n");
+    const lineHeight =
+      parseInt(computedStyle.lineHeight) ||
+      parseInt(computedStyle.fontSize) * 1.2;
+    const paddingTop = parseInt(computedStyle.paddingTop) || 0;
+
+    // クリックされた行を計算
+    const clickedLine = Math.floor((y - paddingTop) / lineHeight);
+
+    console.log(
+      `Clicked line: ${clickedLine}, total lines: ${lines.length}, text length: ${text.length}`
+    );
+
+    // 完全に空のtextareaで任意の行をクリックした場合
+    if (text.length === 0 && clickedLine > 0) {
+      const newText = "\n".repeat(clickedLine);
+      ta.value = newText;
+      ta.setSelectionRange(newText.length, newText.length);
+      ta.focus();
+      console.log(`Empty textarea: added ${clickedLine} newlines`);
+      document.body.removeChild(mirror);
+      return;
+    }
+
+    if (clickedLine >= 0 && clickedLine < lines.length) {
+      // その行の開始位置を計算
+      let position = 0;
+      for (let i = 0; i < clickedLine; i++) {
+        position += lines[i].length + 1; // +1 for newline character
+      }
+
+      // その行内での位置を計算
+      const lineText = lines[clickedLine];
+      mirror.textContent = lineText;
+
+      let charPosition = 0;
+      for (let i = 0; i <= lineText.length; i++) {
+        mirror.textContent = lineText.substring(0, i);
+        if (mirror.offsetWidth > x) {
+          charPosition = Math.max(0, i - 1);
+          break;
+        }
+        charPosition = i;
+      }
+
+      const finalPosition = position + charPosition;
+
+      // カーソル位置を設定
+      ta.setSelectionRange(finalPosition, finalPosition);
+      ta.focus();
+    } else if (clickedLine >= lines.length) {
+      // 最後の行より下をクリックした場合、必要な改行を追加
+      const currentText = ta.value;
+      const neededNewlines = clickedLine - lines.length + 1;
+      const newText = currentText + "\n".repeat(neededNewlines);
+
+      ta.value = newText;
+
+      // 新しい行の開始位置にカーソルを設定
+      const newPosition = newText.length;
+      ta.setSelectionRange(newPosition, newPosition);
+      ta.focus();
+
+      console.log(
+        `Added ${neededNewlines} newlines, cursor at position ${newPosition}`
+      );
+    }
+
+    // 一時的なelementを削除
+    document.body.removeChild(mirror);
+  });
+
+  // 一番上に戻るボタンの機能を追加
+  const scrollToTopBtn = content.querySelector(".scroll-to-top-btn");
+  scrollToTopBtn.addEventListener("click", () => {
+    ta.setSelectionRange(0, 0);
+    ta.focus();
+    ta.scrollTop = 0;
+    console.log("Scrolled to top of textarea");
+  });
+
+  // コピーボタンの機能を追加
+  const copyBtn = content.querySelector(".copy-text-btn");
+  copyBtn.addEventListener("click", async () => {
+    const textToCopy = ta.value;
+
+    if (textToCopy.trim() === "") {
+      console.log("No text to copy");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      console.log("Text copied to clipboard");
+
+      // コピー成功時の視覚的フィードバック
+      const icon = copyBtn.querySelector("i");
+      const originalClass = icon.className;
+
+      // アイコンをチェックマークに変更してグレーにする
+      icon.className = "bi bi-check";
+      copyBtn.classList.add("copied");
+
+      // 1秒後に元に戻す
+      setTimeout(() => {
+        icon.className = originalClass;
+        copyBtn.classList.remove("copied");
+      }, 1000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+
+      // 失敗時のフィードバック（古いブラウザ対応）
+      try {
+        ta.select();
+        document.execCommand("copy");
+        console.log("Text copied using fallback method");
+
+        // 成功時の視覚的フィードバック
+        const icon = copyBtn.querySelector("i");
+        const originalClass = icon.className;
+
+        icon.className = "bi bi-check";
+        copyBtn.classList.add("copied");
+
+        setTimeout(() => {
+          icon.className = originalClass;
+          copyBtn.classList.remove("copied");
+        }, 1000);
+      } catch (fallbackErr) {
+        console.error("Fallback copy also failed: ", fallbackErr);
+      }
+    }
+  });
+
+  // テキストの量に応じてボタンの表示/非表示を制御
+  function updateButtonVisibility() {
+    const hasText = ta.value.trim().length > 0;
+    const lines = ta.value.split("\n").length;
+    const isLongText = lines > 10; // 10行以上の場合に表示
+
+    // 文字数カウント：改行文字を除外した実際の文字数を表示
+    const charCountWithoutNewlines = ta.value.replace(/\n/g, "").length;
+
+    // 文字数カウンターを更新
+    const charCounter = content.querySelector(".char-counter");
+    charCounter.textContent = `${charCountWithoutNewlines}文字`;
+
+    // コピーボタン：テキストがある場合に表示
+    copyBtn.style.display = hasText ? "flex" : "none";
+
+    // スクロールボタン：10行以上の場合に表示
+    scrollToTopBtn.style.display = isLongText ? "flex" : "none";
+  }
+
+  // 初期状態でボタンの表示を設定
+  updateButtonVisibility();
+
+  // 文字数カウンターの確実な更新のための包括的イベント監視
+  let lastValue = ta.value;
+
+  // 基本的なイベント監視
+  ta.addEventListener("input", updateButtonVisibility);
+  ta.addEventListener("paste", () => setTimeout(updateButtonVisibility, 10));
+  ta.addEventListener("cut", updateButtonVisibility);
+  ta.addEventListener("compositionend", updateButtonVisibility);
+  ta.addEventListener("focus", updateButtonVisibility);
+  ta.addEventListener("blur", updateButtonVisibility);
+  ta.addEventListener("keyup", updateButtonVisibility);
+  ta.addEventListener("keydown", updateButtonVisibility);
+  ta.addEventListener("change", updateButtonVisibility);
+  ta.addEventListener("propertychange", updateButtonVisibility);
+
+  // ドラッグ&ドロップ対応
+  ta.addEventListener("drop", () => setTimeout(updateButtonVisibility, 10));
+  ta.addEventListener("dragend", updateButtonVisibility);
+
+  // 定期的な監視（最強の保険として）
+  const charCountInterval = setInterval(() => {
+    if (ta.value !== lastValue) {
+      lastValue = ta.value;
+      updateButtonVisibility();
+      console.log("文字数カウンター：定期監視で差分検出", ta.value.length);
+    }
+  }, 100); // 100msごとにチェック
+
+  // メモリリーク防止：ページ離脱時にインターバルをクリア
+  window.addEventListener("beforeunload", () => {
+    clearInterval(charCountInterval);
+  });
 
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
@@ -438,6 +675,18 @@ async function renderInputForm(id) {
       starIcon.classList.toggle("on", existing.starred);
       starIcon.classList.toggle("off", !existing.starred);
       starIcon.dataset.starred = existing.starred;
+
+      // 既存メモ編集時のアイコン設定
+      if (existing.starred) {
+        starIcon.classList.remove("bi-star");
+        starIcon.classList.add("bi-star-fill");
+      } else {
+        starIcon.classList.remove("bi-star-fill");
+        starIcon.classList.add("bi-star");
+      }
+
+      // 既存メモ編集時は文字数カウンターを更新
+      updateButtonVisibility();
     }
   }
 
@@ -445,22 +694,41 @@ async function renderInputForm(id) {
   content.classList.remove("clipboard-mode");
   content.classList.add("edit-mode");
 
-  /* ▼▼ 追加：カード本体にも“下からふわっ”アニメ ▼▼ */
-  card.classList.remove("animate");
-  void card.offsetWidth; // 1フレーム reflow
-  card.classList.add("animate");
+  /* ▼▼ 追加：カード本体にも"下からふわっ"アニメ ▼▼ */
+  content.classList.remove("animate");
+  void content.offsetWidth; // 1フレーム reflow
+  content.classList.add("animate");
 
   content.classList.remove("show");
   void content.offsetWidth;
   content.classList.add("show");
 
-  // star toggle in form
-  starIcon.dataset.starred = (starIcon.dataset.starred === "true").toString();
+  // star toggle in form - デフォルトは未選択状態
+  if (id === undefined) {
+    // 新規作成時は必ず未選択状態
+    starIcon.dataset.starred = "false";
+    starIcon.classList.add("off");
+    starIcon.classList.remove("on");
+  } else {
+    starIcon.dataset.starred = (starIcon.dataset.starred === "true").toString();
+  }
   starIcon.addEventListener("click", () => {
     const cur = starIcon.dataset.starred === "true";
     starIcon.dataset.starred = (!cur).toString();
     starIcon.classList.toggle("on", !cur);
     starIcon.classList.toggle("off", cur);
+
+    // アイコンの種類も切り替え
+    if (!cur) {
+      // 選択状態：塗りつぶし + 黄色
+      starIcon.classList.remove("bi-star");
+      starIcon.classList.add("bi-star-fill");
+    } else {
+      // 未選択状態：枠のみ + グレー
+      starIcon.classList.remove("bi-star-fill");
+      starIcon.classList.add("bi-star");
+    }
+
     console.log("form star toggled:", !cur);
   });
 
@@ -548,7 +816,7 @@ function renderArchiveNav(type) {
 async function renderArchiveList() {
   console.log("renderArchiveList: start", archiveType);
 
-  document.querySelector(".card-container").classList.add("archive");
+  document.querySelector(".memo-content").classList.add("archive");
   const content = document.querySelector(".memo-content");
   content.classList.remove("show");
   void content.offsetWidth;
@@ -634,10 +902,10 @@ function renderArchiveFooter() {
   `;
   footer.style.display = "flex";
 
-  // Back → go back to last mode (we’ll default to MEMO list)
+  // Back → go back to last mode (we'll default to MEMO list)
   footer.querySelector(".back-btn").addEventListener("click", () => {
     // 1) Archive 表示を解除
-    document.querySelector(".card-container").classList.remove("archive");
+    document.querySelector(".memo-content").classList.remove("archive");
     document.querySelector(".sub-archive-nav")?.remove();
     footer.classList.remove("archive");
 
