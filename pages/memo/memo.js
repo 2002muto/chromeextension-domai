@@ -32,23 +32,52 @@ function saveStorage(key, arr) {
 // Drag & Drop handlers for MEMOs
 // ───────────────────────────────────────
 let dragSrcIndex = null;
+let dragSrcStarred = null; // ドラッグ元の星状態を記録
 function handleDragStart(e) {
   dragSrcIndex = +this.dataset.index;
-  console.log("MEMO drag start:", dragSrcIndex);
+  const filteredMemos = memos.filter((m) => !m.archived);
+  dragSrcStarred = filteredMemos[dragSrcIndex]?.starred || false;
+  console.log("MEMO drag start:", dragSrcIndex, "starred:", dragSrcStarred);
   e.dataTransfer.effectAllowed = "move";
 }
 function handleDragOver(e) {
   e.preventDefault();
+
+  // ドロップ先の星状態をチェック
+  const dropIndex = +this.dataset.index;
+  const filteredMemos = memos.filter((m) => !m.archived);
+  const dropTargetStarred = filteredMemos[dropIndex]?.starred || false;
+
+  // 異なるカテゴリ間のドロップを禁止
+  if (dragSrcStarred !== dropTargetStarred) {
+    this.classList.add("drag-invalid");
+    this.classList.remove("drag-over");
+    console.log("MEMO drag invalid: different categories");
+    return;
+  }
+
   this.classList.add("drag-over");
+  this.classList.remove("drag-invalid");
 }
 function handleDragLeave() {
-  this.classList.remove("drag-over");
+  this.classList.remove("drag-over", "drag-invalid");
 }
 async function handleDrop(e) {
   e.stopPropagation();
   const dropIndex = +this.dataset.index;
+
+  // カテゴリ間のドロップを再度チェック
+  const filteredMemos = memos.filter((m) => !m.archived);
+  const dropTargetStarred = filteredMemos[dropIndex]?.starred || false;
+
+  if (dragSrcStarred !== dropTargetStarred) {
+    console.log("MEMO drop rejected: different categories");
+    return;
+  }
+
   console.log(`MEMO drop from ${dragSrcIndex} to ${dropIndex}`);
   if (dragSrcIndex === null || dragSrcIndex === dropIndex) return;
+
   // reorder in array
   const [moved] = memos.splice(dragSrcIndex, 1);
   memos.splice(dropIndex, 0, moved);
@@ -58,8 +87,9 @@ async function handleDrop(e) {
 function handleDragEnd() {
   document
     .querySelectorAll(".memo-item")
-    .forEach((el) => el.classList.remove("drag-over"));
+    .forEach((el) => el.classList.remove("drag-over", "drag-invalid"));
   dragSrcIndex = null;
+  dragSrcStarred = null;
 }
 
 // ───────────────────────────────────────
