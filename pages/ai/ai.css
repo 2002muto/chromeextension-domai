@@ -1,0 +1,219 @@
+/* File: pages/ai/ai.css */
+
+/* AI専用スタイル - COMING SOON画面 */
+
+.ai-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 68px); /* ヘッダー分を除く */
+  padding: 20px;
+  background: #314559; /* MEMO・PROMPTと同じ背景色 */
+}
+
+.coming-soon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.coming-soon-card {
+  position: relative;
+  background: rgba(49, 69, 89, 0.9);
+  border-radius: 20px;
+  padding: 50px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
+  overflow: hidden;
+}
+
+/* フローティングアニメーション */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  25% {
+    transform: translateY(-10px) scale(1.02);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.01);
+  }
+  75% {
+    transform: translateY(-15px) scale(1.03);
+  }
+}
+
+/* アニメーション付きボーダー */
+.animated-border {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #af008f, #6b00d9, #af008f, #6b00d9);
+  background-size: 400% 400%;
+  border-radius: 23px;
+  z-index: -1;
+  animation: gradientRotate 4s ease infinite;
+}
+
+@keyframes gradientRotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 回転するボーダーエフェクト */
+.coming-soon-card::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    #af008f,
+    transparent,
+    #6b00d9,
+    transparent
+  );
+  border-radius: 22px;
+  z-index: -2;
+  animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.coming-soon-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #ffffff; /* 白色に変更 */
+  text-shadow: 0 0 30px rgba(175, 0, 143, 0.4);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 20px rgba(175, 0, 143, 0.5));
+  }
+  to {
+    filter: drop-shadow(0 0 30px rgba(107, 0, 217, 0.8));
+  }
+}
+
+.coming-soon-subtitle {
+  font-size: 1.1rem;
+  color: #ffffff; /* 完全な白色に変更 */
+  margin-bottom: 30px;
+  animation: fadeInUp 1s ease-out 0.5s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ローディングドット */
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.loading-dots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #af008f, #6b00d9);
+  animation: loadingDot 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes loadingDot {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+  .ai-main {
+    padding: 15px;
+  }
+
+  .coming-soon-card {
+    padding: 30px 25px;
+  }
+
+  .coming-soon-title {
+    font-size: 2rem;
+  }
+
+  .coming-soon-subtitle {
+    font-size: 1rem;
+  }
+}
+
+/* 初期表示アニメーション */
+.ai-main.show .coming-soon-card {
+  animation: fadeInScale 0.8s ease-out forwards,
+    float 6s ease-in-out 0.8s infinite;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.5) translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
