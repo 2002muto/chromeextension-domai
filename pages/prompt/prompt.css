@@ -400,6 +400,16 @@ textarea.field-text,
   pointer-events: none;
 } /* アイコンクリックもボタン扱い */
 
+/* COPIEDボタンのスタイル */
+.btn-copy.copied {
+  color: #ffffff !important; /* COPYと同じ白色 */
+  opacity: 1 !important;
+}
+
+.btn-copy.copied i {
+  color: #ffffff !important; /* アイコンもCOPYと同じ白色 */
+}
+
 .btn-edit {
   background: #00a31e !important; /* 指定色 */
   border: none !important;
@@ -494,4 +504,181 @@ textarea.field-text,
 }
 .memo-footer .nav-btn.save-btn {
   background-color: #00a31e;
+}
+
+/* 実行画面のボタンの色分け */
+.memo-footer .nav-btn.history-btn {
+  background-color: #ffffff; /* 白色背景 */
+  color: #2c2c2c; /* ダークグレー文字 */
+}
+
+/* 実行履歴ボタンのアイコンとテキスト調整 */
+.memo-footer .nav-btn.history-btn i {
+  font-weight: 900; /* アイコンも太く */
+  font-size: 16px; /* アイコンをさらに大きく */
+  text-shadow: 0 0 1px currentColor; /* アイコンに影を追加して太く見せる */
+}
+
+.memo-footer .nav-btn.history-btn:hover .nav-text {
+  color: #2c2c2c; /* ダークグレー文字を確実に適用 */
+  font-weight: 900; /* より太い文字 */
+  font-size: 12px; /* わずかに大きく */
+}
+
+/*--------------------------------------------------------------
+  プロンプト実行画面のスタイル（画像通りのUI・UX）
+--------------------------------------------------------------*/
+.prompt-run-box {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-x: auto; /* 横スクロールバーを表示 */
+  overflow-y: visible;
+}
+
+/* プロンプトブロック（MEMOページのボーダーライン使用） */
+.prompt-block {
+  padding: 16px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* MEMOページと同じ点線 */
+  cursor: grab;
+}
+
+.prompt-block:last-of-type {
+  border-bottom: none; /* 最後のブロックはボーダーなし */
+}
+
+/* ドラッグ&ドロップの視覚効果 */
+.prompt-block.dragging {
+  opacity: 0.6 !important;
+  transform: scale(0.98) !important;
+  cursor: grabbing !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(58, 63, 74, 0.1);
+  border-radius: 8px;
+  transition: none !important; /* ドラッグ中はフェードインアニメーションを無効化 */
+}
+
+.prompt-block.drag-over {
+  outline: 2px dashed #ffffff;
+  outline-offset: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+/* プロンプトヘッダー（ラベル＋COPYボタン） */
+.prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.prompt-label {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* プロンプト本文 */
+.prompt-content {
+  color: #ffffff;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  white-space: pre-line;
+}
+
+/* プロンプト追加入力テキストエリア */
+.prompt-textarea {
+  background: #3a3f4a !important;
+  border: 1px solid #4a5163 !important;
+  color: #ffffff !important;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden; /* スクロールバーを非表示 */
+}
+
+.prompt-textarea:focus {
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.prompt-textarea::placeholder {
+  color: #707987;
+  font-style: italic;
+}
+
+/* 一括入力ボタンのスタイル調整 */
+.btn-exec {
+  background: #00a31e !important;
+  border: none;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: filter 0.2s;
+}
+
+.btn-exec:hover {
+  filter: brightness(1.1);
+}
+
+/* 履歴保存トグルのスタイル調整 */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.form-check-label {
+  color: #ffffff !important;
+  font-size: 0.95rem;
+}
+
+/* プロンプト実行画面のフェードインアニメーション */
+.prompt-run-box {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  overflow-x: auto; /* 横スクロールバーを表示 */
+  overflow-y: visible;
+}
+
+.prompt-run-box.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* プロンプトブロックの順次フェードイン */
+.prompt-block {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.prompt-block.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 下部ボタンエリアのフェードイン */
+.btn-exec,
+.form-check {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.btn-exec.show,
+.form-check.show {
+  opacity: 1;
+  transform: translateY(0);
 }

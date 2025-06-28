@@ -23,10 +23,76 @@ const ce = (tag, cls = "", html = "") => {
 };
 const draftKey = (promptId, fieldIdx) => `draft_${promptId}_${fieldIdx}`;
 
+/* ━━━━━━━━━ ヘルパー関数 ━━━━━━━━━ */
+const getCurrentPromptIndex = () => currentPromptIndex;
+
+// 画面遷移時の処理：履歴保存のみ、ドラフトは保持
+async function handleScreenTransition(
+  obj,
+  extras,
+  saveContext,
+  shouldSaveHistory = false
+) {
+  console.log(
+    `[SCREEN TRANSITION] ${saveContext} - 処理開始 (履歴保存: ${
+      shouldSaveHistory ? "オン" : "オフ"
+    })`
+  );
+
+  const hasExtraContent = extras.some((extra) => extra.trim() !== "");
+  console.log(`[SCREEN TRANSITION] 追加入力内容の有無: ${hasExtraContent}`);
+
+  // 履歴保存（トグルボタンがオンで内容がある場合のみ）
+  if (shouldSaveHistory && hasExtraContent) {
+    // 有効なフィールドのみでペイロード作成
+    const payload = obj.fields
+      .map((f, i) => (f.on ? `${f.text}\n${extras[i]}`.trim() : ""))
+      .filter(Boolean)
+      .join("\n\n");
+
+    if (payload.trim()) {
+      runs.push({
+        id: Date.now(),
+        when: new Date().toISOString(),
+        title: obj.title,
+        text: payload,
+        count: obj.fields.filter((f) => f.on).length,
+      });
+      await save(RUN_KEY, runs);
+      console.log(
+        `[SCREEN TRANSITION] ${saveContext}で追加入力内容を履歴に保存しました`
+      );
+    }
+  } else if (shouldSaveHistory) {
+    console.log(
+      `[SCREEN TRANSITION] ${saveContext} - 履歴保存はオンですが追加入力がないためスキップ`
+    );
+  } else {
+    console.log(
+      `[SCREEN TRANSITION] ${saveContext} - 履歴保存はオフのためスキップ`
+    );
+  }
+
+  // ドラフト処理：トグルボタンがオフの時のみ削除
+  if (!shouldSaveHistory) {
+    obj.fields.forEach((_, i) =>
+      chrome.storage.local.remove(draftKey(obj.id, i))
+    );
+    console.log(
+      `[SCREEN TRANSITION] ${saveContext} - トグルオフのためドラフトを削除しました`
+    );
+  } else {
+    console.log(
+      `[SCREEN TRANSITION] ${saveContext} - トグルオンのためドラフトを保持します`
+    );
+  }
+}
+
 /* ━━━━━━━━━ 1. グローバル状態 ━━━━━━━━━ */
 let prompts = []; // カード一覧
 let runs = []; // 実行履歴
 let dragPromptIndex = null; // ドラッグ元インデックス
+let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデックス
 
 // ───────────────────────────────────────
 // Drag & Drop handlers for prompt list
@@ -79,6 +145,31 @@ async function renderList() {
   const footer = $(".memo-footer");
   const root = card.parentNode;
 
+  // 実行画面から戻る場合の自動保存処理
+  const runBox = body.querySelector(".prompt-run-box");
+  if (runBox) {
+    const histSwitch = runBox.querySelector("#hist-sw");
+    const histToggleChecked = histSwitch && histSwitch.checked;
+    console.log(
+      `[PROMPTナビ] 実行画面から遷移 - トグルボタンの状態: ${
+        histToggleChecked ? "オン" : "オフ"
+      }`
+    );
+
+    const currentIndex = getCurrentPromptIndex();
+    if (currentIndex !== -1) {
+      const obj = prompts[currentIndex];
+      const extras = [...runBox.querySelectorAll(".extra")].map((t) => t.value);
+      console.log(`[PROMPTナビ] 追加入力内容:`, extras);
+      await handleScreenTransition(
+        obj,
+        extras,
+        "PROMPTナビクリック時",
+        histToggleChecked
+      );
+    }
+  }
+
   // 編集画面や実行画面で追加されたヘッダーを削除
   root.querySelector(".form-header")?.remove();
 
@@ -127,6 +218,7 @@ async function renderList() {
   };
 
   fx(card, body);
+  currentPromptIndex = -1; // 一覧画面に戻ったのでリセット
   console.log("[renderList] end");
 
   /*─── 内部：1 カード生成 ───────────────────*/
@@ -179,6 +271,7 @@ async function renderList() {
 ══════════════════════════════════════════════════════ */
 function renderEdit(idx, isNew = false) {
   console.log("[renderEdit] idx =", idx, "isNew =", isNew);
+  currentPromptIndex = -1; // 編集画面なのでリセット
 
   /* ルート要素取得 */
   const card = $(".card-container");
@@ -361,6 +454,7 @@ function renderEdit(idx, isNew = false) {
 ══════════════════════════════════════════════════════ */
 function renderRun(idx) {
   console.log("[renderRun] idx =", idx);
+  currentPromptIndex = idx; // 現在のプロンプトインデックスを設定
 
   const card = $(".card-container");
   const body = $(".memo-content");
@@ -386,44 +480,166 @@ function renderRun(idx) {
 
   /* ── フッター ── */
   footer.innerHTML = `
-    <button class="footer-btn btn-back-run"><i class="bi bi-caret-left-fill"></i> 戻る</button>
-    <button class="footer-btn btn-history"><i class="bi bi-list"></i> 実行履歴</button>`;
-  $(".btn-back-run").onclick = () => {
+    <button class="nav-btn back-btn">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span class="nav-text">戻る</span>
+    </button>
+    <button class="nav-btn history-btn">
+      <i class="bi bi-list"></i>
+      <span class="nav-text">実行履歴</span>
+    </button>`;
+  $(".back-btn").onclick = async () => {
+    // 画面遷移時：トグルオフなら削除、オンなら保持
+    const histToggleChecked = $("#hist-sw").checked;
+    console.log(
+      `[戻るボタン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+    );
+
+    const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+    console.log(`[戻るボタン] 追加入力内容:`, extras);
+    await handleScreenTransition(
+      obj,
+      extras,
+      "戻るボタンクリック時",
+      histToggleChecked
+    );
+
     header.remove();
     renderList();
   };
-  $(".btn-history").onclick = () => console.log("[TODO] 履歴画面");
+  $(".history-btn").onclick = () => console.log("[TODO] 履歴画面");
 
   /* ── 本体 HTML ── */
   body.innerHTML = `
     <div class="prompt-run-box">
-      ${obj.fields.map((f, i) => block(i + 1, f)).join("")}
+      ${obj.fields.map((f, i) => block(i + 1, f, i)).join("")}
       <button class="btn-exec w-100 mt-3" style="background:#00A31E;color:#fff;">一括入力</button>
       <div class="form-check form-switch mt-3">
-        <input id="hist-sw" class="form-check-input" type="checkbox" checked>
+        <input id="hist-sw" class="form-check-input" type="checkbox">
         <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
       </div>
     </div>`;
-  fx(card, body);
+  /* ── フェードインアニメーション ── */
+  const runBox = body.querySelector(".prompt-run-box");
+  const promptBlocks = body.querySelectorAll(".prompt-block");
+  const execBtn = body.querySelector(".btn-exec");
+  const formCheck = body.querySelector(".form-check");
 
-  /* ── ドラフト復元・保存 ── */
-  body.querySelectorAll("textarea.extra").forEach((ta, i) => {
-    chrome.storage.local.get(draftKey(obj.id, i), (res) => {
-      if (res[draftKey(obj.id, i)]) ta.value = res[draftKey(obj.id, i)];
+  // 初期状態設定（CSS transitionが適用されるまで少し待つ）
+  setTimeout(() => {
+    // 1. メインボックスをフェードイン
+    runBox.classList.add("show");
+
+    // 2. プロンプトブロックを順次フェードイン
+    promptBlocks.forEach((block, index) => {
+      setTimeout(() => {
+        block.classList.add("show");
+      }, 150 + index * 100); // 各ブロック100ms間隔
     });
-    ta.addEventListener("input", () =>
-      chrome.storage.local.set({ [draftKey(obj.id, i)]: ta.value })
-    );
+
+    // 3. 下部ボタンエリアをフェードイン
+    setTimeout(() => {
+      execBtn.classList.add("show");
+      setTimeout(() => {
+        formCheck.classList.add("show");
+      }, 100);
+    }, 300 + promptBlocks.length * 100);
+  }, 50);
+
+  /* ── ドラッグ&ドロップイベントハンドラー ── */
+  promptBlocks.forEach((block) => {
+    block.addEventListener("dragstart", handleRunDragStart);
+    block.addEventListener("dragover", handleRunDragOver);
+    block.addEventListener("dragleave", handleRunDragLeave);
+    block.addEventListener("drop", handleRunDrop);
+    block.addEventListener("dragend", handleRunDragEnd);
   });
+
+  /* ── ドラフト復元・保存 + 自動リサイズ ── */
+  const textareas = body.querySelectorAll("textarea.extra");
+  const draftPromises = [];
+
+  textareas.forEach((ta, i) => {
+    // ドラフト復元のPromiseを作成
+    const draftPromise = new Promise((resolve) => {
+      chrome.storage.local.get(draftKey(obj.id, i), (res) => {
+        const draftContent = res[draftKey(obj.id, i)] || "";
+        if (draftContent) {
+          ta.value = draftContent;
+          // 復元後に自動リサイズ実行
+          autoResize(ta);
+        }
+        resolve(draftContent.trim() !== "");
+      });
+    });
+    draftPromises.push(draftPromise);
+
+    ta.addEventListener("input", () => {
+      chrome.storage.local.set({ [draftKey(obj.id, i)]: ta.value });
+      // 入力時に自動リサイズ実行
+      autoResize(ta);
+    });
+
+    // 初期状態でもリサイズ適用
+    autoResize(ta);
+  });
+
+  // 全てのドラフト読み込み完了後にトグルボタンの状態を設定
+  Promise.all(draftPromises).then((hasContentArray) => {
+    const hasAnyDraftContent = hasContentArray.some((hasContent) => hasContent);
+    const histSwitch = $("#hist-sw");
+
+    if (hasAnyDraftContent && histSwitch) {
+      histSwitch.checked = true;
+      console.log("[AUTO] ドラフト内容があるため履歴保存をオンにしました");
+    }
+  });
+
+  /* ── 自動リサイズ関数 ── */
+  function autoResize(textarea) {
+    // 一時的に高さをリセットして正確なscrollHeightを取得
+    textarea.style.height = "auto";
+
+    // 最小高さ（80px）と内容に応じた高さの大きい方を設定
+    const minHeight = 80;
+    const contentHeight = textarea.scrollHeight;
+    const newHeight = Math.max(minHeight, contentHeight);
+
+    textarea.style.height = newHeight + "px";
+  }
 
   /* ── COPY / EXEC ハンドラ（★120 ms デバウンス付き・1 定義のみ） ── */
   body.querySelectorAll(".btn-copy").forEach((btn) => {
     let locked = false;
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       e.stopPropagation();
       if (locked) return;
       locked = true;
-      send(+btn.dataset.idx);
+
+      // クリップボードにコピー
+      const index = +btn.dataset.idx;
+      const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+      const payload = `${obj.fields[index].text}\n${extras[index]}`.trim();
+
+      try {
+        await navigator.clipboard.writeText(payload);
+
+        // ボタンのテキストとアイコンをCOPIEDに変更
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i> COPIED';
+        btn.classList.add("copied");
+
+        // 2秒後に元に戻す
+        setTimeout(() => {
+          btn.innerHTML = originalContent;
+          btn.classList.remove("copied");
+        }, 2000);
+
+        console.log("[COPY] クリップボードにコピーしました");
+      } catch (err) {
+        console.error("[COPY] クリップボードコピーに失敗:", err);
+      }
+
       setTimeout(() => (locked = false), 120);
     });
   });
@@ -452,15 +668,30 @@ function renderRun(idx) {
 
     sendToFocused(payload); // ★ ここで 1 回だけ送信
 
-    /* ドラフト削除・履歴保存は元コードそのまま … */
+    /* 実行時：ドラフト削除は常に実行、履歴保存はトグルボタンで制御 */
+    const histToggleChecked = $("#hist-sw").checked;
+    const actionType =
+      index === "all" ? "一括入力ボタン" : `COPYボタン${index}`;
+    console.log(
+      `[EXECUTION] ${actionType} - トグルボタンの状態: ${
+        histToggleChecked ? "オン" : "オフ"
+      }`
+    );
+    console.log(`[EXECUTION] ${actionType} - 追加入力内容:`, extras);
+
+    // 実行時はドラフト削除を常に実行（送信済みなので不要）
     if (index === "all") {
       obj.fields.forEach((_, i) =>
         chrome.storage.local.remove(draftKey(obj.id, i))
       );
+      console.log(`[EXECUTION] ${actionType} - ドラフトを削除しました`);
     } else {
       chrome.storage.local.remove(draftKey(obj.id, index));
+      console.log(`[EXECUTION] ${actionType} - 個別ドラフトを削除しました`);
     }
-    if (index === "all" && $("#hist-sw").checked) {
+
+    // 履歴保存はトグルボタンがオンの時のみ実行
+    if (index === "all" && histToggleChecked) {
       runs.push({
         id: Date.now(),
         when: new Date().toISOString(),
@@ -469,20 +700,81 @@ function renderRun(idx) {
         count: obj.fields.filter((f) => f.on).length,
       });
       await save(RUN_KEY, runs);
+      console.log(`[EXECUTION] ${actionType} - 履歴に保存しました`);
+    } else if (histToggleChecked) {
+      console.log(
+        `[EXECUTION] ${actionType} - トグルボタンがオンですが一括入力でないため履歴保存はスキップ`
+      );
+    } else {
+      console.log(
+        `[EXECUTION] ${actionType} - トグルボタンがオフのため履歴保存をスキップ`
+      );
     }
   }
 
+  /* ── ドラッグ&ドロップハンドラー ── */
+  function handleRunDragStart(e) {
+    const fromIndex = +e.target.dataset.index;
+    e.dataTransfer.setData("text/plain", fromIndex);
+    e.target.classList.add("dragging");
+    console.log("[DRAG START] from index:", fromIndex);
+  }
+
+  function handleRunDragOver(e) {
+    e.preventDefault();
+    // 他の要素の drag-over クラスを削除
+    body
+      .querySelectorAll(".prompt-block")
+      .forEach((block) => block.classList.remove("drag-over"));
+    // 現在の要素に drag-over クラスを追加
+    e.currentTarget.classList.add("drag-over");
+  }
+
+  function handleRunDragLeave(e) {
+    e.currentTarget.classList.remove("drag-over");
+  }
+
+  function handleRunDrop(e) {
+    e.preventDefault();
+    const fromIndex = +e.dataTransfer.getData("text/plain");
+    const toIndex = +e.currentTarget.dataset.index;
+
+    if (fromIndex !== toIndex) {
+      console.log("[DRAG DROP] from:", fromIndex, "to:", toIndex);
+
+      // obj.fields の順序を変更
+      const movedField = obj.fields.splice(fromIndex, 1)[0];
+      obj.fields.splice(toIndex, 0, movedField);
+
+      // プロンプトデータを保存
+      save(PROMPT_KEY, prompts);
+
+      // 画面を再描画
+      renderRun(idx);
+    }
+
+    e.currentTarget.classList.remove("drag-over");
+  }
+
+  function handleRunDragEnd(e) {
+    e.target.classList.remove("dragging");
+    // 全ての drag-over クラスをクリーンアップ
+    body
+      .querySelectorAll(".prompt-block")
+      .forEach((block) => block.classList.remove("drag-over"));
+  }
+
   /* ── ブロック生成 ── */
-  function block(no, f) {
-    return `<div class="mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <strong>プロンプト ${no}</strong>
-        <button class="btn-copy" data-idx="${no - 1}">
+  function block(no, f, index) {
+    return `<div class="prompt-block" draggable="true" data-index="${index}">
+      <div class="prompt-header">
+        <strong class="prompt-label">プロンプト${no}</strong>
+        <button class="btn-copy" data-idx="${index}">
           <i class="bi bi-copy"></i> COPY
         </button>
       </div>
-      <p class="mb-2" style="white-space:pre-line;">${f.text}</p>
-      <textarea rows="3" class="form-control extra" placeholder="プロンプト追加入力（都度）"></textarea>
+      <div class="prompt-content">${f.text}</div>
+      <textarea rows="3" class="prompt-textarea extra" placeholder="プロンプト追加入力（都度）"></textarea>
     </div>`;
   }
 }
