@@ -1,5 +1,40 @@
 // File: pages/setting/setting.js
 
+// 設定ページをデフォルト状態に戻す関数
+function renderSettingMain() {
+  console.log("renderSettingMain: 設定ページをデフォルト状態に戻す");
+
+  const card = document.querySelector(".setting-card");
+
+  // すべての設定ボタンの active を削除
+  document
+    .querySelectorAll(".setting-btn")
+    .forEach((b) => b.classList.remove("active"));
+
+  // デフォルトのdetail-panelを表示（設定ページには常に1つのパネルがある）
+  const defaultPanel = document.querySelector(".detail-panel");
+  if (defaultPanel) {
+    // すべてのパネルからshowを削除してから、デフォルトパネルにshowを追加
+    document
+      .querySelectorAll(".detail-panel")
+      .forEach((p) => p.classList.remove("show"));
+    defaultPanel.classList.add("show");
+  }
+
+  // 最初の設定ボタンを active にする（存在する場合）
+  const firstBtn = document.querySelector(".setting-btn");
+  if (firstBtn) {
+    firstBtn.classList.add("active");
+  }
+
+  // カードアニメーションをリフレッシュ
+  if (card) {
+    card.classList.remove("show");
+    void card.offsetWidth;
+    card.classList.add("show");
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   const card = document.querySelector(".setting-card");
   const gearBtn = document.getElementById("btn-setting");
@@ -37,3 +72,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+// グローバルに公開してヘッダーナビから呼び出せるようにする
+window.renderSettingMain = renderSettingMain;

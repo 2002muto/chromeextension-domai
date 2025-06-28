@@ -108,29 +108,29 @@ function setFooter(mode) {
   foot.style.display = "flex";
   if (mode === "list" || mode === "clipboard") {
     foot.innerHTML = `
-      <button class="footer-btn encrypt-btn">
-        <i class="bi bi-download"></i>
-        <span class="btn-text">バックアップ</span>
-      </button>
-      <button id="btn-archive-toggle" class="footer-btn archive-toggle">
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
         <i class="bi bi-archive"></i>
-        <span class="btn-text">アーカイブ</span>
+        <span class="nav-text">アーカイブ</span>
+      </button>
+      <button class="nav-btn encrypt-btn">
+        <i class="bi bi-download"></i>
+        <span class="nav-text">バックアップ</span>
       </button>
     `;
   } else if (mode === "edit") {
     /* ← 追加：MEMO入力／編集画面用フッター */
     foot.innerHTML = `
-      <button class="footer-btn back-btn">
+      <button class="nav-btn back-btn">
         <i class="bi bi-arrow-left-circle"></i>
-        <span class="btn-text">戻る</span>
+        <span class="nav-text">戻る</span>
       </button>
-      <button class="footer-btn save-btn">
+      <button class="nav-btn save-btn">
         <i class="bi bi-save"></i>
-        <span class="btn-text">保存</span>
+        <span class="nav-text">保存</span>
       </button>
-      <button class="footer-btn delete-btn">
+      <button class="nav-btn delete-btn">
         <i class="bi bi-trash"></i>
-        <span class="btn-text">削除</span>
+        <span class="nav-text">削除</span>
       </button>
     `;
   }
@@ -1014,8 +1014,14 @@ function renderArchiveFooter() {
   const footer = document.querySelector(".memo-footer");
   footer.classList.add("archive");
   footer.innerHTML = `
-    <button class="footer-btn back-btn">戻る</button>
-    <button class="footer-btn delete-all-btn"> 一括削除</button>
+    <button class="nav-btn back-btn">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span class="nav-text">戻る</span>
+    </button>
+    <button class="nav-btn delete-all-btn">
+      <i class="bi bi-trash"></i>
+      <span class="nav-text">一括削除</span>
+    </button>
   `;
   footer.style.display = "flex";
 
@@ -1066,6 +1072,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     .getElementById("btn-clipboard")
     .addEventListener("click", renderClipboardView);
 
+  // 強制的に一覧画面に戻す処理を追加
+  setTimeout(() => {
+    const content = document.querySelector(".memo-content");
+    if (content && content.classList.contains("edit-mode")) {
+      console.log("Force return to list view from edit mode");
+      renderListView();
+    }
+  }, 100);
+
   // start in MEMO list
   await renderListView();
 });
+
+// グローバルに公開してヘッダーナビから呼び出せるようにする
+window.renderListView = renderListView;
