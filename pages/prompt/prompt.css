@@ -293,21 +293,7 @@ textarea.field-text,
 /*--------------------------------------------------------------
   D. 編集ビュー用フッター
 --------------------------------------------------------------*/
-.footer-btn.btn-back-edit {
-  flex: 1;
-  padding: 14px 0;
-  background: #303030;
-  color: #fff;
-}
-.footer-btn.btn-save-edit {
-  flex: 1;
-  padding: 14px 0;
-  background: #00a31e;
-  color: #fff;
-}
-.footer-btn i {
-  margin-right: 4px;
-}
+/* 古いフッターボタンスタイルを削除 - 現在はMEMOページと同じ.nav-btnスタイルを使用 */
 
 /*--------------------------------------------------------------
   E. フォームヘッダー（タイトル行）
@@ -343,6 +329,12 @@ textarea.field-text,
 .drag-over {
   outline: 2px dashed #7b8799;
   outline-offset: -4px;
+}
+.drag-invalid {
+  outline: 2px dashed rgba(255, 0, 0, 0.6);
+  outline-offset: -4px;
+  background: rgba(255, 0, 0, 0.1);
+  cursor: not-allowed;
 }
 
 /* 掴めるカーソル */
@@ -619,7 +611,7 @@ textarea.field-text,
   background: #00a31e !important;
   border: none;
   border-radius: 8px;
-  padding: 16px;
+  padding: 8px;
   font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;

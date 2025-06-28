@@ -92,6 +92,7 @@ async function handleScreenTransition(
 let prompts = []; // カード一覧
 let runs = []; // 実行履歴
 let dragPromptIndex = null; // ドラッグ元インデックス
+let dragPromptStarred = null; // ドラッグ元の星状態を記録
 let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデックス
 
 // ───────────────────────────────────────
@@ -99,22 +100,52 @@ let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデ
 // ───────────────────────────────────────
 function handlePromptDragStart(e) {
   dragPromptIndex = +this.dataset.index;
-  console.log("[PRM] drag start:", dragPromptIndex);
+  dragPromptStarred = prompts[dragPromptIndex]?.star || false;
+  console.log(
+    "[PRM] drag start:",
+    dragPromptIndex,
+    "starred:",
+    dragPromptStarred
+  );
   e.dataTransfer.effectAllowed = "move";
   this.classList.add("dragging");
 }
 function handlePromptDragOver(e) {
   e.preventDefault();
+
+  // ドロップ先の星状態をチェック
+  const dropIndex = +this.dataset.index;
+  const dropTargetStarred = prompts[dropIndex]?.star || false;
+
+  // 異なるカテゴリ間のドロップを禁止
+  if (dragPromptStarred !== dropTargetStarred) {
+    this.classList.add("drag-invalid");
+    this.classList.remove("drag-over");
+    console.log("[PRM] drag invalid: different categories");
+    return;
+  }
+
   this.classList.add("drag-over");
+  this.classList.remove("drag-invalid");
 }
 function handlePromptDragLeave() {
-  this.classList.remove("drag-over");
+  this.classList.remove("drag-over", "drag-invalid");
 }
 async function handlePromptDrop(e) {
   e.stopPropagation();
   const dropIndex = +this.dataset.index;
+
+  // カテゴリ間のドロップを再度チェック
+  const dropTargetStarred = prompts[dropIndex]?.star || false;
+
+  if (dragPromptStarred !== dropTargetStarred) {
+    console.log("[PRM] drop rejected: different categories");
+    return;
+  }
+
   console.log(`[PRM] drop from ${dragPromptIndex} to ${dropIndex}`);
   if (dragPromptIndex === null || dragPromptIndex === dropIndex) return;
+
   const [moved] = prompts.splice(dragPromptIndex, 1);
   prompts.splice(dropIndex, 0, moved);
   await save(PROMPT_KEY, prompts);
@@ -123,8 +154,11 @@ async function handlePromptDrop(e) {
 function handlePromptDragEnd() {
   document
     .querySelectorAll(".prompt-item")
-    .forEach((el) => el.classList.remove("drag-over", "dragging"));
+    .forEach((el) =>
+      el.classList.remove("drag-over", "dragging", "drag-invalid")
+    );
   dragPromptIndex = null;
+  dragPromptStarred = null;
 }
 
 /* ━━━━━━━━━ 2. 初期化 ━━━━━━━━━ */
@@ -306,7 +340,7 @@ function renderEdit(idx, isNew = false) {
       <span class="nav-text">戻る</span>
     </button>
     <button class="nav-btn save-btn">
-      <i class="bi bi-save-fill"></i>
+      <i class="bi bi-save"></i>
       <span class="nav-text">保存</span>
     </button>`;
 
