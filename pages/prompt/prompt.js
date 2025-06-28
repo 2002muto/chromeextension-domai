@@ -77,6 +77,10 @@ async function renderList() {
   const card = $(".card-container");
   const body = $(".memo-content");
   const footer = $(".memo-footer");
+  const root = card.parentNode;
+
+  // 編集画面や実行画面で追加されたヘッダーを削除
+  root.querySelector(".form-header")?.remove();
 
   footer.innerHTML = `
     <button class="nav-btn archive-btn">
