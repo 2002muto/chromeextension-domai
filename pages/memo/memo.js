@@ -1084,3 +1084,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   // start in MEMO list
   await renderListView();
 });
+
+// グローバルに公開してヘッダーナビから呼び出せるようにする
+window.renderListView = renderListView;

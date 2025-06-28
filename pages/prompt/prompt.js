@@ -79,14 +79,31 @@ async function renderList() {
   const footer = $(".memo-footer");
 
   footer.innerHTML = `
-    <button class="footer-btn"><i class="bi bi-archive-fill"></i> アーカイブ</button>
-    <button class="footer-btn btn-extra">予備</button>`;
+    <button class="nav-btn archive-btn">
+      <i class="bi bi-archive-fill"></i>
+      <span class="nav-text">アーカイブ</span>
+    </button>
+    <button class="nav-btn extra-btn">
+      <i class="bi bi-three-dots"></i>
+      <span class="nav-text">予備</span>
+    </button>`;
+
+  // アニメーション処理（MEMOページと同じ順序）
+  body.classList.remove("edit-mode");
+  body.classList.remove("animate");
+  void body.offsetWidth;
+  body.classList.add("animate");
 
   body.innerHTML = `
     <button class="btn-add-prompt w-100">
       <i class="bi bi-plus-lg"></i> 新しいプロンプトを追加
     </button>
     <ul class="prompt-list"></ul>`;
+
+  body.classList.remove("show");
+  void body.offsetWidth;
+  body.classList.add("show");
+
   const list = $(".prompt-list", body);
 
   /* カード生成 */
@@ -187,11 +204,13 @@ function renderEdit(idx, isNew = false) {
 
   /*━━━━━━━━━━ 3. フッター ━━━━━━━━━━*/
   footer.innerHTML = `
-    <button class="footer-btn btn-back">
-      <i class="bi bi-caret-left-fill"></i> 保存せず戻る
+    <button class="nav-btn back-btn">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span class="nav-text">戻る</span>
     </button>
-    <button class="footer-btn btn-save" style="background:#00A31E">
-      <i class="bi bi-save-fill"></i> 保存
+    <button class="nav-btn save-btn">
+      <i class="bi bi-save-fill"></i>
+      <span class="nav-text">保存</span>
     </button>`;
 
   /*━━━━━━━━━━ 4. 本体フォーム ━━━━━━━━━━*/
@@ -216,7 +235,7 @@ function renderEdit(idx, isNew = false) {
   $(".btn-add-field").onclick = () => addField("", true);
 
   /*━━━━━━━━━━ 5. 保存 / 戻る ━━━━━━━━━━*/
-  $(".btn-save").onclick = async () => {
+  $(".save-btn").onclick = async () => {
     obj.title = $("#e-title").value.trim() || "(無題)";
     obj.fields = [...wrap.children].map((w) => ({
       text: w.querySelector(".field-textarea").value,
@@ -227,7 +246,7 @@ function renderEdit(idx, isNew = false) {
     renderList();
   };
 
-  $(".btn-back").onclick = async () => {
+  $(".back-btn").onclick = async () => {
     if (isNew) {
       const titleEmpty = $("#e-title").value.trim() === "";
       const allEmpty = [...wrap.querySelectorAll(".field-textarea")].every(
@@ -567,3 +586,6 @@ function sendToFocused(text) {
 function toast(msg) {
   console.log(msg);
 }
+
+// グローバルに公開してヘッダーナビから呼び出せるようにする
+window.renderList = renderList;
