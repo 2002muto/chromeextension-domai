@@ -166,6 +166,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   prompts = (await load(PROMPT_KEY)) ?? [];
   runs = (await load(RUN_KEY)) ?? [];
   console.log("[INIT] prompts =", prompts.length);
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
+
   renderList();
 });
 
@@ -237,6 +241,9 @@ async function renderList() {
   /* カード生成 */
   list.replaceChildren(...prompts.map(cardNode));
 
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
+
   /* + ボタン ─ 新規カード */
   $(".btn-add-prompt").onclick = async () => {
     const obj = {
@@ -303,13 +310,16 @@ async function renderList() {
 ══════════════════════════════════════════════════════ */
 function renderEdit(idx, isNew = false) {
   console.log("[renderEdit] idx =", idx, "isNew =", isNew);
-  currentPromptIndex = -1; // 編集画面なのでリセット
+  currentPromptIndex = idx; // 編集中のプロンプトインデックスを設定
 
   /* ルート要素取得 */
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
   const obj = prompts[idx];
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
 
   /*━━━━━━━━━━ 1. 旧ヘッダーを除去 ━━━━━━━━━━*/
   root.querySelector(".form-header")?.remove();
@@ -373,19 +383,56 @@ function renderEdit(idx, isNew = false) {
   };
 
   $(".back-btn").onclick = async () => {
-    if (isNew) {
-      const titleEmpty = $(".title-input").value.trim() === "";
-      const allEmpty = [
-        ...wrap.querySelectorAll(".prompt-field-textarea"),
-      ].every((t) => t.value.trim() === "");
-      if (titleEmpty && allEmpty) {
-        prompts.splice(idx, 1);
-        await save(PROMPT_KEY, prompts);
-        console.log("[BACK] 空カードを削除");
-      }
+    // 変更があるかチェック
+    const hasChanges = checkForUnsavedChanges(obj, isNew);
+
+    if (hasChanges) {
+      // 変更がある場合は保存確認ダイアログを表示
+      showSaveConfirmDialog(
+        () => {
+          // 保存して戻る
+          saveAndGoBack();
+        },
+        () => {
+          // 保存せずに戻る
+          discardAndGoBack();
+        }
+      );
+    } else {
+      // 変更がない場合は直接戻る
+      discardAndGoBack();
     }
-    head.remove();
-    renderList();
+
+    // 保存して戻る処理
+    async function saveAndGoBack() {
+      obj.title = $(".title-input").value.trim() || "(無題)";
+      obj.fields = [...wrap.children].map((w) => ({
+        text: w.querySelector(".prompt-field-textarea").value,
+        on: w.querySelector(".field-toggle").checked,
+      }));
+      await save(PROMPT_KEY, prompts);
+      console.log("[BACK] 変更を保存して戻りました");
+      head.remove();
+      renderList();
+    }
+
+    // 保存せずに戻る処理
+    async function discardAndGoBack() {
+      if (isNew) {
+        const titleEmpty = $(".title-input").value.trim() === "";
+        const allEmpty = [
+          ...wrap.querySelectorAll(".prompt-field-textarea"),
+        ].every((t) => t.value.trim() === "");
+        if (titleEmpty && allEmpty) {
+          prompts.splice(idx, 1);
+          await save(PROMPT_KEY, prompts);
+          console.log("[BACK] 空カードを削除");
+        }
+      }
+      console.log("[BACK] 変更を破棄して戻りました");
+      head.remove();
+      renderList();
+    }
   };
 
   // 編集モードのクラスを設定
@@ -1043,6 +1090,273 @@ function toast(msg) {
   console.log(msg);
 }
 
+/*━━━━━━━━━━ 変更検知機能 ━━━━━━━━━━*/
+function checkForUnsavedChanges(originalObj, isNew) {
+  const currentTitle = $(".title-input")?.value.trim() || "";
+  const wrap = $("#field-wrap");
+
+  if (!wrap) return false;
+
+  const currentFields = [...wrap.children].map((w) => ({
+    text: w.querySelector(".prompt-field-textarea")?.value || "",
+    on: w.querySelector(".field-toggle")?.checked || false,
+  }));
+
+  // 新規作成の場合
+  if (isNew) {
+    // タイトルまたはフィールドに内容があれば変更あり
+    return (
+      currentTitle !== "" || currentFields.some((f) => f.text.trim() !== "")
+    );
+  }
+
+  // 既存編集の場合
+  // タイトルの変更をチェック
+  if (currentTitle !== (originalObj.title || "")) {
+    return true;
+  }
+
+  // フィールド数の変更をチェック
+  if (currentFields.length !== originalObj.fields.length) {
+    return true;
+  }
+
+  // 各フィールドの内容変更をチェック
+  for (let i = 0; i < currentFields.length; i++) {
+    const current = currentFields[i];
+    const original = originalObj.fields[i];
+
+    if (
+      !original ||
+      current.text !== original.text ||
+      current.on !== original.on
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*━━━━━━━━━━ おしゃれな保存確認ダイアログ ━━━━━━━━━━*/
+function showSaveConfirmDialog(onSave, onDiscard) {
+  // 既存のダイアログがあれば削除
+  const existingDialog = document.querySelector(".save-confirm-dialog");
+  if (existingDialog) {
+    existingDialog.remove();
+  }
+
+  // ダイアログHTML作成
+  const dialog = document.createElement("div");
+  dialog.className = "save-confirm-dialog";
+  dialog.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <i class="bi bi-exclamation-circle dialog-icon"></i>
+          <h3 class="dialog-title">変更を保存しますか？</h3>
+        </div>
+        <div class="dialog-body">
+          <p class="dialog-message">
+            編集内容に変更があります。<br>
+            保存せずに戻ると変更が失われます。
+          </p>
+        </div>
+        <div class="dialog-footer">
+          <button class="dialog-btn discard-btn">破棄</button>
+          <button class="dialog-btn cancel-btn">キャンセル</button>
+          <button class="dialog-btn save-btn">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // スタイルを動的に追加
+  if (!document.querySelector("#save-confirm-styles")) {
+    const styles = document.createElement("style");
+    styles.id = "save-confirm-styles";
+    styles.textContent = `
+      .save-confirm-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .save-confirm-dialog .dialog-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .save-confirm-dialog .dialog-content {
+        position: relative;
+        background: #2d2d2d;
+        border-radius: 12px;
+        min-width: 360px;
+        max-width: 450px;
+        margin: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .save-confirm-dialog .dialog-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .save-confirm-dialog .dialog-icon {
+        font-size: 24px;
+        color: #3b82f6;
+      }
+
+      .save-confirm-dialog .dialog-title {
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .save-confirm-dialog .dialog-body {
+        padding: 16px 20px;
+      }
+
+      .save-confirm-dialog .dialog-message {
+        color: #e2e8f0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin: 0;
+      }
+
+      .save-confirm-dialog .dialog-footer {
+        display: flex;
+        gap: 8px;
+        padding: 16px 20px 20px;
+        justify-content: flex-end;
+      }
+
+      .save-confirm-dialog .dialog-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 70px;
+      }
+
+      .save-confirm-dialog .discard-btn {
+        background: #dc3545;
+        color: #ffffff;
+      }
+
+      .save-confirm-dialog .discard-btn:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+      }
+
+      .save-confirm-dialog .cancel-btn {
+        background: #4a5568;
+        color: #ffffff;
+      }
+
+      .save-confirm-dialog .cancel-btn:hover {
+        background: #5a6578;
+        transform: translateY(-1px);
+      }
+
+      .save-confirm-dialog .save-btn {
+        background: #00a31e;
+        color: #ffffff;
+      }
+
+      .save-confirm-dialog .save-btn:hover {
+        background: #008a1a;
+        transform: translateY(-1px);
+      }
+
+      .save-confirm-dialog .dialog-content.closing {
+        animation: slideDown 0.2s ease-in forwards;
+      }
+
+      .save-confirm-dialog .dialog-overlay.closing {
+        animation: fadeOut 0.2s ease-in forwards;
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+
+  // body に追加
+  document.body.appendChild(dialog);
+
+  // イベントリスナー設定
+  const overlay = dialog.querySelector(".dialog-overlay");
+  const content = dialog.querySelector(".dialog-content");
+  const discardBtn = dialog.querySelector(".discard-btn");
+  const cancelBtn = dialog.querySelector(".cancel-btn");
+  const saveBtn = dialog.querySelector(".save-btn");
+
+  // 閉じる処理
+  function closeDialog() {
+    content.classList.add("closing");
+    overlay.classList.add("closing");
+    setTimeout(() => {
+      dialog.remove();
+    }, 200);
+  }
+
+  // 破棄ボタン
+  discardBtn.addEventListener("click", () => {
+    closeDialog();
+    onDiscard();
+  });
+
+  // キャンセルボタン
+  cancelBtn.addEventListener("click", closeDialog);
+
+  // 保存ボタン
+  saveBtn.addEventListener("click", () => {
+    closeDialog();
+    onSave();
+  });
+
+  // オーバーレイクリックで閉じる
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeDialog();
+    }
+  });
+
+  // ESCキーで閉じる
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      closeDialog();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+
+  // フォーカス管理
+  setTimeout(() => {
+    saveBtn.focus();
+  }, 100);
+}
+
 /*━━━━━━━━━━ おしゃれな削除確認ダイアログ ━━━━━━━━━━*/
 function showDeleteConfirmDialog(message, onConfirm) {
   // 既存のダイアログがあれば削除
@@ -1270,3 +1584,8 @@ function showDeleteConfirmDialog(message, onConfirm) {
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderList = renderList;
+window.checkForUnsavedChanges = checkForUnsavedChanges;
+window.showSaveConfirmDialog = showSaveConfirmDialog;
+window.prompts = prompts;
+window.save = save;
+window.getCurrentPromptIndex = getCurrentPromptIndex;

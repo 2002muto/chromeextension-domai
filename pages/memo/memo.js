@@ -14,6 +14,9 @@ let clips = [];
 // Keeps track of current Archive sub-mode: "memo" or "clip"
 let archiveType = null;
 
+// 現在編集中のメモID
+let currentEditingMemoId = null;
+
 // ───────────────────────────────────────
 // Promise-wrapped Chrome Storage API
 // ───────────────────────────────────────
@@ -176,6 +179,9 @@ async function renderListView() {
 
   // load memos
   memos = await loadStorage(MEMO_KEY);
+
+  // グローバルに最新のmemosを設定
+  window.memos = memos;
   /* --- nav が無い場合は生成しておく ---------------------- */
   /* --- nav が無い場合は生成しておく ---------------------- */
   let nav = document.querySelector(".card-nav");
@@ -287,6 +293,9 @@ async function renderListView() {
 
       ul.appendChild(li);
     });
+
+  // 編集中のメモIDをリセット
+  currentEditingMemoId = null;
 
   console.log("renderListView: end");
 }
@@ -434,6 +443,12 @@ async function renderClipboardView() {
 async function renderInputForm(id) {
   console.log("renderInputForm: start, id=", id);
   memos = await loadStorage(MEMO_KEY);
+
+  // グローバルに最新のmemosを設定
+  window.memos = memos;
+
+  // 現在編集中のメモIDを設定
+  currentEditingMemoId = id;
 
   // always show sub-nav
   document.querySelector(".card-nav").style.display = "flex";
@@ -873,10 +888,59 @@ async function renderInputForm(id) {
     console.log("form star toggled:", !cur);
   });
 
-  // back handler (何もせずに戻る)
+  // back handler (保存確認付き)
   document.querySelector(".back-btn").addEventListener("click", () => {
-    console.log("Back without saving");
-    renderListView();
+    // 変更があるかチェック
+    const originalMemo =
+      id !== undefined ? memos.find((m) => m.id === id) : null;
+    const hasChanges = checkForUnsavedMemoChanges(
+      originalMemo,
+      id === undefined
+    );
+
+    if (hasChanges) {
+      // 変更がある場合は保存確認ダイアログを表示
+      showMemoSaveConfirmDialog(
+        async () => {
+          // 保存して戻る
+          const title =
+            content.querySelector(".title-input").value.trim() || "無題";
+          const body = content.querySelector(".text-input").value.trim();
+          const starred = starIcon.dataset.starred === "true";
+
+          if (id !== undefined) {
+            // update existing
+            const idx = memos.findIndex((m) => m.id === id);
+            memos[idx] = { id, title, content: body, starred };
+            console.log("[BACK] 変更を保存して戻りました:", memos[idx]);
+          } else {
+            // add new
+            const newM = {
+              id: Date.now(),
+              title,
+              content: body,
+              starred,
+              archived: false,
+            };
+            memos.push(newM);
+            console.log("[BACK] 新規メモを保存して戻りました:", newM);
+          }
+          await saveStorage(MEMO_KEY, memos);
+          // グローバルに最新のmemosを設定
+          window.memos = memos;
+          renderListView();
+        },
+        () => {
+          // 破棄して戻る
+          console.log("[BACK] 変更を破棄して戻りました");
+          renderListView();
+        }
+      );
+    } else {
+      // 変更がない場合は直接戻る
+      console.log("[BACK] 変更なしで戻りました");
+      renderListView();
+    }
   });
 
   // save handler
@@ -903,6 +967,8 @@ async function renderInputForm(id) {
       console.log("add memo:", newM);
     }
     await saveStorage(MEMO_KEY, memos);
+    // グローバルに最新のmemosを設定
+    window.memos = memos;
     renderListView();
   });
 
@@ -912,6 +978,8 @@ async function renderInputForm(id) {
       memos = memos.filter((m) => m.id !== id);
       console.log("delete memo id=", id);
       await saveStorage(MEMO_KEY, memos);
+      // グローバルに最新のmemosを設定
+      window.memos = memos;
     }
     renderListView();
   });
@@ -1113,7 +1181,260 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // start in MEMO list
   await renderListView();
+
+  // グローバルに最新のmemosを設定
+  window.memos = memos;
 });
+
+/*━━━━━━━━━━ 変更検知機能 ━━━━━━━━━━*/
+function checkForUnsavedMemoChanges(originalMemo, isNew) {
+  const currentTitle =
+    document.querySelector(".title-input")?.value.trim() || "";
+  const currentContent =
+    document.querySelector(".text-input")?.value.trim() || "";
+  const currentStarred =
+    document.querySelector(".star-input")?.dataset.starred === "true";
+
+  // 新規作成の場合
+  if (isNew) {
+    // タイトルまたは内容があれば変更あり
+    return currentTitle !== "" || currentContent !== "";
+  }
+
+  // 既存編集の場合
+  if (!originalMemo) return false;
+
+  // 各項目の変更をチェック
+  return (
+    currentTitle !== (originalMemo.title || "") ||
+    currentContent !== (originalMemo.content || "") ||
+    currentStarred !== (originalMemo.starred || false)
+  );
+}
+
+/*━━━━━━━━━━ おしゃれな保存確認ダイアログ（MEMO用） ━━━━━━━━━━*/
+function showMemoSaveConfirmDialog(onSave, onDiscard) {
+  // 既存のダイアログがあれば削除
+  const existingDialog = document.querySelector(".memo-save-confirm-dialog");
+  if (existingDialog) {
+    existingDialog.remove();
+  }
+
+  // ダイアログHTML作成
+  const dialog = document.createElement("div");
+  dialog.className = "memo-save-confirm-dialog";
+  dialog.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <i class="bi bi-exclamation-circle dialog-icon"></i>
+          <h3 class="dialog-title">変更を保存しますか？</h3>
+        </div>
+        <div class="dialog-body">
+          <p class="dialog-message">
+            メモ内容に変更があります。<br>
+            保存せずに戻ると変更が失われます。
+          </p>
+        </div>
+        <div class="dialog-footer">
+          <button class="dialog-btn discard-btn">破棄</button>
+          <button class="dialog-btn cancel-btn">キャンセル</button>
+          <button class="dialog-btn save-btn">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // スタイルを動的に追加
+  if (!document.querySelector("#memo-save-confirm-styles")) {
+    const styles = document.createElement("style");
+    styles.id = "memo-save-confirm-styles";
+    styles.textContent = `
+      .memo-save-confirm-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .memo-save-confirm-dialog .dialog-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .memo-save-confirm-dialog .dialog-content {
+        position: relative;
+        background: #2d2d2d;
+        border-radius: 12px;
+        min-width: 360px;
+        max-width: 450px;
+        margin: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .memo-save-confirm-dialog .dialog-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .memo-save-confirm-dialog .dialog-icon {
+        font-size: 24px;
+        color: #3b82f6;
+      }
+
+      .memo-save-confirm-dialog .dialog-title {
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .memo-save-confirm-dialog .dialog-body {
+        padding: 16px 20px;
+      }
+
+      .memo-save-confirm-dialog .dialog-message {
+        color: #e2e8f0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin: 0;
+      }
+
+      .memo-save-confirm-dialog .dialog-footer {
+        display: flex;
+        gap: 8px;
+        padding: 16px 20px 20px;
+        justify-content: flex-end;
+      }
+
+      .memo-save-confirm-dialog .dialog-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 70px;
+      }
+
+      .memo-save-confirm-dialog .discard-btn {
+        background: #dc3545;
+        color: #ffffff;
+      }
+
+      .memo-save-confirm-dialog .discard-btn:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+      }
+
+      .memo-save-confirm-dialog .cancel-btn {
+        background: #4a5568;
+        color: #ffffff;
+      }
+
+      .memo-save-confirm-dialog .cancel-btn:hover {
+        background: #5a6578;
+        transform: translateY(-1px);
+      }
+
+      .memo-save-confirm-dialog .save-btn {
+        background: #00a31e;
+        color: #ffffff;
+      }
+
+      .memo-save-confirm-dialog .save-btn:hover {
+        background: #008a1a;
+        transform: translateY(-1px);
+      }
+
+      .memo-save-confirm-dialog .dialog-content.closing {
+        animation: slideDown 0.2s ease-in forwards;
+      }
+
+      .memo-save-confirm-dialog .dialog-overlay.closing {
+        animation: fadeOut 0.2s ease-in forwards;
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+
+  // body に追加
+  document.body.appendChild(dialog);
+
+  // イベントリスナー設定
+  const overlay = dialog.querySelector(".dialog-overlay");
+  const content = dialog.querySelector(".dialog-content");
+  const discardBtn = dialog.querySelector(".discard-btn");
+  const cancelBtn = dialog.querySelector(".cancel-btn");
+  const saveBtn = dialog.querySelector(".save-btn");
+
+  // 閉じる処理
+  function closeDialog() {
+    content.classList.add("closing");
+    overlay.classList.add("closing");
+    setTimeout(() => {
+      dialog.remove();
+    }, 200);
+  }
+
+  // 破棄ボタン
+  discardBtn.addEventListener("click", () => {
+    closeDialog();
+    onDiscard();
+  });
+
+  // キャンセルボタン
+  cancelBtn.addEventListener("click", closeDialog);
+
+  // 保存ボタン
+  saveBtn.addEventListener("click", () => {
+    closeDialog();
+    onSave();
+  });
+
+  // オーバーレイクリックで閉じる
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeDialog();
+    }
+  });
+
+  // ESCキーで閉じる
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      closeDialog();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+
+  // フォーカス管理
+  setTimeout(() => {
+    saveBtn.focus();
+  }, 100);
+}
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderListView = renderListView;
+window.checkForUnsavedMemoChanges = checkForUnsavedMemoChanges;
+window.showMemoSaveConfirmDialog = showMemoSaveConfirmDialog;
+window.memos = memos;
+window.saveStorage = saveStorage;
+window.getCurrentEditingMemoId = () => currentEditingMemoId;

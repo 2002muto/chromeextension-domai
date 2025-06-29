@@ -1,0 +1,11 @@
+# Cursor IDE設定ファイル
+.cursor/
+
+# その他の一般的な除外ファイル
+node_modules/
+.DS_Store
+.env
+.env.local
+*.log
+dist/
+build/ 
