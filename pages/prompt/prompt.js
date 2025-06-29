@@ -239,7 +239,53 @@ async function renderList() {
   const list = $(".prompt-list", body);
 
   /* カード生成 */
-  list.replaceChildren(...prompts.map(cardNode));
+  // Empty State: プロンプトが何もない場合
+  if (prompts.length === 0) {
+    list.innerHTML = `
+      <div class="memo-empty-state">
+        <div class="memo-empty-state-content">
+          <div class="memo-empty-state-icon">
+            <i class="bi bi-terminal-x"></i>
+          </div>
+          <h3 class="memo-empty-state-title">プロンプトがありません</h3>
+          <p class="memo-empty-state-message">
+            最初のプロンプトを作成してみましょう。
+          </p>
+                     <div class="memo-empty-state-action">
+             <button class="btn-edit-prompt">
+               <i class="bi bi-plus-lg"></i> 最初のプロンプトを作成
+             </button>
+           </div>
+        </div>
+      </div>
+    `;
+
+    // 最初のプロンプト作成ボタンのイベント
+    list
+      .querySelector(".btn-edit-prompt")
+      .addEventListener("click", async () => {
+        const obj = {
+          id: Date.now(),
+          title: "",
+          star: false,
+          fields: [{ text: "", on: true }],
+        };
+        prompts.push(obj);
+        await save(PROMPT_KEY, prompts);
+        renderEdit(prompts.length - 1, true);
+      });
+
+    // Empty Stateのフェードインアニメーション
+    setTimeout(() => {
+      const emptyContent = list.querySelector(".memo-empty-state-content");
+      if (emptyContent) {
+        emptyContent.classList.add("show");
+      }
+    }, 100);
+  } else {
+    // 通常のプロンプト一覧表示
+    list.replaceChildren(...prompts.map(cardNode));
+  }
 
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;

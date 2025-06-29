@@ -236,9 +236,45 @@ async function renderListView() {
   // populate list items
   const ul = content.querySelector(".memo-list");
   ul.innerHTML = "";
-  memos
-    .filter((m) => !m.archived) // ← 追加：一覧は未アーカイブのみ
-    .forEach((m, i) => {
+
+  const activeMemos = memos.filter((m) => !m.archived); // ← 追加：一覧は未アーカイブのみ
+
+  // Empty State: メモが何もない場合
+  if (activeMemos.length === 0) {
+    ul.innerHTML = `
+      <div class="memo-empty-state">
+        <div class="memo-empty-state-content">
+          <div class="memo-empty-state-icon">
+            <i class="bi bi-journal-x"></i>
+          </div>
+          <h3 class="memo-empty-state-title">メモがありません</h3>
+          <p class="memo-empty-state-message">
+            最初のメモを作成してみましょう。
+          </p>
+          <div class="memo-empty-state-action">
+            <button class="btn-add-first-memo">
+              <i class="bi bi-plus-lg"></i> 最初のメモを作成
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 最初のメモ作成ボタンのイベント
+    ul.querySelector(".btn-add-first-memo").addEventListener("click", () =>
+      renderInputForm()
+    );
+
+    // Empty Stateのフェードインアニメーション
+    setTimeout(() => {
+      const emptyContent = ul.querySelector(".memo-empty-state-content");
+      if (emptyContent) {
+        emptyContent.classList.add("show");
+      }
+    }, 100);
+  } else {
+    // 通常のメモ一覧表示
+    activeMemos.forEach((m, i) => {
       const li = document.createElement("li");
       li.className = "memo-item";
       li.draggable = true;
@@ -301,6 +337,7 @@ async function renderListView() {
 
       ul.appendChild(li);
     });
+  }
 
   // 編集中のメモIDをリセット
   currentEditingMemoId = null;
@@ -360,89 +397,116 @@ async function renderClipboardView() {
   // populate clips
   const ul = content.querySelector(".clipboard-list");
   ul.innerHTML = "";
-  clips.forEach((txt, i) => {
-    const li = document.createElement("li");
-    li.className = "clipboard-item";
-    li.draggable = true;
-    li.dataset.index = i;
 
-    // DnD handlers
-    li.addEventListener("dragstart", handleClipDragStart);
-    li.addEventListener("dragover", handleClipDragOver);
-    li.addEventListener("dragleave", handleClipDragLeave);
-    li.addEventListener("drop", handleClipDrop);
-    li.addEventListener("dragend", handleClipDragEnd);
-    // 挿入ボタン（Arrow-left-square-fill）
-    const copy = document.createElement("button");
-    copy.className = "clipboard-copy";
-    copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
-    copy.addEventListener("click", () => {
-      // ★修正★ 最新の textarea の値を取得して送信
-      const currentText = ta.value;
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (!tabs.length) return;
-        chrome.tabs.sendMessage(
-          tabs[0].id,
-          { type: "INSERT_CLIP", text: currentText },
-          (resp) => {
-            if (chrome.runtime.lastError) {
-              console.warn(
-                "sendMessage failed:",
-                chrome.runtime.lastError.message
-              );
-            } else {
-              console.log("copy:", currentText);
+  // Empty State: クリップが何もない場合
+  if (clips.length === 0) {
+    ul.innerHTML = `
+      <div class="clipboard-empty-state">
+        <div class="clipboard-empty-state-content">
+          <div class="clipboard-empty-state-icon">
+            <i class="bi bi-clipboard-x"></i>
+          </div>
+          <h3 class="clipboard-empty-state-title">クリップがありません</h3>
+          <p class="clipboard-empty-state-message">
+            最初のクリップを追加してみましょう。
+          </p>
+        </div>
+      </div>
+    `;
+
+    // Empty Stateのフェードインアニメーション
+    setTimeout(() => {
+      const emptyContent = ul.querySelector(".clipboard-empty-state-content");
+      if (emptyContent) {
+        emptyContent.classList.add("show");
+      }
+    }, 100);
+  } else {
+    // 通常のクリップ一覧表示
+    clips.forEach((txt, i) => {
+      const li = document.createElement("li");
+      li.className = "clipboard-item";
+      li.draggable = true;
+      li.dataset.index = i;
+
+      // DnD handlers
+      li.addEventListener("dragstart", handleClipDragStart);
+      li.addEventListener("dragover", handleClipDragOver);
+      li.addEventListener("dragleave", handleClipDragLeave);
+      li.addEventListener("drop", handleClipDrop);
+      li.addEventListener("dragend", handleClipDragEnd);
+      // 挿入ボタン（Arrow-left-square-fill）
+      const copy = document.createElement("button");
+      copy.className = "clipboard-copy";
+      copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
+      copy.addEventListener("click", () => {
+        // ★修正★ 最新の textarea の値を取得して送信
+        const currentText = ta.value;
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (!tabs.length) return;
+          chrome.tabs.sendMessage(
+            tabs[0].id,
+            { type: "INSERT_CLIP", text: currentText },
+            (resp) => {
+              if (chrome.runtime.lastError) {
+                console.warn(
+                  "sendMessage failed:",
+                  chrome.runtime.lastError.message
+                );
+              } else {
+                console.log("copy:", currentText);
+              }
             }
-          }
-        );
+          );
+        });
       });
-    });
 
-    li.appendChild(copy);
-    // auto-resize textarea
-    const ta = document.createElement("textarea");
-    ta.className = "clipboard-textarea";
-    ta.rows = 1;
-    ta.value = txt;
-    ta.placeholder = "テキストを入力";
-    ta.addEventListener("input", () => {
-      clips[i] = ta.value;
-      saveStorage(CLIP_KEY, clips);
+      li.appendChild(copy);
+      // auto-resize textarea
+      const ta = document.createElement("textarea");
+      ta.className = "clipboard-textarea";
+      ta.rows = 1;
+      ta.value = txt;
+      ta.placeholder = "テキストを入力";
+      ta.addEventListener("input", () => {
+        clips[i] = ta.value;
+        saveStorage(CLIP_KEY, clips);
+        ta.style.height = "auto";
+        ta.style.height = ta.scrollHeight + "px";
+      });
+      li.appendChild(ta);
+
+      /*─────────────────────────────────────────*/
+      /* ② renderClipboardView 内の「アーカイブ」 */
+      /*   アイコン・クリック処理を差し替え       */
+      /*─────────────────────────────────────────*/
+      // delete-archive button  ←★差し替え★
+      const del = document.createElement("button");
+      del.className = "clipboard-archive";
+      del.innerHTML = '<i class="bi bi-archive-fill"></i>';
+      del.addEventListener("click", async () => {
+        /*--- アーカイブへ移動 ---*/
+        // アニメーション付きでアーカイブ
+        await animateArchiveItem(li, async () => {
+          const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
+          await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
+
+          const arch = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
+          arch.push(removed); // ④ 末尾に追加
+          await saveStorage(CLIP_ARCH_KEY, arch); // ⑤ 保存（アーカイブを更新）
+
+          console.log("[CLIP] archived →", removed);
+        });
+      });
+      li.appendChild(del);
+      /*─────────────────────────────────────────*/
+
+      ul.appendChild(li);
+      // ensure correct initial height
       ta.style.height = "auto";
       ta.style.height = ta.scrollHeight + "px";
     });
-    li.appendChild(ta);
-
-    /*─────────────────────────────────────────*/
-    /* ② renderClipboardView 内の「アーカイブ」 */
-    /*   アイコン・クリック処理を差し替え       */
-    /*─────────────────────────────────────────*/
-    // delete-archive button  ←★差し替え★
-    const del = document.createElement("button");
-    del.className = "clipboard-archive";
-    del.innerHTML = '<i class="bi bi-archive-fill"></i>';
-    del.addEventListener("click", async () => {
-      /*--- アーカイブへ移動 ---*/
-      // アニメーション付きでアーカイブ
-      await animateArchiveItem(li, async () => {
-        const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
-        await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
-
-        const arch = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
-        arch.push(removed); // ④ 末尾に追加
-        await saveStorage(CLIP_ARCH_KEY, arch); // ⑤ 保存（アーカイブを更新）
-
-        console.log("[CLIP] archived →", removed);
-      });
-    });
-    li.appendChild(del);
-    /*─────────────────────────────────────────*/
-
-    ul.appendChild(li);
-    // ensure correct initial height
-    ta.style.height = "auto";
-    ta.style.height = ta.scrollHeight + "px";
-  });
+  }
 
   console.log("renderClipboardView: end");
 }

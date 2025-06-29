@@ -787,7 +787,7 @@ textarea.field-text,
 }
 
 .btn-edit-prompt {
-  background: #00a31e;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -799,13 +799,13 @@ textarea.field-text,
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.2);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 .btn-edit-prompt:hover {
   filter: brightness(1.1);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 163, 30, 0.3);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
 }
 
 .btn-edit-prompt:active {
