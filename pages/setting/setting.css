@@ -1,103 +1,144 @@
 /* File: pages/setting/setting.css */
 
-/* ■ カード状コンテナ: 設定内容全体を囲む */
-.setting-card {
+/* ===================================
+   SETTING専用スタイル（MEMO・PROMPT背景統一）
+   =================================== */
+
+/* ─── SETTINGページ専用の.memo-contentスタイル調整 ─── */
+.memo-content {
+  /* memo.cssの基本スタイルを継承しつつ、SETTINGページ用に調整 */
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #2d3748;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-/* show が付いたらフェードイン＆スライドアップ */
-.setting-card.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-/* ■ コンテナ間の余白確保 */
-.setting-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  padding: 24px;
 }
 
-/* ■ メニュー項目 */
+/* ─── 設定ナビメニュー ─── */
 .setting-nav {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-bottom: 16px;
 }
+
 .setting-btn {
   background: linear-gradient(90deg, #666666, #3f3f3f);
   color: #fff;
   border: none;
-  padding: 12px;
+  padding: 12px 16px;
   text-align: left;
   border-radius: 6px;
   cursor: pointer;
-  transition: filter 0.25s;
+  transition: filter 0.25s, transform 0.2s;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
+
 .setting-btn:hover,
 .setting-btn.active {
   filter: brightness(1.2);
+  transform: translateY(-1px);
 }
 
-/* ■ 詳細パネル */
+/* ─── 詳細パネル ─── */
 .setting-detail {
   width: 100%;
 }
+
 .detail-panel {
-  background: #1a202c;
+  background: rgba(26, 32, 44, 0.8);
   color: #e2e8f0;
-  padding: 16px;
-  border-radius: 6px;
-  opacity: 0;
+  padding: 20px;
+  border-radius: 8px;
+  line-height: 1.6;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .detail-panel.show {
   opacity: 1;
   transform: translateY(0);
 }
+
 .detail-panel a.donation-link {
   color: #bdff61;
   text-decoration: none;
-}
-.detail-panel a.donation-link:hover {
-  text-decoration: underline;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: rgba(189, 255, 97, 0.1);
+  border-radius: 6px;
+  display: inline-block;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(189, 255, 97, 0.3);
 }
 
-/* ■ カードの下に通常フローで配置するフッター */
-.bottom-footer {
-  position: static; /* 固定解除 */
-  display: flex;
-  gap: 8px;
-  margin: 24px 8px 16px; /* カード下との間隔 */
-  /* padding-bottom: 16px; 下部に余裕 */
-  background: transparent;
+.detail-panel a.donation-link:hover {
+  background: rgba(189, 255, 97, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(189, 255, 97, 0.2);
+  text-decoration: none;
 }
-.footer-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(90deg, #424242, #272727);
-  color: #fff;
-  border: none;
-  padding: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: filter 0.25s;
+
+/* ─── SETTINGページ専用フッターボタンスタイル ─── */
+.memo-footer .nav-btn.setting-contact-btn {
+  background-color: #2563eb;
 }
-.footer-btn i {
-  margin-right: 6px;
+
+.memo-footer .nav-btn.setting-contact-btn:hover {
+  background-color: #1d4ed8;
 }
-.footer-btn:hover {
-  filter: brightness(1.2);
+
+.memo-footer .nav-btn.setting-share-btn {
+  background-color: #059669;
+}
+
+.memo-footer .nav-btn.setting-share-btn:hover {
+  background-color: #047857;
+}
+
+/* ─── レスポンシブ対応 ─── */
+@media (max-width: 768px) {
+  .memo-content {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .setting-btn {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .detail-panel {
+    padding: 16px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ─── アニメーション強化 ─── */
+.setting-nav .setting-btn {
+  animation: slideInFromLeft 0.4s ease-out both;
+}
+
+.setting-nav .setting-btn:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.setting-nav .setting-btn:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.setting-nav .setting-btn:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

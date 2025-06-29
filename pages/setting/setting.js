@@ -4,7 +4,7 @@
 function renderSettingMain() {
   console.log("renderSettingMain: 設定ページをデフォルト状態に戻す");
 
-  const card = document.querySelector(".setting-card");
+  const content = document.querySelector(".memo-content");
 
   // すべての設定ボタンの active を削除
   document
@@ -27,31 +27,45 @@ function renderSettingMain() {
     firstBtn.classList.add("active");
   }
 
-  // カードアニメーションをリフレッシュ
-  if (card) {
-    card.classList.remove("show");
-    void card.offsetWidth;
-    card.classList.add("show");
+  // MEMO・PROMPTと同じアニメーション
+  if (content) {
+    content.classList.remove("show", "animate");
+    void content.offsetWidth;
+    content.classList.add("animate", "show");
   }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  const card = document.querySelector(".setting-card");
+  const content = document.querySelector(".memo-content");
   const gearBtn = document.getElementById("btn-setting");
 
-  // ─── 初回ロード時にも一度アニメ再生 ───
-  card.classList.remove("show");
-  // 強制リフロー
-  void card.offsetWidth;
-  card.classList.add("show");
+  // ─── 初回ロード時にMEMO・PROMPTと同じアニメーション ───
+  if (content) {
+    content.classList.remove("show", "animate");
+    // 強制リフロー
+    void content.offsetWidth;
+    content.classList.add("animate");
+
+    // 少し遅延してからshowクラスを追加（フェードイン効果）
+    setTimeout(() => {
+      content.classList.add("show");
+    }, 100);
+  }
 
   // ─── 歯車アイコンを押すと必ず再アニメ ───
-  gearBtn.addEventListener("click", (e) => {
-    e.preventDefault(); // リンク遷移を抑制
-    card.classList.remove("show"); // リセット
-    void card.offsetWidth; // 再リフロー
-    card.classList.add("show"); // 再付与で必ず動く
-  });
+  if (gearBtn) {
+    gearBtn.addEventListener("click", (e) => {
+      e.preventDefault(); // リンク遷移を抑制
+      if (content) {
+        content.classList.remove("show", "animate");
+        void content.offsetWidth; // 再リフロー
+        content.classList.add("animate");
+        setTimeout(() => {
+          content.classList.add("show");
+        }, 100);
+      }
+    });
+  }
 
   // ─── 以下、既存のメニュー切替＋詳細パネル表示 ───
   document.querySelectorAll(".setting-btn").forEach((btn) => {
@@ -66,11 +80,39 @@ window.addEventListener("DOMContentLoaded", () => {
       document
         .querySelectorAll(".detail-panel")
         .forEach((p) => p.classList.remove("show"));
+
       // クリックしたボタンに対応するパネルを show
       const targetId = btn.dataset.target;
-      document.querySelector(targetId)?.classList.add("show");
+      const targetPanel = document.querySelector(targetId);
+      if (targetPanel) {
+        targetPanel.classList.add("show");
+      } else {
+        // データターゲットが設定されていない場合はデフォルトパネルを表示
+        const defaultPanel = document.querySelector(".detail-panel");
+        if (defaultPanel) {
+          defaultPanel.classList.add("show");
+        }
+      }
     });
   });
+
+  // ─── フッターボタンのイベント処理 ───
+  const contactBtn = document.querySelector(".setting-contact-btn");
+  const shareBtn = document.querySelector(".setting-share-btn");
+
+  if (contactBtn) {
+    contactBtn.addEventListener("click", () => {
+      console.log("お問合せボタンがクリックされました");
+      // お問合せ機能の実装
+    });
+  }
+
+  if (shareBtn) {
+    shareBtn.addEventListener("click", () => {
+      console.log("共有ボタンがクリックされました");
+      // 共有機能の実装
+    });
+  }
 });
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
