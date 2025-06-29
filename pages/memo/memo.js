@@ -261,10 +261,13 @@ async function renderListView() {
         m.starred = !m.starred;
         console.log(`star toggle id=${m.id} → ${m.starred}`);
         // move starred to top / unstar to bottom
-        const idx = +li.dataset.index;
-        memos.splice(idx, 1);
-        if (m.starred) memos.unshift(m);
-        else memos.push(m);
+        // ★修正：IDで検索して正確なインデックスを取得
+        const realIdx = memos.findIndex((memo) => memo.id === m.id);
+        if (realIdx !== -1) {
+          memos.splice(realIdx, 1);
+          if (m.starred) memos.unshift(m);
+          else memos.push(m);
+        }
         await saveStorage(MEMO_KEY, memos);
         renderListView();
       });
@@ -282,9 +285,14 @@ async function renderListView() {
       arch.title = "アーカイブへ移動";
       arch.addEventListener("click", async (e) => {
         e.stopPropagation();
-        m.archived = true;
-        await saveStorage(MEMO_KEY, memos);
-        renderListView(); // 再描画で一覧から消える
+
+        // アニメーション付きでアーカイブ
+        await animateArchiveItem(li, async () => {
+          m.archived = true;
+          await saveStorage(MEMO_KEY, memos);
+          // グローバルに最新のmemosを設定
+          window.memos = memos;
+        });
       });
       li.appendChild(arch);
 
@@ -415,15 +423,17 @@ async function renderClipboardView() {
     del.innerHTML = '<i class="bi bi-archive-fill"></i>';
     del.addEventListener("click", async () => {
       /*--- アーカイブへ移動 ---*/
-      const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
-      await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
+      // アニメーション付きでアーカイブ
+      await animateArchiveItem(li, async () => {
+        const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
+        await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
 
-      const arch = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
-      arch.push(removed); // ④ 末尾に追加
-      await saveStorage(CLIP_ARCH_KEY, arch); // ⑤ 保存（アーカイブを更新）
+        const arch = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
+        arch.push(removed); // ④ 末尾に追加
+        await saveStorage(CLIP_ARCH_KEY, arch); // ⑤ 保存（アーカイブを更新）
 
-      console.log("[CLIP] archived →", removed);
-      renderClipboardView(); // ⑥ 再描画
+        console.log("[CLIP] archived →", removed);
+      });
     });
     li.appendChild(del);
     /*─────────────────────────────────────────*/
@@ -1429,6 +1439,336 @@ function showMemoSaveConfirmDialog(onSave, onDiscard) {
   setTimeout(() => {
     saveBtn.focus();
   }, 100);
+}
+
+/*━━━━━━━━━━ アーカイブアニメーション機能 ━━━━━━━━━━*/
+async function animateArchiveItem(element, onComplete) {
+  return new Promise((resolve) => {
+    // ランダムに3つの方向から選択（33%ずつの確率）
+    const random = Math.random();
+    let animationType, animationClass;
+
+    if (random < 0.33) {
+      animationType = "left";
+      animationClass = "archiving-left";
+    } else if (random < 0.66) {
+      animationType = "right";
+      animationClass = "archiving-right";
+    } else {
+      animationType = "down";
+      animationClass = "archiving-down";
+    }
+
+    console.log(
+      `[ARCHIVE] ${
+        animationType === "left"
+          ? "左"
+          : animationType === "right"
+          ? "右"
+          : "下"
+      }にアニメーション`
+    );
+
+    // アニメーション開始前にアーカイブアイコンを光らせる
+    const archiveIcon = element.querySelector(".actions");
+    if (archiveIcon) {
+      archiveIcon.style.color = "#f59e0b";
+      archiveIcon.style.transform = "scale(1.2)";
+      archiveIcon.style.transition = "all 0.2s ease";
+    }
+
+    // 既存のアニメーションクラスを削除（もしあれば）
+    element.classList.remove(
+      "archiving-left",
+      "archiving-right",
+      "archiving-down"
+    );
+
+    // 強制的にリフローを発生させてクラス削除を確定
+    void element.offsetWidth;
+
+    // 選択されたアニメーションクラスを追加
+    element.classList.add(animationClass);
+
+    // アニメーション用スタイルを動的に追加（初回のみ）
+    if (!document.querySelector("#archive-animation-styles")) {
+      const styles = document.createElement("style");
+      styles.id = "archive-animation-styles";
+      styles.textContent = `
+        .archiving-left {
+          animation: archiveSlideOutLeft 0.6s ease-in-out forwards;
+          pointer-events: none; /* クリック無効化 */
+        }
+
+        .archiving-right {
+          animation: archiveSlideOutRight 0.6s ease-in-out forwards;
+          pointer-events: none; /* クリック無効化 */
+        }
+
+        .archiving-down {
+          animation: archiveFallDown 0.8s ease-in forwards;
+          pointer-events: none; /* クリック無効化 */
+        }
+
+        @keyframes archiveSlideOutLeft {
+          0% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+          30% {
+            opacity: 0.8;
+            transform: translateX(-10px) scale(0.98);
+          }
+          60% {
+            opacity: 0.4;
+            transform: translateX(-30px) scale(0.95) rotateZ(-2deg);
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(-100px) scale(0.8) rotateZ(-5deg);
+            height: 0;
+            margin: 0;
+            padding: 0;
+          }
+        }
+
+        @keyframes archiveSlideOutRight {
+          0% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+          30% {
+            opacity: 0.8;
+            transform: translateX(10px) scale(0.98);
+          }
+          60% {
+            opacity: 0.4;
+            transform: translateX(30px) scale(0.95) rotateZ(2deg);
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(100px) scale(0.8) rotateZ(5deg);
+            height: 0;
+            margin: 0;
+            padding: 0;
+          }
+        }
+
+        @keyframes archiveFallDown {
+          0% {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotateZ(0deg);
+          }
+          20% {
+            opacity: 0.9;
+            transform: translateY(10px) scale(0.98) rotateZ(2deg);
+          }
+          40% {
+            opacity: 0.7;
+            transform: translateY(30px) scale(0.95) rotateZ(-3deg);
+          }
+          60% {
+            opacity: 0.5;
+            transform: translateY(60px) scale(0.9) rotateZ(5deg);
+          }
+          80% {
+            opacity: 0.2;
+            transform: translateY(100px) scale(0.8) rotateZ(-8deg);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(150px) scale(0.6) rotateZ(15deg);
+            height: 0;
+            margin: 0;
+            padding: 0;
+          }
+        }
+
+        /* アーカイブ成功トースト */
+        .archive-toast {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #10b981;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.9rem;
+          font-weight: 500;
+          animation: toastSlideIn 0.3s ease-out;
+        }
+
+        .archive-toast.fade-out {
+          animation: toastFadeOut 0.3s ease-in forwards;
+        }
+
+        @keyframes toastSlideIn {
+          from {
+            opacity: 0;
+            transform: translateX(100px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes toastFadeOut {
+          to {
+            opacity: 0;
+            transform: translateX(100px);
+          }
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+
+    // animationend イベントリスナーを使用してより確実にアニメーション完了を検知
+    const handleAnimationEnd = async (event) => {
+      // 3つのアニメーション完了を対象にする
+      if (
+        event.animationName === "archiveSlideOutLeft" ||
+        event.animationName === "archiveSlideOutRight" ||
+        event.animationName === "archiveFallDown"
+      ) {
+        element.removeEventListener("animationend", handleAnimationEnd);
+
+        // データ更新処理を実行
+        await onComplete();
+
+        // トースト通知を表示
+        showArchiveToast();
+
+        // 要素を完全に削除
+        element.remove();
+
+        // 他のアイテムの位置を調整するためのアニメーション
+        const remainingItems = document.querySelectorAll(
+          ".memo-item, .clipboard-item"
+        );
+        remainingItems.forEach((item, index) => {
+          // 既存のアニメーションとトランジションを完全にクリア
+          item.style.animation = "";
+          item.style.transition = "";
+          item.style.transform = "";
+          item.style.opacity = "";
+
+          // 強制的にリフローを発生させて状態をリセット
+          void item.offsetHeight;
+
+          // 少し遅延してから新しいアニメーションを適用
+          setTimeout(() => {
+            item.style.animation = `slideUp 0.3s ease-out both`;
+
+            // アニメーション完了後にスタイルをクリーンアップ
+            setTimeout(() => {
+              item.style.animation = "";
+              item.style.transform = "";
+              item.style.opacity = "";
+            }, 300); // slideUpアニメーションの時間(0.3s)と同期
+          }, index * 50);
+        });
+
+        // slideUpアニメーションを動的に追加
+        if (!document.querySelector("#slide-up-animation")) {
+          const slideUpStyles = document.createElement("style");
+          slideUpStyles.id = "slide-up-animation";
+          slideUpStyles.textContent = `
+            @keyframes slideUp {
+              from {
+                transform: translateY(10px);
+                opacity: 0.8;
+              }
+              to {
+                transform: translateY(0);
+                opacity: 1;
+              }
+            }
+          `;
+          document.head.appendChild(slideUpStyles);
+        }
+
+        resolve();
+      }
+    };
+
+    // アニメーション完了イベントを監視
+    element.addEventListener("animationend", handleAnimationEnd);
+
+    // フォールバック: 1000ms後に強制的に完了処理を実行（下落ちアニメーションが長いため）
+    setTimeout(async () => {
+      if (element.parentNode) {
+        // まだ要素が存在する場合
+        element.removeEventListener("animationend", handleAnimationEnd);
+        console.warn("[ARCHIVE] Animation timeout - forcing completion");
+
+        await onComplete();
+        showArchiveToast();
+        element.remove();
+
+        const remainingItems = document.querySelectorAll(
+          ".memo-item, .clipboard-item"
+        );
+        remainingItems.forEach((item, index) => {
+          // 既存のアニメーションとトランジションを完全にクリア
+          item.style.animation = "";
+          item.style.transition = "";
+          item.style.transform = "";
+          item.style.opacity = "";
+
+          // 強制的にリフローを発生させて状態をリセット
+          void item.offsetHeight;
+
+          // 少し遅延してから新しいアニメーションを適用
+          setTimeout(() => {
+            item.style.animation = `slideUp 0.3s ease-out both`;
+
+            // アニメーション完了後にスタイルをクリーンアップ
+            setTimeout(() => {
+              item.style.animation = "";
+              item.style.transform = "";
+              item.style.opacity = "";
+            }, 300); // slideUpアニメーションの時間(0.3s)と同期
+          }, index * 50);
+        });
+
+        resolve();
+      }
+    }, 1000); // 800ms → 1000ms に延長
+  });
+}
+
+/*━━━━━━━━━━ トースト通知機能 ━━━━━━━━━━*/
+function showArchiveToast() {
+  // 既存のトーストがあれば削除
+  const existingToast = document.querySelector(".archive-toast");
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  // 新しいトーストを作成
+  const toast = document.createElement("div");
+  toast.className = "archive-toast";
+  toast.innerHTML = `
+    <i class="bi bi-check-circle-fill"></i>
+    アーカイブに移動しました
+  `;
+
+  // bodyに追加
+  document.body.appendChild(toast);
+
+  // 2秒後にフェードアウト
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, 2000);
 }
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
