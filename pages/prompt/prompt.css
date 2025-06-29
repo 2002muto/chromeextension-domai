@@ -229,18 +229,18 @@ textarea.field-text,
   color: #ffffff !important;
   border: none !important;
   font-weight: 600;
+  font-size: 0.875rem; /* 編集ボタンと統一したフォントサイズ */
   padding: 4px 8px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   box-shadow: 0 4px 10px #0003;
-  transition: background 0.15s;
+  transition: filter 0.2s; /* 一括入力ボタンと統一したトランジション */
 }
 .btn-dup:hover,
 .btn-dup:focus {
-  background: #1aff2e !important; /* ホバー時：15% 明るい緑 */
-  color: #ffffff !important;
+  filter: brightness(1.1); /* 一括入力ボタンと統一したホバー効果 */
 }
 .btn-dup i {
   pointer-events: none;
@@ -403,14 +403,24 @@ textarea.field-text,
 }
 
 .btn-edit {
-  background: #00a31e !important; /* 指定色 */
-  border: none !important;
+  background: #00a31e !important; /* 通常時：緑 */
   color: #ffffff !important;
+  border: none !important;
   font-weight: 600;
-  transition: filter 0.15s;
+  font-size: 0.875rem; /* 複製ボタンと統一したフォントサイズ */
+  padding: 4px 8px; /* 複製ボタンと統一 */
+  border-radius: 6px; /* 複製ボタンと統一 */
+  display: inline-flex; /* 複製ボタンと統一 */
+  align-items: center; /* 複製ボタンと統一 */
+  gap: 6px; /* 複製ボタンと統一 */
+  box-shadow: 0 4px 10px #0003; /* 複製ボタンと統一 */
+  transition: filter 0.2s; /* 一括入力ボタンと統一したトランジション */
 }
 .btn-edit:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.1); /* 一括入力ボタンと統一したホバー効果 */
+}
+.btn-edit i {
+  pointer-events: none; /* 複製ボタンと統一 */
 }
 
 /*--------------------------------------------------------------
