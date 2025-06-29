@@ -7,17 +7,47 @@
 /*--------------------------------------------------------------
   A. memo-content レイアウト（MEMOページと同じ構造）
 --------------------------------------------------------------*/
-/* PROMPTページ（一覧表示）のみカード状背景を適用 */
+/* PROMPTページ（一覧表示）のみカード状背景を適用 - MEMOページと統一 */
 .memo-content:not(.edit-mode) {
   background: #2d2d2d;
   border-radius: 12px;
   margin: 16px;
   padding: 0; /* パディングを削除してボタンとリストを分離 */
-  /* 一覧表示の高さ計算: ヘッダー(52px) + margin(32px) + bottom-margin(16px) = 100px + margin分32px = 132px */
-  height: calc(100vh - 132px) !important;
+  /* 一覧表示ではmargin分を追加で考慮: 172px + top-margin(16px) + bottom-margin(16px) = 204px - MEMOページと統一 */
+  height: calc(100vh - 204px) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
+}
+
+/* 編集モード時のコンテンツ高さ調整 - .form-headerとフッターを考慮 */
+.memo-content.edit-mode {
+  background: #2d2d2d; /* MEMOページと同じ背景色 */
+  border-radius: 12px;
+  margin: 16px;
+  padding: 0; /* パディングを削除 */
+  height: calc(
+    100vh - 188px
+  ); /* ヘッダー(52px) + サブナビ(72px) + margin(32px) + フッター(68px) - 二重余白を解消 */
+  padding-bottom: 0; /* フッターは固定なので余白不要 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 内容がはみ出ないように */
+}
+
+/* 実行画面時のコンテンツ高さ調整 - .form-headerとフッターを考慮 */
+.memo-content.run-mode {
+  background: #2d2d2d; /* MEMOページと同じ背景色 */
+  border-radius: 12px;
+  margin: 16px;
+  padding: 0; /* パディングを削除 */
+  height: calc(
+    100vh - 188px
+  ); /* ヘッダー(52px) + サブナビ(72px) + margin(32px) + フッター(68px) - 編集画面と統一 */
+  padding-bottom: 0; /* フッターは固定なので余白不要 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 内容がはみ出ないように */
 }
 
 /*--------------------------------------------------------------
@@ -153,15 +183,17 @@
 }
 
 /*--------------------------------------------------------------
-  C. 編集ビュー（プロンプト編集中）
+  C. 編集ビュー（プロンプト編集中） - MEMOページと統一
 --------------------------------------------------------------*/
 
-/* ① カード外枠 */
+/* ① カード外枠 - MEMOページと統一 */
 .edit-card {
-  background: linear-gradient(180deg, #1f2835 0%, #19212f 100%);
-  border: 1px solid #ffffff14;
-  border-radius: 8px;
-  padding: 24px;
+  background: #2d2d2d; /* MEMOページと同じ背景色 */
+  border-radius: 12px;
+  padding: 0; /* パディングを削除してボタンとリストを分離 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* memo-content自体のスクロールを無効 */
 }
 
 /* ② 共通ラベル */
@@ -170,12 +202,102 @@
   font-weight: 600;
 }
 
-/* ③ タイトル ＜input＞ & 各 textarea
+/* ② プロンプト編集フォーム - MEMOページと統一 */
+.memo-input-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #2d2d2d; /* より暗いグレー */
+  padding: 16px; /* 実行画面のprompt-run-boxと同じパディング */
+  border-radius: 8px; /* MEMOページと完全統一（12px→8px） */
+  min-height: 0;
+  box-sizing: border-box;
+  overflow-y: auto; /* 縦スクロールを有効化 */
+  overflow-x: hidden; /* 横スクロールは無効 */
+  height: 100%; /* 親要素の高さを最大活用 */
+
+  /* フェードインアニメーション（MEMOページと統一） */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+
+  /* スクロールバーのスタイル（MEMOページと統一） */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+}
+
+.memo-input-form.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.memo-input-form.animate {
+  animation: slideUpFade 0.4s ease-out both;
+}
+
+/* memo-input-form専用スクロールバー（MEMOページと統一） */
+.memo-input-form::-webkit-scrollbar {
+  width: 8px;
+}
+
+.memo-input-form::-webkit-scrollbar-track {
+  background: rgba(45, 45, 45, 0.5);
+  border-radius: 4px;
+}
+
+.memo-input-form::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.memo-input-form::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* タイトルセクション - 視覚的に上下の余白を均等に調整 */
+.memo-input-form .title-section {
+  padding: 14px 0 12px 0; /* 上14px、下12px - 行間を狭く調整 */
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* プロンプトフィールドと完全統一 */
+}
+
+.memo-input-form .title-label {
+  display: block;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600; /* 実行画面のプロンプトラベルと同じ */
+  margin-bottom: 8px; /* 12px→8px に変更して行間を狭く */
+}
+
+.memo-input-form .title-input {
+  background: #3a3f4a !important; /* 実行画面のテキストエリアと同じ背景色 */
+  border: 1px solid #4a5163 !important; /* 実行画面のテキストエリアと同じボーダー */
+  color: #ffffff !important;
+  border-radius: 6px;
+  padding: 12px;
+  width: 100%; /* 親要素のパディングで余白を確保 */
+  font-size: 0.9rem; /* 実行画面のテキストエリアと同じフォントサイズ */
+  resize: none; /* リサイズ無効 */
+  min-height: 42px; /* 実行画面のテキストエリアと同じ最小高さ */
+  box-sizing: border-box;
+  outline: none;
+  overflow: hidden; /* 実行画面と同じスクロールバー非表示 */
+}
+
+.memo-input-form .title-input:focus {
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.memo-input-form .title-input::placeholder {
+  color: #707987;
+  font-style: italic; /* 実行画面のテキストエリアと同じイタリック */
+}
+
+/* ③ 各 textarea - 統一スタイル
       - 背景 #3A3F4A
       - 白文字 #FFFFFF
       - Bootstrap の既定色を強制上書きするために !important
 ----------------------------------------------------------------*/
-#e-title,
 .edit-card input.form-control,
 .edit-card textarea.form-control,
 .prompt-field textarea.form-control,
@@ -185,17 +307,79 @@ textarea.field-text,
   border: 1px solid #4a5163 !important;
   color: #ffffff !important; /* 白文字 */
 }
-#e-title::placeholder,
 .field-textarea::placeholder {
   color: #707987; /* 薄グレー */
 }
 
-/* ④ プロンプトブロック */
+/* ④ プロンプトブロック - 視覚的に上下の余白を均等に調整 */
 .prompt-field {
   position: relative;
-  padding-bottom: 18px; /* 下余白 */
-  margin-bottom: 14px; /* ブロック間余白 */
-  border-bottom: 1px dashed #3d4556; /* 区切り線 */
+  padding: 14px 0 12px 0; /* 上14px、下12px - 行間を狭く調整 */
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* タイトルセクションと完全統一 */
+  cursor: grab; /* 実行画面と統一 */
+}
+
+.prompt-field:last-of-type {
+  border-bottom: none; /* 実行画面のprompt-blockと完全同一 */
+}
+
+/* プロンプトセクション - パディング削除（子要素で個別設定） */
+.prompt-field .prompt-section {
+  /* パディング削除 - 子要素で個別に設定 */
+}
+
+.prompt-field .prompt-field-label {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0; /* マージンリセット */
+}
+
+/* プロンプトヘッダー行（ラベルとアクション） */
+.prompt-field .prompt-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 左右に分散配置 */
+  gap: 12px;
+  margin-bottom: 8px; /* 12px→8px に変更して行間を狭く */
+}
+
+.prompt-field-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* プロンプトフィールドコンテンツ - 実行画面と完全統一 */
+.prompt-field .textarea-container {
+  /* 親要素のパディングで余白を確保 */
+  /* border-bottomは.prompt-fieldで設定済みのため削除 */
+}
+
+/* 編集画面のプロンプトフィールドテキストエリア - 実行画面と完全統一 */
+.prompt-field-textarea {
+  background: #3a3f4a !important; /* 実行画面のprompt-textareaと完全同一 */
+  border: 1px solid #4a5163 !important; /* 実行画面のprompt-textareaと完全同一 */
+  color: #ffffff !important;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.9rem; /* 実行画面のprompt-textareaと完全同一 */
+  resize: vertical;
+  min-height: 120px; /* 実行画面と同じ高さに調整（80px→120px） */
+  width: 100%; /* 実行画面のprompt-textareaと完全同一 */
+  box-sizing: border-box;
+  outline: none; /* 実行画面のprompt-textareaと完全同一 */
+  overflow: hidden; /* 実行画面のprompt-textareaと完全同一 */
+}
+
+.prompt-field-textarea:focus {
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.prompt-field-textarea::placeholder {
+  color: #707987;
+  font-style: italic; /* 実行画面のprompt-textareaと完全同一 */
 }
 
 /* ON/OFF スイッチとラベル */
@@ -246,28 +430,31 @@ textarea.field-text,
   pointer-events: none;
 }
 
-/*══════════════ 削除ボタン（赤縁アイコン） ══════════════*/
+/*══════════════ 削除ボタン（赤いアイコン - MEMOページと統一） ══════════════*/
 .btn-remove-field {
-  /* position: absolute;
-  right: -9px;
-  top: -9px; */
-  width: 24px;
-  height: 24px;
+  width: 24px; /* 20px→24px に拡大 */
+  height: 24px; /* 20px→24px に拡大 */
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ff3344;
-  background: transparent;
-  color: #ff3344;
+  background: #dc3545; /* 赤い背景 */
+  border: none;
+  color: #ffffff;
   border-radius: 50%;
   cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px; /* 12px→14px に拡大 */
+  order: 3; /* 右端に配置 */
+  margin-left: auto; /* 右端に寄せる */
 }
+
 .btn-remove-field i {
   pointer-events: none;
 }
+
 .btn-remove-field:hover {
-  background: #ff3344;
-  color: #fff;
+  background: #c82333;
+  transform: scale(1.1);
 }
 
 /*══════════════ 行ヘッダーの余白調整 ══════════════*/
@@ -276,18 +463,21 @@ textarea.field-text,
   color: #e8ecf2;
 }
 
-/* ⑤ ＋ プロンプトを追加ボタン */
+/* ⑤ ＋ プロンプトを追加ボタン - 実行画面の一括入力ボタンと統一（カラーコードは元のまま） */
 .btn-add-field {
-  background: #7b7a7a; /* 指定色 */
-  color: #fff;
+  background: #7b7a7a; /* 元の指定色を維持 */
+  color: #ffffff;
   border: none;
-  padding: 12px 0;
-  border-radius: 4px;
+  border-radius: 8px; /* 実行画面と統一 */
+  padding: 8px; /* 実行画面と統一 */
+  font-size: 1.1rem; /* 実行画面と統一 */
+  font-weight: 600; /* 実行画面と統一 */
+  width: 100%; /* 実行画面と統一 - 親要素のパディングで余白を確保 */
   cursor: pointer;
-  transition: filter 0.2s;
+  transition: filter 0.2s; /* 実行画面と統一 */
 }
 .btn-add-field:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.1); /* 実行画面と統一 */
 }
 
 /*--------------------------------------------------------------
@@ -305,12 +495,12 @@ textarea.field-text,
   margin: 16px 16px 8px;
 }
 /*════════════════════════════════════════════
-  🔲 フォーカス時の枠線を “白” に固定
+  🔲 フォーカス時の枠線を "白" に固定
   （Bootstrap の青い枠線＋シャドウを無効化）
 ════════════════════════════════════════════*/
 .edit-card input.form-control:focus,
 .edit-card textarea.form-control:focus,
-#e-title:focus,
+.memo-input-form .title-input:focus,
 .field-textarea:focus {
   border-color: #ffffff !important; /* ← 枠線を白に */
   box-shadow: none !important; /* ← 青いアウトラインを消す */
@@ -426,6 +616,25 @@ textarea.field-text,
 /*--------------------------------------------------------------
   フッターボタン（MEMOページと同じアイコン式）
 --------------------------------------------------------------*/
+
+/* ─── フッター基本設定（MEMOページと完全統一） ─── */
+.memo-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  background: rgba(49, 69, 89, 0.95); /* 背景を半透明に */
+  backdrop-filter: blur(10px); /* ぼかし効果 */
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: flex-start;
+  z-index: 1000; /* 他の要素より前面に */
+}
+
 /* フッターのnav-btnをヘッダーと同じスタイルに */
 .memo-footer .nav-btn {
   position: relative;
@@ -534,20 +743,57 @@ textarea.field-text,
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  overflow-x: auto; /* 横スクロールバーを表示 */
-  overflow-y: visible;
+  gap: 16px; /* 24px→16px に変更して行間を狭く */
+  flex: 1; /* 親要素の高さを最大活用 */
+  overflow-y: auto; /* 縦スクロールを有効化 */
+  overflow-x: hidden; /* 横スクロールは無効 */
+  /* スクロールバーのスタイル（編集画面と統一） */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+}
+
+/* prompt-run-box専用スクロールバー（編集画面と統一） */
+.prompt-run-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.prompt-run-box::-webkit-scrollbar-track {
+  background: rgba(45, 45, 45, 0.5);
+  border-radius: 4px;
+}
+
+.prompt-run-box::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.prompt-run-box::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* プロンプトブロック（MEMOページのボーダーライン使用） */
 .prompt-block {
-  padding: 16px 0;
+  padding: 12px 0; /* 16px→12px に変更して行間を狭く */
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* MEMOページと同じ点線 */
   cursor: grab;
 }
 
-.prompt-block:last-of-type {
-  border-bottom: none; /* 最後のブロックはボーダーなし */
+/* 最後のプロンプトブロックのボーダーを削除（全ての可能性を網羅・詳細度強化） */
+.prompt-field:last-of-type,
+.prompt-block:last-of-type,
+.prompt-run-box .prompt-block:last-child,
+.prompt-run-box .prompt-block:last-of-type,
+.prompt-run-box > .prompt-block:last-child,
+div[class*="prompt-run"] .prompt-block:last-child,
+.memo-content .prompt-run-box .prompt-block:last-child,
+.memo-content .prompt-run-box .prompt-block:last-of-type,
+.memo-content.run-mode .prompt-block:last-child,
+.memo-content.run-mode .prompt-block:last-of-type,
+body .prompt-run-box .prompt-block:last-child,
+body .prompt-run-box .prompt-block:last-of-type,
+.prompt-run-box .prompt-block:last-of-type,
+.prompt-run-box div.prompt-block:last-of-type {
+  border-bottom: none !important; /* 最後のブロックはボーダーなし - 詳細度を強化して確実に適用 */
 }
 
 /* ドラッグ&ドロップの視覚効果 */
@@ -573,7 +819,7 @@ textarea.field-text,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px; /* 12px→8px に変更して行間を狭く */
 }
 
 .prompt-label {
@@ -586,12 +832,12 @@ textarea.field-text,
 .prompt-content {
   color: #ffffff;
   font-size: 0.95rem;
-  line-height: 1.5;
-  margin-bottom: 16px;
+  line-height: 1.3; /* 1.5→1.3 に変更して行間を狭く */
+  margin-bottom: 12px; /* 16px→12px に変更して行間を狭く */
   white-space: pre-line;
 }
 
-/* プロンプト追加入力テキストエリア */
+/* プロンプト追加入力テキストエリア - 編集画面と完全統一 */
 .prompt-textarea {
   background: #3a3f4a !important;
   border: 1px solid #4a5163 !important;
@@ -600,10 +846,11 @@ textarea.field-text,
   padding: 12px;
   font-size: 0.9rem;
   resize: vertical;
-  min-height: 80px;
+  min-height: 120px; /* 編集画面と統一（80px→120px） */
   width: 100%;
   box-sizing: border-box;
   overflow: hidden; /* スクロールバーを非表示 */
+  outline: none; /* 編集画面と統一 */
 }
 
 .prompt-textarea:focus {
@@ -650,8 +897,6 @@ textarea.field-text,
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  overflow-x: auto; /* 横スクロールバーを表示 */
-  overflow-y: visible;
 }
 
 .prompt-run-box.show {
@@ -664,6 +909,21 @@ textarea.field-text,
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* ボーダーを再設定 */
+}
+
+/* 最後のプロンプトブロックのボーダーを確実に削除（追加の安全策） */
+.prompt-block:not(:last-child) {
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* 最後以外にボーダーを適用 */
+}
+
+.prompt-block:last-child {
+  border-bottom: none !important; /* 最後のブロックは確実にボーダーなし */
+}
+
+/* 実行画面で確実に最後のプロンプトブロックのボーダーを削除 */
+.prompt-run-box .prompt-block:nth-last-child(3) {
+  border-bottom: none !important; /* btn-exec と form-check の前の要素（最後のプロンプトブロック） */
 }
 
 .prompt-block.show {
@@ -681,6 +941,52 @@ textarea.field-text,
 
 .btn-exec.show,
 .form-check.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── プロンプト編集画面のフェードインアニメーション（実行画面と統一） ─── */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 編集画面の段階的フェードイン（実行画面と同じ構造） */
+.memo-input-form .title-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.memo-input-form .title-section.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.prompt-field {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.prompt-field.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btn-add-field {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.btn-add-field.show {
   opacity: 1;
   transform: translateY(0);
 }
