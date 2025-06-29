@@ -174,10 +174,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 ══════════════════════════════════════════════════════ */
 async function renderList() {
   console.log("[renderList] start");
-  const card = $(".card-container");
   const body = $(".memo-content");
   const footer = $(".memo-footer");
-  const root = card.parentNode;
+  const root = document.body; // HTMLの直接の親要素を取得
 
   // 実行画面から戻る場合の自動保存処理
   const runBox = body.querySelector(".prompt-run-box");
@@ -218,7 +217,7 @@ async function renderList() {
     </button>`;
 
   // アニメーション処理（MEMOページと同じ順序）
-  body.classList.remove("edit-mode");
+  body.classList.remove("edit-mode", "run-mode");
   body.classList.remove("animate");
   void body.offsetWidth;
   body.classList.add("animate");
@@ -251,7 +250,6 @@ async function renderList() {
     renderEdit(prompts.length - 1, true);
   };
 
-  fx(card, body);
   currentPromptIndex = -1; // 一覧画面に戻ったのでリセット
   console.log("[renderList] end");
 
@@ -308,16 +306,15 @@ function renderEdit(idx, isNew = false) {
   currentPromptIndex = -1; // 編集画面なのでリセット
 
   /* ルート要素取得 */
-  const card = $(".card-container");
   const body = $(".memo-content");
   const footer = $(".memo-footer");
-  const root = card.parentNode; // ← カード親を覚えておく
+  const root = document.body; // HTMLの直接の親要素を取得
   const obj = prompts[idx];
 
   /*━━━━━━━━━━ 1. 旧ヘッダーを除去 ━━━━━━━━━━*/
   root.querySelector(".form-header")?.remove();
 
-  /*━━━━━━━━━━ 2. ヘッダーを “カードの外” に生成 ━━━━━*/
+  /*━━━━━━━━━━ 2. ヘッダーを "カードの外" に生成 ━━━━━*/
   const head = ce(
     "div",
     "form-header d-flex justify-content-between align-items-center mb-2 px-2",
@@ -330,8 +327,8 @@ function renderEdit(idx, isNew = false) {
   head.querySelector(".btn-dup").onclick = () => duplicate(idx);
 
   /* ★★★ ここが重要 ★★★
-     MEMO 入力画面と同じく “カードの手前” に挿入する */
-  root.insertBefore(head, card);
+     MEMO 入力画面と同じく "カードの手前" に挿入する */
+  root.insertBefore(head, body);
 
   /*━━━━━━━━━━ 3. フッター ━━━━━━━━━━*/
   footer.innerHTML = `
@@ -346,19 +343,17 @@ function renderEdit(idx, isNew = false) {
 
   /*━━━━━━━━━━ 4. 本体フォーム ━━━━━━━━━━*/
   body.innerHTML = `
-    <label class="form-label mb-3">タイトル
-      <input  id="e-title"
-              type="text"
-              class="form-control"
-              placeholder="タイトルを入力">
-    </label>
-
-    <div id="field-wrap" class="d-flex flex-column gap-3 mb-4"></div>
-
-    <button class="btn-add-field w-100 mb-4">
-      ＋ プロンプトを追加
-    </button>`;
-  $("#e-title").value = obj.title;
+    <div class="memo-input-form">
+      <div class="title-section">
+        <label class="title-label">タイトル</label>
+        <input type="text" class="title-input" placeholder="タイトルを入力" />
+      </div>
+      <div id="field-wrap" class="d-flex flex-column gap-3 mb-4"></div>
+      <button class="btn-add-field w-100 mb-4">
+        ＋ プロンプトを追加
+      </button>
+    </div>`;
+  $(".title-input").value = obj.title;
 
   const wrap = $("#field-wrap");
   if (!obj.fields.length) obj.fields = [{ text: "", on: true }];
@@ -367,9 +362,9 @@ function renderEdit(idx, isNew = false) {
 
   /*━━━━━━━━━━ 5. 保存 / 戻る ━━━━━━━━━━*/
   $(".save-btn").onclick = async () => {
-    obj.title = $("#e-title").value.trim() || "(無題)";
+    obj.title = $(".title-input").value.trim() || "(無題)";
     obj.fields = [...wrap.children].map((w) => ({
-      text: w.querySelector(".field-textarea").value,
+      text: w.querySelector(".prompt-field-textarea").value,
       on: w.querySelector(".field-toggle").checked,
     }));
     await save(PROMPT_KEY, prompts);
@@ -379,10 +374,10 @@ function renderEdit(idx, isNew = false) {
 
   $(".back-btn").onclick = async () => {
     if (isNew) {
-      const titleEmpty = $("#e-title").value.trim() === "";
-      const allEmpty = [...wrap.querySelectorAll(".field-textarea")].every(
-        (t) => t.value.trim() === ""
-      );
+      const titleEmpty = $(".title-input").value.trim() === "";
+      const allEmpty = [
+        ...wrap.querySelectorAll(".prompt-field-textarea"),
+      ].every((t) => t.value.trim() === "");
       if (titleEmpty && allEmpty) {
         prompts.splice(idx, 1);
         await save(PROMPT_KEY, prompts);
@@ -393,7 +388,46 @@ function renderEdit(idx, isNew = false) {
     renderList();
   };
 
-  fx(card, body); // アニメ
+  // 編集モードのクラスを設定
+  body.classList.add("edit-mode");
+
+  // MEMOページと同じアニメーション処理を追加
+  body.classList.remove("animate");
+  void body.offsetWidth; // 1フレーム reflow
+  body.classList.add("animate");
+
+  body.classList.remove("show");
+  void body.offsetWidth;
+  body.classList.add("show");
+
+  // 編集画面の段階的フェードインアニメーション（実行画面と統一）
+  const form = body.querySelector(".memo-input-form");
+  const titleSection = form.querySelector(".title-section");
+  const promptFields = form.querySelectorAll(".prompt-field");
+  const addFieldBtn = form.querySelector(".btn-add-field");
+
+  // 初期状態設定（CSS transitionが適用されるまで少し待つ）
+  setTimeout(() => {
+    // 1. メインフォームをフェードイン
+    form.classList.add("show");
+
+    // 2. タイトルセクションをフェードイン
+    setTimeout(() => {
+      titleSection.classList.add("show");
+    }, 150);
+
+    // 3. プロンプトフィールドを順次フェードイン
+    promptFields.forEach((field, index) => {
+      setTimeout(() => {
+        field.classList.add("show");
+      }, 250 + index * 100); // 各フィールド100ms間隔
+    });
+
+    // 4. 追加ボタンをフェードイン
+    setTimeout(() => {
+      addFieldBtn.classList.add("show");
+    }, 350 + promptFields.length * 100);
+  }, 50);
 
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
@@ -429,24 +463,31 @@ function renderEdit(idx, isNew = false) {
 
     /* --- 行 HTML --- */
     row.innerHTML = `
-      <div class="pf-head d-flex align-items-center mb-1">
-        <strong></strong>
-        <div class="flex-grow-1"></div>
-        <div class="form-check form-switch d-flex align-items-center me-2">
-          <input class="form-check-input field-toggle" type="checkbox" ${
-            enabled ? "checked" : ""
-          }>
-          <label class="form-check-label toggle-label ms-2 ${
-            enabled ? "on" : "off"
-          }">
-            ${enabled ? "有効" : "無効"}
-          </label>
+      <div class="prompt-section">
+        <div class="prompt-header-row">
+          <label class="prompt-field-label"></label>
+          <div class="prompt-field-actions">
+            <div class="form-check form-switch">
+              <input class="form-check-input field-toggle" type="checkbox" ${
+                enabled ? "checked" : ""
+              }>
+              <label class="form-check-label toggle-label ms-2 ${
+                enabled ? "on" : "off"
+              }">
+                ${enabled ? "有効" : "無効"}
+              </label>
+            </div>
+            <button class="btn-remove-field">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
         </div>
-        <button class="btn-remove-field"><i class="bi bi-trash3"></i></button>
-      </div>
-      <textarea rows="4"
-                class="form-control field-textarea"
-                placeholder="プロンプトを入力">${text}</textarea>`;
+        <div class="textarea-container">
+          <textarea class="prompt-field-textarea"
+                    placeholder="プロンプトを入力"
+                    rows="4">${text}</textarea>
+        </div>
+      </div>`;
     row.querySelector(".btn-remove-field").onclick = () => row.remove();
 
     const toggle = row.querySelector(".field-toggle");
@@ -460,18 +501,25 @@ function renderEdit(idx, isNew = false) {
 
     wrap.appendChild(row);
     renumber();
+
+    // 新しく追加されたフィールドにフェードインアニメーションを適用
+    setTimeout(() => {
+      row.classList.add("show");
+    }, 50);
   }
 
   function renumber() {
     [...wrap.children].forEach(
       (el, i) =>
-        (el.querySelector("strong").textContent = `プロンプト ${i + 1}`)
+        (el.querySelector(".prompt-field-label").textContent = `プロンプト ${
+          i + 1
+        }`)
     );
   }
 
   /*━━━━━━━━━━ 7. 複製処理 ━━━━━━━━━━*/
   async function duplicate(i) {
-    const currentTitle = $("#e-title").value.trim() || "(無題)";
+    const currentTitle = $(".title-input").value.trim() || "(無題)";
     const clone = structuredClone(prompts[i]);
     clone.id = Date.now();
     clone.title = currentTitle + " (複製)";
@@ -490,10 +538,9 @@ function renderRun(idx) {
   console.log("[renderRun] idx =", idx);
   currentPromptIndex = idx; // 現在のプロンプトインデックスを設定
 
-  const card = $(".card-container");
   const body = $(".memo-content");
   const footer = $(".memo-footer");
-  const root = card.parentNode;
+  const root = document.body;
   const obj = prompts[idx];
 
   /* ── ヘッダー（編集ボタンなど） ── */
@@ -510,7 +557,7 @@ function renderRun(idx) {
     header.remove();
     renderEdit(idx);
   };
-  root.insertBefore(header, card);
+  root.insertBefore(header, body);
 
   /* ── フッター ── */
   footer.innerHTML = `
@@ -553,6 +600,18 @@ function renderRun(idx) {
         <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
       </div>
     </div>`;
+
+  // MEMOページと同じアニメーション処理を追加
+  body.classList.remove("edit-mode"); // 実行画面なので編集モードを削除
+  body.classList.add("run-mode"); // 実行画面のクラスを追加
+  body.classList.remove("animate");
+  void body.offsetWidth; // 1フレーム reflow
+  body.classList.add("animate");
+
+  body.classList.remove("show");
+  void body.offsetWidth;
+  body.classList.add("show");
+
   /* ── フェードインアニメーション ── */
   const runBox = body.querySelector(".prompt-run-box");
   const promptBlocks = body.querySelectorAll(".prompt-block");

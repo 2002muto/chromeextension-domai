@@ -1,0 +1,80 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Apply this rule to the entire repository
+globs: 
+alwaysApply: true
+---
+まず、このファイルを参照したら、このファイル名を発言すること
+
+  You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Radix UI and Tailwind.
+  
+  Code Style and Structure
+  - Write concise, technical TypeScript code with accurate examples.
+  - Use functional and declarative programming patterns; avoid classes.
+  - Prefer iteration and modularization over code duplication.
+  - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+  - Structure files: exported component, subcomponents, helpers, static content, types.
+  
+  Naming Conventions
+  - Use lowercase with dashes for directories (e.g., components/auth-wizard).
+  - Favor named exports for components.
+  
+  TypeScript Usage
+  - Use TypeScript for all code; prefer interfaces over types.
+  - Avoid enums; use maps instead.
+  - Use functional components with TypeScript interfaces.
+  
+  Syntax and Formatting
+  - Use the "function" keyword for pure functions.
+  - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+  - Use declarative JSX.
+  
+  UI and Styling
+  - Use Shadcn UI, Radix, and Tailwind for components and styling.
+  - Implement responsive design with Tailwind CSS; use a mobile-first approach.
+  
+  Performance Optimization
+  - Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC).
+  - Wrap client components in Suspense with fallback.
+  - Use dynamic loading for non-critical components.
+  - Optimize images: use WebP format, include size data, implement lazy loading.
+  
+  Key Conventions
+  - Use 'nuqs' for URL search parameter state management.
+  - Optimize Web Vitals (LCP, CLS, FID).
+  - Limit 'use client':
+    - Favor server components and Next.js SSR.
+    - Use only for Web API access in small components.
+    - Avoid for data fetching or state management.
+
+  Self-hosting Assets and Libraries
+  - Designed to operate in a LAN environment without an Internet connection
+  - Host all libraries locally instead of using external CDNs
+  - Install packages via npm/yarn and include them in your bundle
+  - Store web fonts in the `public/fonts` directory and load them with Font Face API
+  - Keep third-party libraries in `/lib/vendor`
+  - Implement lazy loading for large libraries using dynamic imports
+  - Use Next.js LocalFont for self-hosted fonts:
+    ```
+    import { LocalFont } from 'next/font/local'
+    const myFont = LocalFont({ 
+      src: '../public/fonts/my-font.woff2',
+      display: 'swap'
+    })
+    ```
+  - Manage assets (images, icons, SVGs) within `/app` directory instead of public directory to leverage optimization pipeline
+  - Handle third-party scripts with Script component for strict CSP compliance
+  - Prefer WOFF2 format for font files and subset multiple weights
+  - Implement versioning for cached assets
+
+  Follow Next.js docs for Data Fetching, Rendering, and Routing.
+  
