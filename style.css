@@ -59,7 +59,7 @@ body::-webkit-scrollbar,
 /* テキストは通常時は非表示 */
 .nav-btn .nav-text {
   position: absolute;
-  font-size: 11px; /* 12pxから11pxに縮小 */
+  font-size: 0.8rem; /* 11px→0.8rem に統一（小サイズ） */
   font-weight: bold;
   text-transform: uppercase;
   opacity: 0;
@@ -193,7 +193,7 @@ body::-webkit-scrollbar,
   color: #fff;
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 0.8rem; /* 12px→0.8rem に統一（小サイズ） */
   font-weight: bold;
   white-space: nowrap;
   opacity: 0;

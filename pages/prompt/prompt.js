@@ -477,9 +477,9 @@ function renderEdit(idx, isNew = false) {
                 ${enabled ? "有効" : "無効"}
               </label>
             </div>
-            <button class="btn-remove-field">
-              <i class="bi bi-trash3"></i>
-            </button>
+                    <button class="btn-remove-field">
+          <i class="bi bi-trash"></i>
+        </button>
           </div>
         </div>
         <div class="textarea-container">
@@ -488,7 +488,34 @@ function renderEdit(idx, isNew = false) {
                     rows="4">${text}</textarea>
         </div>
       </div>`;
-    row.querySelector(".btn-remove-field").onclick = () => row.remove();
+    row.querySelector(".btn-remove-field").onclick = async () => {
+      // おしゃれな削除確認ポップアップを表示
+      showDeleteConfirmDialog(
+        "プロンプトフィールドを削除しますか？",
+        async () => {
+          // 1. UI上から削除
+          row.remove();
+          renumber(); // 削除後にプロンプト番号を再採番
+
+          // 2. データを即座に更新・保存
+          const titleValue = $(".title-input").value.trim() || "(無題)";
+          const wrap = $("#field-wrap");
+          const updatedFields = [...wrap.children].map((w) => ({
+            text: w.querySelector(".prompt-field-textarea").value,
+            on: w.querySelector(".field-toggle").checked,
+          }));
+
+          // 3. プロンプトオブジェクトを更新
+          obj.title = titleValue;
+          obj.fields = updatedFields;
+
+          // 4. ストレージに保存
+          await save(PROMPT_KEY, prompts);
+
+          console.log("プロンプトフィールドを削除して保存しました");
+        }
+      );
+    };
 
     const toggle = row.querySelector(".field-toggle");
     const label = row.querySelector(".toggle-label");
@@ -591,15 +618,43 @@ function renderRun(idx) {
   $(".history-btn").onclick = () => console.log("[TODO] 履歴画面");
 
   /* ── 本体 HTML ── */
-  body.innerHTML = `
-    <div class="prompt-run-box">
-      ${obj.fields.map((f, i) => block(i + 1, f, i)).join("")}
-      <button class="btn-exec w-100 mt-3" style="background:#00A31E;color:#fff;">一括入力</button>
-      <div class="form-check form-switch mt-3">
-        <input id="hist-sw" class="form-check-input" type="checkbox">
-        <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
-      </div>
-    </div>`;
+  // プロンプトが0個の場合はEmpty Stateを表示
+  if (!obj.fields.length || obj.fields.every((f) => !f.text.trim())) {
+    body.innerHTML = `
+      <div class="prompt-empty-state">
+        <div class="empty-state-content">
+          <div class="empty-state-icon">
+            <i class="bi bi-pencil-square"></i>
+          </div>
+          <h3 class="empty-state-title">プロンプトがありません</h3>
+          <p class="empty-state-message">
+            プロンプトを追加してください。
+          </p>
+          <div class="empty-state-action">
+            <button class="btn-edit-prompt">
+              <i class="bi bi-pencil-fill me-1"></i> 編集してプロンプトを追加
+            </button>
+          </div>
+        </div>
+      </div>`;
+
+    // 編集ボタンのクリックイベント
+    body.querySelector(".btn-edit-prompt").onclick = () => {
+      header.remove();
+      renderEdit(idx);
+    };
+  } else {
+    // 通常のプロンプト実行画面
+    body.innerHTML = `
+      <div class="prompt-run-box">
+        ${obj.fields.map((f, i) => block(i + 1, f, i)).join("")}
+        <button class="btn-exec w-100 mt-3" style="background:#00A31E;color:#fff;">一括入力</button>
+        <div class="form-check form-switch mt-3">
+          <input id="hist-sw" class="form-check-input" type="checkbox">
+          <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
+        </div>
+      </div>`;
+  }
 
   // MEMOページと同じアニメーション処理を追加
   body.classList.remove("edit-mode"); // 実行画面なので編集モードを削除
@@ -611,6 +666,18 @@ function renderRun(idx) {
   body.classList.remove("show");
   void body.offsetWidth;
   body.classList.add("show");
+
+  // Empty Stateの場合は早期リターン（以下の処理をスキップ）
+  if (!obj.fields.length || obj.fields.every((f) => !f.text.trim())) {
+    // Empty Stateのフェードインアニメーション
+    setTimeout(() => {
+      const emptyContent = body.querySelector(".empty-state-content");
+      if (emptyContent) {
+        emptyContent.classList.add("show");
+      }
+    }, 100);
+    return;
+  }
 
   /* ── フェードインアニメーション ── */
   const runBox = body.querySelector(".prompt-run-box");
@@ -974,6 +1041,231 @@ function sendToFocused(text) {
 /*━━━━━━━━━━ トースト通知（簡易版）━━━━━━━━━━*/
 function toast(msg) {
   console.log(msg);
+}
+
+/*━━━━━━━━━━ おしゃれな削除確認ダイアログ ━━━━━━━━━━*/
+function showDeleteConfirmDialog(message, onConfirm) {
+  // 既存のダイアログがあれば削除
+  const existingDialog = document.querySelector(".delete-confirm-dialog");
+  if (existingDialog) {
+    existingDialog.remove();
+  }
+
+  // ダイアログHTML作成
+  const dialog = document.createElement("div");
+  dialog.className = "delete-confirm-dialog";
+  dialog.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <i class="bi bi-exclamation-triangle dialog-icon"></i>
+          <h3 class="dialog-title">確認</h3>
+        </div>
+        <div class="dialog-body">
+          <p class="dialog-message">${message}</p>
+        </div>
+        <div class="dialog-footer">
+          <button class="dialog-btn cancel-btn">キャンセル</button>
+          <button class="dialog-btn confirm-btn">削除</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // スタイルを動的に追加
+  if (!document.querySelector("#delete-confirm-styles")) {
+    const styles = document.createElement("style");
+    styles.id = "delete-confirm-styles";
+    styles.textContent = `
+      .delete-confirm-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .dialog-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .dialog-content {
+        position: relative;
+        background: #2d2d2d;
+        border-radius: 12px;
+        min-width: 320px;
+        max-width: 400px;
+        margin: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .dialog-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .dialog-icon {
+        font-size: 24px;
+        color: #f59e0b;
+      }
+
+      .dialog-title {
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .dialog-body {
+        padding: 16px 20px;
+      }
+
+      .dialog-message {
+        color: #e2e8f0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin: 0;
+      }
+
+      .dialog-footer {
+        display: flex;
+        gap: 12px;
+        padding: 16px 20px 20px;
+        justify-content: flex-end;
+      }
+
+      .dialog-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 80px;
+      }
+
+      .cancel-btn {
+        background: #4a5568;
+        color: #ffffff;
+      }
+
+      .cancel-btn:hover {
+        background: #5a6578;
+        transform: translateY(-1px);
+      }
+
+      .confirm-btn {
+        background: #dc3545;
+        color: #ffffff;
+      }
+
+      .confirm-btn:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .dialog-content.closing {
+        animation: slideDown 0.2s ease-in forwards;
+      }
+
+      .dialog-overlay.closing {
+        animation: fadeOut 0.2s ease-in forwards;
+      }
+
+      @keyframes slideDown {
+        to {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+      }
+
+      @keyframes fadeOut {
+        to { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+
+  // body に追加
+  document.body.appendChild(dialog);
+
+  // イベントリスナー設定
+  const overlay = dialog.querySelector(".dialog-overlay");
+  const content = dialog.querySelector(".dialog-content");
+  const cancelBtn = dialog.querySelector(".cancel-btn");
+  const confirmBtn = dialog.querySelector(".confirm-btn");
+
+  // 閉じる処理
+  function closeDialog() {
+    content.classList.add("closing");
+    overlay.classList.add("closing");
+    setTimeout(() => {
+      dialog.remove();
+    }, 200);
+  }
+
+  // キャンセルボタン
+  cancelBtn.addEventListener("click", closeDialog);
+
+  // 確認ボタン
+  confirmBtn.addEventListener("click", () => {
+    closeDialog();
+    onConfirm();
+  });
+
+  // オーバーレイクリックで閉じる
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeDialog();
+    }
+  });
+
+  // ESCキーで閉じる
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      closeDialog();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+
+  // フォーカス管理
+  setTimeout(() => {
+    cancelBtn.focus();
+  }, 100);
 }
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
