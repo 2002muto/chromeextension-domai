@@ -367,7 +367,7 @@ body {
   border: none;
   padding: 8px 0; /* 左右のパディングを削除 */
   color: #ffffff; /* より明るい色に */
-  font-size: 0.85rem; /* さらに文字サイズを小さく */
+  font-size: 1rem; /* 0.85rem→1rem に統一（タイトル入力は大サイズ） */
   font-weight: 500; /* やや太く */
   outline: none; /* フォーカス時の光る効果を無効化 */
 }
@@ -386,7 +386,7 @@ body {
   border: none;
   padding: 6px 8px; /* 統一されたパディング */
   color: #ffffff; /* title-inputと同じ明るい白色 */
-  font-size: 0.85rem; /* さらに文字サイズを小さく */
+  font-size: 0.9rem; /* 0.85rem→0.9rem に統一（本文は中サイズ） */
   font-weight: 500; /* title-inputと同じフォント太さ */
   resize: none; /* リサイズ不要 */
   min-height: 0; /* flex: 1 で自動拡張 */
@@ -419,7 +419,7 @@ body {
 
 /* 文字数カウンター */
 .char-counter {
-  font-size: 14px;
+  font-size: 0.9rem; /* 14px→0.9rem に統一 */
   color: #bbb;
   padding: 4px 8px;
   white-space: nowrap;
@@ -523,7 +523,7 @@ body {
 }
 
 .font-size-indicator {
-  font-size: 14px;
+  font-size: 0.9rem; /* 14px→0.9rem に統一 */
   color: #bbb;
   padding: 6px 6px;
   white-space: nowrap;
@@ -567,7 +567,7 @@ body {
 
 .font-option {
   padding: 8px 12px;
-  font-size: 12px;
+  font-size: 0.8rem; /* 12px→0.8rem に統一 */
   color: #bbb;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -692,7 +692,7 @@ body {
 }
 .clipboard-hint {
   color: #cbd5e0;
-  font-size: 0.875rem;
+  font-size: 0.8rem; /* 0.875rem→0.8rem に統一 */
   text-align: center;
 }
 /* ─── カード背景ふわっアニメ ─── */
