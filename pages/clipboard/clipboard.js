@@ -109,11 +109,16 @@ async function renderClipboardView() {
   void content.offsetWidth;
   content.classList.add("show");
 
-  content.querySelector(".btn-add-clip").addEventListener("click", async () => {
-    clips.push("");
-    await saveStorage(CLIP_KEY, clips);
-    renderClipboardView();
-  });
+  // クリップ追加ボタンのイベントリスナー
+  const addClipBtn = content.querySelector(".btn-add-clip");
+  if (addClipBtn) {
+    addClipBtn.addEventListener("click", async () => {
+      console.log("クリップを追加ボタンがクリックされました");
+      clips.push("");
+      await saveStorage(CLIP_KEY, clips);
+      renderClipboardView();
+    });
+  }
 
   // populate clips
   const ul = content.querySelector(".clipboard-list");
@@ -227,11 +232,11 @@ async function renderClipboardView() {
       ta.style.height = "auto";
 
       // 行の高さを取得
-      const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 16;
+      const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 24;
 
-      // 最小高さ（2.4行分）と最大高さ（12行分）を設定
-      const minHeight = lineHeight * 2.4;
-      const maxHeight = lineHeight * 12;
+      // 最小高さ（1行分）と最大高さ（5行分）を設定
+      const minHeight = lineHeight;
+      const maxHeight = lineHeight * 5;
       const contentHeight = ta.scrollHeight;
 
       // 最小〜最大の範囲内で高さを設定
@@ -249,10 +254,10 @@ async function renderClipboardView() {
       // 親要素（clipboard-item）の最小高さを動的調整
       const clipboardItem = ta.closest(".clipboard-item");
       if (clipboardItem) {
-        const itemPadding = 24; // 上下パディング12px * 2
+        const itemPadding = 32; // 上下パディング16px * 2
         const buttonHeight = 36; // copyボタンとarchiveアイコンの高さ
         const itemMinHeight = Math.max(
-          48, // 最小高さ
+          64, // 最小高さ
           newHeight + itemPadding,
           buttonHeight + itemPadding
         );
@@ -271,14 +276,14 @@ async function renderClipboardView() {
       );
     }
 
-    // データ保存とリサイズを行う関数
+    // 値の変更時に保存し、高さを調整
     function handleTextChange() {
       clips[i] = ta.value;
       saveStorage(CLIP_KEY, clips);
       autoResize();
     }
 
-    // 包括的なイベント監視（MEMOページと同様）
+    // 包括的なイベント監視
     ta.addEventListener("input", handleTextChange);
     ta.addEventListener("paste", () => setTimeout(handleTextChange, 10));
     ta.addEventListener("cut", handleTextChange);
@@ -315,9 +320,7 @@ async function renderClipboardView() {
         console.log("[CLIP] archived →", removed);
 
         // アーカイブ後、クリップが空になった場合は即座に画面を更新
-        if (clips.length === 0) {
-          renderClipboardView();
-        }
+        renderClipboardView();
       });
     });
     li.appendChild(arch);
