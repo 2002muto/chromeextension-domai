@@ -286,6 +286,12 @@ async function renderListView() {
           await saveStorage(MEMO_KEY, memos);
           // グローバルに最新のmemosを設定
           window.memos = memos;
+
+          // アーカイブ後、アクティブなメモが空になった場合は即座に画面を更新
+          const activeMemos = memos.filter((m) => !m.archived);
+          if (activeMemos.length === 0) {
+            renderListView();
+          }
         });
       });
       li.appendChild(arch);

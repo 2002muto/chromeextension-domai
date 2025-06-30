@@ -158,172 +158,177 @@ async function renderClipboardView() {
         emptyContent.classList.add("show");
       }
     }, 100);
-  } else {
-    // 通常のクリップ一覧表示
-    clips.forEach((txt, i) => {
-      const li = document.createElement("li");
-      li.className = "clipboard-item";
-      li.draggable = true;
-      li.dataset.index = i;
 
-      // DnD handlers
-      li.addEventListener("dragstart", (e) => {
-        handleClipDragStart.call(li, e);
-        li.classList.add("dragging");
-      });
-      li.addEventListener("dragover", handleClipDragOver);
-      li.addEventListener("dragleave", handleClipDragLeave);
-      li.addEventListener("drop", handleClipDrop);
-      li.addEventListener("dragend", (e) => {
-        handleClipDragEnd.call(li, e);
-        // 全ての要素からドラッグ関連クラスを削除
-        document.querySelectorAll(".clipboard-item").forEach((item) => {
-          item.classList.remove("dragging", "drag-over", "drag-invalid");
-        });
-      });
-
-      // 挿入ボタン（Arrow-left-square-fill）
-      const copy = document.createElement("button");
-      copy.className = "clipboard-copy";
-      copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
-      copy.addEventListener("click", () => {
-        // ★修正★ 最新の textarea の値を取得して送信
-        const currentText = ta.value;
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (!tabs.length) return;
-          chrome.tabs.sendMessage(
-            tabs[0].id,
-            { type: "INSERT_CLIP", text: currentText },
-            (resp) => {
-              if (chrome.runtime.lastError) {
-                console.warn(
-                  "sendMessage failed:",
-                  chrome.runtime.lastError.message
-                );
-              } else {
-                console.log("copy:", currentText);
-              }
-            }
-          );
-        });
-      });
-
-      li.appendChild(copy);
-
-      // auto-resize textarea（MEMOページと同様の包括的な自動リサイズ）
-      const ta = document.createElement("textarea");
-      ta.className = "clipboard-textarea";
-      ta.rows = 1;
-      ta.value = txt;
-      ta.placeholder = "テキストを入力";
-
-      // 自動リサイズ関数（clipboard-item全体の調整を含む）
-      function autoResize() {
-        // 一時的に高さをリセットして正確なscrollHeightを取得
-        ta.style.height = "auto";
-
-        // 行の高さを取得
-        const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 16;
-
-        // 最小高さ（2.4行分）と最大高さ（12行分）を設定
-        const minHeight = lineHeight * 2.4;
-        const maxHeight = lineHeight * 12;
-        const contentHeight = ta.scrollHeight;
-
-        // 最小〜最大の範囲内で高さを設定
-        const newHeight = Math.min(
-          Math.max(minHeight, contentHeight),
-          maxHeight
-        );
-
-        ta.style.height = newHeight + "px";
-
-        // 最大高さに達した場合はスクロールを有効にする
-        if (contentHeight > maxHeight) {
-          ta.style.overflowY = "auto";
-        } else {
-          ta.style.overflowY = "hidden";
-        }
-
-        // 親要素（clipboard-item）の最小高さを動的調整
-        const clipboardItem = ta.closest(".clipboard-item");
-        if (clipboardItem) {
-          const itemPadding = 24; // 上下パディング12px * 2
-          const buttonHeight = 36; // copyボタンとarchiveアイコンの高さ
-          const itemMinHeight = Math.max(
-            48, // 最小高さ
-            newHeight + itemPadding,
-            buttonHeight + itemPadding
-          );
-          clipboardItem.style.minHeight = itemMinHeight + "px";
-
-          // レイアウト調整のためのクラス管理
-          if (newHeight > minHeight) {
-            clipboardItem.classList.add("expanded");
-          } else {
-            clipboardItem.classList.remove("expanded");
-          }
-        }
-
-        console.log(
-          `Clipboard textarea resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px, max: ${maxHeight}px)`
-        );
-      }
-
-      // データ保存とリサイズを行う関数
-      function handleTextChange() {
-        clips[i] = ta.value;
-        saveStorage(CLIP_KEY, clips);
-        autoResize();
-      }
-
-      // 包括的なイベント監視（MEMOページと同様）
-      ta.addEventListener("input", handleTextChange);
-      ta.addEventListener("paste", () => setTimeout(handleTextChange, 10));
-      ta.addEventListener("cut", handleTextChange);
-      ta.addEventListener("compositionend", handleTextChange);
-      ta.addEventListener("focus", autoResize);
-      ta.addEventListener("blur", autoResize);
-      ta.addEventListener("keyup", autoResize);
-      ta.addEventListener("keydown", autoResize);
-      ta.addEventListener("change", handleTextChange);
-      ta.addEventListener("propertychange", handleTextChange);
-
-      // ドラッグ&ドロップ対応
-      ta.addEventListener("drop", () => setTimeout(handleTextChange, 10));
-      ta.addEventListener("dragend", handleTextChange);
-
-      li.appendChild(ta);
-
-      // アーカイブアイコン（MEMOページと同様のスタイル）
-      const arch = document.createElement("i");
-      arch.className = "bi bi-archive-fill actions";
-      arch.title = "アーカイブへ移動";
-      arch.addEventListener("click", async (e) => {
-        e.stopPropagation();
-
-        // アニメーション付きでアーカイブ
-        await window.AppUtils.animateArchiveItem(li, async () => {
-          const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
-          await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
-
-          const archData = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
-          archData.push(removed); // ④ 末尾に追加
-          await saveStorage(CLIP_ARCH_KEY, archData); // ⑤ 保存（アーカイブを更新）
-
-          console.log("[CLIP] archived →", removed);
-        });
-      });
-      li.appendChild(arch);
-
-      ul.appendChild(li);
-
-      // 初期化時の高さ設定（改良版）
-      setTimeout(() => {
-        autoResize();
-      }, 10); // DOM追加後に実行
-    });
+    console.log("renderClipboardView: empty state displayed");
+    return; // Empty Stateの場合はここで終了
   }
+
+  // 通常のクリップ一覧表示
+  clips.forEach((txt, i) => {
+    const li = document.createElement("li");
+    li.className = "clipboard-item";
+    li.draggable = true;
+    li.dataset.index = i;
+
+    // DnD handlers
+    li.addEventListener("dragstart", (e) => {
+      handleClipDragStart.call(li, e);
+      li.classList.add("dragging");
+    });
+    li.addEventListener("dragover", handleClipDragOver);
+    li.addEventListener("dragleave", handleClipDragLeave);
+    li.addEventListener("drop", handleClipDrop);
+    li.addEventListener("dragend", (e) => {
+      handleClipDragEnd.call(li, e);
+      // 全ての要素からドラッグ関連クラスを削除
+      document.querySelectorAll(".clipboard-item").forEach((item) => {
+        item.classList.remove("dragging", "drag-over", "drag-invalid");
+      });
+    });
+
+    // 挿入ボタン（Arrow-left-square-fill）
+    const copy = document.createElement("button");
+    copy.className = "clipboard-copy";
+    copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
+    copy.addEventListener("click", () => {
+      // ★修正★ 最新の textarea の値を取得して送信
+      const currentText = ta.value;
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs.length) return;
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { type: "INSERT_CLIP", text: currentText },
+          (resp) => {
+            if (chrome.runtime.lastError) {
+              console.warn(
+                "sendMessage failed:",
+                chrome.runtime.lastError.message
+              );
+            } else {
+              console.log("copy:", currentText);
+            }
+          }
+        );
+      });
+    });
+
+    li.appendChild(copy);
+
+    // auto-resize textarea（MEMOページと同様の包括的な自動リサイズ）
+    const ta = document.createElement("textarea");
+    ta.className = "clipboard-textarea";
+    ta.rows = 1;
+    ta.value = txt;
+    ta.placeholder = "テキストを入力";
+
+    // 自動リサイズ関数（clipboard-item全体の調整を含む）
+    function autoResize() {
+      // 一時的に高さをリセットして正確なscrollHeightを取得
+      ta.style.height = "auto";
+
+      // 行の高さを取得
+      const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 16;
+
+      // 最小高さ（2.4行分）と最大高さ（12行分）を設定
+      const minHeight = lineHeight * 2.4;
+      const maxHeight = lineHeight * 12;
+      const contentHeight = ta.scrollHeight;
+
+      // 最小〜最大の範囲内で高さを設定
+      const newHeight = Math.min(Math.max(minHeight, contentHeight), maxHeight);
+
+      ta.style.height = newHeight + "px";
+
+      // 最大高さに達した場合はスクロールを有効にする
+      if (contentHeight > maxHeight) {
+        ta.style.overflowY = "auto";
+      } else {
+        ta.style.overflowY = "hidden";
+      }
+
+      // 親要素（clipboard-item）の最小高さを動的調整
+      const clipboardItem = ta.closest(".clipboard-item");
+      if (clipboardItem) {
+        const itemPadding = 24; // 上下パディング12px * 2
+        const buttonHeight = 36; // copyボタンとarchiveアイコンの高さ
+        const itemMinHeight = Math.max(
+          48, // 最小高さ
+          newHeight + itemPadding,
+          buttonHeight + itemPadding
+        );
+        clipboardItem.style.minHeight = itemMinHeight + "px";
+
+        // レイアウト調整のためのクラス管理
+        if (newHeight > minHeight) {
+          clipboardItem.classList.add("expanded");
+        } else {
+          clipboardItem.classList.remove("expanded");
+        }
+      }
+
+      console.log(
+        `Clipboard textarea resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px, max: ${maxHeight}px)`
+      );
+    }
+
+    // データ保存とリサイズを行う関数
+    function handleTextChange() {
+      clips[i] = ta.value;
+      saveStorage(CLIP_KEY, clips);
+      autoResize();
+    }
+
+    // 包括的なイベント監視（MEMOページと同様）
+    ta.addEventListener("input", handleTextChange);
+    ta.addEventListener("paste", () => setTimeout(handleTextChange, 10));
+    ta.addEventListener("cut", handleTextChange);
+    ta.addEventListener("compositionend", handleTextChange);
+    ta.addEventListener("focus", autoResize);
+    ta.addEventListener("blur", autoResize);
+    ta.addEventListener("keyup", autoResize);
+    ta.addEventListener("keydown", autoResize);
+    ta.addEventListener("change", handleTextChange);
+    ta.addEventListener("propertychange", handleTextChange);
+
+    // ドラッグ&ドロップ対応
+    ta.addEventListener("drop", () => setTimeout(handleTextChange, 10));
+    ta.addEventListener("dragend", handleTextChange);
+
+    li.appendChild(ta);
+
+    // アーカイブアイコン（MEMOページと同様のスタイル）
+    const arch = document.createElement("i");
+    arch.className = "bi bi-archive-fill actions";
+    arch.title = "アーカイブへ移動";
+    arch.addEventListener("click", async (e) => {
+      e.stopPropagation();
+
+      // アニメーション付きでアーカイブ
+      await window.AppUtils.animateArchiveItem(li, async () => {
+        const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
+        await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
+
+        const archData = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
+        archData.push(removed); // ④ 末尾に追加
+        await saveStorage(CLIP_ARCH_KEY, archData); // ⑤ 保存（アーカイブを更新）
+
+        console.log("[CLIP] archived →", removed);
+
+        // アーカイブ後、クリップが空になった場合は即座に画面を更新
+        if (clips.length === 0) {
+          renderClipboardView();
+        }
+      });
+    });
+    li.appendChild(arch);
+
+    ul.appendChild(li);
+
+    // 初期化時の高さ設定（改良版）
+    setTimeout(() => {
+      autoResize();
+    }, 10); // DOM追加後に実行
+  });
 
   console.log("renderClipboardView: end");
 }

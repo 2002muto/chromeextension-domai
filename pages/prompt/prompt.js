@@ -347,6 +347,11 @@ async function renderList() {
         await save(PROMPT_KEY, prompts);
         // グローバルに最新のpromptsを設定
         window.prompts = prompts;
+
+        // アーカイブ後、プロンプトが空になった場合は即座に画面を更新
+        if (prompts.length === 0) {
+          renderList();
+        }
       });
     };
 
