@@ -251,11 +251,11 @@ async function renderList() {
           <p class="memo-empty-state-message">
             最初のプロンプトを作成してみましょう。
           </p>
-                     <div class="memo-empty-state-action">
-             <button class="btn-edit-prompt">
-               <i class="bi bi-plus-lg"></i> 最初のプロンプトを作成
-             </button>
-           </div>
+                    <div class="memo-empty-state-action">
+            <button class="btn-edit-prompt">
+              <i class="bi bi-plus-lg"></i> 最初のプロンプトを作成
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -691,9 +691,9 @@ function renderRun(idx) {
     "div",
     "form-header d-flex justify-content-between align-items-center mb-2 px-2",
     `<h2 class="fw-bold fs-4 mb-0">${obj.title}</h2>
-     <button class="btn btn-edit btn-sm px-3">
-       <i class="bi bi-pencil-fill me-1"></i> 編集
-     </button>`
+    <button class="btn btn-edit btn-sm px-3">
+      <i class="bi bi-pencil-fill me-1"></i> 編集
+    </button>`
   );
   header.querySelector("button").onclick = () => {
     header.remove();
