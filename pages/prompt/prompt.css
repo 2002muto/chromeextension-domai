@@ -35,16 +35,16 @@
   overflow: hidden; /* 内容がはみ出ないように */
 }
 
-/* 実行画面時のコンテンツ高さ調整 - .form-headerとフッターを考慮 */
+/* 実行画面時のコンテンツ高さ調整 - .form-header分を考慮 */
 .memo-content.run-mode {
   background: #2d2d2d; /* MEMOページと同じ背景色 */
   border-radius: 12px;
-  margin: 16px;
+  margin: 32px 16px 16px 16px; /* MEMOページと完全統一 */
   padding: 0; /* パディングを削除 */
   height: calc(
-    100vh - 188px
-  ); /* ヘッダー(52px) + サブナビ(72px) + margin(32px) + フッター(68px) - 編集画面と統一 */
-  padding-bottom: 0; /* フッターは固定なので余白不要 */
+    100vh - 201px
+  ) !important; /* .form-header(48px)分を追加で差し引き: 153px + 48px = 201px */
+  padding-bottom: 24px; /* MEMOページと同じパディング */
   display: flex;
   flex-direction: column;
   overflow: hidden; /* 内容がはみ出ないように */
@@ -369,107 +369,74 @@ textarea.field-text,
   font-size: 1rem;
   font-weight: 500;
   margin: 0; /* マージンリセット */
+  line-height: 32px; /* 高さを統一 */
+  height: 32px; /* 高さを統一 */
+  display: flex;
+  align-items: center; /* 中央揃え */
+  flex-shrink: 0; /* ラベルが縮まないように固定 */
+  padding: 0; /* パディングリセット */
 }
 
 /* プロンプトヘッダー行（ラベルとアクション） */
 .prompt-field .prompt-header-row {
   display: flex;
-  align-items: center;
+  align-items: center; /* 中央揃えを確実に適用 */
   justify-content: space-between; /* 左右に分散配置 */
   gap: 12px;
   margin-bottom: 8px; /* 12px→8px に変更して行間を狭く */
+  min-height: 32px; /* 最小高さを設定して統一 */
+  height: 32px; /* 固定高さを設定して統一 */
 }
 
 .prompt-field-actions {
   display: flex;
-  align-items: center;
+  align-items: center; /* 中央揃えを確実に適用 */
   gap: 12px;
+  flex-shrink: 0; /* アクション部分が縮まないように固定 */
+  height: 32px; /* 高さを統一 */
 }
 
-/* プロンプトフィールドコンテンツ - 実行画面と完全統一 */
-.prompt-field .textarea-container {
-  /* 親要素のパディングで余白を確保 */
-  /* border-bottomは.prompt-fieldで設定済みのため削除 */
+/* フォームスイッチの高さ統一 - 内部要素も含めて完全に中央揃え */
+.prompt-field .form-switch {
+  height: 32px; /* 高さを統一 */
+  display: flex;
+  align-items: center; /* 中央揃え */
+  margin: 0; /* マージンリセット */
+  flex-shrink: 0; /* スイッチが縮まないように固定 */
+  padding: 0; /* パディングリセット */
 }
 
-/* 編集画面のプロンプトフィールドテキストエリア - 実行画面と完全統一 */
-.prompt-field-textarea {
-  background: #3a3f4a !important; /* 実行画面のprompt-textareaと完全同一 */
-  border: 1px solid #4a5163 !important; /* 実行画面のprompt-textareaと完全同一 */
-  color: #ffffff !important;
-  border-radius: 6px;
-  padding: 12px;
-  font-size: 0.9rem; /* 実行画面のprompt-textareaと完全同一 */
-  resize: vertical;
-  min-height: 120px; /* 実行画面と同じ高さに調整（80px→120px） */
-  width: 100%; /* 実行画面のprompt-textareaと完全同一 */
-  box-sizing: border-box;
-  outline: none; /* 実行画面のprompt-textareaと完全同一 */
-  overflow: hidden; /* 実行画面のprompt-textareaと完全同一 */
+/* フォームスイッチの内部要素も完全に中央揃え */
+.prompt-field .form-switch .form-check-input {
+  margin: 0; /* マージンリセット */
+  align-self: center; /* 中央揃え */
+  position: relative; /* 位置調整のため */
+  top: 0; /* 位置リセット */
+  left: 0; /* 位置リセット */
 }
 
-.prompt-field-textarea:focus {
-  border-color: #ffffff !important;
-  box-shadow: none !important;
+.prompt-field .form-switch .form-check-label {
+  margin: 0; /* マージンリセット */
+  align-self: center; /* 中央揃え */
+  line-height: 1; /* 行間を1に設定 */
+  padding: 0; /* パディングリセット */
+  position: relative; /* 位置調整のため */
+  top: 0; /* 位置リセット */
 }
 
-.prompt-field-textarea::placeholder {
-  color: #707987;
-  font-style: italic; /* 実行画面のprompt-textareaと完全同一 */
+/* Bootstrapのフォームスイッチのデフォルトスタイルを上書き */
+.prompt-field .form-switch .form-check-input {
+  width: 40px !important; /* スイッチの幅を固定 */
+  height: 20px !important; /* スイッチの高さを固定 */
+  margin-top: 0 !important; /* Bootstrapのデフォルトマージンを削除 */
+  margin-left: 0 !important; /* Bootstrapのデフォルトマージンを削除 */
+  margin-right: 8px !important; /* ラベルとの間隔を設定 */
 }
 
-/* ON/OFF スイッチとラベル */
-.form-switch .form-check-input {
-  width: 40px;
-  height: 20px;
-  cursor: pointer;
-}
-/*══════════════ トグルスイッチの配色カスタム ══════════════*/
-/* ① スイッチ本体 (チェック時: 緑) */
-.form-switch .form-check-input:checked {
-  background-color: #00a31e;
-  border-color: #00a31e;
-}
-/* ② ラベル文字色 */
-.toggle-label.on {
-  color: #00a31e;
-} /* 有効  → 緑 */
-.toggle-label.off {
-  color: #9ea5b3;
-} /* 無効  → グレー */
-.text-success {
-  color: #0fff17 !important;
-}
-.text-muted {
-  color: #7e8696 !important;
-}
-/* ≡≡ 複製ボタン (Copy) を #0FFF17 にカスタム ≡≡ */
-.btn-dup {
-  background: #00a31e !important; /* 通常時：緑 */
-  color: #ffffff !important;
-  border: none !important;
-  font-weight: 600;
-  font-size: 0.875rem; /* 編集ボタンと統一したフォントサイズ */
-  padding: 4px 8px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 10px #0003;
-  transition: filter 0.2s; /* 一括入力ボタンと統一したトランジション */
-}
-.btn-dup:hover,
-.btn-dup:focus {
-  filter: brightness(1.1); /* 一括入力ボタンと統一したホバー効果 */
-}
-.btn-dup i {
-  pointer-events: none;
-}
-
-/*══════════════ 削除ボタン（赤いアイコン - MEMOページと統一） ══════════════*/
+/* 削除ボタンの高さ統一 */
 .btn-remove-field {
-  width: 24px; /* 20px→24px に拡大 */
-  height: 24px; /* 20px→24px に拡大 */
+  width: 32px; /* 24px→32px に拡大して統一 */
+  height: 32px; /* 24px→32px に拡大して統一 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -480,23 +447,21 @@ textarea.field-text,
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px; /* 12px→14px に拡大 */
-  order: 3; /* 右端に配置 */
-  margin-left: auto; /* 右端に寄せる */
+  flex-shrink: 0; /* ボタンが縮まないように固定 */
+  margin: 0; /* マージンリセット */
+  padding: 0; /* パディングリセット */
+  line-height: 1; /* 行間を1に設定 */
 }
 
 .btn-remove-field i {
   pointer-events: none;
+  font-size: 14px; /* アイコンサイズを統一 */
+  line-height: 1; /* 行間を1に設定 */
 }
 
 .btn-remove-field:hover {
   background: #c82333;
   transform: scale(1.1);
-}
-
-/*══════════════ 行ヘッダーの余白調整 ══════════════*/
-.pf-head strong {
-  font-weight: 600;
-  color: #e8ecf2;
 }
 
 /* ⑤ ＋ プロンプトを追加ボタン - 実行画面の一括入力ボタンと統一（カラーコードは元のまま） */
@@ -529,6 +494,18 @@ textarea.field-text,
   justify-content: space-between;
   align-items: center;
   margin: 16px 16px 8px;
+  gap: 12px; /* タイトルと編集ボタンの間に適切な間隔を確保 */
+}
+
+/* form-header内のタイトル（h2）の省略表示 */
+.form-header h2 {
+  color: #ffffff !important;
+  flex: 1; /* 利用可能なスペースを使用 */
+  min-width: 0; /* flexアイテムが縮まるようにする */
+  overflow: hidden; /* はみ出し部分を隠す */
+  white-space: nowrap; /* 改行を防ぐ */
+  text-overflow: ellipsis; /* 省略記号（...）を表示 */
+  max-width: calc(100% - 100px); /* 編集ボタン分のスペースを確保 */
 }
 /*════════════════════════════════════════════
   🔲 フォーカス時の枠線を "白" に固定
@@ -581,9 +558,7 @@ textarea.field-text,
   filter: brightness(0.95); /* 軽いホバー効果 */
 }
 
-.form-header h2 {
-  color: #ffffff !important;
-} /* タイトル */
+/* タイトルスタイルは上記の.form-header h2で統合済み */
 .prompt-run-box strong {
   color: #ffffff !important;
 } /* プロンプトn */
@@ -641,6 +616,9 @@ textarea.field-text,
   gap: 6px; /* 複製ボタンと統一 */
   box-shadow: 0 4px 10px #0003; /* 複製ボタンと統一 */
   transition: filter 0.2s; /* 一括入力ボタンと統一したトランジション */
+  flex-shrink: 0; /* ボタンが縮まないように固定 */
+  white-space: nowrap; /* ボタン内テキストの改行を防ぐ */
+  min-width: 70px; /* ボタンの最小幅を確保 */
 }
 .btn-edit:hover {
   filter: brightness(1.1); /* 一括入力ボタンと統一したホバー効果 */
@@ -942,7 +920,7 @@ textarea.field-text,
   font-size: 0.9rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: filter 0.2s;
+  transition: all 0.2s ease;
   height: 28px;
   width: 32px;
   display: flex;
@@ -950,8 +928,35 @@ textarea.field-text,
   justify-content: center;
 }
 
-.archive-item .restore-btn:hover {
+.archive-item .restore-btn:hover:not(:disabled) {
   filter: brightness(1.15);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
+}
+
+.archive-item .restore-btn:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
+.archive-item .restore-btn:disabled:hover {
+  filter: none;
+  transform: none;
+}
+
+/* 復元アニメーション用スタイル */
+.archive-item.restoring {
+  transition: all 0.5s ease-in-out;
+  transform: translateY(-50px) scale(0.9);
+  opacity: 0;
+  filter: blur(2px);
+}
+
+/* 復元ボタンのアクティブ状態 */
+.archive-item .restore-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 /*--------------------------------------------------------------
@@ -1081,7 +1086,7 @@ body .prompt-run-box .prompt-block:last-of-type,
   font-style: italic;
 }
 
-/* 一括入力ボタンのスタイル調整 */
+/* 下部ボタンエリアのスタイル調整 - 初期表示を確保 */
 .btn-exec {
   background: #00a31e !important;
   border: none;
@@ -1091,20 +1096,28 @@ body .prompt-run-box .prompt-block:last-of-type,
   font-weight: 600;
   color: #ffffff;
   transition: filter 0.2s;
+  width: 100%;
+  margin-top: 16px;
+  opacity: 1; /* 初期表示を確保 */
+  position: relative; /* レイヤー位置を確保 */
+  z-index: 10; /* 背景より前面に表示 */
 }
 
 .btn-exec:hover {
   filter: brightness(1.1);
 }
 
-/* 履歴保存トグルのスタイル調整 */
 .form-check {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 16px;
+  opacity: 1; /* 初期表示を確保 */
+  position: relative; /* レイヤー位置を確保 */
+  z-index: 10; /* 背景より前面に表示 */
 }
 
+/* 履歴保存トグルのスタイル調整 */
 .form-check-label {
   color: #ffffff !important;
   font-size: 0.9rem; /* 0.95rem→0.9rem に統一 */
@@ -1112,8 +1125,8 @@ body .prompt-run-box .prompt-block:last-of-type,
 
 /* プロンプト実行画面のフェードインアニメーション */
 .prompt-run-box {
-  opacity: 0;
-  transform: translateY(30px);
+  opacity: 1; /* 初期表示を確保 */
+  transform: translateY(0); /* 初期位置を設定 */
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
@@ -1124,8 +1137,8 @@ body .prompt-run-box .prompt-block:last-of-type,
 
 /* プロンプトブロックの順次フェードイン */
 .prompt-block {
-  opacity: 0;
-  transform: translateY(20px);
+  opacity: 1; /* 初期表示を確保 */
+  transform: translateY(0); /* 初期位置を設定 */
   transition: opacity 0.4s ease-out, transform 0.4s ease-out;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* ボーダーを再設定 */
 }
@@ -1149,19 +1162,12 @@ body .prompt-run-box .prompt-block:last-of-type,
   transform: translateY(0);
 }
 
-/* 下部ボタンエリアのフェードイン */
-.btn-exec,
-.form-check {
-  opacity: 0;
-  transform: translateY(15px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-
-.btn-exec.show,
+/* 下部ボタンエリアのフェードイン - 初期表示を確保（showクラス削除） */
+/* .btn-exec.show,
 .form-check.show {
   opacity: 1;
   transform: translateY(0);
-}
+} */
 
 /* ─── プロンプト編集画面のフェードインアニメーション（実行画面と統一） ─── */
 @keyframes slideUpFade {
@@ -1217,4 +1223,90 @@ body .prompt-run-box .prompt-block:last-of-type,
   .btn-add-prompt {
     font-size: 0.9rem;
   }
+}
+
+/* プロンプトフィールドコンテンツ - 実行画面と完全統一 */
+.prompt-field .textarea-container {
+  /* 親要素のパディングで余白を確保 */
+  /* border-bottomは.prompt-fieldで設定済みのため削除 */
+}
+
+/* 編集画面のプロンプトフィールドテキストエリア - 実行画面と完全統一 */
+.prompt-field-textarea {
+  background: #3a3f4a !important; /* 実行画面のprompt-textareaと完全同一 */
+  border: 1px solid #4a5163 !important; /* 実行画面のprompt-textareaと完全同一 */
+  color: #ffffff !important;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.9rem; /* 実行画面のprompt-textareaと完全同一 */
+  resize: vertical;
+  min-height: 120px; /* 実行画面と同じ高さに調整（80px→120px） */
+  width: 100%; /* 実行画面のprompt-textareaと完全同一 */
+  box-sizing: border-box;
+  outline: none; /* 実行画面のprompt-textareaと完全同一 */
+  overflow: hidden; /* 実行画面のprompt-textareaと完全同一 */
+}
+
+.prompt-field-textarea:focus {
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.prompt-field-textarea::placeholder {
+  color: #707987;
+  font-style: italic; /* 実行画面のprompt-textareaと完全同一 */
+}
+
+/* ON/OFF スイッチとラベル */
+.form-switch .form-check-input {
+  width: 40px;
+  height: 20px;
+  cursor: pointer;
+}
+/*══════════════ トグルスイッチの配色カスタム ══════════════*/
+/* ① スイッチ本体 (チェック時: 緑) */
+.form-switch .form-check-input:checked {
+  background-color: #00a31e;
+  border-color: #00a31e;
+}
+/* ② ラベル文字色 */
+.toggle-label.on {
+  color: #00a31e;
+} /* 有効  → 緑 */
+.toggle-label.off {
+  color: #9ea5b3;
+} /* 無効  → グレー */
+.text-success {
+  color: #0fff17 !important;
+}
+.text-muted {
+  color: #7e8696 !important;
+}
+/* ≡≡ 複製ボタン (Copy) を #0FFF17 にカスタム ≡≡ */
+.btn-dup {
+  background: #00a31e !important; /* 通常時：緑 */
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600;
+  font-size: 0.875rem; /* 編集ボタンと統一したフォントサイズ */
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px #0003;
+  transition: filter 0.2s; /* 一括入力ボタンと統一したトランジション */
+}
+.btn-dup:hover,
+.btn-dup:focus {
+  filter: brightness(1.1); /* 一括入力ボタンと統一したホバー効果 */
+}
+.btn-dup i {
+  pointer-events: none;
+}
+
+/*══════════════ 行ヘッダーの余白調整 ══════════════*/
+.pf-head strong {
+  font-weight: 600;
+  color: #e8ecf2;
 }

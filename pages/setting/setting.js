@@ -36,8 +36,34 @@ function renderSettingMain() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  console.log("SETTINGページ DOMContentLoaded fired");
+
+  // 現在のページがSETTINGページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/setting/")) {
+    console.log("現在のページはSETTINGページではありません:", currentPage);
+    return; // SETTINGページでない場合は初期化をスキップ
+  }
+
+  // Add event listener to SETTING button
+  const settingButton = document.getElementById("btn-setting");
+  if (settingButton) {
+    settingButton.addEventListener("click", () => {
+      console.log("SETTING page button clicked");
+      // ヘッダーをクリックした時はメイン画面をリフレッシュ
+      renderSettingMain();
+    });
+  }
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("setting", {
+      mode: "main",
+    });
+    window.PageStateManager.setActivePage("setting");
+  }
+
   const content = document.querySelector(".memo-content");
-  const gearBtn = document.getElementById("btn-setting");
 
   // ─── 初回ロード時にMEMO・PROMPTと同じアニメーション ───
   if (content) {
@@ -50,21 +76,6 @@ window.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       content.classList.add("show");
     }, 100);
-  }
-
-  // ─── 歯車アイコンを押すと必ず再アニメ ───
-  if (gearBtn) {
-    gearBtn.addEventListener("click", (e) => {
-      e.preventDefault(); // リンク遷移を抑制
-      if (content) {
-        content.classList.remove("show", "animate");
-        void content.offsetWidth; // 再リフロー
-        content.classList.add("animate");
-        setTimeout(() => {
-          content.classList.add("show");
-        }, 100);
-      }
-    });
   }
 
   // ─── 以下、既存のメニュー切替＋詳細パネル表示 ───

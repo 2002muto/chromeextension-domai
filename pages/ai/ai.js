@@ -24,7 +24,32 @@ function renderAIMain() {
 
 // DOMContentLoaded後に初期化
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("AI page loaded - COMING SOON");
+  console.log("AIページ DOMContentLoaded fired");
+
+  // 現在のページがAIページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/ai/")) {
+    console.log("現在のページはAIページではありません:", currentPage);
+    return; // AIページでない場合は初期化をスキップ
+  }
+
+  // Add event listener to AI button
+  const aiButton = document.getElementById("btn-ai");
+  if (aiButton) {
+    aiButton.addEventListener("click", () => {
+      console.log("AI page button clicked");
+      // ヘッダーをクリックした時はメイン画面をリフレッシュ
+      renderAIMain();
+    });
+  }
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("ai", {
+      mode: "main",
+    });
+    window.PageStateManager.setActivePage("ai");
+  }
 
   // 初回表示アニメーション
   const main = document.querySelector(".ai-main");

@@ -139,6 +139,14 @@ function setFooter(mode) {
 async function renderListView() {
   console.log("renderListView: start");
 
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("memo", {
+      mode: "list",
+    });
+    window.PageStateManager.setActivePage("memo");
+  }
+
   document.querySelector(".form-title")?.remove();
 
   // load memos
@@ -281,18 +289,49 @@ async function renderListView() {
         e.stopPropagation();
 
         // アニメーション付きでアーカイブ
-        await window.AppUtils.animateArchiveItem(li, async () => {
-          m.archived = true;
-          await saveStorage(MEMO_KEY, memos);
-          // グローバルに最新のmemosを設定
-          window.memos = memos;
+        if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+          await window.AppUtils.animateArchiveItem(li, async () => {
+            m.archived = true;
+            await saveStorage(MEMO_KEY, memos);
+            // グローバルに最新のmemosを設定
+            window.memos = memos;
 
-          // アーカイブ後、アクティブなメモが空になった場合は即座に画面を更新
-          const activeMemos = memos.filter((m) => !m.archived);
-          if (activeMemos.length === 0) {
-            renderListView();
-          }
-        });
+            // アーカイブ後、アクティブなメモが空になった場合は即座に画面を更新
+            const activeMemos = memos.filter((m) => !m.archived);
+            if (activeMemos.length === 0) {
+              renderListView();
+            }
+          });
+        } else {
+          // AppUtilsが利用できない場合の代替処理
+          console.log(
+            "[MEMO] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
+          );
+
+          // シンプルなアニメーション
+          li.style.transition = "all 0.5s ease-in-out";
+          li.style.transform = "translateY(-20px) scale(0.95)";
+          li.style.opacity = "0";
+
+          await new Promise((resolve) => {
+            setTimeout(async () => {
+              // データ更新処理
+              m.archived = true;
+              await saveStorage(MEMO_KEY, memos);
+              // グローバルに最新のmemosを設定
+              window.memos = memos;
+
+              // アーカイブ後、アクティブなメモが空になった場合は即座に画面を更新
+              const activeMemos = memos.filter((m) => !m.archived);
+              if (activeMemos.length === 0) {
+                renderListView();
+              }
+
+              console.log("[MEMO] 代替アーカイブアニメーション完了");
+              resolve();
+            }, 500);
+          });
+        }
       });
       li.appendChild(arch);
 
@@ -315,6 +354,15 @@ async function renderListView() {
 async function renderInputForm(id) {
   console.log("renderInputForm: start, id=", id);
   memos = await loadStorage(MEMO_KEY);
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("memo", {
+      mode: "edit",
+      memoId: id,
+    });
+    window.PageStateManager.setActivePage("memo");
+  }
 
   // グローバルに最新のmemosを設定
   window.memos = memos;
@@ -869,7 +917,16 @@ function renderArchiveNav(type) {
   console.log("renderArchiveNav: start, type=", type);
   archiveType = type;
 
-  // MEMOページではサブナビゲーションが不要なのでコメントアウト
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("memo", {
+      mode: "archive",
+      archiveType: type,
+    });
+    window.PageStateManager.setActivePage("memo");
+  }
+
+  // MEMOページにはサブナビゲーションが不要なのでコメントアウト
   // swap card-nav buttons to Archive/MEMO ⇔ Archive/Clipboard
   // const nav = document.querySelector(".card-nav");
   // nav.innerHTML = `
@@ -919,6 +976,13 @@ async function renderArchiveList() {
   const listData =
     archiveType === "memo" ? rawItems.filter((m) => m.archived) : rawItems;
 
+  console.log("[ARCH] アーカイブデータ:", {
+    key: key,
+    rawItems: rawItems.length,
+    listData: listData.length,
+    archiveType: archiveType,
+  });
+
   /* 2) HTML 骨格（PROMPTパターンに統一） */
   content.innerHTML = `
     <div class="archive-header">
@@ -929,6 +993,8 @@ async function renderArchiveList() {
     </div>
     <ul class="archive-list"></ul>`;
   const ul = content.querySelector(".archive-list");
+
+  console.log("[ARCH] アーカイブリスト要素:", ul);
 
   /* 3) 行生成（MEMO固有のプレビュー付き）またはEmpty State */
   if (listData.length === 0) {
@@ -997,27 +1063,134 @@ async function renderArchiveList() {
       btn.className = "restore-btn";
       btn.innerHTML = '<i class="bi bi-upload"></i>';
       btn.title = "復元";
-      btn.addEventListener("click", async () => {
-        console.log("[ARCH] restore idx:", idx);
 
-        if (archiveType === "memo") {
-          /* MEMO: archived → false */
-          const memos = await loadStorage(MEMO_KEY);
-          const target = memos.find((m) => m.id === it.id);
-          if (target) target.archived = false;
-          await saveStorage(MEMO_KEY, memos);
-          // グローバルに最新のmemosを設定
-          window.memos = memos;
-        } else {
-          /* CLIP: アーカイブ → アクティブへ移動 */
-          const act = await loadStorage(CLIP_KEY);
-          const arch = await loadStorage(CLIP_ARCH_KEY);
-          act.push(arch.splice(idx, 1)[0]);
-          await saveStorage(CLIP_KEY, act);
-          await saveStorage(CLIP_ARCH_KEY, arch);
-        }
-        renderArchiveList(); // 再描画
+      console.log("[ARCH] 復元ボタンを作成しました:", {
+        index: idx,
+        itemId: it.id,
+        archiveType: archiveType,
       });
+
+      btn.addEventListener("click", async (e) => {
+        console.log("[ARCH] 復元ボタンがクリックされました！");
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 重複クリックを防ぐ
+        if (btn.disabled) {
+          console.log("[ARCH] 復元処理中です...");
+          return;
+        }
+
+        console.log("[ARCH] restore idx:", idx, "archiveType:", archiveType);
+
+        // ボタンを一時的に無効化
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+
+        try {
+          console.log("[ARCH] 復元処理を開始します...");
+
+          if (archiveType === "memo") {
+            /* MEMO: archived → false */
+            const memos = await loadStorage(MEMO_KEY);
+            console.log("[ARCH] 現在のメモ数:", memos.length);
+
+            const target = memos.find((m) => m.id === it.id);
+            console.log("[ARCH] 復元対象のメモ:", target);
+
+            if (target) {
+              target.archived = false;
+              console.log("[ARCH] メモを復元しました:", target.title);
+
+              await saveStorage(MEMO_KEY, memos);
+              // グローバルに最新のmemosを設定
+              window.memos = memos;
+              console.log("[ARCH] メモストレージを更新しました");
+
+              // 復元アニメーションを実行
+              if (window.AppUtils && window.AppUtils.animateRestoreItem) {
+                await window.AppUtils.animateRestoreItem(li, async () => {
+                  console.log("[ARCH] 復元アニメーション完了");
+                });
+              } else {
+                // AppUtilsが利用できない場合の代替処理
+                console.log(
+                  "[ARCH] AppUtils.animateRestoreItemが利用できません。代替処理を実行します。"
+                );
+
+                // シンプルなアニメーション
+                li.style.transition = "all 0.5s ease-in-out";
+                li.style.transform = "translateY(-50px) scale(0.9)";
+                li.style.opacity = "0";
+                li.style.filter = "blur(2px)";
+
+                await new Promise((resolve) => {
+                  setTimeout(() => {
+                    console.log("[ARCH] 代替復元アニメーション完了");
+                    resolve();
+                  }, 500);
+                });
+              }
+
+              // 復元後にアーカイブリストを再描画
+              renderArchiveList();
+            } else {
+              console.error("[ARCH] 復元対象のメモが見つかりません:", it.id);
+              // ボタンを再度有効化
+              btn.disabled = false;
+              btn.style.opacity = "1";
+              btn.style.cursor = "pointer";
+            }
+          } else {
+            /* CLIP: アーカイブ → アクティブへ移動 */
+            const act = await loadStorage(CLIP_KEY);
+            const arch = await loadStorage(CLIP_ARCH_KEY);
+            const restoredItem = arch.splice(idx, 1)[0];
+            act.push(restoredItem);
+            await saveStorage(CLIP_KEY, act);
+            await saveStorage(CLIP_ARCH_KEY, arch);
+            console.log("[ARCH] クリップを復元しました:", restoredItem);
+
+            // 復元アニメーションを実行
+            if (window.AppUtils && window.AppUtils.animateRestoreItem) {
+              await window.AppUtils.animateRestoreItem(li, async () => {
+                console.log("[ARCH] 復元アニメーション完了");
+              });
+            } else {
+              // AppUtilsが利用できない場合の代替処理
+              console.log(
+                "[ARCH] AppUtils.animateRestoreItemが利用できません。代替処理を実行します。"
+              );
+
+              // シンプルなアニメーション
+              li.style.transition = "all 0.5s ease-in-out";
+              li.style.transform = "translateY(-50px) scale(0.9)";
+              li.style.opacity = "0";
+              li.style.filter = "blur(2px)";
+
+              await new Promise((resolve) => {
+                setTimeout(() => {
+                  console.log("[ARCH] 代替復元アニメーション完了");
+                  resolve();
+                }, 500);
+              });
+            }
+
+            // 復元後にアーカイブリストを再描画
+            renderArchiveList();
+          }
+
+          console.log("[ARCH] 復元処理が完了しました");
+        } catch (error) {
+          console.error("[ARCH] 復元処理中にエラーが発生しました:", error);
+          // エラーが発生した場合はボタンを再度有効化
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          btn.style.cursor = "pointer";
+        }
+      });
+
       li.appendChild(btn);
 
       ul.appendChild(li);
@@ -1182,32 +1355,39 @@ function renderArchiveFooter() {
 // Initialization on load
 // ───────────────────────────────────────
 window.addEventListener("DOMContentLoaded", async () => {
-  console.log("DOMContentLoaded fired");
+  console.log("MEMOページ DOMContentLoaded fired");
+
+  // AppUtilsの読み込み状況を確認
+  console.log("[MEMO] AppUtils check:", {
+    AppUtils: !!window.AppUtils,
+    animateRestoreItem: !!(
+      window.AppUtils && window.AppUtils.animateRestoreItem
+    ),
+    animateArchiveItem: !!(
+      window.AppUtils && window.AppUtils.animateArchiveItem
+    ),
+  });
+
+  // 現在のページがMEMOページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/memo/")) {
+    console.log("現在のページはMEMOページではありません:", currentPage);
+    return; // MEMOページでない場合は初期化をスキップ
+  }
+
+  // 起動時は常に一覧画面を表示（ページ状態の復元を無効化）
+  console.log("MEMOページ: 起動時に一覧画面を表示");
+  await renderListView();
 
   // Add event listener to MEMO button
   const memoButton = document.getElementById("btn-memo-list");
   if (memoButton) {
     memoButton.addEventListener("click", () => {
-      if (memoButton.classList.contains("active")) {
-        console.log("MEMO page button clicked while active");
-        // Define the action to be triggered here
-        // For example, refresh the list view
-        renderListView();
-      }
+      console.log("MEMO page button clicked");
+      // ヘッダーをクリックした時は常に一覧画面を表示
+      renderListView();
     });
   }
-
-  // 強制的に一覧画面に戻す処理を追加
-  setTimeout(() => {
-    const content = document.querySelector(".memo-content");
-    if (content && content.classList.contains("edit-mode")) {
-      console.log("Force return to list view from edit mode");
-      renderListView();
-    }
-  }, 100);
-
-  // start in MEMO list
-  await renderListView();
 
   // グローバルに最新のmemosを設定
   window.memos = memos;

@@ -87,8 +87,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         position: relative;
         background: #2d2d2d;
         border-radius: 12px;
-        min-width: 300px;
-        max-width: 90%;
+        min-width: 280px;
+        max-width: calc(100vw - 40px);
+        width: 90%;
         margin: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         animation: slideUp 0.3s ease-out;
@@ -113,6 +114,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         font-size: 1.1rem;
         font-weight: 600;
         margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
       }
 
       .save-confirm-dialog .dialog-body {
@@ -124,6 +128,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         font-size: 0.95rem;
         line-height: 1.4;
         margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
       }
 
       .save-confirm-dialog .dialog-footer {
@@ -131,6 +138,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         gap: 8px;
         padding: 16px 20px 20px;
         justify-content: flex-end;
+        flex-wrap: wrap;
       }
 
       .save-confirm-dialog .dialog-btn {
@@ -339,8 +347,9 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         position: relative;
         background: #2d2d2d;
         border-radius: 12px;
-        min-width: 360px;
-        max-width: 450px;
+        min-width: 280px;
+        max-width: calc(100vw - 40px);
+        width: 90%;
         margin: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         animation: slideUp 0.3s ease-out;
@@ -365,6 +374,9 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         font-size: 1.1rem;
         font-weight: 600;
         margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
       }
 
       .delete-confirm-dialog .dialog-body {
@@ -376,6 +388,9 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         font-size: 0.95rem;
         line-height: 1.4;
         margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
       }
 
       .delete-confirm-dialog .dialog-footer {
@@ -383,6 +398,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         gap: 8px;
         padding: 16px 20px 20px;
         justify-content: flex-end;
+        flex-wrap: wrap;
       }
 
       .delete-confirm-dialog .dialog-btn {
@@ -547,8 +563,9 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         position: relative;
         background: #2d2d2d;
         border-radius: 12px;
-        min-width: 360px;
-        max-width: 450px;
+        min-width: 280px;
+        max-width: calc(100vw - 40px);
+        width: 90%;
         margin: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         animation: slideUp 0.3s ease-out;
@@ -573,6 +590,9 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         font-size: 1.1rem;
         font-weight: 600;
         margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
       }
 
       .confirm-dialog .dialog-body {
@@ -584,6 +604,9 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         font-size: 0.95rem;
         line-height: 1.4;
         margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
       }
 
       .confirm-dialog .dialog-footer {
@@ -591,6 +614,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         gap: 8px;
         padding: 16px 20px 20px;
         justify-content: flex-end;
+        flex-wrap: wrap;
       }
 
       .confirm-dialog .dialog-btn {
@@ -1049,4 +1073,55 @@ window.AppUtils.showArchiveToast = function () {
   }, 2000);
 };
 
+/* ━━━━━━━━━━ 復元アニメーション機能 ━━━━━━━━━━ */
+// アーカイブアニメーション
+async function animateArchiveItem(item, callback) {
+  return new Promise((resolve) => {
+    // アニメーション開始
+    item.style.transition = "all 0.5s ease-in-out";
+    item.style.transform = "translateY(-20px) scale(0.95)";
+    item.style.opacity = "0";
+
+    setTimeout(async () => {
+      // コールバック実行（データ更新）
+      await callback();
+
+      // アニメーション完了
+      setTimeout(() => {
+        resolve();
+      }, 100);
+    }, 500);
+  });
+}
+
+// 復元アニメーション（上にアニメーションして消える）
+async function animateRestoreItem(item, callback) {
+  return new Promise((resolve) => {
+    // アニメーション開始
+    item.style.transition = "all 0.5s ease-in-out";
+    item.style.transform = "translateY(-50px) scale(0.9)";
+    item.style.opacity = "0";
+    item.style.filter = "blur(2px)";
+
+    setTimeout(async () => {
+      // コールバック実行（データ更新）
+      await callback();
+
+      // アニメーション完了
+      setTimeout(() => {
+        resolve();
+      }, 100);
+    }, 500);
+  });
+}
+
 console.log("[UTILS] AppUtils loaded successfully");
+
+// グローバルに公開
+window.AppUtils = {
+  showConfirmDialog,
+  showSaveConfirmDialog,
+  showToast,
+  animateArchiveItem,
+  animateRestoreItem,
+};

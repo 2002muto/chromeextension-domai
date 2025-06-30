@@ -1,7 +1,434 @@
 // File: pages/common.js
 // ナビゲーションボタンのクリック時展開機能
 
+// ページ状態管理のためのユーティリティ関数
+const PageStateManager = {
+  // ページ状態を保存
+  savePageState: (pageName, state) => {
+    try {
+      const pageStates = JSON.parse(localStorage.getItem("pageStates") || "{}");
+      pageStates[pageName] = {
+        ...state,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem("pageStates", JSON.stringify(pageStates));
+      console.log(`[PageState] ${pageName}の状態を保存:`, state);
+    } catch (error) {
+      console.error("[PageState] 状態保存エラー:", error);
+    }
+  },
+
+  // ページ状態を取得
+  getPageState: (pageName) => {
+    try {
+      const pageStates = JSON.parse(localStorage.getItem("pageStates") || "{}");
+      return pageStates[pageName] || null;
+    } catch (error) {
+      console.error("[PageState] 状態取得エラー:", error);
+      return null;
+    }
+  },
+
+  // ページ状態を更新
+  updatePageState: (pageName, updates) => {
+    try {
+      const pageStates = JSON.parse(localStorage.getItem("pageStates") || "{}");
+      pageStates[pageName] = {
+        ...pageStates[pageName],
+        ...updates,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem("pageStates", JSON.stringify(pageStates));
+      console.log(`[PageState] ${pageName}の状態を更新:`, updates);
+    } catch (error) {
+      console.error("[PageState] 状態更新エラー:", error);
+    }
+  },
+
+  // ページ状態を削除
+  clearPageState: (pageName) => {
+    try {
+      const pageStates = JSON.parse(localStorage.getItem("pageStates") || "{}");
+      delete pageStates[pageName];
+      localStorage.setItem("pageStates", JSON.stringify(pageStates));
+      console.log(`[PageState] ${pageName}の状態を削除`);
+    } catch (error) {
+      console.error("[PageState] 状態削除エラー:", error);
+    }
+  },
+
+  // 現在アクティブなページを保存
+  setActivePage: (pageName) => {
+    try {
+      localStorage.setItem("activePage", pageName);
+      console.log(`[PageState] アクティブページを設定: ${pageName}`);
+    } catch (error) {
+      console.error("[PageState] アクティブページ保存エラー:", error);
+    }
+  },
+
+  // 現在アクティブなページを取得
+  getActivePage: () => {
+    try {
+      return localStorage.getItem("activePage") || null;
+    } catch (error) {
+      console.error("[PageState] アクティブページ取得エラー:", error);
+      return null;
+    }
+  },
+};
+
+// グローバルに公開
+window.PageStateManager = PageStateManager;
+window.restoreMemoPageState = restoreMemoPageState;
+window.restorePromptPageState = restorePromptPageState;
+window.restoreClipboardPageState = restoreClipboardPageState;
+window.restoreAIPageState = restoreAIPageState;
+window.restoreSettingPageState = restoreSettingPageState;
+
+// 各ページの状態復元関数
+function restoreMemoPageState(savedState) {
+  if (savedState && savedState.mode) {
+    console.log("[PageState] MEMOページの状態を復元:", savedState);
+
+    switch (savedState.mode) {
+      case "list":
+        if (typeof window.renderListView === "function") {
+          window.renderListView();
+        } else if (typeof renderListView === "function") {
+          renderListView();
+        }
+        break;
+      case "edit":
+        if (savedState.memoId && typeof window.renderInputForm === "function") {
+          window.renderInputForm(savedState.memoId);
+        } else if (savedState.memoId && typeof renderInputForm === "function") {
+          renderInputForm(savedState.memoId);
+        } else {
+          // 編集画面の復元に失敗した場合は一覧画面に戻る
+          if (typeof window.renderListView === "function") {
+            window.renderListView();
+          } else if (typeof renderListView === "function") {
+            renderListView();
+          }
+        }
+        break;
+      case "archive":
+        if (typeof window.renderArchiveNav === "function") {
+          window.renderArchiveNav("memo");
+        } else if (typeof renderArchiveNav === "function") {
+          renderArchiveNav("memo");
+        } else {
+          // アーカイブ画面の復元に失敗した場合は一覧画面に戻る
+          if (typeof window.renderListView === "function") {
+            window.renderListView();
+          } else if (typeof renderListView === "function") {
+            renderListView();
+          }
+        }
+        break;
+      default:
+        // デフォルトは一覧画面
+        if (typeof window.renderListView === "function") {
+          window.renderListView();
+        } else if (typeof renderListView === "function") {
+          renderListView();
+        }
+    }
+  } else {
+    // 保存された状態がない場合は一覧画面
+    if (typeof window.renderListView === "function") {
+      window.renderListView();
+    } else if (typeof renderListView === "function") {
+      renderListView();
+    }
+  }
+}
+
+function restorePromptPageState(savedState) {
+  if (savedState && savedState.mode) {
+    console.log("[PageState] PROMPTページの状態を復元:", savedState);
+
+    switch (savedState.mode) {
+      case "list":
+        if (typeof window.renderList === "function") {
+          window.renderList();
+        } else if (typeof renderList === "function") {
+          renderList();
+        }
+        break;
+      case "edit":
+        if (
+          savedState.promptIndex !== undefined &&
+          typeof window.renderEdit === "function"
+        ) {
+          window.renderEdit(savedState.promptIndex, savedState.isNew);
+        } else if (
+          savedState.promptIndex !== undefined &&
+          typeof renderEdit === "function"
+        ) {
+          renderEdit(savedState.promptIndex, savedState.isNew);
+        } else {
+          // 編集画面の復元に失敗した場合は一覧画面に戻る
+          if (typeof window.renderList === "function") {
+            window.renderList();
+          } else if (typeof renderList === "function") {
+            renderList();
+          }
+        }
+        break;
+      case "run":
+        if (
+          savedState.promptIndex !== undefined &&
+          typeof window.renderRun === "function"
+        ) {
+          window.renderRun(savedState.promptIndex);
+        } else if (
+          savedState.promptIndex !== undefined &&
+          typeof renderRun === "function"
+        ) {
+          renderRun(savedState.promptIndex);
+        } else {
+          // 実行画面の復元に失敗した場合は一覧画面に戻る
+          if (typeof window.renderList === "function") {
+            window.renderList();
+          } else if (typeof renderList === "function") {
+            renderList();
+          }
+        }
+        break;
+      case "archive":
+        if (typeof window.renderArchiveView === "function") {
+          window.renderArchiveView();
+        } else if (typeof renderArchiveView === "function") {
+          renderArchiveView();
+        } else {
+          // アーカイブ画面の復元に失敗した場合は一覧画面に戻る
+          if (typeof window.renderList === "function") {
+            window.renderList();
+          } else if (typeof renderList === "function") {
+            renderList();
+          }
+        }
+        break;
+      default:
+        // デフォルトは一覧画面
+        if (typeof window.renderList === "function") {
+          window.renderList();
+        } else if (typeof renderList === "function") {
+          renderList();
+        }
+    }
+  } else {
+    // 保存された状態がない場合は一覧画面
+    if (typeof window.renderList === "function") {
+      window.renderList();
+    } else if (typeof renderList === "function") {
+      renderList();
+    }
+  }
+}
+
+function restoreClipboardPageState(savedState) {
+  if (savedState && savedState.mode) {
+    console.log("[PageState] CLIPBOARDページの状態を復元:", savedState);
+
+    switch (savedState.mode) {
+      case "list":
+        if (typeof window.renderClipboardView === "function") {
+          window.renderClipboardView();
+        } else if (typeof renderClipboardView === "function") {
+          renderClipboardView();
+        }
+        break;
+      case "edit":
+        if (
+          savedState.clipIndex !== undefined &&
+          typeof window.renderClipboardEdit === "function"
+        ) {
+          window.renderClipboardEdit(savedState.clipIndex);
+        } else if (
+          savedState.clipIndex !== undefined &&
+          typeof renderClipboardEdit === "function"
+        ) {
+          renderClipboardEdit(savedState.clipIndex);
+        } else {
+          // 編集画面の復元に失敗した場合は一覧画面に戻る
+          if (typeof window.renderClipboardView === "function") {
+            window.renderClipboardView();
+          } else if (typeof renderClipboardView === "function") {
+            renderClipboardView();
+          }
+        }
+        break;
+      case "archive":
+        if (typeof window.renderArchiveNav === "function") {
+          window.renderArchiveNav("clip");
+        } else if (typeof renderArchiveNav === "function") {
+          renderArchiveNav("clip");
+        } else {
+          // アーカイブ画面の復元に失敗した場合は一覧画面に戻る
+          if (typeof window.renderClipboardView === "function") {
+            window.renderClipboardView();
+          } else if (typeof renderClipboardView === "function") {
+            renderClipboardView();
+          }
+        }
+        break;
+      default:
+        // デフォルトは一覧画面
+        if (typeof window.renderClipboardView === "function") {
+          window.renderClipboardView();
+        } else if (typeof renderClipboardView === "function") {
+          renderClipboardView();
+        }
+    }
+  } else {
+    // 保存された状態がない場合は一覧画面
+    if (typeof window.renderClipboardView === "function") {
+      window.renderClipboardView();
+    } else if (typeof renderClipboardView === "function") {
+      renderClipboardView();
+    }
+  }
+}
+
+function restoreAIPageState(savedState) {
+  if (savedState && savedState.mode) {
+    console.log("[PageState] AIページの状態を復元:", savedState);
+
+    switch (savedState.mode) {
+      case "main":
+        if (typeof window.renderAIMain === "function") {
+          window.renderAIMain();
+        } else if (typeof renderAIMain === "function") {
+          renderAIMain();
+        }
+        break;
+      default:
+        // デフォルトはメイン画面
+        if (typeof window.renderAIMain === "function") {
+          window.renderAIMain();
+        } else if (typeof renderAIMain === "function") {
+          renderAIMain();
+        }
+    }
+  } else {
+    // 保存された状態がない場合はメイン画面
+    if (typeof window.renderAIMain === "function") {
+      window.renderAIMain();
+    } else if (typeof renderAIMain === "function") {
+      renderAIMain();
+    }
+  }
+}
+
+function restoreSettingPageState(savedState) {
+  if (savedState && savedState.mode) {
+    console.log("[PageState] 設定ページの状態を復元:", savedState);
+
+    switch (savedState.mode) {
+      case "main":
+        if (typeof window.renderSettingMain === "function") {
+          window.renderSettingMain();
+        } else if (typeof renderSettingMain === "function") {
+          renderSettingMain();
+        }
+        break;
+      default:
+        // デフォルトはメイン画面
+        if (typeof window.renderSettingMain === "function") {
+          window.renderSettingMain();
+        } else if (typeof renderSettingMain === "function") {
+          renderSettingMain();
+        }
+    }
+  } else {
+    // 保存された状態がない場合はメイン画面
+    if (typeof window.renderSettingMain === "function") {
+      window.renderSettingMain();
+    } else if (typeof renderSettingMain === "function") {
+      renderSettingMain();
+    }
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("[PageState] DOMContentLoaded - ページ状態管理システム初期化");
+
+  // 現在のページを確認
+  const currentPage = window.location.pathname;
+  let currentPageName = null;
+
+  if (currentPage.includes("/memo/")) {
+    currentPageName = "memo";
+  } else if (currentPage.includes("/prompt/")) {
+    currentPageName = "prompt";
+  } else if (currentPage.includes("/clipboard/")) {
+    currentPageName = "clipboard";
+  } else if (currentPage.includes("/ai/")) {
+    currentPageName = "ai";
+  } else if (currentPage.includes("/setting/")) {
+    currentPageName = "setting";
+  }
+
+  console.log(
+    "[PageState] 現在のページ:",
+    currentPageName,
+    "パス:",
+    currentPage
+  );
+
+  // アクティブページを確認
+  const activePage = PageStateManager.getActivePage();
+  console.log("[PageState] 保存されたアクティブページ:", activePage);
+
+  // 現在のページとアクティブページが一致しない場合の処理
+  if (activePage !== currentPageName) {
+    console.log(
+      "[PageState] アクティブページを現在のページに更新:",
+      activePage,
+      "→",
+      currentPageName
+    );
+    PageStateManager.setActivePage(currentPageName);
+  }
+
+  // 現在のページの状態を復元
+  if (currentPageName) {
+    const savedState = PageStateManager.getPageState(currentPageName);
+    console.log("[PageState] 保存された状態:", savedState);
+
+    // 各ページの状態復元関数を呼び出し
+    switch (currentPageName) {
+      case "memo":
+        if (typeof window.restoreMemoPageState === "function") {
+          window.restoreMemoPageState(savedState);
+        }
+        break;
+      case "prompt":
+        if (typeof window.restorePromptPageState === "function") {
+          window.restorePromptPageState(savedState);
+        }
+        break;
+      case "clipboard":
+        if (typeof window.restoreClipboardPageState === "function") {
+          window.restoreClipboardPageState(savedState);
+        }
+        break;
+      case "ai":
+        if (typeof window.restoreAIPageState === "function") {
+          window.restoreAIPageState(savedState);
+        }
+        break;
+      case "setting":
+        if (typeof window.restoreSettingPageState === "function") {
+          window.restoreSettingPageState(savedState);
+        }
+        break;
+    }
+  }
+
   // 全てのナビゲーションボタンを取得
   const navButtons = document.querySelectorAll(".nav-btn");
 
@@ -17,6 +444,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (currentPage.includes("/memo/") && this.id === "btn-memo") {
           // MEMOページでMEMOボタンがクリックされた場合
+          // 保存された状態を取得
+          const savedState = PageStateManager.getPageState("memo");
+
           // 編集画面からの遷移時は保存確認を行う
           const isEditMode = document.querySelector(".memo-content.edit-mode");
           if (
@@ -48,7 +478,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     message:
                       "メモ内容に変更があります。<br>保存せずに戻ると変更が失われます。",
                     onSave: async () => {
-                      // 保存してから一覧画面に戻る
+                      // 保存してから保存された状態に戻る
                       const titleInput = document.querySelector(".title-input");
                       const textInput = document.querySelector(".text-input");
                       const starInput = document.querySelector(".star-input");
@@ -71,7 +501,7 @@ document.addEventListener("DOMContentLoaded", function () {
                               starred,
                             };
                             console.log(
-                              "[MEMO NAV] 変更を保存して一覧画面に戻りました"
+                              "[MEMO NAV] 変更を保存して状態を復元しました"
                             );
                           }
                         } else {
@@ -85,11 +515,11 @@ document.addEventListener("DOMContentLoaded", function () {
                           };
                           window.memos.push(newM);
                           console.log(
-                            "[MEMO NAV] 新規メモを保存して一覧画面に戻りました"
+                            "[MEMO NAV] 新規メモを保存して状態を復元しました"
                           );
                         }
 
-                        // 保存してから一覧画面に遷移
+                        // 保存してから保存された状態に遷移
                         if (
                           typeof window.AppUtils?.saveStorage === "function"
                         ) {
@@ -101,32 +531,19 @@ document.addEventListener("DOMContentLoaded", function () {
                           await window.saveStorage("memos", window.memos);
                         }
 
-                        // 一覧画面に遷移
-                        if (typeof window.renderListView === "function") {
-                          window.renderListView();
-                        } else if (typeof renderListView === "function") {
-                          renderListView();
-                        }
+                        // 保存された状態に遷移
+                        restoreMemoPageState(savedState);
                       } else {
-                        // 一覧画面に遷移
-                        if (typeof window.renderListView === "function") {
-                          window.renderListView();
-                        } else if (typeof renderListView === "function") {
-                          renderListView();
-                        }
+                        // 保存された状態に遷移
+                        restoreMemoPageState(savedState);
                       }
                     },
                     onDiscard: () => {
-                      // 破棄して一覧画面に戻る
+                      // 破棄して保存された状態に戻る
                       console.log(
-                        "[MEMO NAV] 変更を破棄して一覧画面に戻りました"
+                        "[MEMO NAV] 変更を破棄して状態を復元しました"
                       );
-                      // 一覧画面に遷移
-                      if (typeof window.renderListView === "function") {
-                        window.renderListView();
-                      } else if (typeof renderListView === "function") {
-                        renderListView();
-                      }
+                      restoreMemoPageState(savedState);
                     },
                   });
                   return; // ここで処理を終了
@@ -135,17 +552,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
 
-          // 変更がない場合は通常通り一覧画面に戻る
-          if (typeof window.renderListView === "function") {
-            window.renderListView();
-          } else if (typeof renderListView === "function") {
-            renderListView();
-          }
+          // 変更がない場合は保存された状態に戻る
+          restoreMemoPageState(savedState);
         } else if (
           currentPage.includes("/prompt/") &&
           this.id === "btn-prompt"
         ) {
           // PROMPTページでPROMPTボタンがクリックされた場合
+          // 保存された状態を取得
+          const savedState = PageStateManager.getPageState("prompt");
+
           // 編集画面からの遷移時は保存確認を行う
           const isEditMode = document.querySelector(".memo-content.edit-mode");
           if (
@@ -177,7 +593,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     message:
                       "プロンプト内容に変更があります。<br>保存せずに戻ると変更が失われます。",
                     onSave: async () => {
-                      // 保存してから一覧画面に戻る
+                      // 保存してから保存された状態に戻る
                       const obj = window.prompts[promptIndex];
                       const titleInput = document.querySelector(".title-input");
                       const wrap = document.querySelector("#field-wrap");
@@ -189,7 +605,7 @@ document.addEventListener("DOMContentLoaded", function () {
                           on: w.querySelector(".field-toggle").checked,
                         }));
 
-                        // 保存してから一覧画面に遷移
+                        // 保存してから保存された状態に遷移
                         if (
                           typeof window.AppUtils?.saveStorage === "function"
                         ) {
@@ -202,38 +618,26 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
 
                         console.log(
-                          "[PROMPT NAV] 変更を保存して一覧画面に戻りました"
+                          "[PROMPT NAV] 変更を保存して状態を復元しました"
                         );
                         // フォームヘッダーを削除
                         document.querySelector(".form-header")?.remove();
-                        // 一覧画面に遷移
-                        if (typeof window.renderList === "function") {
-                          window.renderList();
-                        } else if (typeof renderList === "function") {
-                          renderList();
-                        }
+                        // 保存された状態に遷移
+                        restorePromptPageState(savedState);
                       } else {
-                        // 一覧画面に遷移
-                        if (typeof window.renderList === "function") {
-                          window.renderList();
-                        } else if (typeof renderList === "function") {
-                          renderList();
-                        }
+                        // 保存された状態に遷移
+                        restorePromptPageState(savedState);
                       }
                     },
                     onDiscard: () => {
-                      // 破棄して一覧画面に戻る
+                      // 破棄して保存された状態に戻る
                       console.log(
-                        "[PROMPT NAV] 変更を破棄して一覧画面に戻りました"
+                        "[PROMPT NAV] 変更を破棄して状態を復元しました"
                       );
                       // フォームヘッダーを削除
                       document.querySelector(".form-header")?.remove();
-                      // 一覧画面に遷移
-                      if (typeof window.renderList === "function") {
-                        window.renderList();
-                      } else if (typeof renderList === "function") {
-                        renderList();
-                      }
+                      // 保存された状態に遷移
+                      restorePromptPageState(savedState);
                     },
                   });
                   return; // ここで処理を終了
@@ -242,39 +646,26 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
 
-          // 変更がない場合は通常通り一覧画面に戻る
-          if (typeof window.renderList === "function") {
-            window.renderList();
-          } else if (typeof renderList === "function") {
-            renderList();
-          }
+          // 変更がない場合は保存された状態に戻る
+          restorePromptPageState(savedState);
         } else if (
           currentPage.includes("/clipboard/") &&
           this.id === "btn-clipboard"
         ) {
           // CLIPBOARDページでCLIPBOARDボタンがクリックされた場合
-          if (typeof window.renderClipboardView === "function") {
-            window.renderClipboardView();
-          } else if (typeof renderClipboardView === "function") {
-            renderClipboardView();
-          }
+          const savedState = PageStateManager.getPageState("clipboard");
+          restoreClipboardPageState(savedState);
         } else if (currentPage.includes("/ai/") && this.id === "btn-ai") {
           // AIページでAIボタンがクリックされた場合
-          if (typeof window.renderAIMain === "function") {
-            window.renderAIMain();
-          } else if (typeof renderAIMain === "function") {
-            renderAIMain();
-          }
+          const savedState = PageStateManager.getPageState("ai");
+          restoreAIPageState(savedState);
         } else if (
           currentPage.includes("/setting/") &&
           this.id === "btn-setting"
         ) {
           // 設定ページで設定ボタンがクリックされた場合
-          if (typeof window.renderSettingMain === "function") {
-            window.renderSettingMain();
-          } else if (typeof renderSettingMain === "function") {
-            renderSettingMain();
-          }
+          const savedState = PageStateManager.getPageState("setting");
+          restoreSettingPageState(savedState);
         }
       } else {
         // 他のページへの遷移の場合、編集画面からの遷移時は保存確認
