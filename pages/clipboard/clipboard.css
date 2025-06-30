@@ -56,11 +56,11 @@
   display: grid;
   grid-template-columns: 1fr auto auto; /* textarea, copyボタン, archiveアイコン */
   align-items: center; /* 垂直方向中央揃え */
-  gap: 8px;
+  gap: 12px;
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
-  padding: 12px; /* MEMOページと統一 */
+  padding: 16px; /* パディングを増やしてスペースを確保 */
   border-radius: 6px;
-  min-height: 48px; /* MEMOページと統一 */
+  min-height: 64px; /* 最小の高さを増やす */
   line-height: 1.2; /* MEMOページと統一 */
   overflow: visible; /* 子要素の拡張を許可 */
   transition: all 0.3s ease; /* スムーズなレイアウト変更 */
@@ -175,31 +175,36 @@
   min-width: 0; /* 親幅内で縮む */
   box-sizing: border-box; /* padding を含めて高さ幅計算 */
 
-  padding: 8px; /* パディング調整 */
-  line-height: 1.2em; /* 行間を少しタイトに */
-  min-height: 2.4em; /* デフォルトは 2 行分（見やすさ向上） */
-  max-height: 12em; /* 最大 12 行分（適度な制限） */
-  white-space: pre-wrap; /* Enter で改行、折り返しも有効 */
-  word-break: break-word; /* 単語長いときも折り返す */
+  min-height: 32px; /* 最小の高さを32pxに設定 */
+  padding: 4px 12px; /* パディングを増やして余白を確保 */
+  line-height: 24px; /* 行の高さを増加 */
+  white-space: pre-wrap; /* 改行を許可 */
+  overflow: hidden; /* スクロールバーを非表示 */
 
   overflow-x: hidden; /* 横スクロール禁止 */
-  overflow-y: hidden; /* 初期状態では非表示（JSで制御） */
+  overflow-y: auto; /* 縦スクロールを許可 */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
-  resize: none; /* 自動リサイズのため手動リサイズ無効 */
+  resize: none; /* リサイズ無効 */
   background: #3a3f4a;
   color: #e2e8f0;
   border: none;
   border-radius: 4px;
   font-size: 0.9rem; /* フォントサイズ統一 */
   transition: all 0.2s ease; /* スムーズなサイズ変更 */
-  place-self: stretch; /* グリッドセル内で引き伸ばし */
+  place-self: center stretch; /* 垂直方向中央、水平方向引き伸ばし */
+}
+
+/* プレースホルダーテキストのスタイル */
+.clipboard-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center; /* プレースホルダーテキストを中央揃え */
+  line-height: 24px; /* テキストを垂直方向中央に */
 }
 
 /* Chrome/Safari/Opera のスクロールバー非表示 */
 .clipboard-textarea::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  display: none;
 }
 
 .btn-add-clip {
@@ -228,16 +233,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 200px;
-  padding: 20px;
+  height: 100%;
+  /* padding: 40px 20px; */
+  flex: 1;
 }
 
 .clipboard-empty-state-content {
   text-align: center;
-  max-width: 300px;
+  max-width: 350px;
   opacity: 0;
-  transform: translateY(15px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
 .clipboard-empty-state-content.show {
@@ -246,23 +252,23 @@
 }
 
 .clipboard-empty-state-icon {
-  font-size: 36px;
+  font-size: 48px;
   color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .clipboard-empty-state-title {
   color: #ffffff;
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 6px;
-  line-height: 1.3;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .clipboard-empty-state-message {
   color: #e2e8f0;
-  font-size: 0.85rem;
-  line-height: 1.3;
+  font-size: 0.9rem;
+  line-height: 1.4;
   margin-bottom: 24px;
   opacity: 0.8;
 }

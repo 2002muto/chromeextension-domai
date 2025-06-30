@@ -242,17 +242,17 @@ async function renderList() {
   // Empty State: プロンプトが何もない場合
   if (prompts.length === 0) {
     list.innerHTML = `
-      <div class="memo-empty-state">
-        <div class="memo-empty-state-content">
-          <div class="memo-empty-state-icon">
+      <div class="prompt-empty-state">
+        <div class="prompt-empty-state-content">
+          <div class="prompt-empty-state-icon">
             <i class="bi bi-terminal-x"></i>
           </div>
-          <h3 class="memo-empty-state-title">プロンプトがありません</h3>
-          <p class="memo-empty-state-message">
+          <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
+          <p class="prompt-empty-state-message">
             最初のプロンプトを作成してみましょう。
           </p>
-                    <div class="memo-empty-state-action">
-            <button class="btn-edit-prompt">
+          <div class="prompt-empty-state-action">
+            <button class="btn-add-first-prompt">
               <i class="bi bi-plus-lg"></i> 最初のプロンプトを作成
             </button>
           </div>
@@ -261,30 +261,94 @@ async function renderList() {
     `;
 
     // 最初のプロンプト作成ボタンのイベント
-    list
-      .querySelector(".btn-edit-prompt")
-      .addEventListener("click", async () => {
-        const obj = {
-          id: Date.now(),
-          title: "",
-          star: false,
-          fields: [{ text: "", on: true }],
-        };
-        prompts.push(obj);
-        await save(PROMPT_KEY, prompts);
-        renderEdit(prompts.length - 1, true);
+    const firstPromptBtn = list.querySelector(".btn-add-first-prompt");
+    console.log("最初のプロンプトを作成ボタンの要素:", firstPromptBtn);
+    if (firstPromptBtn) {
+      firstPromptBtn.addEventListener("click", () => {
+        console.log("最初のプロンプトを作成ボタンがクリックされました");
+        renderEdit();
       });
+    } else {
+      console.error("最初のプロンプトを作成ボタンが見つかりません");
+    }
 
     // Empty Stateのフェードインアニメーション
     setTimeout(() => {
-      const emptyContent = list.querySelector(".memo-empty-state-content");
+      const emptyContent = list.querySelector(".prompt-empty-state-content");
       if (emptyContent) {
         emptyContent.classList.add("show");
       }
     }, 100);
   } else {
     // 通常のプロンプト一覧表示
-    list.replaceChildren(...prompts.map(cardNode));
+    prompts.forEach((p, i) => {
+      const li = document.createElement("li");
+      li.className = "prompt-item";
+      li.draggable = true;
+      li.dataset.index = i;
+
+      // DnD handlers
+      li.addEventListener("dragstart", handlePromptDragStart);
+      li.addEventListener("dragover", handlePromptDragOver);
+      li.addEventListener("dragleave", handlePromptDragLeave);
+      li.addEventListener("drop", handlePromptDrop);
+      li.addEventListener("dragend", handlePromptDragEnd);
+
+      // ★ star
+      const star = document.createElement("i");
+      star.className = p.star
+        ? "bi bi-star-fill star on"
+        : "bi bi-star-fill star off";
+      star.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        p.star = !p.star;
+        console.log(`star toggle id=${p.id} → ${p.star}`);
+        // move starred to top / unstar to bottom
+        const realIdx = prompts.findIndex((prompt) => prompt.id === p.id);
+        if (realIdx !== -1) {
+          prompts.splice(realIdx, 1);
+          if (p.star) prompts.unshift(p);
+          else prompts.push(p);
+        }
+        await save(PROMPT_KEY, prompts);
+        renderList();
+      });
+      li.appendChild(star);
+
+      // title
+      const span = document.createElement("span");
+      span.className = "prompt-title";
+      span.textContent = p.title;
+      li.appendChild(span);
+
+      // archive-icon (just UI, no action)
+      const arch = document.createElement("i");
+      arch.className = "bi bi-archive-fill prompt-archive";
+      arch.title = "アーカイブへ移動";
+      arch.addEventListener("click", async (e) => {
+        e.stopPropagation();
+
+        // アニメーション付きでアーカイブ
+        await window.AppUtils.animateArchiveItem(li, async () => {
+          p.archived = true;
+          await save(PROMPT_KEY, prompts);
+          // グローバルに最新のpromptsを設定
+          window.prompts = prompts;
+
+          // アーカイブ後、アクティブなプロンプトが空になった場合は即座に画面を更新
+          const activePrompts = prompts.filter((p) => !p.archived);
+          if (activePrompts.length === 0) {
+            renderList();
+          }
+        });
+      });
+      li.appendChild(arch);
+
+      // click row → edit
+      li.addEventListener("click", () => renderEdit(p.id));
+
+      list.appendChild(li);
+    });
   }
 
   // グローバルに最新のpromptsを設定
@@ -305,59 +369,6 @@ async function renderList() {
 
   currentPromptIndex = -1; // 一覧画面に戻ったのでリセット
   console.log("[renderList] end");
-
-  /*─── 内部：1 カード生成 ───────────────────*/
-  function cardNode(o, i) {
-    const li = ce("li", "prompt-item");
-    li.draggable = true;
-    li.dataset.index = i;
-
-    // Drag & drop handlers
-    li.addEventListener("dragstart", handlePromptDragStart);
-    li.addEventListener("dragover", handlePromptDragOver);
-    li.addEventListener("dragleave", handlePromptDragLeave);
-    li.addEventListener("drop", handlePromptDrop);
-    li.addEventListener("dragend", handlePromptDragEnd);
-
-    const star = ce("i", `bi bi-star-fill star ${o.star ? "on" : "off"}`);
-    star.onclick = async () => {
-      o.star = !o.star;
-      prompts.sort((a, b) => b.star - a.star);
-      await save(PROMPT_KEY, prompts);
-      renderList();
-    };
-
-    const title = ce("span", "prompt-title", o.title || "(無題)");
-    title.style.cursor = "pointer";
-    title.onclick = () => renderRun(prompts.indexOf(o));
-
-    const exec = ce("button", "prompt-action", "一括出力");
-    exec.onclick = () => console.log("[EXEC demo]", o.id);
-
-    const arch = ce(
-      "button",
-      "prompt-archive",
-      '<i class="bi bi-archive-fill"></i>'
-    );
-    arch.title = "アーカイブへ移動";
-    arch.onclick = async () => {
-      // アニメーション付きでアーカイブ
-      await window.AppUtils.animateArchiveItem(li, async () => {
-        prompts.splice(prompts.indexOf(o), 1);
-        await save(PROMPT_KEY, prompts);
-        // グローバルに最新のpromptsを設定
-        window.prompts = prompts;
-
-        // アーカイブ後、プロンプトが空になった場合は即座に画面を更新
-        if (prompts.length === 0) {
-          renderList();
-        }
-      });
-    };
-
-    li.append(star, title, exec, arch);
-    return li;
-  }
 }
 
 /* ══════════════════════════════════════════════════════
