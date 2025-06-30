@@ -920,7 +920,7 @@ textarea.field-text,
   font-size: 0.9rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: filter 0.2s;
+  transition: all 0.2s ease;
   height: 28px;
   width: 32px;
   display: flex;
@@ -928,8 +928,22 @@ textarea.field-text,
   justify-content: center;
 }
 
-.archive-item .restore-btn:hover {
+.archive-item .restore-btn:hover:not(:disabled) {
   filter: brightness(1.15);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
+}
+
+.archive-item .restore-btn:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
+.archive-item .restore-btn:disabled:hover {
+  filter: none;
+  transform: none;
 }
 
 /* 復元アニメーション用スタイル */
@@ -940,15 +954,8 @@ textarea.field-text,
   filter: blur(2px);
 }
 
-/* 復元ボタンのホバー効果 */
-.archive-item .restore-btn:hover {
-  background: #00a31e;
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
-}
-
 /* 復元ボタンのアクティブ状態 */
-.archive-item .restore-btn:active {
+.archive-item .restore-btn:active:not(:disabled) {
   transform: scale(0.95);
 }
 

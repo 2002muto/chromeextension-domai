@@ -165,6 +165,17 @@ function handlePromptDragEnd() {
 window.addEventListener("DOMContentLoaded", async () => {
   console.log("PROMPTページ DOMContentLoaded fired");
 
+  // AppUtilsの読み込み状況を確認
+  console.log("[PROMPT] AppUtils check:", {
+    AppUtils: !!window.AppUtils,
+    animateRestoreItem: !!(
+      window.AppUtils && window.AppUtils.animateRestoreItem
+    ),
+    animateArchiveItem: !!(
+      window.AppUtils && window.AppUtils.animateArchiveItem
+    ),
+  });
+
   // 現在のページがPROMPTページかどうかを確認
   const currentPage = window.location.pathname;
   if (!currentPage.includes("/prompt/")) {
@@ -185,6 +196,9 @@ window.addEventListener("DOMContentLoaded", async () => {
       renderList();
     });
   }
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
 });
 
 /* ══════════════════════════════════════════════════════
@@ -446,18 +460,49 @@ async function renderList() {
         e.stopPropagation();
 
         // アニメーション付きでアーカイブ
-        await window.AppUtils.animateArchiveItem(li, async () => {
-          p.archived = true;
-          await save(PROMPT_KEY, prompts);
-          // グローバルに最新のpromptsを設定
-          window.prompts = prompts;
+        if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+          await window.AppUtils.animateArchiveItem(li, async () => {
+            p.archived = true;
+            await save(PROMPT_KEY, prompts);
+            // グローバルに最新のpromptsを設定
+            window.prompts = prompts;
 
-          // アーカイブ後、アクティブなプロンプトが空になった場合は即座に画面を更新
-          const activePrompts = prompts.filter((p) => !p.archived);
-          if (activePrompts.length === 0) {
-            renderList();
-          }
-        });
+            // アーカイブ後、アクティブなプロンプトが空になった場合は即座に画面を更新
+            const activePrompts = prompts.filter((p) => !p.archived);
+            if (activePrompts.length === 0) {
+              renderList();
+            }
+          });
+        } else {
+          // AppUtilsが利用できない場合の代替処理
+          console.log(
+            "[PROMPT] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
+          );
+
+          // シンプルなアニメーション
+          li.style.transition = "all 0.5s ease-in-out";
+          li.style.transform = "translateY(-20px) scale(0.95)";
+          li.style.opacity = "0";
+
+          await new Promise((resolve) => {
+            setTimeout(async () => {
+              // データ更新処理
+              p.archived = true;
+              await save(PROMPT_KEY, prompts);
+              // グローバルに最新のpromptsを設定
+              window.prompts = prompts;
+
+              // アーカイブ後、アクティブなプロンプトが空になった場合は即座に画面を更新
+              const activePrompts = prompts.filter((p) => !p.archived);
+              if (activePrompts.length === 0) {
+                renderList();
+              }
+
+              console.log("[PROMPT] 代替アーカイブアニメーション完了");
+              resolve();
+            }, 500);
+          });
+        }
       });
       li.appendChild(archiveIcon);
 
@@ -567,40 +612,86 @@ async function renderArchiveView() {
       btn.className = "restore-btn";
       btn.innerHTML = '<i class="bi bi-upload"></i>';
       btn.title = "復元";
-      btn.addEventListener("click", async () => {
-        console.log("[ARCH] restore idx:", idx);
+      btn.addEventListener("click", async (e) => {
+        console.log("[ARCH] 復元ボタンがクリックされました！");
+        e.preventDefault();
+        e.stopPropagation();
 
-        if (archiveType === "memo") {
-          /* MEMO: archived → false */
-          const memos = await loadStorage(MEMO_KEY);
-          const target = memos.find((m) => m.id === it.id);
-          if (target) target.archived = false;
-          await saveStorage(MEMO_KEY, memos);
-          // グローバルに最新のmemosを設定
-          window.memos = memos;
-        } else {
-          /* PROMPT: アーカイブ → アクティブへ移動 */
-          const prompts = await load(PROMPT_KEY);
-          const archivedPrompts = await load(PROMPT_ARCH_KEY);
-
-          // アーカイブから削除
-          const restoredPrompt = archivedPrompts.splice(idx, 1)[0];
-          restoredPrompt.archived = false;
-
-          // アクティブに追加
-          prompts.push(restoredPrompt);
-
-          await save(PROMPT_KEY, prompts);
-          await save(PROMPT_ARCH_KEY, archivedPrompts);
-
-          // グローバルに最新のpromptsを設定
-          window.prompts = prompts;
+        // 重複クリックを防ぐ
+        if (btn.disabled) {
+          console.log("[ARCH] 復元処理中です...");
+          return;
         }
 
-        // アニメーション付きで復元
-        await window.AppUtils.animateRestoreItem(li, async () => {
-          renderArchiveList(); // 再描画
-        });
+        console.log("[ARCH] restore idx:", idx);
+
+        // ボタンを一時的に無効化
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+
+        try {
+          console.log("[ARCH] 復元処理を開始します...");
+
+          /* PROMPT: archived → false */
+          const prompts = await load(PROMPT_KEY);
+          console.log("[ARCH] 現在のプロンプト数:", prompts.length);
+
+          const target = prompts.find((prompt) => prompt.id === p.id);
+          console.log("[ARCH] 復元対象のプロンプト:", target);
+
+          if (target) {
+            target.archived = false;
+            console.log("[ARCH] プロンプトを復元しました:", target.title);
+
+            await save(PROMPT_KEY, prompts);
+            // グローバルに最新のpromptsを設定
+            window.prompts = prompts;
+            console.log("[ARCH] プロンプトストレージを更新しました");
+
+            // 復元アニメーションを実行
+            if (window.AppUtils && window.AppUtils.animateRestoreItem) {
+              await window.AppUtils.animateRestoreItem(li, async () => {
+                console.log("[ARCH] 復元アニメーション完了");
+              });
+            } else {
+              // AppUtilsが利用できない場合の代替処理
+              console.log(
+                "[ARCH] AppUtils.animateRestoreItemが利用できません。代替処理を実行します。"
+              );
+
+              // シンプルなアニメーション
+              li.style.transition = "all 0.5s ease-in-out";
+              li.style.transform = "translateY(-50px) scale(0.9)";
+              li.style.opacity = "0";
+              li.style.filter = "blur(2px)";
+
+              await new Promise((resolve) => {
+                setTimeout(() => {
+                  console.log("[ARCH] 代替復元アニメーション完了");
+                  resolve();
+                }, 500);
+              });
+            }
+
+            // 復元後にアーカイブリストを再描画
+            renderArchiveView();
+          } else {
+            console.error("[ARCH] 復元対象のプロンプトが見つかりません:", p.id);
+            // ボタンを再度有効化
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+          }
+
+          console.log("[ARCH] 復元処理が完了しました");
+        } catch (error) {
+          console.error("[ARCH] 復元処理中にエラーが発生しました:", error);
+          // エラーが発生した場合はボタンを再度有効化
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          btn.style.cursor = "pointer";
+        }
       });
       li.appendChild(btn);
 
