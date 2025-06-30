@@ -46,16 +46,19 @@ body {
   /* Firefox用スクロールバー */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  margin: 32px 16px 16px 16px;
+  padding: 0;
+  height: calc(100vh - 153px) !important;
 }
 
 /* MEMOページ（一覧表示）のみカード状背景を適用 */
 .memo-content:not(.edit-mode) {
+  margin: 32px 16px 16px 16px; /* Match CLIPBOARD margin */
+  height: calc(100vh - 153px) !important; /* Match CLIPBOARD height */
   background: #2d2d2d;
   border-radius: 12px;
-  margin: 16px;
   padding: 0; /* パディングを削除してボタンとリストを分離 */
   /* 一覧表示ではmargin分を追加で考慮: 172px + top-margin(16px) + bottom-margin(16px) = 204px */
-  height: calc(100vh - 204px) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
@@ -262,26 +265,45 @@ body {
   background: rgba(255, 255, 255, 0.5);
 }
 .memo-item {
-  display: flex;
-  align-items: center;
-  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
-  padding: 12px;
-  border-radius: 6px;
   cursor: move;
-  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* star, title, archive icon */
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
+  padding: 10px;
+  border-radius: 6px;
+  min-height: 64px;
   line-height: 1.2;
+  overflow: visible;
+  transition: all 0.3s ease;
+  position: relative;
 }
+
+.memo-item:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 .memo-item.drag-over {
   border: 2px dashed rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
 }
+
 .memo-item.drag-invalid {
   border: 2px dashed rgba(255, 0, 0, 0.6);
   background: rgba(255, 0, 0, 0.1);
   cursor: not-allowed;
 }
+
+.memo-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
 .memo-item .star {
   font-size: 1.2rem;
-  margin-right: 12px;
   cursor: pointer;
 }
 .memo-item .star.off {
@@ -304,12 +326,20 @@ body {
   cursor: pointer;
   color: #ffffff;
   background: transparent;
-  height: 20px;
-  width: 20px;
+  height: 36px; /* Match clipboard icon size */
+  width: 36px; /* Match clipboard icon size */
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  transition: transform 0.2s ease; /* Match clipboard transition */
+  place-self: center; /* Center in grid */
+  border-radius: 4px; /* Match clipboard border radius */
+}
+
+.memo-item .actions:hover {
+  transform: scale(1.1); /* Match clipboard hover effect */
+  background: rgba(255, 255, 255, 0.1); /* Match clipboard hover background */
 }
 
 /* ─── MEMO入力画面 ─── */
@@ -608,6 +638,7 @@ body {
   height: 100%;
   /* padding: 40px 20px; */
   flex: 1;
+  margin-top: -60px; /* Move content upwards by 40px */
 }
 
 .memo-empty-state-content {

@@ -6,10 +6,10 @@
 .memo-content.clipboard-mode:not(.edit-mode) {
   background: #2d2d2d;
   border-radius: 12px;
-  margin: 16px;
+  margin: 32px 16px 16px 16px;
   padding: 0; /* パディングを削除してボタンとリストを分離 */
   /* 一覧表示ではmargin分を追加で考慮: 172px + top-margin(16px) + bottom-margin(16px) = 204px */
-  height: calc(100vh - 204px) !important;
+  height: calc(100vh - 153px) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
@@ -58,7 +58,7 @@
   align-items: center; /* 垂直方向中央揃え */
   gap: 12px;
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
-  padding: 16px; /* パディングを増やしてスペースを確保 */
+  padding: 10px; /* パディングを増やしてスペースを確保 */
   border-radius: 6px;
   min-height: 64px; /* 最小の高さを増やす */
   line-height: 1.2; /* MEMOページと統一 */
@@ -175,8 +175,8 @@
   min-width: 0; /* 親幅内で縮む */
   box-sizing: border-box; /* padding を含めて高さ幅計算 */
 
-  min-height: 32px; /* 最小の高さを32pxに設定 */
-  padding: 4px 12px; /* パディングを増やして余白を確保 */
+  min-height: 48px; /* Increase the minimum height to 48px */
+  padding: 12px 16px; /* Adjust padding for more space */
   line-height: 24px; /* 行の高さを増加 */
   white-space: pre-wrap; /* 改行を許可 */
   overflow: hidden; /* スクロールバーを非表示 */
@@ -234,8 +234,8 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  /* padding: 40px 20px; */
   flex: 1;
+  margin-top: -60px; /* Move content further upwards by 40px */
 }
 
 .clipboard-empty-state-content {

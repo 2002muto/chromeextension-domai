@@ -11,10 +11,10 @@
 .memo-content:not(.edit-mode) {
   background: #2d2d2d;
   border-radius: 12px;
-  margin: 16px;
+  margin: 32px 16px 16px 16px;
   padding: 0; /* パディングを削除してボタンとリストを分離 */
   /* 一覧表示ではmargin分を追加で考慮: 172px + top-margin(16px) + bottom-margin(16px) = 204px - MEMOページと統一 */
-  height: calc(100vh - 204px) !important;
+  height: calc(100vh - 153px) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
@@ -69,9 +69,12 @@
   transition: filter 0.25s;
   flex-shrink: 0; /* 固定サイズ */
   margin: 0; /* マージン削除 */
+  justify-content: flex-end;
 }
 .btn-add-prompt:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 /*--------------------------------------------------------------
@@ -111,19 +114,46 @@
   background: rgba(255, 255, 255, 0.5);
 }
 .prompt-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
-  padding: 12px;
+  gap: 12px;
+  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
+  padding: 10px;
   border-radius: 6px;
-  background: linear-gradient(90deg, #4a4d58, #363940);
-  cursor: move;
-  min-height: 48px;
+  min-height: 64px;
   line-height: 1.2;
+  overflow: visible;
+  transition: all 0.3s ease;
+  position: relative;
 }
+
+.prompt-item:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.prompt-item.drag-over {
+  border: 2px dashed rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.prompt-item.drag-invalid {
+  border: 2px dashed rgba(255, 0, 0, 0.6);
+  background: rgba(255, 0, 0, 0.1);
+  cursor: not-allowed;
+}
+
+.prompt-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
 /* 左：スターアイコン */
 .prompt-item .star {
   font-size: 1.2rem;
-  margin-right: 12px;
+  /* margin-right: 12px; */
   cursor: pointer;
 }
 .prompt-item .star.off {
@@ -134,7 +164,6 @@
 }
 /* 中央：タイトル */
 .prompt-title {
-  flex: 1;
   color: #e2e8f0;
   font-size: 1rem;
   overflow: hidden;
@@ -142,23 +171,27 @@
   text-overflow: ellipsis;
   min-width: 0; /* flexアイテムが縮まるようにする */
 }
-/* 右：一括出力 & アーカイブ */
+/* 右：実行ボタン & アーカイブ */
 .prompt-action {
   background: #32ad65;
   color: #ffffff;
   border: none;
-  padding: 4px 8px;
+  padding: 6px 8px;
   font-size: 0.85rem;
   border-radius: 4px;
   cursor: pointer;
   transition: filter 0.2s;
-  margin-right: 12px;
-  height: 24px;
+  margin-right: -8px;
+  height: auto;
+  width: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .prompt-archive {
   background: transparent;
@@ -167,19 +200,22 @@
   padding: 0;
   font-size: 1.2rem;
   cursor: pointer;
-  height: 20px;
-  width: 20px;
+  height: 36px; /* Match clipboard icon size */
+  width: 36px; /* Match clipboard icon size */
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  box-sizing: border-box;
+  transition: transform 0.2s ease; /* Match clipboard transition */
+  place-self: center; /* Center in grid */
+  border-radius: 4px; /* Match clipboard border radius */
 }
 .prompt-action:hover {
   filter: brightness(1.15);
 }
 .prompt-archive:hover {
-  filter: brightness(1.15);
+  transform: scale(1.1); /* Match clipboard hover effect */
+  background: rgba(255, 255, 255, 0.1); /* Match clipboard hover background */
 }
 
 /*--------------------------------------------------------------
@@ -745,6 +781,7 @@ textarea.field-text,
   justify-content: center;
   height: 100%;
   flex: 1;
+  margin-top: -60px; /* Move content upwards by 40px */
 }
 
 .prompt-empty-state-content {
@@ -806,6 +843,115 @@ textarea.field-text,
   filter: brightness(1.1);
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+/*--------------------------------------------------------------
+  アーカイブ画面のスタイル
+--------------------------------------------------------------*/
+.archive-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.archive-title {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.select-all-label {
+  color: #ffffff;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.select-all-label input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 16px;
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+}
+
+.archive-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.archive-list::-webkit-scrollbar-track {
+  background: rgba(45, 45, 45, 0.5);
+  border-radius: 4px;
+}
+
+.archive-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.archive-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.archive-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #4a4d58, #363940);
+  min-height: 48px;
+  gap: 12px;
+}
+
+.archive-item .arch-check {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.archive-item .arch-title {
+  flex: 1;
+  color: #e2e8f0;
+  font-size: 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.archive-item .restore-btn {
+  background: #00a31e;
+  color: #ffffff;
+  border: none;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.2s;
+  height: 28px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archive-item .restore-btn:hover {
+  filter: brightness(1.15);
 }
 
 /*--------------------------------------------------------------
@@ -1061,4 +1207,14 @@ body .prompt-run-box .prompt-block:last-of-type,
 .btn-add-field.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .memo-content {
+    margin: 16px 8px;
+  }
+  .btn-add-prompt {
+    font-size: 0.9rem;
+  }
 }
