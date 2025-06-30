@@ -527,12 +527,19 @@ textarea.field-text,
   transform: scale(0.96);
   cursor: grabbing !important;
   box-shadow: 0 4px 12px #0006;
+  z-index: 1000;
+  position: relative;
 }
+
 /* ドロップ候補だけ点線 */
 .drag-over {
   outline: 2px dashed #7b8799;
   outline-offset: -4px;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
 }
+
 .drag-invalid {
   outline: 2px dashed rgba(255, 0, 0, 0.6);
   outline-offset: -4px;
@@ -544,6 +551,90 @@ textarea.field-text,
 .prompt-item,
 .prompt-field {
   cursor: grab;
+}
+
+.prompt-item:active,
+.prompt-field:active {
+  cursor: grabbing;
+}
+
+/* プロンプトフィールド専用のドラッグ＆ドロップスタイル */
+.prompt-field.dragging {
+  opacity: 0.7;
+  transform: scale(0.98) rotate(2deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(58, 63, 74, 0.1);
+  border-radius: 8px;
+  transition: none !important; /* ドラッグ中はフェードインアニメーションを無効化 */
+}
+
+.prompt-field.drag-over {
+  outline: 2px dashed #ffffff;
+  outline-offset: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  border-radius: 8px;
+}
+
+/* ドラッグ中のプロンプトフィールドの子要素を無効化 */
+.prompt-field.dragging * {
+  pointer-events: none;
+}
+
+/* ドラッグ中のプロンプトフィールドのテキストエリアを無効化 */
+.prompt-field.dragging .prompt-field-textarea {
+  pointer-events: none;
+  user-select: none;
+}
+
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功トースト通知 ━━━━━━━━━━*/
+.drag-drop-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #00a31e, #008f1a);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10000;
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.drag-drop-toast i {
+  font-size: 1.1rem;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.drag-drop-toast.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* トースト通知のアニメーション */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.drag-drop-toast {
+  animation: slideInRight 0.3s ease-out;
 }
 
 /*--------------------------------------------------------------

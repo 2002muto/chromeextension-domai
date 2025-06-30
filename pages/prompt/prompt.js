@@ -192,13 +192,148 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (promptButton) {
     promptButton.addEventListener("click", () => {
       console.log("PROMPT page button clicked");
-      // ヘッダーをクリックした時は常に一覧画面を表示
-      renderList();
+
+      // 編集画面での未保存変更をチェック
+      const isEditing = document.querySelector(".memo-content.edit-mode");
+      if (isEditing) {
+        console.log("[PROMPT] 編集画面での未保存変更をチェック");
+
+        // 現在編集中のプロンプト情報を取得
+        const currentIndex = getCurrentPromptIndex();
+        const originalObj = currentIndex !== -1 ? prompts[currentIndex] : null;
+        const isNew = currentIndex === -1;
+
+        // 未保存変更があるかチェック
+        const hasChanges = checkForUnsavedChanges(originalObj, isNew);
+
+        if (hasChanges) {
+          console.log("[PROMPT] 未保存の変更を検出 - 確認ダイアログを表示");
+
+          // AppUtilsの確認ダイアログが利用可能な場合
+          if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+            // 保存確認ダイアログを表示
+            window.AppUtils.showSaveConfirmDialog({
+              title: "変更を保存しますか？",
+              message:
+                "プロンプト内容に変更があります。<br>保存せずに戻ると変更が失われます。",
+              onSave: async () => {
+                // 保存して戻る
+                console.log("[PROMPT] 変更を保存して戻ります");
+                await saveAndGoBack();
+              },
+              onDiscard: () => {
+                // 破棄して戻る
+                console.log("[PROMPT] 変更を破棄して戻ります");
+                discardAndGoBack();
+              },
+            });
+          } else {
+            // AppUtilsが利用できない場合は警告を表示してから戻る
+            console.warn(
+              "[PROMPT] AppUtils.showSaveConfirmDialogが利用できません。変更を破棄して戻ります。"
+            );
+            if (
+              confirm(
+                "プロンプト内容に変更があります。保存せずに戻ると変更が失われます。\n\n変更を破棄して戻りますか？"
+              )
+            ) {
+              discardAndGoBack();
+            }
+          }
+        } else {
+          // 変更がない場合は直接戻る
+          console.log("[PROMPT] 変更なしで戻ります");
+          renderList();
+        }
+      } else {
+        // 編集画面でない場合は直接一覧画面を表示
+        renderList();
+      }
     });
   }
 
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
+
+  // 他のヘッダーボタンのクリック時にも未保存変更をチェック
+  const headerButtons = [
+    "btn-memo-list",
+    "btn-clipboard",
+    "btn-ai",
+    "btn-setting",
+  ];
+
+  headerButtons.forEach((buttonId) => {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      button.addEventListener("click", (e) => {
+        console.log(`[PROMPT] ${buttonId} button clicked`);
+
+        // 編集画面での未保存変更をチェック
+        const isEditing = document.querySelector(".memo-content.edit-mode");
+        if (isEditing) {
+          console.log("[PROMPT] 編集画面での未保存変更をチェック");
+
+          // 現在編集中のプロンプト情報を取得
+          const currentIndex = getCurrentPromptIndex();
+          const originalObj =
+            currentIndex !== -1 ? prompts[currentIndex] : null;
+          const isNew = currentIndex === -1;
+
+          // 未保存変更があるかチェック
+          const hasChanges = checkForUnsavedChanges(originalObj, isNew);
+
+          if (hasChanges) {
+            console.log("[PROMPT] 未保存の変更を検出 - 確認ダイアログを表示");
+            e.preventDefault(); // デフォルトの遷移を一時停止
+
+            // AppUtilsの確認ダイアログが利用可能な場合
+            if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+              // 保存確認ダイアログを表示
+              window.AppUtils.showSaveConfirmDialog({
+                title: "変更を保存しますか？",
+                message:
+                  "プロンプト内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+                onSave: async () => {
+                  // 保存してから遷移
+                  console.log("[PROMPT] 変更を保存してから遷移します");
+                  await saveAndGoBack();
+                  // 保存後に元のリンク先に遷移
+                  window.location.href = button.href;
+                },
+                onDiscard: () => {
+                  // 破棄してから遷移
+                  console.log("[PROMPT] 変更を破棄してから遷移します");
+                  discardAndGoBack();
+                  // 破棄後に元のリンク先に遷移
+                  window.location.href = button.href;
+                },
+              });
+            } else {
+              // AppUtilsが利用できない場合は警告を表示してから遷移
+              console.warn(
+                "[PROMPT] AppUtils.showSaveConfirmDialogが利用できません。変更を破棄して遷移します。"
+              );
+              if (
+                confirm(
+                  "プロンプト内容に変更があります。保存せずに移動すると変更が失われます。\n\n変更を破棄して移動しますか？"
+                )
+              ) {
+                discardAndGoBack();
+                window.location.href = button.href;
+              }
+            }
+          } else {
+            // 変更がない場合は通常通り遷移
+            console.log("[PROMPT] 変更なしで遷移します");
+          }
+        } else {
+          // 編集画面でない場合は通常通り遷移
+          console.log("[PROMPT] 編集画面でないため通常遷移します");
+        }
+      });
+    }
+  });
 });
 
 /* ══════════════════════════════════════════════════════
@@ -1023,37 +1158,114 @@ function renderEdit(idx, isNew = false) {
     }, 350 + promptFields.length * 100);
   }, 50);
 
+  // 既存のプロンプトフィールドのドラッグ＆ドロップを確実に初期化
+  setTimeout(() => {
+    const existingFields = wrap.querySelectorAll(".prompt-field");
+    console.log(
+      "[DND] 既存フィールドのドラッグ＆ドロップ初期化:",
+      existingFields.length,
+      "個"
+    );
+
+    existingFields.forEach((field, index) => {
+      if (field.draggable) {
+        console.log(
+          `[DND] フィールド ${index + 1} のドラッグ＆ドロップ確認済み`
+        );
+      }
+    });
+  }, 100);
+
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
     row.draggable = true;
 
-    /* --- DnD handlers (同じ) --- */
+    /* --- 改善されたDnD handlers --- */
+    let dragStartIndex = null;
+
     row.addEventListener("dragstart", (e) => {
-      const from = [...wrap.children].indexOf(row);
-      e.dataTransfer.setData("text/plain", from);
+      console.log("[DND] ドラッグ開始");
+      dragStartIndex = [...wrap.children].indexOf(row);
+      e.dataTransfer.setData("text/plain", dragStartIndex.toString());
+      e.dataTransfer.effectAllowed = "move";
       row.classList.add("dragging");
+      console.log("[DND] ドラッグ開始インデックス:", dragStartIndex);
     });
+
     row.addEventListener("dragover", (e) => {
       e.preventDefault();
-      wrap
-        .querySelectorAll(".drag-over")
-        .forEach((el) => el.classList.remove("drag-over"));
+      e.dataTransfer.dropEffect = "move";
+
+      // 他の要素のdrag-overクラスを削除
+      wrap.querySelectorAll(".drag-over").forEach((el) => {
+        if (el !== row) {
+          el.classList.remove("drag-over");
+        }
+      });
+
       row.classList.add("drag-over");
     });
-    row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+
+    row.addEventListener("dragleave", (e) => {
+      // 子要素にドラッグが入った場合はdrag-overを維持
+      if (!row.contains(e.relatedTarget)) {
+        row.classList.remove("drag-over");
+      }
+    });
+
     row.addEventListener("drop", (e) => {
-      const from = +e.dataTransfer.getData("text/plain");
-      const to = [...wrap.children].indexOf(row);
-      if (from === to) return;
-      const nodes = [...wrap.children];
-      wrap.insertBefore(nodes[from], nodes[to]);
-      renumber();
+      e.preventDefault();
+      e.stopPropagation();
+
+      const fromIndex = parseInt(e.dataTransfer.getData("text/plain"));
+      const toIndex = [...wrap.children].indexOf(row);
+
+      console.log("[DND] ドロップ処理:", { fromIndex, toIndex });
+
+      if (fromIndex === toIndex || fromIndex === -1 || toIndex === -1) {
+        console.log("[DND] 無効なドロップ - 処理をスキップ");
+        row.classList.remove("drag-over");
+        return;
+      }
+
+      try {
+        // DOM操作
+        const nodes = [...wrap.children];
+        const movedNode = nodes[fromIndex];
+
+        if (movedNode) {
+          if (fromIndex < toIndex) {
+            // 後ろに移動
+            wrap.insertBefore(movedNode, nodes[toIndex + 1]);
+          } else {
+            // 前に移動
+            wrap.insertBefore(movedNode, nodes[toIndex]);
+          }
+
+          console.log("[DND] ドロップ処理完了");
+          renumber(); // 番号を再採番
+
+          // ドラッグ＆ドロップ成功メッセージを表示
+          showDragDropSuccessMessage(fromIndex + 1, toIndex + 1);
+        }
+      } catch (error) {
+        console.error("[DND] ドロップ処理中にエラー:", error);
+      }
+
       row.classList.remove("drag-over");
     });
-    row.addEventListener("dragend", () =>
-      row.classList.remove("dragging", "drag-over")
-    );
+
+    row.addEventListener("dragend", (e) => {
+      console.log("[DND] ドラッグ終了");
+      row.classList.remove("dragging", "drag-over");
+      dragStartIndex = null;
+
+      // 他の要素のdrag-overクラスも削除
+      wrap.querySelectorAll(".drag-over").forEach((el) => {
+        el.classList.remove("drag-over");
+      });
+    });
 
     /* --- 行 HTML --- */
     row.innerHTML = `
@@ -1141,6 +1353,11 @@ function renderEdit(idx, isNew = false) {
     // 新しく追加されたフィールドにフェードインアニメーションを適用
     setTimeout(() => {
       row.classList.add("show");
+
+      // ドラッグ＆ドロップの初期化を確実に行う
+      if (row.draggable) {
+        console.log("[DND] 新しいフィールドのドラッグ＆ドロップを初期化:", row);
+      }
     }, 50);
   }
 
@@ -1164,6 +1381,47 @@ function renderEdit(idx, isNew = false) {
     head.remove();
     renderList();
     console.log("[DUP] 複製完了 →", clone.title);
+  }
+
+  /*━━━━━━━━━━ 8. ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
+  function showDragDropSuccessMessage(fromPosition, toPosition) {
+    console.log("[DND] 成功メッセージを表示:", { fromPosition, toPosition });
+
+    // AppUtilsのトースト通知が利用可能な場合
+    if (window.AppUtils && window.AppUtils.showToast) {
+      const message = `プロンプト ${fromPosition} を ${toPosition} 番目に移動しました`;
+      window.AppUtils.showToast(message, "success");
+    } else {
+      // AppUtilsが利用できない場合の代替処理
+      showFallbackDragDropMessage(fromPosition, toPosition);
+    }
+  }
+
+  function showFallbackDragDropMessage(fromPosition, toPosition) {
+    // 既存のトーストがあれば削除
+    const existingToast = document.querySelector(".drag-drop-toast");
+    if (existingToast) {
+      existingToast.remove();
+    }
+
+    // 新しいトーストを作成
+    const toast = document.createElement("div");
+    toast.className = "drag-drop-toast";
+    toast.innerHTML = `
+      <i class="bi bi-check-circle-fill"></i>
+      プロンプト ${fromPosition} を ${toPosition} 番目に移動しました
+    `;
+
+    // bodyに追加
+    document.body.appendChild(toast);
+
+    // 2秒後にフェードアウト
+    setTimeout(() => {
+      toast.classList.add("fade-out");
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 2000);
   }
 }
 
@@ -1728,3 +1986,56 @@ window.checkForUnsavedChanges = checkForUnsavedChanges;
 window.prompts = prompts;
 window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
+
+// 保存・破棄関数をグローバルに公開
+window.saveAndGoBack = async function () {
+  // 現在編集中のプロンプト情報を取得
+  const currentIndex = getCurrentPromptIndex();
+  const originalObj = currentIndex !== -1 ? prompts[currentIndex] : null;
+  const isNew = currentIndex === -1;
+
+  // 現在の入力内容を取得
+  const currentTitle = $(".title-input")?.value.trim() || "";
+  const wrap = $("#field-wrap");
+
+  if (!wrap) {
+    console.error("[PROMPT] field-wrapが見つかりません");
+    return;
+  }
+
+  const currentFields = [...wrap.children].map((w) => ({
+    text: w.querySelector(".prompt-field-textarea")?.value || "",
+    on: w.querySelector(".field-toggle")?.checked || false,
+  }));
+
+  try {
+    if (isNew) {
+      // 新規作成
+      const newPrompt = {
+        id: Date.now(),
+        title: currentTitle || "無題",
+        fields: currentFields,
+        archived: false,
+      };
+      prompts.push(newPrompt);
+      console.log("[PROMPT] 新規プロンプトを保存:", newPrompt);
+    } else {
+      // 既存編集
+      const original = prompts[currentIndex];
+      original.title = currentTitle || "無題";
+      original.fields = currentFields;
+      console.log("[PROMPT] 既存プロンプトを更新:", original);
+    }
+
+    await save(PROMPT_KEY, prompts);
+    window.prompts = prompts;
+    console.log("[PROMPT] 保存完了");
+  } catch (error) {
+    console.error("[PROMPT] 保存中にエラー:", error);
+  }
+};
+
+window.discardAndGoBack = function () {
+  console.log("[PROMPT] 変更を破棄して戻ります");
+  // 何も保存せずに一覧画面に戻る
+};
