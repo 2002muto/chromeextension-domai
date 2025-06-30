@@ -101,7 +101,7 @@ async function renderClipboardView() {
   // MEMOページと同じ構造：ボタンを上に、リストを下に
   content.innerHTML = `
     <button class="btn-add-clip">
-      <i class="bi bi-plus-lg"></i>クリップを追加
+      <i class="bi bi-plus-lg"></i> 新しいクリップを追加
     </button>
     <ul class="clipboard-list"></ul>
   `;
@@ -124,32 +124,32 @@ async function renderClipboardView() {
   const ul = content.querySelector(".clipboard-list");
   ul.innerHTML = "";
 
-  // Empty State: クリップが何もない場合
+  // Empty State: アクティブなクリップボードが何もない場合
   if (clips.length === 0) {
     ul.innerHTML = `
       <div class="clipboard-empty-state">
         <div class="clipboard-empty-state-content">
           <div class="clipboard-empty-state-icon">
-            <i class="bi bi-clipboard-x"></i>
+            <i class="bi bi-archive"></i>
           </div>
-          <h3 class="clipboard-empty-state-title">クリップがありません</h3>
+          <h3 class="clipboard-empty-state-title">すべてアーカイブされています。</h3>
           <p class="clipboard-empty-state-message">
-            最初のクリップを追加してみましょう。
+            新しいクリップボードを作成するか、<br>アーカイブから復元してください。
           </p>
           <div class="clipboard-empty-state-action">
             <button class="btn-add-first-clip">
-              <i class="bi bi-plus-lg"></i> 最初のクリップを追加
+              <i class="bi bi-plus-lg"></i> 最初のクリップボードを作成
             </button>
           </div>
         </div>
       </div>
     `;
 
-    // 最初のクリップ追加ボタンのイベント
+    // 最初のクリップボード作成ボタンのイベント
     const firstClipBtn = ul.querySelector(".btn-add-first-clip");
     if (firstClipBtn) {
       firstClipBtn.addEventListener("click", async () => {
-        console.log("最初のクリップを追加ボタンがクリックされました");
+        console.log("最初のクリップボードを作成ボタンがクリックされました");
         clips.push("");
         await saveStorage(CLIP_KEY, clips);
         renderClipboardView();
@@ -164,8 +164,7 @@ async function renderClipboardView() {
       }
     }, 100);
 
-    console.log("renderClipboardView: empty state displayed");
-    return; // Empty Stateの場合はここで終了
+    return; // ここで処理を終了
   }
 
   // 通常のクリップ一覧表示

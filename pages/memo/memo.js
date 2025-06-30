@@ -1,5 +1,3 @@
-// File: pages/memo/memo.js
-
 "use strict";
 
 // ───────────────────────────────────────
@@ -190,17 +188,17 @@ async function renderListView() {
 
   const activeMemos = memos.filter((m) => !m.archived); // ← 追加：一覧は未アーカイブのみ
 
-  // Empty State: メモが何もない場合
+  // Empty State: アクティブなメモが何もない場合
   if (activeMemos.length === 0) {
     ul.innerHTML = `
       <div class="memo-empty-state">
         <div class="memo-empty-state-content">
           <div class="memo-empty-state-icon">
-            <i class="bi bi-journal-x"></i>
+            <i class="bi bi-archive"></i>
           </div>
-          <h3 class="memo-empty-state-title">メモがありません</h3>
+          <h3 class="memo-empty-state-title">すべてアーカイブされています。</h3>
           <p class="memo-empty-state-message">
-            最初のメモを作成してみましょう。
+            新しいメモを作成するか、<br>アーカイブから復元してください。
           </p>
           <div class="memo-empty-state-action">
             <button class="btn-add-first-memo">
@@ -230,6 +228,8 @@ async function renderListView() {
         emptyContent.classList.add("show");
       }
     }, 100);
+
+    return; // ここで処理を終了
   } else {
     // 通常のメモ一覧表示
     activeMemos.forEach((m, i) => {
@@ -1039,6 +1039,19 @@ function renderArchiveFooter() {
 // ───────────────────────────────────────
 window.addEventListener("DOMContentLoaded", async () => {
   console.log("DOMContentLoaded fired");
+
+  // Add event listener to MEMO button
+  const memoButton = document.getElementById("btn-memo-list");
+  if (memoButton) {
+    memoButton.addEventListener("click", () => {
+      if (memoButton.classList.contains("active")) {
+        console.log("MEMO page button clicked while active");
+        // Define the action to be triggered here
+        // For example, refresh the list view
+        renderListView();
+      }
+    });
+  }
 
   // 強制的に一覧画面に戻す処理を追加
   setTimeout(() => {

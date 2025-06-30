@@ -248,6 +248,16 @@ document.addEventListener("DOMContentLoaded", function () {
           } else if (typeof renderList === "function") {
             renderList();
           }
+        } else if (
+          currentPage.includes("/clipboard/") &&
+          this.id === "btn-clipboard"
+        ) {
+          // CLIPBOARDページでCLIPBOARDボタンがクリックされた場合
+          if (typeof window.renderClipboardView === "function") {
+            window.renderClipboardView();
+          } else if (typeof renderClipboardView === "function") {
+            renderClipboardView();
+          }
         } else if (currentPage.includes("/ai/") && this.id === "btn-ai") {
           // AIページでAIボタンがクリックされた場合
           if (typeof window.renderAIMain === "function") {

@@ -87,8 +87,8 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         position: relative;
         background: #2d2d2d;
         border-radius: 12px;
-        min-width: 360px;
-        max-width: 450px;
+        min-width: 300px;
+        max-width: 90%;
         margin: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         animation: slideUp 0.3s ease-out;

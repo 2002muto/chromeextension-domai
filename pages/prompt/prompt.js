@@ -220,6 +220,18 @@ async function renderList() {
       <span class="nav-text">予備</span>
     </button>`;
 
+  // アーカイブボタンの機能を実装
+  footer.querySelector(".archive-btn").addEventListener("click", () => {
+    console.log("アーカイブボタンがクリックされました");
+    renderArchiveView();
+  });
+
+  // 予備ボタンの機能を実装（将来の拡張用）
+  footer.querySelector(".extra-btn").addEventListener("click", () => {
+    console.log("予備ボタンがクリックされました - 将来の機能用");
+    // 将来的にはバックアップ機能などを実装予定
+  });
+
   // アニメーション処理（MEMOページと同じ順序）
   body.classList.remove("edit-mode", "run-mode");
   body.classList.remove("animate");
@@ -231,6 +243,19 @@ async function renderList() {
       <i class="bi bi-plus-lg"></i> 新しいプロンプトを追加
     </button>
     <ul class="prompt-list"></ul>`;
+
+  // HTMLが生成された直後にイベントリスナーを設定
+  const addPromptBtn = body.querySelector(".btn-add-prompt");
+  console.log("新しいプロンプト追加ボタンの要素:", addPromptBtn);
+  if (addPromptBtn) {
+    addPromptBtn.addEventListener("click", () => {
+      console.log("新しいプロンプト追加ボタンがクリックされました");
+      // renderEdit()を引数なしで呼び出すと新規作成モードになる
+      renderEdit();
+    });
+  } else {
+    console.error("新しいプロンプト追加ボタンが見つかりません");
+  }
 
   body.classList.remove("show");
   void body.offsetWidth;
@@ -280,12 +305,66 @@ async function renderList() {
       }
     }, 100);
   } else {
+    // アクティブなプロンプトのみ表示（アーカイブされていないもの）
+    const activePrompts = prompts.filter((p) => !p.archived);
+
+    // Empty State: アクティブなプロンプトが何もない場合
+    if (activePrompts.length === 0) {
+      const hasArchived = prompts.some((p) => p.archived);
+      list.innerHTML = `
+        <div class="prompt-empty-state">
+          <div class="prompt-empty-state-content">
+            <div class="prompt-empty-state-icon">
+              <i class="bi bi-archive"></i>
+            </div>
+            <h3 class="prompt-empty-state-title">
+              ${
+                hasArchived
+                  ? "すべてアーカイブされています"
+                  : "新しいプロンプトを作成"
+              }
+            </h3>
+            <p class="prompt-empty-state-message">
+              新しいプロンプトを作成するか、<br>アーカイブから復元してください。
+            </p>
+            <div class="prompt-empty-state-action">
+              <button class="btn-add-first-prompt">
+                <i class="bi bi-plus-lg"></i> 最初のプロンプトを作成
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 新しいプロンプト作成ボタンのイベント
+      const firstPromptBtn = list.querySelector(".btn-add-first-prompt");
+      if (firstPromptBtn) {
+        firstPromptBtn.addEventListener("click", () => {
+          console.log("最初のプロンプトを作成ボタンがクリックされました");
+          renderEdit();
+        });
+      }
+
+      // Empty Stateのフェードインアニメーション
+      setTimeout(() => {
+        const emptyContent = list.querySelector(".prompt-empty-state-content");
+        if (emptyContent) {
+          emptyContent.classList.add("show");
+        }
+      }, 100);
+
+      return; // ここで処理を終了
+    }
+
     // 通常のプロンプト一覧表示
-    prompts.forEach((p, i) => {
+    activePrompts.forEach((p, i) => {
+      // 元の配列でのインデックスを取得
+      const originalIndex = prompts.findIndex((prompt) => prompt.id === p.id);
+
       const li = document.createElement("li");
       li.className = "prompt-item";
       li.draggable = true;
-      li.dataset.index = i;
+      li.dataset.index = originalIndex; // 元の配列でのインデックスを設定
 
       // DnD handlers
       li.addEventListener("dragstart", handlePromptDragStart);
@@ -316,16 +395,17 @@ async function renderList() {
       li.appendChild(star);
 
       // title
-      const span = document.createElement("span");
-      span.className = "prompt-title";
-      span.textContent = p.title;
-      li.appendChild(span);
+      const titleElement = document.createElement("span");
+      titleElement.className = "prompt-title";
+      titleElement.textContent = p.title;
+      titleElement.title = p.title; // Add title attribute for tooltip
+      li.appendChild(titleElement);
 
-      // archive-icon (just UI, no action)
-      const arch = document.createElement("i");
-      arch.className = "bi bi-archive-fill prompt-archive";
-      arch.title = "アーカイブへ移動";
-      arch.addEventListener("click", async (e) => {
+      // archive-icon
+      const archiveIcon = document.createElement("i");
+      archiveIcon.className = "bi bi-archive-fill prompt-archive";
+      archiveIcon.title = "1で。。。";
+      archiveIcon.addEventListener("click", async (e) => {
         e.stopPropagation();
 
         // アニメーション付きでアーカイブ
@@ -342,10 +422,10 @@ async function renderList() {
           }
         });
       });
-      li.appendChild(arch);
+      li.appendChild(archiveIcon);
 
-      // click row → edit
-      li.addEventListener("click", () => renderEdit(p.id));
+      // click row → edit（元の配列でのインデックスを使用）
+      li.addEventListener("click", () => renderEdit(originalIndex));
 
       list.appendChild(li);
     });
@@ -354,21 +434,164 @@ async function renderList() {
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
 
-  /* + ボタン ─ 新規カード */
-  $(".btn-add-prompt").onclick = async () => {
-    const obj = {
-      id: Date.now(),
-      title: "",
-      star: false,
-      fields: [{ text: "", on: true }],
-    };
-    prompts.push(obj);
-    await save(PROMPT_KEY, prompts);
-    renderEdit(prompts.length - 1, true);
-  };
-
   currentPromptIndex = -1; // 一覧画面に戻ったのでリセット
   console.log("[renderList] end");
+}
+
+/* ══════════════════════════════════════════════════════
+  3.5. アーカイブビュー   renderArchiveView()
+══════════════════════════════════════════════════════ */
+async function renderArchiveView() {
+  console.log("[renderArchiveView] start");
+  const body = $(".memo-content");
+  const footer = $(".memo-footer");
+  const root = document.body;
+
+  // 編集画面や実行画面で追加されたヘッダーを削除
+  root.querySelector(".form-header")?.remove();
+
+  // フッターをアーカイブモード用に変更
+  footer.innerHTML = `
+    <button class="nav-btn back-btn">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span class="nav-text">戻る</span>
+    </button>
+    <button class="nav-btn delete-all-btn">
+      <i class="bi bi-trash"></i>
+      <span class="nav-text">一括削除</span>
+    </button>`;
+
+  // アニメーション処理
+  body.classList.remove("edit-mode", "run-mode");
+  body.classList.remove("animate");
+  void body.offsetWidth;
+  body.classList.add("animate");
+
+  // アーカイブされたプロンプトを取得
+  const archivedPrompts = prompts.filter((p) => p.archived);
+
+  // アーカイブ一覧のHTML生成
+  if (archivedPrompts.length === 0) {
+    body.innerHTML = `
+      <div class="prompt-empty-state">
+        <div class="prompt-empty-state-content">
+          <div class="prompt-empty-state-icon">
+            <i class="bi bi-archive-x"></i>
+          </div>
+          <h3 class="prompt-empty-state-title">アーカイブは空です</h3>
+          <p class="prompt-empty-state-message">
+            アーカイブされたプロンプトはありません。
+          </p>
+        </div>
+      </div>`;
+  } else {
+    body.innerHTML = `
+      <div class="archive-header">
+        <h2 class="archive-title">アーカイブ (${archivedPrompts.length}件)</h2>
+        <label class="select-all-label">
+          <input type="checkbox" id="chk-select-all" /> 全て選択する
+        </label>
+      </div>
+      <ul class="archive-list"></ul>`;
+
+    const ul = body.querySelector(".archive-list");
+
+    archivedPrompts.forEach((p, idx) => {
+      const li = document.createElement("li");
+      li.className = "archive-item";
+
+      // チェックボックス
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "arch-check";
+      cb.dataset.index = idx;
+      li.appendChild(cb);
+
+      // タイトル
+      const span = document.createElement("span");
+      span.className = "arch-title";
+      span.textContent = p.title || "(無題)";
+      span.title = p.title; // Add title attribute for tooltip
+      li.appendChild(span);
+
+      // 復元ボタン
+      const restoreBtn = document.createElement("button");
+      restoreBtn.className = "restore-btn";
+      restoreBtn.innerHTML = '<i class="bi bi-upload"></i>';
+      restoreBtn.title = "復元";
+      restoreBtn.addEventListener("click", async () => {
+        console.log(`[ARCHIVE] restore prompt: ${p.title}`);
+        p.archived = false;
+        await save(PROMPT_KEY, prompts);
+        window.prompts = prompts;
+        renderArchiveView(); // アーカイブ画面を再描画
+      });
+      li.appendChild(restoreBtn);
+
+      ul.appendChild(li);
+    });
+
+    // 全選択チェック
+    body.querySelector("#chk-select-all").addEventListener("change", (e) => {
+      ul.querySelectorAll(".arch-check").forEach(
+        (c) => (c.checked = e.target.checked)
+      );
+    });
+  }
+
+  body.classList.remove("show");
+  void body.offsetWidth;
+  body.classList.add("show");
+
+  // Empty Stateのフェードインアニメーション
+  if (archivedPrompts.length === 0) {
+    setTimeout(() => {
+      const emptyContent = body.querySelector(".prompt-empty-state-content");
+      if (emptyContent) {
+        emptyContent.classList.add("show");
+      }
+    }, 100);
+  }
+
+  // 戻るボタンの機能
+  footer.querySelector(".back-btn").addEventListener("click", () => {
+    console.log("アーカイブから一覧に戻ります");
+    renderList();
+  });
+
+  // 一括削除ボタンの機能
+  footer
+    .querySelector(".delete-all-btn")
+    .addEventListener("click", async () => {
+      const checkedItems = body.querySelectorAll(".arch-check:checked");
+      if (checkedItems.length === 0) {
+        console.log("削除対象が選択されていません");
+        return;
+      }
+
+      const selectedIndices = Array.from(checkedItems).map((cb) =>
+        parseInt(cb.dataset.index)
+      );
+      console.log(`[ARCHIVE] 一括削除対象: ${selectedIndices.length}件`);
+
+      // 選択されたアーカイブプロンプトを削除
+      selectedIndices.sort((a, b) => b - a); // 逆順でソート（インデックスずれを防ぐ）
+      selectedIndices.forEach((idx) => {
+        const archivedPrompt = archivedPrompts[idx];
+        const originalIndex = prompts.findIndex(
+          (p) => p.id === archivedPrompt.id
+        );
+        if (originalIndex !== -1) {
+          prompts.splice(originalIndex, 1);
+        }
+      });
+
+      await save(PROMPT_KEY, prompts);
+      window.prompts = prompts;
+      renderArchiveView(); // アーカイブ画面を再描画
+    });
+
+  console.log("[renderArchiveView] end");
 }
 
 /* ══════════════════════════════════════════════════════
@@ -376,13 +599,36 @@ async function renderList() {
 ══════════════════════════════════════════════════════ */
 function renderEdit(idx, isNew = false) {
   console.log("[renderEdit] idx =", idx, "isNew =", isNew);
+
+  // 新規作成時の処理
+  if (idx === undefined || idx === null) {
+    isNew = true;
+    idx = prompts.length; // 新しいインデックスを設定
+    console.log("[renderEdit] 新規作成モード - 新しいインデックス:", idx);
+  }
+
   currentPromptIndex = idx; // 編集中のプロンプトインデックスを設定
 
   /* ルート要素取得 */
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
-  const obj = prompts[idx];
+
+  // 新規作成時は仮のオブジェクトを作成
+  let obj;
+  if (isNew && idx >= prompts.length) {
+    obj = {
+      id: Date.now(),
+      title: "",
+      star: false,
+      fields: [{ text: "", on: true }],
+      archived: false,
+    };
+    console.log("[renderEdit] 新規オブジェクトを作成:", obj);
+  } else {
+    obj = prompts[idx];
+    console.log("[renderEdit] 既存オブジェクトを編集:", obj);
+  }
 
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
@@ -443,6 +689,16 @@ function renderEdit(idx, isNew = false) {
       text: w.querySelector(".prompt-field-textarea").value,
       on: w.querySelector(".field-toggle").checked,
     }));
+
+    // 新規作成の場合はpromptsに追加
+    if (isNew && idx >= prompts.length) {
+      prompts.push(obj);
+      console.log("[SAVE] 新規プロンプトを追加:", obj);
+    } else {
+      prompts[idx] = obj;
+      console.log("[SAVE] 既存プロンプトを更新:", obj);
+    }
+
     await save(PROMPT_KEY, prompts);
     head.remove();
     renderList();
@@ -479,6 +735,16 @@ function renderEdit(idx, isNew = false) {
         text: w.querySelector(".prompt-field-textarea").value,
         on: w.querySelector(".field-toggle").checked,
       }));
+
+      // 新規作成の場合はpromptsに追加
+      if (isNew && idx >= prompts.length) {
+        prompts.push(obj);
+        console.log("[BACK] 新規プロンプトを保存して追加:", obj);
+      } else {
+        prompts[idx] = obj;
+        console.log("[BACK] 既存プロンプトを保存して更新:", obj);
+      }
+
       await save(PROMPT_KEY, prompts);
       console.log("[BACK] 変更を保存して戻りました");
       head.remove();
@@ -487,7 +753,8 @@ function renderEdit(idx, isNew = false) {
 
     // 保存せずに戻る処理
     async function discardAndGoBack() {
-      if (isNew) {
+      if (isNew && idx < prompts.length) {
+        // 既にpromptsに追加されている新規作成の場合のみ削除
         const titleEmpty = $(".title-input").value.trim() === "";
         const allEmpty = [
           ...wrap.querySelectorAll(".prompt-field-textarea"),
@@ -707,9 +974,9 @@ function renderRun(idx) {
     "div",
     "form-header d-flex justify-content-between align-items-center mb-2 px-2",
     `<h2 class="fw-bold fs-4 mb-0">${obj.title}</h2>
-    <button class="btn btn-edit btn-sm px-3">
-      <i class="bi bi-pencil-fill me-1"></i> 編集
-    </button>`
+     <button class="btn btn-edit btn-sm px-3">
+       <i class="bi bi-pencil-fill me-1"></i> 編集
+     </button>`
   );
   header.querySelector("button").onclick = () => {
     header.remove();
@@ -1228,6 +1495,7 @@ function checkForUnsavedChanges(originalObj, isNew) {
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderList = renderList;
+window.renderArchiveView = renderArchiveView;
 window.checkForUnsavedChanges = checkForUnsavedChanges;
 // 削除：showSaveConfirmDialog関数はutils.jsに統合
 window.prompts = prompts;
