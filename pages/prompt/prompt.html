@@ -25,9 +25,13 @@
   <body>
     <!-- 共通ヘッダー（active を PROMPT に） -->
     <header>
-      <a href="../memo/memo.html" class="nav-btn" id="btn-memo">
-        <i class="bi bi-journal-text"></i>
+      <a href="../memo/memo.html" class="nav-btn" id="btn-memo-list">
+        <i class="bi bi-clipboard2-minus"></i>
         <span class="nav-text">MEMO</span>
+      </a>
+      <a href="../clipboard/clipboard.html" class="nav-btn" id="btn-clipboard">
+        <i class="bi bi-journal-text"></i>
+        <span class="nav-text">CLIPBOARD</span>
       </a>
       <a href="prompt.html" class="nav-btn active" id="btn-prompt">
         <i class="bi bi-terminal"></i>
@@ -66,6 +70,7 @@
 
     <!-- スクリプト -->
     <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../utils.js"></script>
     <script src="../common.js"></script>
     <script src="prompt.js"></script>
   </body>

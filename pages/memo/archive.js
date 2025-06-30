@@ -2,7 +2,7 @@
 "use strict";
 
 /* ─────────────────────────────────────────────
-   Archive (アーカイブ/MEMO・クリップボード) モジュール
+   Archive (アーカイブ/MEMO・clipboard) モジュール
    ほかの JS と衝突しないよう IIFE で包む
 ──────────────────────────────────────────── */
 (() => {
@@ -47,7 +47,7 @@
       nav.className = "sub-archive-nav";
       nav.innerHTML = `
         <div class="nav-btn" id="arch-memo">アーカイブ/MEMO</div>
-        <div class="nav-btn" id="arch-clip">アーカイブ/クリップボード</div>
+        <div class="nav-btn" id="arch-clip">アーカイブ/clipboard</div>
       `;
       document
         .querySelector(".memo-content")
@@ -171,7 +171,7 @@
       document.querySelector(".memo-content").classList.remove("archive");
       document.querySelector(".sub-archive-nav")?.remove();
       footer.classList.remove("archive");
-      renderListView(); // MEMO一覧に戻す
+      renderListView(); // MEMOに戻す
     };
 
     /* 一括削除 */

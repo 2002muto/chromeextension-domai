@@ -79,7 +79,8 @@ body::-webkit-scrollbar,
 }
 
 /* ★ ホバー時の共通スタイル */
-#btn-memo:hover:not(.active),
+#btn-memo-list:hover:not(.active),
+#btn-clipboard:hover:not(.active),
 #btn-prompt:hover:not(.active),
 #btn-ai:hover:not(.active),
 #btn-setting:hover:not(.active) {
@@ -91,7 +92,8 @@ body::-webkit-scrollbar,
 }
 
 /* ホバー時のアイコンを非表示に */
-#btn-memo:hover:not(.active) i,
+#btn-memo-list:hover:not(.active) i,
+#btn-clipboard:hover:not(.active) i,
 #btn-prompt:hover:not(.active) i,
 #btn-ai:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
@@ -99,7 +101,8 @@ body::-webkit-scrollbar,
 }
 
 /* ホバー時のテキストを中央配置 */
-#btn-memo:hover:not(.active) .nav-text,
+#btn-memo-list:hover:not(.active) .nav-text,
+#btn-clipboard:hover:not(.active) .nav-text,
 #btn-prompt:hover:not(.active) .nav-text,
 #btn-ai:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
@@ -210,9 +213,14 @@ body::-webkit-scrollbar,
 }
 
 /* ③ 選択中(.active)だけグラデを書く */
-#btn-memo.active {
+#btn-memo-list.active {
   background: linear-gradient(135deg, #078ab9, #024881);
   box-shadow: 0 4px 12px rgba(7, 138, 185, 0.3);
+}
+
+#btn-clipboard.active {
+  background: linear-gradient(135deg, #04e949, #00B0CF);
+  box-shadow: 0 4px 12px rgba(4, 233, 73, 0.3);
 }
 
 #btn-prompt.active {

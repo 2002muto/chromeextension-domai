@@ -40,9 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
               if (hasChanges) {
                 // 変更がある場合は保存確認ダイアログを表示
-                if (typeof window.showMemoSaveConfirmDialog === "function") {
-                  window.showMemoSaveConfirmDialog(
-                    async () => {
+                if (
+                  typeof window.AppUtils?.showSaveConfirmDialog === "function"
+                ) {
+                  window.AppUtils.showSaveConfirmDialog({
+                    title: "変更を保存しますか？",
+                    message:
+                      "メモ内容に変更があります。<br>保存せずに戻ると変更が失われます。",
+                    onSave: async () => {
                       // 保存してから一覧画面に戻る
                       const titleInput = document.querySelector(".title-input");
                       const textInput = document.querySelector(".text-input");
@@ -85,21 +90,22 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
 
                         // 保存してから一覧画面に遷移
-                        if (typeof window.saveStorage === "function") {
+                        if (
+                          typeof window.AppUtils?.saveStorage === "function"
+                        ) {
+                          await window.AppUtils.saveStorage(
+                            "memos",
+                            window.memos
+                          );
+                        } else if (typeof window.saveStorage === "function") {
                           await window.saveStorage("memos", window.memos);
-                          // 一覧画面に遷移
-                          if (typeof window.renderListView === "function") {
-                            window.renderListView();
-                          } else if (typeof renderListView === "function") {
-                            renderListView();
-                          }
-                        } else {
-                          // 一覧画面に遷移
-                          if (typeof window.renderListView === "function") {
-                            window.renderListView();
-                          } else if (typeof renderListView === "function") {
-                            renderListView();
-                          }
+                        }
+
+                        // 一覧画面に遷移
+                        if (typeof window.renderListView === "function") {
+                          window.renderListView();
+                        } else if (typeof renderListView === "function") {
+                          renderListView();
                         }
                       } else {
                         // 一覧画面に遷移
@@ -110,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                       }
                     },
-                    () => {
+                    onDiscard: () => {
                       // 破棄して一覧画面に戻る
                       console.log(
                         "[MEMO NAV] 変更を破棄して一覧画面に戻りました"
@@ -121,8 +127,8 @@ document.addEventListener("DOMContentLoaded", function () {
                       } else if (typeof renderListView === "function") {
                         renderListView();
                       }
-                    }
-                  );
+                    },
+                  });
                   return; // ここで処理を終了
                 }
               }
@@ -163,9 +169,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
               if (hasChanges) {
                 // 変更がある場合は保存確認ダイアログを表示
-                if (typeof window.showSaveConfirmDialog === "function") {
-                  window.showSaveConfirmDialog(
-                    () => {
+                if (
+                  typeof window.AppUtils?.showSaveConfirmDialog === "function"
+                ) {
+                  window.AppUtils.showSaveConfirmDialog({
+                    title: "変更を保存しますか？",
+                    message:
+                      "プロンプト内容に変更があります。<br>保存せずに戻ると変更が失われます。",
+                    onSave: async () => {
                       // 保存してから一覧画面に戻る
                       const obj = window.prompts[promptIndex];
                       const titleInput = document.querySelector(".title-input");
@@ -179,27 +190,27 @@ document.addEventListener("DOMContentLoaded", function () {
                         }));
 
                         // 保存してから一覧画面に遷移
-                        if (typeof window.save === "function") {
-                          window.save("prompts", window.prompts).then(() => {
-                            console.log(
-                              "[PROMPT NAV] 変更を保存して一覧画面に戻りました"
-                            );
-                            // フォームヘッダーを削除
-                            document.querySelector(".form-header")?.remove();
-                            // 一覧画面に遷移
-                            if (typeof window.renderList === "function") {
-                              window.renderList();
-                            } else if (typeof renderList === "function") {
-                              renderList();
-                            }
-                          });
-                        } else {
-                          // 一覧画面に遷移
-                          if (typeof window.renderList === "function") {
-                            window.renderList();
-                          } else if (typeof renderList === "function") {
-                            renderList();
-                          }
+                        if (
+                          typeof window.AppUtils?.saveStorage === "function"
+                        ) {
+                          await window.AppUtils.saveStorage(
+                            "prompts",
+                            window.prompts
+                          );
+                        } else if (typeof window.save === "function") {
+                          await window.save("prompts", window.prompts);
+                        }
+
+                        console.log(
+                          "[PROMPT NAV] 変更を保存して一覧画面に戻りました"
+                        );
+                        // フォームヘッダーを削除
+                        document.querySelector(".form-header")?.remove();
+                        // 一覧画面に遷移
+                        if (typeof window.renderList === "function") {
+                          window.renderList();
+                        } else if (typeof renderList === "function") {
+                          renderList();
                         }
                       } else {
                         // 一覧画面に遷移
@@ -210,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                       }
                     },
-                    () => {
+                    onDiscard: () => {
                       // 破棄して一覧画面に戻る
                       console.log(
                         "[PROMPT NAV] 変更を破棄して一覧画面に戻りました"
@@ -223,8 +234,8 @@ document.addEventListener("DOMContentLoaded", function () {
                       } else if (typeof renderList === "function") {
                         renderList();
                       }
-                    }
-                  );
+                    },
+                  });
                   return; // ここで処理を終了
                 }
               }
@@ -314,9 +325,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log("[DEBUG] 保存確認ダイアログを表示します");
 
                 // 保存確認ダイアログを表示
-                if (typeof window.showSaveConfirmDialog === "function") {
-                  window.showSaveConfirmDialog(
-                    () => {
+                if (
+                  typeof window.AppUtils?.showSaveConfirmDialog === "function"
+                ) {
+                  window.AppUtils.showSaveConfirmDialog({
+                    title: "変更を保存しますか？",
+                    message:
+                      "プロンプト内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+                    onSave: async () => {
                       // 保存してからページ遷移
                       const obj = window.prompts[promptIndex];
                       const titleInput = document.querySelector(".title-input");
@@ -330,58 +346,45 @@ document.addEventListener("DOMContentLoaded", function () {
                         }));
 
                         // 保存してからページ遷移
-                        if (typeof window.save === "function") {
-                          window.save("prompts", window.prompts).then(() => {
-                            console.log(
-                              "[NAV] 変更を保存してページ遷移しました"
-                            );
-                            // フォームヘッダーを削除
-                            document.querySelector(".form-header")?.remove();
-                            // ページ遷移を実行
-                            window.location.href = this.href;
-                          });
-                        } else {
-                          // ページ遷移を実行
-                          window.location.href = this.href;
+                        if (
+                          typeof window.AppUtils?.saveStorage === "function"
+                        ) {
+                          await window.AppUtils.saveStorage(
+                            "prompts",
+                            window.prompts
+                          );
+                        } else if (typeof window.save === "function") {
+                          await window.save("prompts", window.prompts);
                         }
+
+                        console.log("[NAV] 変更を保存してページ遷移しました");
+                        // フォームヘッダーを削除
+                        document.querySelector(".form-header")?.remove();
+                        // ページ遷移を実行
+                        window.location.href = this.href;
                       } else {
                         // ページ遷移を実行
                         window.location.href = this.href;
                       }
                     },
-                    () => {
+                    onDiscard: () => {
                       // 破棄してページ遷移
                       console.log("[NAV] 変更を破棄してページ遷移しました");
                       // フォームヘッダーを削除
                       document.querySelector(".form-header")?.remove();
                       // ページ遷移を実行
                       window.location.href = this.href;
-                    }
-                  );
+                    },
+                  });
                   return; // ここで処理を終了
-                } else {
-                  console.log(
-                    "[DEBUG] showSaveConfirmDialog関数が見つかりません"
-                  );
                 }
-              } else {
-                console.log("[DEBUG] 変更がないため、通常のページ遷移を実行");
               }
-            } else {
-              console.log("[DEBUG] プロンプトデータが見つからない", {
-                promptIndex,
-                promptsLength: window.prompts?.length,
-                hasPrompts: !!window.prompts,
-              });
             }
-          } else {
-            console.log("[DEBUG] 編集画面ではないため、通常のページ遷移を実行");
           }
         }
 
         // MEMOページの編集画面からの遷移
         if (currentPage.includes("/memo/")) {
-          // MEMOページの編集画面かチェック
           const isEditMode = document.querySelector(".memo-content.edit-mode");
           if (
             isEditMode &&
@@ -405,10 +408,15 @@ document.addEventListener("DOMContentLoaded", function () {
               if (hasChanges) {
                 e.preventDefault(); // ページ遷移を一時停止
 
-                // 保存確認ダイアログを表示
-                if (typeof window.showMemoSaveConfirmDialog === "function") {
-                  window.showMemoSaveConfirmDialog(
-                    async () => {
+                // 変更がある場合は保存確認ダイアログを表示
+                if (
+                  typeof window.AppUtils?.showSaveConfirmDialog === "function"
+                ) {
+                  window.AppUtils.showSaveConfirmDialog({
+                    title: "変更を保存しますか？",
+                    message:
+                      "メモ内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+                    onSave: async () => {
                       // 保存してからページ遷移
                       const titleInput = document.querySelector(".title-input");
                       const textInput = document.querySelector(".text-input");
@@ -451,31 +459,33 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
 
                         // 保存してからページ遷移
-                        if (typeof window.saveStorage === "function") {
-                          await window.saveStorage("memos", window.memos);
-                          console.log(
-                            "[MEMO NAV] 変更を保存してページ遷移しました"
+                        if (
+                          typeof window.AppUtils?.saveStorage === "function"
+                        ) {
+                          await window.AppUtils.saveStorage(
+                            "memos",
+                            window.memos
                           );
-                          // ページ遷移を実行
-                          window.location.href = this.href;
-                        } else {
-                          // ページ遷移を実行
-                          window.location.href = this.href;
+                        } else if (typeof window.saveStorage === "function") {
+                          await window.saveStorage("memos", window.memos);
                         }
+
+                        // ページ遷移を実行
+                        window.location.href = this.href;
                       } else {
                         // ページ遷移を実行
                         window.location.href = this.href;
                       }
                     },
-                    () => {
+                    onDiscard: () => {
                       // 破棄してページ遷移
                       console.log(
                         "[MEMO NAV] 変更を破棄してページ遷移しました"
                       );
                       // ページ遷移を実行
                       window.location.href = this.href;
-                    }
-                  );
+                    },
+                  });
                   return; // ここで処理を終了
                 }
               }
