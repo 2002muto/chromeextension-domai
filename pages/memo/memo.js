@@ -82,6 +82,10 @@ async function handleDrop(e) {
   const [moved] = memos.splice(dragSrcIndex, 1);
   memos.splice(dropIndex, 0, moved);
   await saveStorage(MEMO_KEY, memos);
+
+  // ドラッグ＆ドロップ成功メッセージを表示
+  showDragDropSuccessMessage(dragSrcIndex + 1, dropIndex + 1);
+
   renderListView();
 }
 function handleDragEnd() {
@@ -1428,3 +1432,44 @@ window.checkForUnsavedMemoChanges = checkForUnsavedMemoChanges;
 window.memos = memos;
 window.saveStorage = saveStorage;
 window.getCurrentEditingMemoId = () => currentEditingMemoId;
+
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
+function showDragDropSuccessMessage(fromPosition, toPosition) {
+  console.log("[DND] 成功メッセージを表示:", { fromPosition, toPosition });
+
+  // AppUtilsのトースト通知が利用可能な場合
+  if (window.AppUtils && window.AppUtils.showToast) {
+    const message = `メモ ${fromPosition} を ${toPosition} 番目に移動しました`;
+    window.AppUtils.showToast(message, "success");
+  } else {
+    // AppUtilsが利用できない場合の代替処理
+    showFallbackDragDropMessage(fromPosition, toPosition);
+  }
+}
+
+function showFallbackDragDropMessage(fromPosition, toPosition) {
+  // 既存のトーストがあれば削除
+  const existingToast = document.querySelector(".drag-drop-toast");
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  // 新しいトーストを作成
+  const toast = document.createElement("div");
+  toast.className = "drag-drop-toast";
+  toast.innerHTML = `
+    <i class="bi bi-check-circle-fill"></i>
+    メモ ${fromPosition} を ${toPosition} 番目に移動しました
+  `;
+
+  // bodyに追加
+  document.body.appendChild(toast);
+
+  // 2秒後にフェードアウト
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, 2000);
+}
