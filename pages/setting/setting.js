@@ -36,7 +36,7 @@ function renderSettingMain() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("SETTING page loaded");
+  console.log("SETTINGページ DOMContentLoaded fired");
 
   // 現在のページがSETTINGページかどうかを確認
   const currentPage = window.location.pathname;
@@ -45,15 +45,14 @@ window.addEventListener("DOMContentLoaded", () => {
     return; // SETTINGページでない場合は初期化をスキップ
   }
 
-  // アクティブページを確認
-  const activePage = window.PageStateManager
-    ? window.PageStateManager.getActivePage()
-    : null;
-
-  // 現在のページとアクティブページが一致しない場合は、このページをアクティブに設定
-  if (activePage !== "setting") {
-    console.log("アクティブページをSETTINGに設定:", activePage);
-    window.PageStateManager.setActivePage("setting");
+  // Add event listener to SETTING button
+  const settingButton = document.getElementById("btn-setting");
+  if (settingButton) {
+    settingButton.addEventListener("click", () => {
+      console.log("SETTING page button clicked");
+      // ヘッダーをクリックした時はメイン画面をリフレッシュ
+      renderSettingMain();
+    });
   }
 
   // ページ状態を保存
@@ -61,10 +60,10 @@ window.addEventListener("DOMContentLoaded", () => {
     window.PageStateManager.savePageState("setting", {
       mode: "main",
     });
+    window.PageStateManager.setActivePage("setting");
   }
 
   const content = document.querySelector(".memo-content");
-  const gearBtn = document.getElementById("btn-setting");
 
   // ─── 初回ロード時にMEMO・PROMPTと同じアニメーション ───
   if (content) {
@@ -77,21 +76,6 @@ window.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       content.classList.add("show");
     }, 100);
-  }
-
-  // ─── 歯車アイコンを押すと必ず再アニメ ───
-  if (gearBtn) {
-    gearBtn.addEventListener("click", (e) => {
-      e.preventDefault(); // リンク遷移を抑制
-      if (content) {
-        content.classList.remove("show", "animate");
-        void content.offsetWidth; // 再リフロー
-        content.classList.add("animate");
-        setTimeout(() => {
-          content.classList.add("show");
-        }, 100);
-      }
-    });
   }
 
   // ─── 以下、既存のメニュー切替＋詳細パネル表示 ───

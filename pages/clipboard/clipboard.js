@@ -495,6 +495,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     return; // CLIPBOARDページでない場合は初期化をスキップ
   }
 
+  // 起動時は常に一覧画面を表示（ページ状態の復元を無効化）
+  console.log("CLIPBOARDページ: 起動時に一覧画面を表示");
+  await renderClipboardView();
+
+  // Add event listener to CLIPBOARD button
+  const clipboardButton = document.getElementById("btn-clipboard");
+  if (clipboardButton) {
+    clipboardButton.addEventListener("click", () => {
+      console.log("CLIPBOARD page button clicked");
+      // ヘッダーをクリックした時は常に一覧画面を表示
+      renderClipboardView();
+    });
+  }
+
   // グローバルに最新のclipsを設定
   window.clips = clips;
 });

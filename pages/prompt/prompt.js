@@ -163,7 +163,7 @@ function handlePromptDragEnd() {
 
 /* ━━━━━━━━━ 2. 初期化 ━━━━━━━━━ */
 window.addEventListener("DOMContentLoaded", async () => {
-  console.log("[PROMPT] DOMContentLoaded fired");
+  console.log("PROMPTページ DOMContentLoaded fired");
 
   // 現在のページがPROMPTページかどうかを確認
   const currentPage = window.location.pathname;
@@ -172,8 +172,19 @@ window.addEventListener("DOMContentLoaded", async () => {
     return; // PROMPTページでない場合は初期化をスキップ
   }
 
-  // グローバルに最新のpromptsを設定
-  window.prompts = prompts;
+  // 起動時は常に一覧画面を表示（ページ状態の復元を無効化）
+  console.log("PROMPTページ: 起動時に一覧画面を表示");
+  await renderList();
+
+  // Add event listener to PROMPT button
+  const promptButton = document.getElementById("btn-prompt");
+  if (promptButton) {
+    promptButton.addEventListener("click", () => {
+      console.log("PROMPT page button clicked");
+      // ヘッダーをクリックした時は常に一覧画面を表示
+      renderList();
+    });
+  }
 });
 
 /* ══════════════════════════════════════════════════════
@@ -552,18 +563,46 @@ async function renderArchiveView() {
       li.appendChild(span);
 
       // 復元ボタン
-      const restoreBtn = document.createElement("button");
-      restoreBtn.className = "restore-btn";
-      restoreBtn.innerHTML = '<i class="bi bi-upload"></i>';
-      restoreBtn.title = "復元";
-      restoreBtn.addEventListener("click", async () => {
-        console.log(`[ARCHIVE] restore prompt: ${p.title}`);
-        p.archived = false;
-        await save(PROMPT_KEY, prompts);
-        window.prompts = prompts;
-        renderArchiveView(); // アーカイブ画面を再描画
+      const btn = document.createElement("button");
+      btn.className = "restore-btn";
+      btn.innerHTML = '<i class="bi bi-upload"></i>';
+      btn.title = "復元";
+      btn.addEventListener("click", async () => {
+        console.log("[ARCH] restore idx:", idx);
+
+        if (archiveType === "memo") {
+          /* MEMO: archived → false */
+          const memos = await loadStorage(MEMO_KEY);
+          const target = memos.find((m) => m.id === it.id);
+          if (target) target.archived = false;
+          await saveStorage(MEMO_KEY, memos);
+          // グローバルに最新のmemosを設定
+          window.memos = memos;
+        } else {
+          /* PROMPT: アーカイブ → アクティブへ移動 */
+          const prompts = await load(PROMPT_KEY);
+          const archivedPrompts = await load(PROMPT_ARCH_KEY);
+
+          // アーカイブから削除
+          const restoredPrompt = archivedPrompts.splice(idx, 1)[0];
+          restoredPrompt.archived = false;
+
+          // アクティブに追加
+          prompts.push(restoredPrompt);
+
+          await save(PROMPT_KEY, prompts);
+          await save(PROMPT_ARCH_KEY, archivedPrompts);
+
+          // グローバルに最新のpromptsを設定
+          window.prompts = prompts;
+        }
+
+        // アニメーション付きで復元
+        await window.AppUtils.animateRestoreItem(li, async () => {
+          renderArchiveList(); // 再描画
+        });
       });
-      li.appendChild(restoreBtn);
+      li.appendChild(btn);
 
       ul.appendChild(li);
     });

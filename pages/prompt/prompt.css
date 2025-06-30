@@ -932,6 +932,26 @@ textarea.field-text,
   filter: brightness(1.15);
 }
 
+/* 復元アニメーション用スタイル */
+.archive-item.restoring {
+  transition: all 0.5s ease-in-out;
+  transform: translateY(-50px) scale(0.9);
+  opacity: 0;
+  filter: blur(2px);
+}
+
+/* 復元ボタンのホバー効果 */
+.archive-item .restore-btn:hover {
+  background: #00a31e;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
+}
+
+/* 復元ボタンのアクティブ状態 */
+.archive-item .restore-btn:active {
+  transform: scale(0.95);
+}
+
 /*--------------------------------------------------------------
   プロンプト実行画面のスタイル（画像通りのUI・UX）
 --------------------------------------------------------------*/

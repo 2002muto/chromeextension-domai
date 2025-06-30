@@ -24,7 +24,7 @@ function renderAIMain() {
 
 // DOMContentLoaded後に初期化
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("AI page loaded - COMING SOON");
+  console.log("AIページ DOMContentLoaded fired");
 
   // 現在のページがAIページかどうかを確認
   const currentPage = window.location.pathname;
@@ -33,15 +33,14 @@ window.addEventListener("DOMContentLoaded", () => {
     return; // AIページでない場合は初期化をスキップ
   }
 
-  // アクティブページを確認
-  const activePage = window.PageStateManager
-    ? window.PageStateManager.getActivePage()
-    : null;
-
-  // 現在のページとアクティブページが一致しない場合は、このページをアクティブに設定
-  if (activePage !== "ai") {
-    console.log("アクティブページをAIに設定:", activePage);
-    window.PageStateManager.setActivePage("ai");
+  // Add event listener to AI button
+  const aiButton = document.getElementById("btn-ai");
+  if (aiButton) {
+    aiButton.addEventListener("click", () => {
+      console.log("AI page button clicked");
+      // ヘッダーをクリックした時はメイン画面をリフレッシュ
+      renderAIMain();
+    });
   }
 
   // ページ状態を保存
@@ -49,6 +48,7 @@ window.addEventListener("DOMContentLoaded", () => {
     window.PageStateManager.savePageState("ai", {
       mode: "main",
     });
+    window.PageStateManager.setActivePage("ai");
   }
 
   // 初回表示アニメーション
