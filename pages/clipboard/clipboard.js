@@ -98,16 +98,12 @@ async function renderClipboardView() {
   void content.offsetWidth;
   content.classList.add("animate");
 
-  // header + list + add + hint
+  // MEMOページと同じ構造：ボタンを上に、リストを下に
   content.innerHTML = `
-    <h2 class="clipboard-header">
-      <i class="bi bi-clipboard-fill"></i> フォーム用clipboard
-    </h2>
+    <button class="btn-add-clip">
+      <i class="bi bi-plus-lg"></i>クリップを追加
+    </button>
     <ul class="clipboard-list"></ul>
-    <button class="btn-add-clip">+ クリップを追加</button>
-    <p class="clipboard-hint">
-      ※ 選択中のテキストエリアに入力されます
-    </p>
   `;
   content.classList.remove("show");
   void content.offsetWidth;
@@ -135,9 +131,25 @@ async function renderClipboardView() {
           <p class="clipboard-empty-state-message">
             最初のクリップを追加してみましょう。
           </p>
+          <div class="clipboard-empty-state-action">
+            <button class="btn-add-first-clip">
+              <i class="bi bi-plus-lg"></i> 最初のクリップを追加
+            </button>
+          </div>
         </div>
       </div>
     `;
+
+    // 最初のクリップ追加ボタンのイベント
+    const firstClipBtn = ul.querySelector(".btn-add-first-clip");
+    if (firstClipBtn) {
+      firstClipBtn.addEventListener("click", async () => {
+        console.log("最初のクリップを追加ボタンがクリックされました");
+        clips.push("");
+        await saveStorage(CLIP_KEY, clips);
+        renderClipboardView();
+      });
+    }
 
     // Empty Stateのフェードインアニメーション
     setTimeout(() => {
@@ -155,11 +167,20 @@ async function renderClipboardView() {
       li.dataset.index = i;
 
       // DnD handlers
-      li.addEventListener("dragstart", handleClipDragStart);
+      li.addEventListener("dragstart", (e) => {
+        handleClipDragStart.call(li, e);
+        li.classList.add("dragging");
+      });
       li.addEventListener("dragover", handleClipDragOver);
       li.addEventListener("dragleave", handleClipDragLeave);
       li.addEventListener("drop", handleClipDrop);
-      li.addEventListener("dragend", handleClipDragEnd);
+      li.addEventListener("dragend", (e) => {
+        handleClipDragEnd.call(li, e);
+        // 全ての要素からドラッグ関連クラスを削除
+        document.querySelectorAll(".clipboard-item").forEach((item) => {
+          item.classList.remove("dragging", "drag-over", "drag-invalid");
+        });
+      });
 
       // 挿入ボタン（Arrow-left-square-fill）
       const copy = document.createElement("button");
@@ -189,43 +210,118 @@ async function renderClipboardView() {
 
       li.appendChild(copy);
 
-      // auto-resize textarea
+      // auto-resize textarea（MEMOページと同様の包括的な自動リサイズ）
       const ta = document.createElement("textarea");
       ta.className = "clipboard-textarea";
       ta.rows = 1;
       ta.value = txt;
       ta.placeholder = "テキストを入力";
-      ta.addEventListener("input", () => {
+
+      // 自動リサイズ関数（clipboard-item全体の調整を含む）
+      function autoResize() {
+        // 一時的に高さをリセットして正確なscrollHeightを取得
+        ta.style.height = "auto";
+
+        // 行の高さを取得
+        const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 16;
+
+        // 最小高さ（2.4行分）と最大高さ（12行分）を設定
+        const minHeight = lineHeight * 2.4;
+        const maxHeight = lineHeight * 12;
+        const contentHeight = ta.scrollHeight;
+
+        // 最小〜最大の範囲内で高さを設定
+        const newHeight = Math.min(
+          Math.max(minHeight, contentHeight),
+          maxHeight
+        );
+
+        ta.style.height = newHeight + "px";
+
+        // 最大高さに達した場合はスクロールを有効にする
+        if (contentHeight > maxHeight) {
+          ta.style.overflowY = "auto";
+        } else {
+          ta.style.overflowY = "hidden";
+        }
+
+        // 親要素（clipboard-item）の最小高さを動的調整
+        const clipboardItem = ta.closest(".clipboard-item");
+        if (clipboardItem) {
+          const itemPadding = 24; // 上下パディング12px * 2
+          const buttonHeight = 36; // copyボタンとarchiveアイコンの高さ
+          const itemMinHeight = Math.max(
+            48, // 最小高さ
+            newHeight + itemPadding,
+            buttonHeight + itemPadding
+          );
+          clipboardItem.style.minHeight = itemMinHeight + "px";
+
+          // レイアウト調整のためのクラス管理
+          if (newHeight > minHeight) {
+            clipboardItem.classList.add("expanded");
+          } else {
+            clipboardItem.classList.remove("expanded");
+          }
+        }
+
+        console.log(
+          `Clipboard textarea resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px, max: ${maxHeight}px)`
+        );
+      }
+
+      // データ保存とリサイズを行う関数
+      function handleTextChange() {
         clips[i] = ta.value;
         saveStorage(CLIP_KEY, clips);
-        ta.style.height = "auto";
-        ta.style.height = ta.scrollHeight + "px";
-      });
+        autoResize();
+      }
+
+      // 包括的なイベント監視（MEMOページと同様）
+      ta.addEventListener("input", handleTextChange);
+      ta.addEventListener("paste", () => setTimeout(handleTextChange, 10));
+      ta.addEventListener("cut", handleTextChange);
+      ta.addEventListener("compositionend", handleTextChange);
+      ta.addEventListener("focus", autoResize);
+      ta.addEventListener("blur", autoResize);
+      ta.addEventListener("keyup", autoResize);
+      ta.addEventListener("keydown", autoResize);
+      ta.addEventListener("change", handleTextChange);
+      ta.addEventListener("propertychange", handleTextChange);
+
+      // ドラッグ&ドロップ対応
+      ta.addEventListener("drop", () => setTimeout(handleTextChange, 10));
+      ta.addEventListener("dragend", handleTextChange);
+
       li.appendChild(ta);
 
-      // アーカイブボタン
-      const del = document.createElement("button");
-      del.className = "clipboard-archive";
-      del.innerHTML = '<i class="bi bi-archive-fill"></i>';
-      del.addEventListener("click", async () => {
+      // アーカイブアイコン（MEMOページと同様のスタイル）
+      const arch = document.createElement("i");
+      arch.className = "bi bi-archive-fill actions";
+      arch.title = "アーカイブへ移動";
+      arch.addEventListener("click", async (e) => {
+        e.stopPropagation();
+
         // アニメーション付きでアーカイブ
         await window.AppUtils.animateArchiveItem(li, async () => {
           const removed = clips.splice(i, 1)[0]; // ① アクティブ配列から削除
           await saveStorage(CLIP_KEY, clips); // ② 保存（現役クリップを更新）
 
-          const arch = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
-          arch.push(removed); // ④ 末尾に追加
-          await saveStorage(CLIP_ARCH_KEY, arch); // ⑤ 保存（アーカイブを更新）
+          const archData = await loadStorage(CLIP_ARCH_KEY); // ③ アーカイブ配列を取得
+          archData.push(removed); // ④ 末尾に追加
+          await saveStorage(CLIP_ARCH_KEY, archData); // ⑤ 保存（アーカイブを更新）
 
           console.log("[CLIP] archived →", removed);
         });
       });
-      li.appendChild(del);
+      li.appendChild(arch);
 
       ul.appendChild(li);
-      // ensure correct initial height
-      ta.style.height = "auto";
-      ta.style.height = ta.scrollHeight + "px";
+
+      // 初期化時の高さ設定（改良版）
+      setTimeout(() => {
+        autoResize();
+      }, 10); // DOM追加後に実行
     });
   }
 
