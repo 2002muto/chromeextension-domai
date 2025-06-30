@@ -903,7 +903,7 @@ function renderArchiveNav(type) {
   console.log("renderArchiveNav: end");
 }
 
-// Renders the actual archive list inside .memo-content
+// Renders the actual archive list inside .memo-content (PROMPTパターンに統一)
 async function renderArchiveList() {
   console.log("renderArchiveList: start", archiveType);
 
@@ -914,65 +914,115 @@ async function renderArchiveList() {
   content.classList.add("show");
 
   /* 1) ストレージ読み込み */
-  const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY; // ★ 修正
+  const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY;
   const rawItems = await loadStorage(key);
   const listData =
     archiveType === "memo" ? rawItems.filter((m) => m.archived) : rawItems;
 
-  /* 2) HTML 骨格 */
+  /* 2) HTML 骨格（PROMPTパターンに統一） */
   content.innerHTML = `
+    <div class="archive-header">
+      <h3 class="archive-title">アーカイブ</h3>
     <label class="select-all-label">
       <input type="checkbox" id="chk-select-all" /> 全て選択する
     </label>
+    </div>
     <ul class="archive-list"></ul>`;
   const ul = content.querySelector(".archive-list");
 
-  /* 3) 行生成 */
-  listData.forEach((it, idx) => {
-    const li = document.createElement("li");
-    li.className = "archive-item";
+  /* 3) 行生成（MEMO固有のプレビュー付き）またはEmpty State */
+  if (listData.length === 0) {
+    // Empty State: アーカイブが空の場合
+    ul.innerHTML = `
+      <div class="memo-empty-state">
+        <div class="memo-empty-state-content">
+          <div class="memo-empty-state-icon">
+            <i class="bi bi-archive"></i>
+          </div>
+          <h3 class="memo-empty-state-title">アーカイブは空です</h3>
+          <p class="memo-empty-state-message">
+            アーカイブされたメモはありません。
+          </p>
+        </div>
+      </div>
+    `;
 
-    /* 左：チェック */
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.className = "arch-check";
-    cb.dataset.index = idx;
-    li.appendChild(cb);
-
-    /* 中央：タイトル */
-    const span = document.createElement("span");
-    span.className = "arch-title";
-    span.textContent = archiveType === "memo" ? it.title || "無題" : it;
-    li.appendChild(span);
-
-    /* 右：復元ボタン */
-    const btn = document.createElement("button");
-    btn.className = "restore-btn";
-    btn.innerHTML = '<i class="bi bi-upload"></i>';
-    btn.title = "復元";
-    btn.addEventListener("click", async () => {
-      console.log("[ARCH] restore idx:", idx);
-
-      if (archiveType === "memo") {
-        /* MEMO: archived → false */
-        const memos = await loadStorage(MEMO_KEY);
-        const target = memos.find((m) => m.id === it.id);
-        if (target) target.archived = false;
-        await saveStorage(MEMO_KEY, memos);
-      } else {
-        /* CLIP: アーカイブ → アクティブへ移動 */
-        const act = await loadStorage(CLIP_KEY);
-        const arch = await loadStorage(CLIP_ARCH_KEY);
-        act.push(arch.splice(idx, 1)[0]);
-        await saveStorage(CLIP_KEY, act);
-        await saveStorage(CLIP_ARCH_KEY, arch);
+    // Empty Stateのフェードインアニメーション
+    setTimeout(() => {
+      const emptyContent = ul.querySelector(".memo-empty-state-content");
+      if (emptyContent) {
+        emptyContent.classList.add("show");
       }
-      renderArchiveList(); // 再描画
-    });
-    li.appendChild(btn);
+    }, 100);
+  } else {
+    // 通常のアーカイブアイテム表示
+    listData.forEach((it, idx) => {
+      const li = document.createElement("li");
+      li.className = "archive-item";
 
-    ul.appendChild(li);
-  });
+      /* 左：チェック */
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "arch-check";
+      cb.dataset.index = idx;
+      li.appendChild(cb);
+
+      /* 中央：タイトル＋プレビューコンテナ */
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "arch-content";
+
+      // タイトル
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "arch-title";
+      titleSpan.textContent = archiveType === "memo" ? it.title || "無題" : it;
+      contentDiv.appendChild(titleSpan);
+
+      // MEMO固有：内容プレビュー
+      if (archiveType === "memo" && it.content) {
+        const previewSpan = document.createElement("div");
+        previewSpan.className = "memo-preview";
+        // 内容の最初の100文字をプレビューとして表示
+        const previewText =
+          it.content.length > 100
+            ? it.content.substring(0, 100) + "..."
+            : it.content;
+        previewSpan.textContent = previewText;
+        contentDiv.appendChild(previewSpan);
+      }
+
+      li.appendChild(contentDiv);
+
+      /* 右：復元ボタン */
+      const btn = document.createElement("button");
+      btn.className = "restore-btn";
+      btn.innerHTML = '<i class="bi bi-upload"></i>';
+      btn.title = "復元";
+      btn.addEventListener("click", async () => {
+        console.log("[ARCH] restore idx:", idx);
+
+        if (archiveType === "memo") {
+          /* MEMO: archived → false */
+          const memos = await loadStorage(MEMO_KEY);
+          const target = memos.find((m) => m.id === it.id);
+          if (target) target.archived = false;
+          await saveStorage(MEMO_KEY, memos);
+          // グローバルに最新のmemosを設定
+          window.memos = memos;
+        } else {
+          /* CLIP: アーカイブ → アクティブへ移動 */
+          const act = await loadStorage(CLIP_KEY);
+          const arch = await loadStorage(CLIP_ARCH_KEY);
+          act.push(arch.splice(idx, 1)[0]);
+          await saveStorage(CLIP_KEY, act);
+          await saveStorage(CLIP_ARCH_KEY, arch);
+        }
+        renderArchiveList(); // 再描画
+      });
+      li.appendChild(btn);
+
+      ul.appendChild(li);
+    });
+  }
 
   /* 4) 全選択チェック */
   content.querySelector("#chk-select-all").onchange = (e) =>
@@ -1023,13 +1073,107 @@ function renderArchiveFooter() {
     if (archiveType === "memo") renderListView();
     // else renderClipboardView(); // MEMOページではclipboard機能は使用しない
   });
-  // Delete All → clear storage & re-render archive list
+  // Delete All → delete selected items or clear all storage & re-render archive list
   footer
     .querySelector(".delete-all-btn")
     .addEventListener("click", async () => {
-      const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY;
-      await saveStorage(key, []);
-      renderArchiveList();
+      const selectedChecks = document.querySelectorAll(".arch-check:checked");
+
+      // 削除対象の数を確認
+      let deleteCount = 0;
+      let confirmMessage = "";
+
+      if (selectedChecks.length === 0) {
+        // 全削除の場合
+        const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY;
+        const rawItems = await loadStorage(key);
+        const archivedItems =
+          archiveType === "memo"
+            ? rawItems.filter((m) => m.archived)
+            : rawItems;
+        deleteCount = archivedItems.length;
+
+        if (deleteCount === 0) {
+          console.log("削除対象のアーカイブアイテムがありません");
+          return;
+        }
+
+        confirmMessage = `アーカイブされた全ての${
+          archiveType === "memo" ? "メモ" : "クリップ"
+        }（${deleteCount}件）を完全に削除しますか？`;
+      } else {
+        // 選択削除の場合
+        deleteCount = selectedChecks.length;
+        confirmMessage = `選択された${deleteCount}件の${
+          archiveType === "memo" ? "メモ" : "クリップ"
+        }を完全に削除しますか？`;
+      }
+
+      // 確認ダイアログを表示
+      window.AppUtils.showConfirmDialog({
+        title: "削除の確認",
+        message: `${confirmMessage}<br><span style="color: #dc3545; font-weight: bold;">この操作は取り消せません。</span>`,
+        onConfirm: async () => {
+          // 削除処理を実行
+          if (selectedChecks.length === 0) {
+            // 何も選択されていない場合は全削除
+            if (archiveType === "memo") {
+              const memos = await loadStorage(MEMO_KEY);
+              const filteredMemos = memos.filter((m) => !m.archived);
+              await saveStorage(MEMO_KEY, filteredMemos);
+              // グローバルに最新のmemosを設定
+              window.memos = filteredMemos;
+            } else {
+              await saveStorage(CLIP_ARCH_KEY, []);
+            }
+          } else {
+            // 選択されたアイテムのみ削除
+            const indicesToDelete = Array.from(selectedChecks).map((cb) =>
+              parseInt(cb.dataset.index)
+            );
+
+            if (archiveType === "memo") {
+              const memos = await loadStorage(MEMO_KEY);
+              const archivedMemos = memos.filter((m) => m.archived);
+
+              // 選択されたインデックスを逆順でソートして削除（インデックスずれを防ぐ）
+              indicesToDelete
+                .sort((a, b) => b - a)
+                .forEach((idx) => {
+                  if (idx < archivedMemos.length) {
+                    const targetMemo = archivedMemos[idx];
+                    const realIdx = memos.findIndex(
+                      (m) => m.id === targetMemo.id
+                    );
+                    if (realIdx !== -1) {
+                      memos.splice(realIdx, 1);
+                    }
+                  }
+                });
+
+              await saveStorage(MEMO_KEY, memos);
+              // グローバルに最新のmemosを設定
+              window.memos = memos;
+            } else {
+              const archivedClips = await loadStorage(CLIP_ARCH_KEY);
+              indicesToDelete
+                .sort((a, b) => b - a)
+                .forEach((idx) => {
+                  if (idx < archivedClips.length) {
+                    archivedClips.splice(idx, 1);
+                  }
+                });
+              await saveStorage(CLIP_ARCH_KEY, archivedClips);
+            }
+          }
+
+          console.log(`[ARCHIVE] ${deleteCount}件のアイテムを削除しました`);
+          renderArchiveList();
+        },
+        onCancel: () => {
+          console.log("[ARCHIVE] 削除をキャンセルしました");
+        },
+      });
     });
   console.log("renderArchiveFooter: end");
 }

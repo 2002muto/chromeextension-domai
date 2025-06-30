@@ -267,7 +267,7 @@ body {
 .memo-item {
   cursor: move;
   display: grid;
-  grid-template-columns: 1fr auto auto; /* textarea, copy button, archive icon */
+  grid-template-columns: auto 1fr auto; /* star, title, archive icon */
   align-items: center;
   gap: 12px;
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
@@ -304,7 +304,6 @@ body {
 
 .memo-item .star {
   font-size: 1.2rem;
-  margin-right: 12px;
   cursor: pointer;
 }
 .memo-item .star.off {

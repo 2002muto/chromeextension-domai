@@ -1,138 +1,160 @@
 /* File: pages/memo/archive.css */
 
-/* アーカイブモード時のスタイル */
-.memo-content.archive {
-  /* アーカイブ時の背景色（必要に応じて） */
-  background: #2d3748;
+/*--------------------------------------------------------------
+  MEMOアーカイブ画面のスタイル（PROMPTベース + MEMO固有拡張）
+--------------------------------------------------------------*/
+
+/* アーカイブヘッダー（PROMPTと統一） */
+.archive-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* サブナビ：アーカイブ/MEMO ⇔ クリップ */
-.sub-archive-nav {
-  display: flex;
-  gap: 8px;
-  margin: 16px 0;
+.archive-title {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
 }
-.sub-archive-nav .nav-btn {
-  flex: 1;
-  padding: 8px;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  text-align: center;
+
+.select-all-label {
+  color: #ffffff;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
 }
-.sub-archive-nav .nav-btn.active {
-  background: #2b6cb0;
-  color: white;
+
+.select-all-label input[type="checkbox"] {
+  cursor: pointer;
 }
 
-/* pages/memo/archive.css */
-
-/* ───────────────────────────────
-   アーカイブリスト全体
-──────────────────────────────── */
+/* アーカイブリスト（PROMPTと統一） */
 .archive-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  margin: 0;
+  padding: 16px;
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
 }
 
-/* ───────────────────────────────
-   各行（カード）
-──────────────────────────────── */
-/* File: pages/memo/archive.css */
-/* --- アーカイブ行（3 カラムレイアウト） --- */
-.archive-item {
-  display: flex; /* 横並び */
-  align-items: center; /* 垂直中央 */
-  padding: 12px 16px;
-  gap: 12px; /* 左チェックとタイトルの間 */
-  border-radius: 6px;
-  background: linear-gradient(90deg, #515b6e, #3f4656);
-  box-shadow: 0 0 4px #0004 inset;
+.archive-list::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* 左：チェックボックス */
-.archive-item .arch-check {
-  flex: 0 0 24px; /* 幅固定 24px */
-  height: 24px;
-  accent-color: #ccc;
-}
-
-/* 中央：タイトル */
-.archive-item .arch-title {
-  flex: 1 1 auto; /* 余白をすべて占める */
-  text-align: center; /* 中央寄せ */
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 右：アップロード（復元）アイコン */
-.archive-item .restore-btn {
-  flex: 0 0 32px; /* 幅固定 32px */
-  margin-left: auto; /* 右端に押し出す */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
+.archive-list::-webkit-scrollbar-track {
+  background: rgba(45, 45, 45, 0.5);
   border-radius: 4px;
-  background: #06c94a;
+}
+
+.archive-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.archive-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* アーカイブアイテム（PROMPTベース + MEMO拡張） */
+.archive-item {
+  display: flex;
+  align-items: flex-start; /* メモ内容プレビューのため上揃えに変更 */
+  padding: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #4a4d58, #363940);
+  min-height: 48px;
+  gap: 12px;
+  transition: all 0.2s ease; /* ホバー効果追加 */
+}
+
+.archive-item:hover {
+  background: linear-gradient(90deg, #525862, #3d424b);
+  transform: translateY(-1px);
+}
+
+.archive-item .arch-check {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin-top: 2px; /* タイトルと高さを合わせるための微調整 */
+}
+
+/* アーカイブタイトル＋プレビューコンテナ */
+.archive-item .arch-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.archive-item .arch-title {
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+/* MEMO固有: メモ内容プレビュー */
+.archive-item .memo-preview {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 最大2行まで表示 */
+  -webkit-box-orient: vertical;
+  white-space: pre-line; /* 改行を保持 */
+}
+
+.archive-item .restore-btn {
+  background: #00a31e;
+  color: #ffffff;
+  border: none;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  border-radius: 4px;
   cursor: pointer;
   transition: filter 0.2s;
-}
-.archive-item .restore-btn:hover {
-  filter: brightness(1.1);
-}
-.archive-item .restore-btn i {
-  font-size: 1rem;
-  color: #fff;
-}
-
-/* File: pages/memo/archive.css */
-
-/* フッターを固定し、2つの大きなボタンを並べる */
-.bottom-footer.archive {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #2d3748;
-  box-sizing: border-box;
-}
-
-/* フッターボタン共通 */
-.bottom-footer.archive .footer-btn {
-  flex: 1;
+  height: 28px;
+  width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 0;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: filter 0.25s;
-  background: #910002;
-}
-.bottom-footer.archive .footer-btn:hover {
-  filter: brightness(1.2);
+  margin-top: 2px; /* タイトルと高さを合わせるための微調整 */
 }
 
-/* 戻るボタン：ダークグラデ */
-.bottom-footer.archive .back-btn {
-  /* background: linear-gradient(90deg, #424242, #272727); */
-  background: #910002;
+.archive-item .restore-btn:hover {
+  filter: brightness(1.15);
 }
 
-/* アーカイブモード時のフッター（一括削除ボタン）の背景を #910002 にする */
+/*--------------------------------------------------------------
+  アーカイブモード時の調整（PROMPTと統一）
+--------------------------------------------------------------*/
+.memo-content.archive {
+  background: #2d2d2d; /* PROMPTと同じ背景色 */
+}
+
+/* フッターのアーカイブモード調整 */
 .memo-footer.archive .delete-all-btn {
-  background: #910002;
+  background-color: #910002; /* 既存の赤色を維持 */
 }
+
+/*--------------------------------------------------------------
+  旧スタイルの削除用コメント
+  （以下は削除されました: サブナビ、旧フッタースタイルなど）
+--------------------------------------------------------------*/

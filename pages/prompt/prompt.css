@@ -115,7 +115,7 @@
 }
 .prompt-item {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 12px;
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
@@ -164,16 +164,12 @@
 }
 /* 中央：タイトル */
 .prompt-title {
-  flex: 1;
   color: #e2e8f0;
   font-size: 1rem;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  min-width: 0; /* flexアイテムが縮まるようにする */
 }
 /* 右：実行ボタン & アーカイブ */
 .prompt-action {

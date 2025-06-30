@@ -479,6 +479,246 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   }, 100);
 };
 
+/* ━━━━━━━━━━ 汎用確認ダイアログ ━━━━━━━━━━ */
+window.AppUtils.showConfirmDialog = function (options = {}) {
+  const {
+    title = "確認",
+    message = "この操作を実行しますか？",
+    onConfirm,
+    onCancel,
+  } = options;
+
+  // 既存のダイアログがあれば削除
+  const existingDialog = document.querySelector(".confirm-dialog");
+  if (existingDialog) {
+    existingDialog.remove();
+  }
+
+  // ダイアログHTML作成
+  const dialog = document.createElement("div");
+  dialog.className = "confirm-dialog";
+  dialog.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <i class="bi bi-question-circle dialog-icon"></i>
+          <h3 class="dialog-title">${title}</h3>
+        </div>
+        <div class="dialog-body">
+          <p class="dialog-message">${message}</p>
+        </div>
+        <div class="dialog-footer">
+          <button class="dialog-btn cancel-btn">キャンセル</button>
+          <button class="dialog-btn confirm-btn">確認</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // スタイルを動的に追加
+  if (!document.querySelector("#confirm-dialog-styles")) {
+    const styles = document.createElement("style");
+    styles.id = "confirm-dialog-styles";
+    styles.textContent = `
+      .confirm-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .confirm-dialog .dialog-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .confirm-dialog .dialog-content {
+        position: relative;
+        background: #2d2d2d;
+        border-radius: 12px;
+        min-width: 360px;
+        max-width: 450px;
+        margin: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .confirm-dialog .dialog-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .confirm-dialog .dialog-icon {
+        font-size: 24px;
+        color: #3b82f6;
+      }
+
+      .confirm-dialog .dialog-title {
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .confirm-dialog .dialog-body {
+        padding: 16px 20px;
+      }
+
+      .confirm-dialog .dialog-message {
+        color: #e2e8f0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin: 0;
+      }
+
+      .confirm-dialog .dialog-footer {
+        display: flex;
+        gap: 8px;
+        padding: 16px 20px 20px;
+        justify-content: flex-end;
+      }
+
+      .confirm-dialog .dialog-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 70px;
+      }
+
+      .confirm-dialog .cancel-btn {
+        background: #4a5568;
+        color: #ffffff;
+      }
+
+      .confirm-dialog .cancel-btn:hover {
+        background: #5a6578;
+        transform: translateY(-1px);
+      }
+
+      .confirm-dialog .confirm-btn {
+        background: #3b82f6;
+        color: #ffffff;
+      }
+
+      .confirm-dialog .confirm-btn:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+
+      .confirm-dialog .dialog-content.closing {
+        animation: slideDown 0.2s ease-in forwards;
+      }
+
+      .confirm-dialog .dialog-overlay.closing {
+        animation: fadeOut 0.2s ease-in forwards;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+
+  // DOMに追加
+  document.body.appendChild(dialog);
+
+  // 要素取得
+  const overlay = dialog.querySelector(".dialog-overlay");
+  const content = dialog.querySelector(".dialog-content");
+  const cancelBtn = dialog.querySelector(".cancel-btn");
+  const confirmBtn = dialog.querySelector(".confirm-btn");
+
+  // 閉じる処理
+  function closeDialog() {
+    content.classList.add("closing");
+    overlay.classList.add("closing");
+    setTimeout(() => {
+      dialog.remove();
+    }, 200);
+  }
+
+  // キャンセルボタン
+  cancelBtn.addEventListener("click", () => {
+    closeDialog();
+    if (onCancel) onCancel();
+  });
+
+  // 確認ボタン
+  confirmBtn.addEventListener("click", () => {
+    closeDialog();
+    if (onConfirm) onConfirm();
+  });
+
+  // オーバーレイクリックで閉じる
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeDialog();
+    }
+  });
+
+  // ESCキーで閉じる
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      closeDialog();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+
+  // フォーカス管理
+  setTimeout(() => {
+    confirmBtn.focus();
+  }, 100);
+};
+
 /* ━━━━━━━━━━ アーカイブアニメーション機能 ━━━━━━━━━━ */
 window.AppUtils.animateArchiveItem = async function (element, onComplete) {
   return new Promise((resolve) => {
@@ -508,7 +748,7 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
     );
 
     // アニメーション開始前にアーカイブアイコンを光らせる
-    const archiveIcon = element.querySelector(".actions");
+    const archiveIcon = element.querySelector(".actions, .prompt-archive");
     if (archiveIcon) {
       archiveIcon.style.color = "#f59e0b";
       archiveIcon.style.transform = "scale(1.2)";
@@ -687,7 +927,7 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
 
         // 他のアイテムの位置を調整するためのアニメーション
         const remainingItems = document.querySelectorAll(
-          ".memo-item, .clipboard-item"
+          ".memo-item, .clipboard-item, .prompt-item"
         );
         remainingItems.forEach((item, index) => {
           // 既存のアニメーションとトランジションを完全にクリア
@@ -750,7 +990,7 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
         element.remove();
 
         const remainingItems = document.querySelectorAll(
-          ".memo-item, .clipboard-item"
+          ".memo-item, .clipboard-item, .prompt-item"
         );
         remainingItems.forEach((item, index) => {
           // 既存のアニメーションとトランジションを完全にクリア
