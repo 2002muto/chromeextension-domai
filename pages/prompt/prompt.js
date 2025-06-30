@@ -319,6 +319,7 @@ async function renderList() {
       const span = document.createElement("span");
       span.className = "prompt-title";
       span.textContent = p.title;
+      console.log("renderList - prompt title:", p.title);
       li.appendChild(span);
 
       // archive-icon (just UI, no action)
@@ -443,6 +444,7 @@ function renderEdit(idx, isNew = false) {
       text: w.querySelector(".prompt-field-textarea").value,
       on: w.querySelector(".field-toggle").checked,
     }));
+    console.log("save prompt:", obj.title);
     await save(PROMPT_KEY, prompts);
     head.remove();
     renderList();

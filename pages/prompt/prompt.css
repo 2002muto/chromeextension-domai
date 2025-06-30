@@ -119,6 +119,8 @@
   cursor: move;
   min-height: 48px;
   line-height: 1.2;
+  width: 100%; /* ensure the item stretches fully for text-overflow */
+  box-sizing: border-box; /* prevent overflow due to padding */
 }
 /* 左：スターアイコン */
 .prompt-item .star {
@@ -140,6 +142,7 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  display: block; /* fix for ellipsis */
   min-width: 0; /* flexアイテムが縮まるようにする */
 }
 /* 右：一括出力 & アーカイブ */
