@@ -36,6 +36,33 @@ function renderSettingMain() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  console.log("SETTING page loaded");
+
+  // 現在のページがSETTINGページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/setting/")) {
+    console.log("現在のページはSETTINGページではありません:", currentPage);
+    return; // SETTINGページでない場合は初期化をスキップ
+  }
+
+  // アクティブページを確認
+  const activePage = window.PageStateManager
+    ? window.PageStateManager.getActivePage()
+    : null;
+
+  // 現在のページとアクティブページが一致しない場合は、このページをアクティブに設定
+  if (activePage !== "setting") {
+    console.log("アクティブページをSETTINGに設定:", activePage);
+    window.PageStateManager.setActivePage("setting");
+  }
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("setting", {
+      mode: "main",
+    });
+  }
+
   const content = document.querySelector(".memo-content");
   const gearBtn = document.getElementById("btn-setting");
 

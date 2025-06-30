@@ -26,6 +26,31 @@ function renderAIMain() {
 window.addEventListener("DOMContentLoaded", () => {
   console.log("AI page loaded - COMING SOON");
 
+  // 現在のページがAIページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/ai/")) {
+    console.log("現在のページはAIページではありません:", currentPage);
+    return; // AIページでない場合は初期化をスキップ
+  }
+
+  // アクティブページを確認
+  const activePage = window.PageStateManager
+    ? window.PageStateManager.getActivePage()
+    : null;
+
+  // 現在のページとアクティブページが一致しない場合は、このページをアクティブに設定
+  if (activePage !== "ai") {
+    console.log("アクティブページをAIに設定:", activePage);
+    window.PageStateManager.setActivePage("ai");
+  }
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("ai", {
+      mode: "main",
+    });
+  }
+
   // 初回表示アニメーション
   const main = document.querySelector(".ai-main");
   if (main) {

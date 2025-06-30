@@ -139,6 +139,14 @@ function setFooter(mode) {
 async function renderListView() {
   console.log("renderListView: start");
 
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("memo", {
+      mode: "list",
+    });
+    window.PageStateManager.setActivePage("memo");
+  }
+
   document.querySelector(".form-title")?.remove();
 
   // load memos
@@ -315,6 +323,15 @@ async function renderListView() {
 async function renderInputForm(id) {
   console.log("renderInputForm: start, id=", id);
   memos = await loadStorage(MEMO_KEY);
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("memo", {
+      mode: "edit",
+      memoId: id,
+    });
+    window.PageStateManager.setActivePage("memo");
+  }
 
   // グローバルに最新のmemosを設定
   window.memos = memos;
@@ -869,7 +886,16 @@ function renderArchiveNav(type) {
   console.log("renderArchiveNav: start, type=", type);
   archiveType = type;
 
-  // MEMOページではサブナビゲーションが不要なのでコメントアウト
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("memo", {
+      mode: "archive",
+      archiveType: type,
+    });
+    window.PageStateManager.setActivePage("memo");
+  }
+
+  // MEMOページにはサブナビゲーションが不要なのでコメントアウト
   // swap card-nav buttons to Archive/MEMO ⇔ Archive/Clipboard
   // const nav = document.querySelector(".card-nav");
   // nav.innerHTML = `
@@ -1182,7 +1208,14 @@ function renderArchiveFooter() {
 // Initialization on load
 // ───────────────────────────────────────
 window.addEventListener("DOMContentLoaded", async () => {
-  console.log("DOMContentLoaded fired");
+  console.log("MEMOページ DOMContentLoaded fired");
+
+  // 現在のページがMEMOページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/memo/")) {
+    console.log("現在のページはMEMOページではありません:", currentPage);
+    return; // MEMOページでない場合は初期化をスキップ
+  }
 
   // Add event listener to MEMO button
   const memoButton = document.getElementById("btn-memo-list");
@@ -1196,18 +1229,6 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
     });
   }
-
-  // 強制的に一覧画面に戻す処理を追加
-  setTimeout(() => {
-    const content = document.querySelector(".memo-content");
-    if (content && content.classList.contains("edit-mode")) {
-      console.log("Force return to list view from edit mode");
-      renderListView();
-    }
-  }, 100);
-
-  // start in MEMO list
-  await renderListView();
 
   // グローバルに最新のmemosを設定
   window.memos = memos;

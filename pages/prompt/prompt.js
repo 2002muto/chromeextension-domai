@@ -162,15 +162,18 @@ function handlePromptDragEnd() {
 }
 
 /* ━━━━━━━━━ 2. 初期化 ━━━━━━━━━ */
-document.addEventListener("DOMContentLoaded", async () => {
-  prompts = (await load(PROMPT_KEY)) ?? [];
-  runs = (await load(RUN_KEY)) ?? [];
-  console.log("[INIT] prompts =", prompts.length);
+window.addEventListener("DOMContentLoaded", async () => {
+  console.log("[PROMPT] DOMContentLoaded fired");
+
+  // 現在のページがPROMPTページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/prompt/")) {
+    console.log("現在のページはPROMPTページではありません:", currentPage);
+    return; // PROMPTページでない場合は初期化をスキップ
+  }
 
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
-
-  renderList();
 });
 
 /* ══════════════════════════════════════════════════════
@@ -178,6 +181,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 ══════════════════════════════════════════════════════ */
 async function renderList() {
   console.log("[renderList] start");
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("prompt", {
+      mode: "list",
+    });
+    window.PageStateManager.setActivePage("prompt");
+  }
+
+  prompts = await load(PROMPT_KEY);
+
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
@@ -436,8 +450,8 @@ async function renderList() {
       });
       li.appendChild(archiveIcon);
 
-      // click row → edit（元の配列でのインデックスを使用）
-      li.addEventListener("click", () => renderEdit(originalIndex));
+      // click row → run（元の配列でのインデックスを使用）
+      li.addEventListener("click", () => renderRun(originalIndex));
 
       list.appendChild(li);
     });
@@ -455,6 +469,17 @@ async function renderList() {
 ══════════════════════════════════════════════════════ */
 async function renderArchiveView() {
   console.log("[renderArchiveView] start");
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("prompt", {
+      mode: "archive",
+    });
+    window.PageStateManager.setActivePage("prompt");
+  }
+
+  prompts = await load(PROMPT_KEY);
+
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body;
@@ -645,6 +670,16 @@ async function renderArchiveView() {
 ══════════════════════════════════════════════════════ */
 function renderEdit(idx, isNew = false) {
   console.log("[renderEdit] idx =", idx, "isNew =", isNew);
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("prompt", {
+      mode: "edit",
+      promptIndex: idx,
+      isNew: isNew,
+    });
+    window.PageStateManager.setActivePage("prompt");
+  }
 
   // 新規作成時の処理
   if (idx === undefined || idx === null) {
@@ -1009,6 +1044,15 @@ function renderRun(idx) {
   console.log("[renderRun] idx =", idx);
   currentPromptIndex = idx; // 現在のプロンプトインデックスを設定
 
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("prompt", {
+      mode: "run",
+      promptIndex: idx,
+    });
+    window.PageStateManager.setActivePage("prompt");
+  }
+
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body;
@@ -1062,28 +1106,29 @@ function renderRun(idx) {
   $(".history-btn").onclick = () => console.log("[TODO] 履歴画面");
 
   /* ── 本体 HTML ── */
-  // プロンプトが0個の場合はEmpty Stateを表示
-  if (!obj.fields.length || obj.fields.every((f) => !f.text.trim())) {
+  // プロンプトが0個の場合、または有効なプロンプトがない場合はEmpty Stateを表示
+  const enabledFields = obj.fields.filter((f) => f.on && f.text.trim());
+  if (enabledFields.length === 0) {
     body.innerHTML = `
       <div class="prompt-empty-state">
-        <div class="empty-state-content">
-          <div class="empty-state-icon">
-            <i class="bi bi-pencil-square"></i>
+        <div class="prompt-empty-state-content">
+          <div class="prompt-empty-state-icon">
+            <i class="bi bi-terminal-x"></i>
           </div>
-          <h3 class="empty-state-title">プロンプトがありません</h3>
-          <p class="empty-state-message">
+          <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
+          <p class="prompt-empty-state-message">
             プロンプトを追加してください。
           </p>
-          <div class="empty-state-action">
-            <button class="btn-edit-prompt">
-              <i class="bi bi-pencil-fill me-1"></i> 編集してプロンプトを追加
+          <div class="prompt-empty-state-action">
+            <button class="btn-add-first-prompt">
+              <i class="bi bi-plus-lg"></i> プロンプトを追加
             </button>
           </div>
         </div>
       </div>`;
 
-    // 編集ボタンのクリックイベント
-    body.querySelector(".btn-edit-prompt").onclick = () => {
+    // プロンプト追加ボタンのクリックイベント
+    body.querySelector(".btn-add-first-prompt").onclick = () => {
       header.remove();
       renderEdit(idx);
     };
@@ -1091,8 +1136,13 @@ function renderRun(idx) {
     // 通常のプロンプト実行画面
     body.innerHTML = `
     <div class="prompt-run-box">
-        ${obj.fields.map((f, i) => block(i + 1, f, i)).join("")}
-      <button class="btn-exec w-100 mt-3" style="background:#00A31E;color:#fff;">一括入力</button>
+        ${enabledFields
+          .map((f, i) => {
+            const originalIndex = obj.fields.findIndex((field) => field === f);
+            return block(i + 1, f, originalIndex); // i + 1 で連番表示
+          })
+          .join("")}
+      <button class="btn-exec w-100 mt-3">一括入力</button>
       <div class="form-check form-switch mt-3">
           <input id="hist-sw" class="form-check-input" type="checkbox">
         <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
@@ -1112,10 +1162,10 @@ function renderRun(idx) {
   body.classList.add("show");
 
   // Empty Stateの場合は早期リターン（以下の処理をスキップ）
-  if (!obj.fields.length || obj.fields.every((f) => !f.text.trim())) {
+  if (enabledFields.length === 0) {
     // Empty Stateのフェードインアニメーション
     setTimeout(() => {
-      const emptyContent = body.querySelector(".empty-state-content");
+      const emptyContent = body.querySelector(".prompt-empty-state-content");
       if (emptyContent) {
         emptyContent.classList.add("show");
       }
@@ -1123,32 +1173,79 @@ function renderRun(idx) {
     return;
   }
 
-  /* ── フェードインアニメーション ── */
-  const runBox = body.querySelector(".prompt-run-box");
-  const promptBlocks = body.querySelectorAll(".prompt-block");
+  /* ── ボタンイベント設定 ── */
+  // 一括入力ボタンのイベント（即座に設定）
   const execBtn = body.querySelector(".btn-exec");
-  const formCheck = body.querySelector(".form-check");
-
-  // 初期状態設定（CSS transitionが適用されるまで少し待つ）
-  setTimeout(() => {
-    // 1. メインボックスをフェードイン
-    runBox.classList.add("show");
-
-    // 2. プロンプトブロックを順次フェードイン
-    promptBlocks.forEach((block, index) => {
-      setTimeout(() => {
-        block.classList.add("show");
-      }, 150 + index * 100); // 各ブロック100ms間隔
+  console.log("[renderRun] 一括入力ボタンの要素:", execBtn);
+  if (execBtn) {
+    let locked = false; // locked変数を追加
+    execBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (locked) return;
+      locked = true;
+      send("all");
+      setTimeout(() => (locked = false), 120);
     });
+    console.log("[renderRun] 一括入力ボタンのイベントリスナーを設定しました");
+    console.log("[renderRun] ボタンのスタイル:", {
+      display: execBtn.style.display,
+      opacity: execBtn.style.opacity,
+      visibility: execBtn.style.visibility,
+      zIndex: execBtn.style.zIndex,
+    });
+  } else {
+    console.error("[renderRun] 一括入力ボタンが見つかりません");
+  }
 
-    // 3. 下部ボタンエリアをフェードイン
-    setTimeout(() => {
-      execBtn.classList.add("show");
-      setTimeout(() => {
-        formCheck.classList.add("show");
-      }, 100);
-    }, 300 + promptBlocks.length * 100);
-  }, 50);
+  // COPYボタンのイベント（即座に設定）
+  const copyBtns = body.querySelectorAll(".btn-copy");
+  copyBtns.forEach((btn) => {
+    let locked = false; // locked変数を各ボタンごとに定義
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      e.preventDefault(); // 追加：デフォルト動作を完全に防ぐ
+      if (locked) return;
+      locked = true;
+
+      // clipboardにコピーのみ（自動入力は絶対にしない）
+      const index = +btn.dataset.idx;
+      const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+      const payload =
+        obj.fields[index].on && obj.fields[index].text.trim()
+          ? `${obj.fields[index].text}\n${extras[index]}`.trim()
+          : "";
+
+      if (!payload.trim()) {
+        console.warn("[COPY] コピー対象のプロンプトがありません");
+        setTimeout(() => (locked = false), 120);
+        return;
+      }
+
+      try {
+        // 純粋にクリップボードにコピーのみ
+        await navigator.clipboard.writeText(payload);
+
+        // ボタンのテキストとアイコンをCOPIEDに変更
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i> COPIED';
+        btn.classList.add("copied");
+
+        // 2秒後に元に戻す
+        setTimeout(() => {
+          btn.innerHTML = originalContent;
+          btn.classList.remove("copied");
+        }, 2000);
+
+        console.log(
+          "[COPY] クリップボードにコピーのみ実行しました（自動入力なし）"
+        );
+      } catch (err) {
+        console.error("[COPY] クリップボードコピーに失敗:", err);
+      }
+
+      setTimeout(() => (locked = false), 120);
+    });
+  });
 
   /* ── ドラッグ&ドロップイベントハンドラー ── */
   promptBlocks.forEach((block) => {
@@ -1212,70 +1309,31 @@ function renderRun(idx) {
     textarea.style.height = newHeight + "px";
   }
 
-  /* ── COPY / EXEC ハンドラ（★120 ms デバウンス付き・1 定義のみ） ── */
-  body.querySelectorAll(".btn-copy").forEach((btn) => {
-    let locked = false;
-    btn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      if (locked) return;
-      locked = true;
-
-      // clipboardにコピー
-      const index = +btn.dataset.idx;
-      const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
-      const payload = `${obj.fields[index].text}\n${extras[index]}`.trim();
-
-      try {
-        await navigator.clipboard.writeText(payload);
-
-        // ボタンのテキストとアイコンをCOPIEDに変更
-        const originalContent = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-check"></i> COPIED';
-        btn.classList.add("copied");
-
-        // 2秒後に元に戻す
-        setTimeout(() => {
-          btn.innerHTML = originalContent;
-          btn.classList.remove("copied");
-        }, 2000);
-
-        console.log("[COPY] clipboardにコピーしました");
-      } catch (err) {
-        console.error("[COPY] clipboardコピーに失敗:", err);
-      }
-
-      setTimeout(() => (locked = false), 120);
-    });
-  });
-  {
-    const exec = $(".btn-exec");
-    let locked = false;
-    exec.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (locked) return;
-      locked = true;
-      send("all");
-      setTimeout(() => (locked = false), 120);
-    });
-  }
-
   /* ── 内部 send() ── */
   async function send(index) {
     const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
     const payload =
       index === "all"
         ? obj.fields
-            .map((f, i) => (f.on ? `${f.text}\n${extras[i]}`.trim() : ""))
+            .map((f, i) =>
+              f.on && f.text.trim() ? `${f.text}\n${extras[i]}`.trim() : ""
+            )
             .filter(Boolean)
             .join("\n\n")
-        : `${obj.fields[index].text}\n${extras[index]}`.trim();
+        : obj.fields[index].on && obj.fields[index].text.trim()
+        ? `${obj.fields[index].text}\n${extras[index]}`.trim()
+        : "";
+
+    if (!payload.trim()) {
+      console.warn("[EXECUTION] 送信対象のプロンプトがありません");
+      return;
+    }
 
     sendToFocused(payload); // ★ ここで 1 回だけ送信
 
     /* 実行時：ドラフト削除は常に実行、履歴保存はトグルボタンで制御 */
     const histToggleChecked = $("#hist-sw").checked;
-    const actionType =
-      index === "all" ? "一括入力ボタン" : `COPYボタン${index}`;
+    const actionType = "一括入力ボタン";
     console.log(
       `[EXECUTION] ${actionType} - トグルボタンの状態: ${
         histToggleChecked ? "オン" : "オフ"
@@ -1289,9 +1347,6 @@ function renderRun(idx) {
         chrome.storage.local.remove(draftKey(obj.id, i))
       );
       console.log(`[EXECUTION] ${actionType} - ドラフトを削除しました`);
-    } else {
-      chrome.storage.local.remove(draftKey(obj.id, index));
-      console.log(`[EXECUTION] ${actionType} - 個別ドラフトを削除しました`);
     }
 
     // 履歴保存はトグルボタンがオンの時のみ実行
@@ -1301,14 +1356,10 @@ function renderRun(idx) {
         when: new Date().toISOString(),
         title: obj.title,
         text: payload,
-        count: obj.fields.filter((f) => f.on).length,
+        count: obj.fields.filter((f) => f.on && f.text.trim()).length,
       });
       await save(RUN_KEY, runs);
       console.log(`[EXECUTION] ${actionType} - 履歴に保存しました`);
-    } else if (histToggleChecked) {
-      console.log(
-        `[EXECUTION] ${actionType} - トグルボタンがオンですが一括入力でないため履歴保存はスキップ`
-      );
     } else {
       console.log(
         `[EXECUTION] ${actionType} - トグルボタンがオフのため履歴保存をスキップ`

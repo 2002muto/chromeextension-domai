@@ -82,6 +82,17 @@ function setFooter(mode) {
 // ───────────────────────────────────────
 async function renderClipboardView() {
   console.log("renderClipboardView: start");
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("clipboard", {
+      mode: "list",
+    });
+    window.PageStateManager.setActivePage("clipboard");
+  }
+
+  document.querySelector(".form-title")?.remove();
+
   clips = await loadStorage(CLIP_KEY);
 
   // footer + archive wiring
@@ -342,6 +353,17 @@ function renderArchiveNav(type) {
   console.log("renderArchiveNav: start, type=", type);
   archiveType = type;
 
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("clipboard", {
+      mode: "archive",
+      archiveType: type,
+    });
+    window.PageStateManager.setActivePage("clipboard");
+  }
+
+  // swap card-nav buttons to Archive/MEMO ⇔ Archive/Clipboard
+
   // now render the archive list + footer
   renderArchiveList();
   renderArchiveFooter();
@@ -464,11 +486,35 @@ function renderArchiveFooter() {
 // Initialization on load
 // ───────────────────────────────────────
 window.addEventListener("DOMContentLoaded", async () => {
-  console.log("Clipboard DOMContentLoaded fired");
+  console.log("CLIPBOARDページ DOMContentLoaded fired");
 
-  // start in Clipboard view
-  await renderClipboardView();
+  // 現在のページがCLIPBOARDページかどうかを確認
+  const currentPage = window.location.pathname;
+  if (!currentPage.includes("/clipboard/")) {
+    console.log("現在のページはCLIPBOARDページではありません:", currentPage);
+    return; // CLIPBOARDページでない場合は初期化をスキップ
+  }
+
+  // グローバルに最新のclipsを設定
+  window.clips = clips;
 });
 
 // グローバルに公開
 window.renderClipboardView = renderClipboardView;
+
+async function renderClipboardEdit(id) {
+  console.log("renderClipboardEdit: start, id=", id);
+  clips = await loadStorage(CLIP_KEY);
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("clipboard", {
+      mode: "edit",
+      clipIndex: id,
+    });
+    window.PageStateManager.setActivePage("clipboard");
+  }
+
+  // グローバルに最新のclipsを設定
+  window.clips = clips;
+}
