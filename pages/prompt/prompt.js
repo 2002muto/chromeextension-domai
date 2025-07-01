@@ -1272,6 +1272,41 @@ function renderEdit(idx, isNew = false) {
   const form = body.querySelector(".memo-input-form");
   const titleSection = form.querySelector(".title-section");
   const promptFields = form.querySelectorAll(".prompt-field");
+
+  // 既存のtextareaに自動リサイズ機能を適用
+  setTimeout(() => {
+    const existingTextareas = form.querySelectorAll(".prompt-field-textarea");
+    existingTextareas.forEach((textarea) => {
+      // 自動リサイズのイベントリスナーを追加
+      textarea.addEventListener("input", () => autoResize(textarea));
+      textarea.addEventListener("paste", () =>
+        setTimeout(() => autoResize(textarea), 10)
+      );
+      textarea.addEventListener("cut", () => autoResize(textarea));
+      textarea.addEventListener("compositionend", () => autoResize(textarea));
+      textarea.addEventListener("focus", () => autoResize(textarea));
+      textarea.addEventListener("blur", () => autoResize(textarea));
+      textarea.addEventListener("change", () => autoResize(textarea));
+      textarea.addEventListener("keydown", (e) => {
+        // エンターキーで改行した時も自動リサイズ
+        if (e.key === "Enter") {
+          setTimeout(() => autoResize(textarea), 10);
+        }
+      });
+
+      // ドラッグ&ドロップ対応
+      textarea.addEventListener("drop", () =>
+        setTimeout(() => autoResize(textarea), 10)
+      );
+
+      // 初期化時の高さ設定
+      setTimeout(() => autoResize(textarea), 50);
+    });
+
+    console.log(
+      `PROMPT編集画面の既存textarea ${existingTextareas.length}個に自動リサイズ機能を適用しました`
+    );
+  }, 100);
   const addFieldBtn = form.querySelector(".btn-add-field");
 
   // 初期状態設定（CSS transitionが適用されるまで少し待つ）
@@ -1492,6 +1527,39 @@ function renderEdit(idx, isNew = false) {
     // 新しく追加されたフィールドにフェードインアニメーションを適用
     setTimeout(() => {
       row.classList.add("show");
+
+      // 新しく追加されたtextareaに自動リサイズ機能を適用
+      const newTextarea = row.querySelector(".prompt-field-textarea");
+      if (newTextarea) {
+        // 自動リサイズのイベントリスナーを追加
+        newTextarea.addEventListener("input", () => autoResize(newTextarea));
+        newTextarea.addEventListener("paste", () =>
+          setTimeout(() => autoResize(newTextarea), 10)
+        );
+        newTextarea.addEventListener("cut", () => autoResize(newTextarea));
+        newTextarea.addEventListener("compositionend", () =>
+          autoResize(newTextarea)
+        );
+        newTextarea.addEventListener("focus", () => autoResize(newTextarea));
+        newTextarea.addEventListener("blur", () => autoResize(newTextarea));
+        newTextarea.addEventListener("change", () => autoResize(newTextarea));
+        newTextarea.addEventListener("keydown", (e) => {
+          // エンターキーで改行した時も自動リサイズ
+          if (e.key === "Enter") {
+            setTimeout(() => autoResize(newTextarea), 10);
+          }
+        });
+
+        // ドラッグ&ドロップ対応
+        newTextarea.addEventListener("drop", () =>
+          setTimeout(() => autoResize(newTextarea), 10)
+        );
+
+        // 初期化時の高さ設定
+        setTimeout(() => autoResize(newTextarea), 50);
+
+        console.log("PROMPT編集画面のtextareaに自動リサイズ機能を適用しました");
+      }
 
       // ドラッグ＆ドロップの初期化を確実に行う
       if (row.draggable) {
@@ -1823,17 +1891,21 @@ function renderRun(idx) {
     }
   });
 
-  /* ── 自動リサイズ関数 ── */
+  /* ── 自動リサイズ関数（改行・エンターで無限に広がる） ── */
   function autoResize(textarea) {
     // 一時的に高さをリセットして正確なscrollHeightを取得
     textarea.style.height = "auto";
 
-    // 最小高さ（80px）と内容に応じた高さの大きい方を設定
+    // 最小高さ（80px）と内容に応じた高さの大きい方を設定（最大高さ制限なし）
     const minHeight = 80;
     const contentHeight = textarea.scrollHeight;
     const newHeight = Math.max(minHeight, contentHeight);
 
     textarea.style.height = newHeight + "px";
+
+    console.log(
+      `PROMPT textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px)`
+    );
   }
 
   /* ── 内部 send() ── */

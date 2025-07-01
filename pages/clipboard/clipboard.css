@@ -175,14 +175,12 @@
   min-width: 0; /* 親幅内で縮む */
   box-sizing: border-box; /* padding を含めて高さ幅計算 */
 
-  min-height: 48px; /* Increase the minimum height to 48px */
-  padding: 12px 16px; /* Adjust padding for more space */
-  line-height: 24px; /* 行の高さを増加 */
+  min-height: 48px; /* 最小高さを48pxに設定 */
+  padding: 12px 16px; /* パディング調整 */
+  line-height: 24px; /* 行の高さを24pxに固定 */
   white-space: pre-wrap; /* 改行を許可 */
-  overflow: hidden; /* スクロールバーを非表示 */
-
   overflow-x: hidden; /* 横スクロール禁止 */
-  overflow-y: auto; /* 縦スクロールを許可 */
+  overflow-y: hidden; /* 初期状態では縦スクロールを非表示（JSで制御） */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
   resize: none; /* リサイズ無効 */
@@ -191,8 +189,13 @@
   border: none;
   border-radius: 4px;
   font-size: 0.9rem; /* フォントサイズ統一 */
-  transition: all 0.2s ease; /* スムーズなサイズ変更 */
+  transition: height 0.2s ease; /* 高さ変更のみスムーズに */
   place-self: center stretch; /* 垂直方向中央、水平方向引き伸ばし */
+}
+
+/* スクロールが必要な場合のスタイル */
+.clipboard-textarea.scrollable {
+  overflow-y: auto !important;
 }
 
 /* プレースホルダーテキストのスタイル */

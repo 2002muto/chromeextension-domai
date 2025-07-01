@@ -504,11 +504,46 @@ async function renderInputForm(id) {
   // Locate the textarea element for further manipulation
   const ta = content.querySelector(".text-input");
   console.log("Initialized MEMO textarea", ta);
-  // Ensure minimum height via JS as well
-  ta.style.minHeight = "200px";
-  // Explicitly allow vertical resizing
-  ta.style.resize = "vertical";
-  console.log("Enable vertical resize for MEMO textarea");
+
+  // 自動リサイズ機能を追加（改行・エンターで無限に広がる）
+  function autoResizeTextarea() {
+    // 一時的に高さをリセットして正確なscrollHeightを取得
+    ta.style.height = "auto";
+
+    // 内容に応じた高さを設定（最小高さは200px）
+    const minHeight = 200;
+    const contentHeight = ta.scrollHeight;
+    const newHeight = Math.max(minHeight, contentHeight);
+
+    ta.style.height = newHeight + "px";
+
+    console.log(
+      `MEMO textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px)`
+    );
+  }
+
+  // 自動リサイズのイベントリスナーを追加
+  ta.addEventListener("input", autoResizeTextarea);
+  ta.addEventListener("paste", () => setTimeout(autoResizeTextarea, 10));
+  ta.addEventListener("cut", autoResizeTextarea);
+  ta.addEventListener("compositionend", autoResizeTextarea);
+  ta.addEventListener("focus", autoResizeTextarea);
+  ta.addEventListener("blur", autoResizeTextarea);
+  ta.addEventListener("change", autoResizeTextarea);
+  ta.addEventListener("keydown", (e) => {
+    // エンターキーで改行した時も自動リサイズ
+    if (e.key === "Enter") {
+      setTimeout(autoResizeTextarea, 10);
+    }
+  });
+
+  // ドラッグ&ドロップ対応
+  ta.addEventListener("drop", () => setTimeout(autoResizeTextarea, 10));
+
+  // 初期化時の高さ設定
+  setTimeout(autoResizeTextarea, 50);
+
+  console.log("MEMO textarea auto-resize enabled");
 
   // クリックした位置にカーソルを移動する機能を追加
   ta.addEventListener("click", function (e) {

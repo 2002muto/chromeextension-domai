@@ -243,30 +243,25 @@ async function renderClipboardView() {
     ta.value = txt;
     ta.placeholder = "テキストを入力";
 
-    // 自動リサイズ関数（clipboard-item全体の調整を含む）
+    // 自動リサイズ関数（改行・エンターで無限に広がる）
     function autoResize() {
       // 一時的に高さをリセットして正確なscrollHeightを取得
       ta.style.height = "auto";
 
-      // 行の高さを取得
-      const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 24;
+      // 行の高さを取得（CSSで24pxに固定）
+      const lineHeight = 24;
 
-      // 最小高さ（1行分）と最大高さ（5行分）を設定
-      const minHeight = lineHeight;
-      const maxHeight = lineHeight * 5;
+      // 最小高さ（2行分）を設定（最大高さ制限なし）
+      const minHeight = lineHeight * 2; // 48px（CSSのmin-heightと一致）
       const contentHeight = ta.scrollHeight;
 
-      // 最小〜最大の範囲内で高さを設定
-      const newHeight = Math.min(Math.max(minHeight, contentHeight), maxHeight);
+      // 最小高さ以上で高さを設定（最大高さ制限なし）
+      const newHeight = Math.max(minHeight, contentHeight);
 
       ta.style.height = newHeight + "px";
 
-      // 最大高さに達した場合はスクロールを有効にする
-      if (contentHeight > maxHeight) {
-        ta.style.overflowY = "auto";
-      } else {
-        ta.style.overflowY = "hidden";
-      }
+      // スクロールは不要（無限に広がるため）
+      ta.classList.remove("scrollable");
 
       // 親要素（clipboard-item）の最小高さを動的調整
       const clipboardItem = ta.closest(".clipboard-item");
@@ -289,7 +284,7 @@ async function renderClipboardView() {
       }
 
       console.log(
-        `Clipboard textarea resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px, max: ${maxHeight}px)`
+        `Clipboard textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px)`
       );
     }
 
@@ -300,21 +295,23 @@ async function renderClipboardView() {
       autoResize();
     }
 
-    // 包括的なイベント監視
+    // 最適化されたイベント監視
     ta.addEventListener("input", handleTextChange);
     ta.addEventListener("paste", () => setTimeout(handleTextChange, 10));
     ta.addEventListener("cut", handleTextChange);
     ta.addEventListener("compositionend", handleTextChange);
     ta.addEventListener("focus", autoResize);
     ta.addEventListener("blur", autoResize);
-    ta.addEventListener("keyup", autoResize);
-    ta.addEventListener("keydown", autoResize);
     ta.addEventListener("change", handleTextChange);
-    ta.addEventListener("propertychange", handleTextChange);
+    ta.addEventListener("keydown", (e) => {
+      // エンターキーで改行した時も自動リサイズ
+      if (e.key === "Enter") {
+        setTimeout(autoResize, 10);
+      }
+    });
 
     // ドラッグ&ドロップ対応
     ta.addEventListener("drop", () => setTimeout(handleTextChange, 10));
-    ta.addEventListener("dragend", handleTextChange);
 
     li.appendChild(ta);
 
@@ -390,7 +387,7 @@ async function renderClipboardView() {
     // 初期化時の高さ設定（改良版）
     setTimeout(() => {
       autoResize();
-    }, 10); // DOM追加後に実行
+    }, 50); // DOM追加後に実行（少し長めの遅延で確実に実行）
   });
 
   console.log("renderClipboardView: end");
