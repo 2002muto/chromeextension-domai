@@ -1,0 +1,276 @@
+/* File: pages/iframe/iframe.css */
+/* =============================
+   IFRAME スタイル
+   ============================= */
+
+/* ─── ベース設定 ─── */
+body {
+  background: #314559;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #e2e8f0;
+  overflow: hidden; /* スクロールバーを非表示 */
+}
+
+/* ─── ヘッダー（非表示） ─── */
+/* .iframe-header { background: #314559 !important; } */
+
+/* ─── メインコンテンツ領域 ─── */
+.memo-content {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ─── Empty State（URL未入力時の表示） ─── */
+.iframe-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  margin-top: 0;
+}
+
+.iframe-empty-state-content {
+  text-align: center;
+  max-width: 400px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.iframe-empty-state-content.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.iframe-empty-state-icon {
+  font-size: 64px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 24px;
+}
+
+.iframe-empty-state-title {
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.iframe-empty-state-message {
+  color: #e2e8f0;
+  font-size: 1rem;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+/* ─── URL入力エリア ─── */
+.iframe-url-input-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.url-input {
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 320px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.url-input:focus {
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.url-input::placeholder {
+  color: #999;
+}
+
+.url-submit-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+}
+
+.url-submit-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+.url-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.url-submit-btn i {
+  font-size: 1.2rem;
+}
+
+/* ─── iframe表示エリア ─── */
+.iframe-display-container {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.iframe-header {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.new-url-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.new-url-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.new-url-btn i {
+  font-size: 0.8rem;
+}
+
+.iframe-display {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+}
+
+/* ─── フッター（非表示） ─── */
+.iframe-footer {
+  display: none !important;
+}
+
+/* ─── レスポンシブ対応 ─── */
+@media (max-width: 768px) {
+  .iframe-url-input-row {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .url-input {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .url-submit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .iframe-url-input-row {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .url-input {
+    width: 100%;
+    max-width: 100%;
+  }
+  .url-submit-btn {
+    width: 100%;
+  }
+}
+
+/* ─── アニメーション ─── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iframe-content {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* --- HEADER: MEMO/PROMPTと同じくデフォルトのまま --- */
+header {
+  /* MEMO/PROMPTと同じ: position, z-index 指定なし */
+}
+
+/* --- MAIN CONTENT: MEMO/PROMPTと同じ構造 --- */
+.iframe-content {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  box-sizing: border-box;
+  /* height, padding-top, position, z-index 指定なし */
+}
+
+/* --- IFRAME DISPLAY AREA --- */
+.iframe-display-container {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  /* z-index, position 指定なし */
+}
+
+.iframe-display {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+  /* z-index 指定なし */
+}

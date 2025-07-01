@@ -82,6 +82,7 @@ body::-webkit-scrollbar,
 #btn-memo-list:hover:not(.active),
 #btn-clipboard:hover:not(.active),
 #btn-prompt:hover:not(.active),
+#btn-iframe:hover:not(.active),
 #btn-ai:hover:not(.active),
 #btn-setting:hover:not(.active) {
   width: 100px; /* 120pxから100pxに縮小 */
@@ -95,6 +96,7 @@ body::-webkit-scrollbar,
 #btn-memo-list:hover:not(.active) i,
 #btn-clipboard:hover:not(.active) i,
 #btn-prompt:hover:not(.active) i,
+#btn-iframe:hover:not(.active) i,
 #btn-ai:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
   display: none;
@@ -104,6 +106,7 @@ body::-webkit-scrollbar,
 #btn-memo-list:hover:not(.active) .nav-text,
 #btn-clipboard:hover:not(.active) .nav-text,
 #btn-prompt:hover:not(.active) .nav-text,
+#btn-iframe:hover:not(.active) .nav-text,
 #btn-ai:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
   opacity: 1;
@@ -219,13 +222,18 @@ body::-webkit-scrollbar,
 }
 
 #btn-clipboard.active {
-  background: linear-gradient(135deg, #04e949, #00B0CF);
+  background: linear-gradient(135deg, #04e949, #00b0cf);
   box-shadow: 0 4px 12px rgba(4, 233, 73, 0.3);
 }
 
 #btn-prompt.active {
   background: linear-gradient(135deg, #667eea, #764ba2);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+#btn-iframe.active {
+  background: linear-gradient(135deg, #e95404, #a600cf);
+  box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
 }
 
 #btn-ai.active {
@@ -310,4 +318,14 @@ main {
 
 .text-input::placeholder {
   color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn:hover .nav-text {
+  opacity: 1;
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
+  color: #fff !important;
+  z-index: 2;
+  transition: all 0.3s ease;
 }
