@@ -1064,7 +1064,10 @@ function renderEdit(idx, isNew = false) {
         <i class="bi bi-copy me-1"></i> 複製する
       </button>`
   );
-  head.querySelector(".btn-dup").onclick = () => duplicate(idx);
+  head.querySelector(".btn-dup").onclick = () => {
+    console.log("[DUP] 複製ボタンがクリックされました, idx:", idx);
+    duplicate(idx);
+  };
 
   /* ★★★ ここが重要 ★★★
      MEMO 入力画面と同じく "カードの手前" に挿入する */
@@ -1512,12 +1515,69 @@ function renderEdit(idx, isNew = false) {
 
   /*━━━━━━━━━━ 7. 複製処理 ━━━━━━━━━━*/
   async function duplicate(i) {
+    console.log(
+      "[DUP] 複製処理開始, i:",
+      i,
+      "prompts.length:",
+      prompts.length,
+      "isNew:",
+      isNew
+    );
+
+    // 新規作成時の場合は、現在編集中の内容を複製
+    if (isNew && i >= prompts.length) {
+      console.log("[DUP] 新規作成時の複製処理");
+
+      const currentTitle = $(".title-input").value.trim() || "(無題)";
+      const currentFields = [...wrap.children].map((w) => ({
+        text: w.querySelector(".prompt-field-textarea").value,
+        on: w.querySelector(".field-toggle").checked,
+      }));
+
+      const newPrompt = {
+        id: Date.now(),
+        title: currentTitle + " (複製)",
+        fields: currentFields,
+        archived: false,
+      };
+
+      console.log("[DUP] 新規作成時の複製プロンプト:", newPrompt);
+
+      prompts.push(newPrompt);
+      await save(PROMPT_KEY, prompts);
+
+      console.log("[DUP] 新規作成時の複製完了");
+      head.remove();
+      renderList();
+      return;
+    }
+
+    // 既存プロンプトの複製
+    if (i < 0 || i >= prompts.length) {
+      console.error("[DUP] 無効なインデックス:", i);
+      return;
+    }
+
     const currentTitle = $(".title-input").value.trim() || "(無題)";
-    const clone = structuredClone(prompts[i]);
+    console.log("[DUP] 現在のタイトル:", currentTitle);
+
+    const originalPrompt = prompts[i];
+    console.log("[DUP] 元のプロンプト:", originalPrompt);
+
+    const clone = structuredClone(originalPrompt);
     clone.id = Date.now();
     clone.title = currentTitle + " (複製)";
+
+    console.log("[DUP] 複製されたプロンプト:", clone);
+
     prompts.push(clone);
     await save(PROMPT_KEY, prompts);
+
+    console.log(
+      "[DUP] ストレージに保存完了, 新しいprompts.length:",
+      prompts.length
+    );
+
     head.remove();
     renderList();
     console.log("[DUP] 複製完了 →", clone.title);

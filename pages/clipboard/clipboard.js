@@ -208,10 +208,10 @@ async function renderClipboardView() {
       });
     });
 
-    // 挿入ボタン（Arrow-left-square-fill）- 左側
+    // 挿入ボタン（Arrow-left-circle）- 左側
     const copy = document.createElement("button");
     copy.className = "clipboard-copy";
-    copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
+    copy.innerHTML = '<i class="bi bi-arrow-left-circle"></i>';
     copy.addEventListener("click", () => {
       // ★修正★ 最新の textarea の値を取得して送信
       const currentText = ta.value;

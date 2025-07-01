@@ -308,12 +308,31 @@ body {
 .memo-item .star {
   font-size: 1.2rem;
   cursor: pointer;
+  height: 36px; /* Match scroll-to-top-btn size */
+  width: 36px; /* Match scroll-to-top-btn size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: transform 0.2s ease; /* Match scroll-to-top-btn transition */
+  place-self: center; /* Center in grid */
+  border-radius: 4px; /* Match scroll-to-top-btn border radius */
 }
 .memo-item .star.off {
   color: #eeeeee;
 }
 .memo-item .star.on {
   color: #f2c533;
+}
+
+.memo-item .star:hover {
+  transform: scale(1.1); /* Match scroll-to-top-btn hover effect */
+  background: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Match scroll-to-top-btn hover background */
 }
 .memo-item .title {
   flex: 1;
@@ -377,6 +396,7 @@ body {
   cursor: pointer;
   order: 2; /* タイトルの後ろに配置 */
   margin-left: auto; /* 右端に寄せる */
+  margin-right: 12px; /* Match scroll-to-top-btn right distance */
 }
 
 .memo-input-form .star-input.off {
@@ -391,7 +411,7 @@ body {
   flex: 1;
   background: transparent; /* 背景を透明に */
   border: none;
-  padding: 8px 0; /* 左右のパディングを削除 */
+  padding: 8px 12px; /* 左パディングを12pxに設定して星アイコンと統一 */
   color: #ffffff; /* より明るい色に */
   font-size: 1rem; /* 0.85rem→1rem に統一（タイトル入力は大サイズ） */
   font-weight: 500; /* やや太く */
@@ -410,7 +430,7 @@ body {
   flex: 1;
   background: transparent; /* title-inputと同じ透明背景 */
   border: none;
-  padding: 6px 8px; /* 統一されたパディング */
+  padding: 6px 12px; /* 左パディングを12pxに設定して星アイコンと統一 */
   color: #ffffff; /* title-inputと同じ明るい白色 */
   font-size: 0.9rem; /* 0.85rem→0.9rem に統一（本文は中サイズ） */
   font-weight: 500; /* title-inputと同じフォント太さ */
