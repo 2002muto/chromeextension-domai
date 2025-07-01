@@ -183,6 +183,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     return; // PROMPTページでない場合は初期化をスキップ
   }
 
+  // プロンプトデータを読み込み
+  prompts = await load(PROMPT_KEY);
+
+  // グローバルに最新のpromptsを設定（common.jsで使用される）
+  window.prompts = prompts;
+  console.log("[PROMPT] window.promptsを設定しました:", window.prompts);
+
   // 起動時は常に一覧画面を表示（ページ状態の復元を無効化）
   console.log("PROMPTページ: 起動時に一覧画面を表示");
   await renderList();
@@ -255,85 +262,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
 
-  // 他のヘッダーボタンのクリック時にも未保存変更をチェック
-  const headerButtons = [
-    "btn-memo-list",
-    "btn-clipboard",
-    "btn-ai",
-    "btn-setting",
-  ];
-
-  headerButtons.forEach((buttonId) => {
-    const button = document.getElementById(buttonId);
-    if (button) {
-      button.addEventListener("click", (e) => {
-        console.log(`[PROMPT] ${buttonId} button clicked`);
-
-        // 編集画面での未保存変更をチェック
-        const isEditing = document.querySelector(".memo-content.edit-mode");
-        if (isEditing) {
-          console.log("[PROMPT] 編集画面での未保存変更をチェック");
-
-          // 現在編集中のプロンプト情報を取得
-          const currentIndex = getCurrentPromptIndex();
-          const originalObj =
-            currentIndex !== -1 ? prompts[currentIndex] : null;
-          const isNew = currentIndex === -1;
-
-          // 未保存変更があるかチェック
-          const hasChanges = checkForUnsavedChanges(originalObj, isNew);
-
-          if (hasChanges) {
-            console.log("[PROMPT] 未保存の変更を検出 - 確認ダイアログを表示");
-            e.preventDefault(); // デフォルトの遷移を一時停止
-
-            // AppUtilsの確認ダイアログが利用可能な場合
-            if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
-              // 保存確認ダイアログを表示
-              window.AppUtils.showSaveConfirmDialog({
-                title: "変更を保存しますか？",
-                message:
-                  "プロンプト内容に変更があります。<br>保存せずに移動すると変更が失われます。",
-                onSave: async () => {
-                  // 保存してから遷移
-                  console.log("[PROMPT] 変更を保存してから遷移します");
-                  await saveAndGoBack();
-                  // 保存後に元のリンク先に遷移
-                  window.location.href = button.href;
-                },
-                onDiscard: () => {
-                  // 破棄してから遷移
-                  console.log("[PROMPT] 変更を破棄してから遷移します");
-                  discardAndGoBack();
-                  // 破棄後に元のリンク先に遷移
-                  window.location.href = button.href;
-                },
-              });
-            } else {
-              // AppUtilsが利用できない場合は警告を表示してから遷移
-              console.warn(
-                "[PROMPT] AppUtils.showSaveConfirmDialogが利用できません。変更を破棄して遷移します。"
-              );
-              if (
-                confirm(
-                  "プロンプト内容に変更があります。保存せずに移動すると変更が失われます。\n\n変更を破棄して移動しますか？"
-                )
-              ) {
-                discardAndGoBack();
-                window.location.href = button.href;
-              }
-            }
-          } else {
-            // 変更がない場合は通常通り遷移
-            console.log("[PROMPT] 変更なしで遷移します");
-          }
-        } else {
-          // 編集画面でない場合は通常通り遷移
-          console.log("[PROMPT] 編集画面でないため通常遷移します");
-        }
-      });
-    }
-  });
+  // ヘッダーボタンのクリック時の変更検知は common.js で統一して処理されるため、
+  // ここでは重複するイベントリスナーの追加は行わない
 });
 
 /* ══════════════════════════════════════════════════════
@@ -351,6 +281,9 @@ async function renderList() {
   }
 
   prompts = await load(PROMPT_KEY);
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
 
   // 既存のアーカイブデータから空のアイテムをクリーンアップ
   const hasEmptyItems = prompts.some((p) => p.archived && isEmptyPrompt(p));

@@ -684,12 +684,15 @@ document.addEventListener("DOMContentLoaded", function () {
             hasFormHeader: !!hasFormHeader,
             hasTitleInput: !!hasTitleInput,
             hasFieldWrap: !!hasFieldWrap,
+            checkForUnsavedChanges:
+              typeof window.checkForUnsavedChanges === "function",
+            windowPrompts: !!window.prompts,
+            windowPromptsLength: window.prompts ? window.prompts.length : 0,
           });
 
-          // 編集画面の判定条件を厳密にする
+          // 編集画面の判定条件を緩和する
           if (
             isEditMode &&
-            hasFormHeader &&
             hasTitleInput &&
             hasFieldWrap &&
             typeof window.checkForUnsavedChanges === "function"
@@ -702,83 +705,161 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("[DEBUG] promptIndex:", promptIndex);
             console.log("[DEBUG] window.prompts:", window.prompts);
 
-            // プロンプトデータが存在し、編集画面で有効なインデックスがある場合
+            // 新規作成または既存編集の判定
+            let originalObj = null;
+            let isNew = true;
+
             if (
               promptIndex >= 0 &&
               window.prompts &&
               window.prompts[promptIndex]
             ) {
-              // 新規作成かどうかを判定（フォームヘッダーのテキストで判断）
-              const formHeaderText = hasFormHeader.textContent || "";
-              const isNew =
-                formHeaderText.includes("新規") ||
-                promptIndex === window.prompts.length - 1;
+              // 既存編集の場合
+              originalObj = window.prompts[promptIndex];
+              isNew = false;
+              console.log("[DEBUG] 既存編集モード:", originalObj);
+            } else {
+              // 新規作成の場合
+              console.log("[DEBUG] 新規作成モード");
+            }
 
-              const hasChanges = window.checkForUnsavedChanges(
-                window.prompts[promptIndex],
-                isNew
-              );
+            const hasChanges = window.checkForUnsavedChanges(
+              originalObj,
+              isNew
+            );
 
-              console.log("[DEBUG] hasChanges:", hasChanges);
+            console.log("[DEBUG] hasChanges:", hasChanges);
 
-              if (hasChanges) {
-                e.preventDefault(); // ページ遷移を一時停止
-                console.log("[DEBUG] 保存確認ダイアログを表示します");
+            if (hasChanges) {
+              e.preventDefault(); // ページ遷移を一時停止
+              console.log("[DEBUG] 保存確認ダイアログを表示します");
 
-                // 保存確認ダイアログを表示
-                if (
-                  typeof window.AppUtils?.showSaveConfirmDialog === "function"
-                ) {
-                  window.AppUtils.showSaveConfirmDialog({
-                    title: "変更を保存しますか？",
-                    message:
-                      "プロンプト内容に変更があります。<br>保存せずに移動すると変更が失われます。",
-                    onSave: async () => {
-                      // 保存してからページ遷移
-                      const obj = window.prompts[promptIndex];
+              // 保存確認ダイアログを表示
+              if (
+                typeof window.AppUtils?.showSaveConfirmDialog === "function"
+              ) {
+                window.AppUtils.showSaveConfirmDialog({
+                  title: "変更を保存しますか？",
+                  message:
+                    "プロンプト内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+                  onSave: async () => {
+                    try {
+                      console.log("[NAV] 保存処理を開始します");
+
+                      // プロンプト配列の初期化確認
+                      if (!window.prompts) {
+                        window.prompts = [];
+                      }
+
                       const titleInput = document.querySelector(".title-input");
                       const wrap = document.querySelector("#field-wrap");
 
                       if (titleInput && wrap) {
-                        obj.title = titleInput.value.trim() || "(無題)";
+                        let obj;
+
+                        if (isNew) {
+                          // 新規作成の場合は新しいオブジェクトを作成
+                          obj = {
+                            id: Date.now(),
+                            title: titleInput.value.trim() || "(無題)",
+                            fields: [],
+                            archived: false,
+                          };
+                          window.prompts.push(obj);
+                          console.log("[NAV] 新規プロンプトを作成:", obj);
+                        } else {
+                          // 既存編集の場合
+                          obj = window.prompts[promptIndex];
+                          if (!obj) {
+                            console.error(
+                              "[NAV] 既存プロンプトが見つかりません"
+                            );
+                            window.location.href = this.href;
+                            return;
+                          }
+                          obj.title = titleInput.value.trim() || "(無題)";
+                          console.log("[NAV] 既存プロンプトを更新:", obj);
+                        }
+
+                        // フィールドデータを更新
                         obj.fields = [...wrap.children].map((w) => ({
-                          text: w.querySelector(".prompt-field-textarea").value,
-                          on: w.querySelector(".field-toggle").checked,
+                          text:
+                            w.querySelector(".prompt-field-textarea")?.value ||
+                            "",
+                          on:
+                            w.querySelector(".field-toggle")?.checked || false,
                         }));
 
                         // 保存してからページ遷移
-                        if (
+                        if (typeof window.save === "function") {
+                          await window.save("prompts", window.prompts);
+                          console.log("[NAV] window.saveで保存成功");
+                        } else if (
                           typeof window.AppUtils?.saveStorage === "function"
                         ) {
                           await window.AppUtils.saveStorage(
                             "prompts",
                             window.prompts
                           );
-                        } else if (typeof window.save === "function") {
-                          await window.save("prompts", window.prompts);
+                          console.log("[NAV] AppUtils.saveStorageで保存成功");
+                        } else {
+                          // Fallback保存
+                          chrome.storage.local.set(
+                            { prompts: window.prompts },
+                            () => {
+                              if (chrome.runtime.lastError) {
+                                console.error(
+                                  "[NAV] Fallback保存に失敗:",
+                                  chrome.runtime.lastError
+                                );
+                              } else {
+                                console.log("[NAV] Fallback保存成功");
+                              }
+                            }
+                          );
                         }
 
                         console.log("[NAV] 変更を保存してページ遷移しました");
-                        // フォームヘッダーを削除
-                        document.querySelector(".form-header")?.remove();
-                        // ページ遷移を実行
-                        window.location.href = this.href;
                       } else {
-                        // ページ遷移を実行
-                        window.location.href = this.href;
+                        console.error("[NAV] 必要な要素が見つかりません");
                       }
-                    },
-                    onDiscard: () => {
-                      // 破棄してページ遷移
-                      console.log("[NAV] 変更を破棄してページ遷移しました");
+
                       // フォームヘッダーを削除
                       document.querySelector(".form-header")?.remove();
                       // ページ遷移を実行
                       window.location.href = this.href;
-                    },
-                  });
-                  return; // ここで処理を終了
+                    } catch (error) {
+                      console.error("[NAV] 保存中にエラーが発生:", error);
+                      // エラーが発生してもページ遷移は実行
+                      document.querySelector(".form-header")?.remove();
+                      window.location.href = this.href;
+                    }
+                  },
+                  onDiscard: () => {
+                    // 破棄してページ遷移
+                    console.log("[NAV] 変更を破棄してページ遷移しました");
+                    // フォームヘッダーを削除
+                    document.querySelector(".form-header")?.remove();
+                    // ページ遷移を実行
+                    window.location.href = this.href;
+                  },
+                });
+                return; // ここで処理を終了
+              } else {
+                // AppUtilsが利用できない場合のFallback処理
+                const confirmResult = confirm(
+                  "プロンプト内容に変更があります。保存せずに移動しますか？"
+                );
+                if (confirmResult) {
+                  console.log("[NAV] Fallback: 変更を破棄してページ遷移");
+                  document.querySelector(".form-header")?.remove();
+                  window.location.href = this.href;
+                } else {
+                  console.log(
+                    "[NAV] Fallback: ユーザーがページ遷移をキャンセル"
+                  );
                 }
+                return;
               }
             }
           }
