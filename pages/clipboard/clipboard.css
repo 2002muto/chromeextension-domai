@@ -54,17 +54,17 @@
 .clipboard-item {
   cursor: move;
   display: grid;
-  grid-template-columns: 1fr auto auto; /* textarea, copyボタン, archiveアイコン */
-  align-items: center; /* 垂直方向中央揃え */
+  grid-template-columns: auto 1fr auto; /* copyボタン, textarea, archiveアイコン */
+  align-items: center; /* 垂直方向中央揃え（テキストエリアが長くなってもボタンは中央） */
   gap: 12px;
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
-  padding: 10px; /* パディングを増やしてスペースを確保 */
+  padding: 10px;
   border-radius: 6px;
-  min-height: 64px; /* 最小の高さを増やす */
-  line-height: 1.2; /* MEMOページと統一 */
-  overflow: visible; /* 子要素の拡張を許可 */
-  transition: all 0.3s ease; /* スムーズなレイアウト変更 */
-  position: relative; /* 子要素の絶対配置に対応 */
+  min-height: 64px;
+  line-height: 1.2;
+  overflow: visible;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 /* ホバー効果（MEMOページと統一） */
@@ -93,7 +93,7 @@
 
 /* 拡張状態のclipboard-item */
 .clipboard-item.expanded {
-  /* グリッドレイアウトのまま、必要に応じて調整可能 */
+  /* gridレイアウトで自動調整される */
 }
 
 /* copyボタンのホバー時の視覚的フィードバック */
@@ -154,14 +154,14 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  transition: transform 0.2s ease; /* transformのみトランジション */
+  transition: transform 0.2s ease;
   place-self: center; /* グリッド内で中央配置 */
-  border-radius: 4px; /* copyボタンと同じ角丸 */
+  border-radius: 4px;
 }
 
 .clipboard-item .actions:hover {
-  transform: scale(1.1); /* ホバーエフェクト */
-  background: rgba(255, 255, 255, 0.1); /* copyボタンと同じホバー背景 */
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ドラッグオーバー時のハイライト */
@@ -173,23 +173,23 @@
 .clipboard-textarea {
   width: 100%; /* グリッドセル内で最大幅 */
   min-width: 0; /* 親幅内で縮む */
-  box-sizing: border-box; /* padding を含めて高さ幅計算 */
+  box-sizing: border-box;
 
-  min-height: 48px; /* 最小高さを48pxに設定 */
-  padding: 12px 16px; /* パディング調整 */
-  line-height: 24px; /* 行の高さを24pxに固定 */
-  white-space: pre-wrap; /* 改行を許可 */
-  overflow-x: hidden; /* 横スクロール禁止 */
+  min-height: 48px;
+  padding: 12px 16px;
+  line-height: 24px;
+  white-space: pre-wrap;
+  overflow-x: hidden;
   overflow-y: hidden; /* 初期状態では縦スクロールを非表示（JSで制御） */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
-  resize: none; /* リサイズ無効 */
+  resize: none;
   background: #3a3f4a;
   color: #e2e8f0;
   border: none;
   border-radius: 4px;
-  font-size: 0.9rem; /* フォントサイズ統一 */
-  transition: height 0.2s ease; /* 高さ変更のみスムーズに */
+  font-size: 0.9rem;
+  transition: height 0.2s ease;
   place-self: center stretch; /* 垂直方向中央、水平方向引き伸ばし */
 }
 
@@ -516,4 +516,103 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* ─── レスポンシブデザイン：大画面でのユーザビリティ向上 ─── */
+
+/* 大画面でのレイアウト最適化 */
+@media (min-width: 1200px) {
+  .clipboard-textarea {
+    font-size: 1rem; /* 大画面では少し文字を大きく */
+    padding: 16px 20px; /* パディングを増やして余裕を持たせる */
+  }
+
+  .clipboard-copy {
+    width: 40px; /* ボタンを少し大きく */
+    height: 40px;
+  }
+
+  .clipboard-item .actions {
+    width: 40px; /* アーカイブアイコンも少し大きく */
+    height: 40px;
+  }
+}
+
+/* 中程度の画面サイズでの調整 */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .clipboard-textarea {
+    font-size: 0.95rem;
+    padding: 14px 18px;
+  }
+}
+
+/* 小画面での調整 */
+@media (max-width: 767px) {
+  .clipboard-item {
+    gap: 8px; /* 間隔を少し狭く */
+    padding: 8px;
+  }
+
+  .clipboard-textarea {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+
+  .clipboard-copy {
+    width: 32px; /* ボタンを小さく */
+    height: 32px;
+  }
+
+  .clipboard-item .actions {
+    width: 32px; /* アーカイブアイコンも小さく */
+    height: 32px;
+  }
+}
+
+/* ─── アクセシビリティ向上 ─── */
+
+/* フォーカス時のアウトライン（キーボードナビゲーション対応） */
+.clipboard-textarea:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.clipboard-copy:focus,
+.clipboard-item .actions:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .clipboard-item {
+    border: 1px solid #ffffff;
+  }
+
+  .clipboard-textarea {
+    border: 1px solid #ffffff;
+  }
+
+  .clipboard-copy {
+    border: 2px solid #ffffff;
+  }
+}
+
+/* 動きを減らす設定に対応 */
+@media (prefers-reduced-motion: reduce) {
+  .clipboard-item,
+  .clipboard-copy,
+  .clipboard-item .actions,
+  .clipboard-textarea {
+    transition: none;
+  }
+
+  .clipboard-item:hover {
+    transform: none;
+  }
+
+  .clipboard-copy:hover,
+  .clipboard-item .actions:hover {
+    transform: none;
+  }
 }

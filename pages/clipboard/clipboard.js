@@ -208,7 +208,7 @@ async function renderClipboardView() {
       });
     });
 
-    // 挿入ボタン（Arrow-left-square-fill）
+    // 挿入ボタン（Arrow-left-square-fill）- 左側
     const copy = document.createElement("button");
     copy.className = "clipboard-copy";
     copy.innerHTML = '<i class="bi bi-arrow-left-square-fill"></i>';
@@ -234,9 +234,7 @@ async function renderClipboardView() {
       });
     });
 
-    li.appendChild(copy);
-
-    // auto-resize textarea（MEMOページと同様の包括的な自動リサイズ）
+    // auto-resize textarea（MEMOページと同様の包括的な自動リサイズ）- 真ん中
     const ta = document.createElement("textarea");
     ta.className = "clipboard-textarea";
     ta.rows = 1;
@@ -313,7 +311,14 @@ async function renderClipboardView() {
     // ドラッグ&ドロップ対応
     ta.addEventListener("drop", () => setTimeout(handleTextChange, 10));
 
-    li.appendChild(ta);
+    // 初期化時の高さ設定（少し遅延させて確実に実行）
+    setTimeout(() => {
+      autoResize();
+    }, 50);
+
+    // 正しい順序で要素を追加：左→真ん中→右
+    li.appendChild(copy); // 左：コピーボタン
+    li.appendChild(ta); // 真ん中：テキストエリア
 
     // アーカイブアイコン（MEMOページと同様のスタイル）
     const arch = document.createElement("i");
