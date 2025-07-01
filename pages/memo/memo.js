@@ -206,11 +206,11 @@ async function renderListView() {
       <div class="memo-empty-state">
         <div class="memo-empty-state-content">
           <div class="memo-empty-state-icon">
-            <i class="bi bi-archive"></i>
+            <i class="bi bi-clipboard2-minus"></i>
           </div>
-          <h3 class="memo-empty-state-title">すべてアーカイブされています。</h3>
+          <h3 class="memo-empty-state-title">メモがありません</h3>
           <p class="memo-empty-state-message">
-            新しいメモを作成するか、<br>アーカイブから復元してください。
+            最初のメモを作成してみましょう。
           </p>
           <div class="memo-empty-state-action">
             <button class="btn-add-first-memo">
@@ -291,6 +291,74 @@ async function renderListView() {
       arch.title = "アーカイブへ移動";
       arch.addEventListener("click", async (e) => {
         e.stopPropagation();
+
+        // 空のメモまたは無題メモの判定
+        const isEmptyMemo =
+          (!m.title || m.title.trim() === "") &&
+          (!m.content || m.content.trim() === "");
+        const isUntitledMemo =
+          (!m.title || m.title.trim() === "" || m.title.trim() === "無題") &&
+          (!m.content || m.content.trim() === "");
+
+        if (isEmptyMemo || isUntitledMemo) {
+          console.log(
+            "[MEMO] 空のメモまたは無題メモを一覧から削除（アーカイブには保存しない）:",
+            m.id
+          );
+
+          // アニメーション付きで削除（アーカイブには保存しない）
+          if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+            await window.AppUtils.animateArchiveItem(li, async () => {
+              // メモを完全に削除（アーカイブではない）
+              const memoIndex = memos.findIndex((memo) => memo.id === m.id);
+              if (memoIndex !== -1) {
+                memos.splice(memoIndex, 1);
+                await saveStorage(MEMO_KEY, memos);
+                // グローバルに最新のmemosを設定
+                window.memos = memos;
+
+                // 削除後、アクティブなメモが空になった場合は即座に画面を更新
+                const activeMemos = memos.filter((m) => !m.archived);
+                if (activeMemos.length === 0) {
+                  renderListView();
+                }
+              }
+            });
+          } else {
+            // AppUtilsが利用できない場合の代替処理
+            console.log(
+              "[MEMO] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
+            );
+
+            // シンプルなアニメーション
+            li.style.transition = "all 0.5s ease-in-out";
+            li.style.transform = "translateY(-20px) scale(0.95)";
+            li.style.opacity = "0";
+
+            await new Promise((resolve) => {
+              setTimeout(async () => {
+                // メモを完全に削除（アーカイブではない）
+                const memoIndex = memos.findIndex((memo) => memo.id === m.id);
+                if (memoIndex !== -1) {
+                  memos.splice(memoIndex, 1);
+                  await saveStorage(MEMO_KEY, memos);
+                  // グローバルに最新のmemosを設定
+                  window.memos = memos;
+
+                  // 削除後、アクティブなメモが空になった場合は即座に画面を更新
+                  const activeMemos = memos.filter((m) => !m.archived);
+                  if (activeMemos.length === 0) {
+                    renderListView();
+                  }
+                }
+
+                console.log("[MEMO] 代替削除アニメーション完了");
+                resolve();
+              }, 500);
+            });
+          }
+          return;
+        }
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
@@ -830,10 +898,12 @@ async function renderInputForm(id) {
           "メモ内容に変更があります。<br>保存せずに戻ると変更が失われます。",
         onSave: async () => {
           // 保存して戻る
-          const title =
-            content.querySelector(".title-input").value.trim() || "無題";
+          const titleInput = content.querySelector(".title-input").value.trim();
           const body = content.querySelector(".text-input").value.trim();
           const starred = starIcon.dataset.starred === "true";
+
+          // タイトルが空で内容もない場合のみ「無題」とする
+          const title = titleInput || (body ? titleInput : "無題");
 
           if (id !== undefined) {
             // update existing
@@ -872,9 +942,12 @@ async function renderInputForm(id) {
 
   // save handler
   document.querySelector(".save-btn").addEventListener("click", async () => {
-    const title = content.querySelector(".title-input").value.trim() || "無題";
+    const titleInput = content.querySelector(".title-input").value.trim();
     const body = content.querySelector(".text-input").value.trim();
     const starred = starIcon.dataset.starred === "true";
+
+    // タイトルが空で内容もない場合のみ「無題」とする
+    const title = titleInput || (body ? titleInput : "無題");
 
     if (id !== undefined) {
       // update existing
@@ -977,8 +1050,24 @@ async function renderArchiveList() {
   /* 1) ストレージ読み込み */
   const key = archiveType === "memo" ? MEMO_KEY : CLIP_ARCH_KEY;
   const rawItems = await loadStorage(key);
+
+  // 既存のアーカイブデータから空のアイテムをクリーンアップ
+  if (archiveType === "memo") {
+    const hasEmptyItems = rawItems.some((m) => m.archived && isEmptyMemo(m));
+    if (hasEmptyItems) {
+      console.log("[ARCH] 空のアーカイブメモをクリーンアップ中...");
+      const cleanedItems = rawItems.filter(
+        (m) => !(m.archived && isEmptyMemo(m))
+      );
+      await saveStorage(MEMO_KEY, cleanedItems);
+      console.log("[ARCH] 空のアーカイブメモのクリーンアップ完了");
+    }
+  }
+
   const listData =
-    archiveType === "memo" ? rawItems.filter((m) => m.archived) : rawItems;
+    archiveType === "memo"
+      ? rawItems.filter((m) => m.archived && !isEmptyMemo(m))
+      : rawItems;
 
   console.log("[ARCH] アーカイブデータ:", {
     key: key,
@@ -1007,11 +1096,11 @@ async function renderArchiveList() {
       <div class="memo-empty-state">
         <div class="memo-empty-state-content">
           <div class="memo-empty-state-icon">
-            <i class="bi bi-archive"></i>
+            <i class="bi bi-clipboard2-minus"></i>
           </div>
-          <h3 class="memo-empty-state-title">アーカイブは空です</h3>
+          <h3 class="memo-empty-state-title">アーカイブされた<br>メモはありません</h3>
           <p class="memo-empty-state-message">
-            アーカイブされたメモはありません。
+            メモをアーカイブすると、<br>ここに表示されます。
           </p>
         </div>
       </div>
@@ -1420,6 +1509,14 @@ function checkForUnsavedMemoChanges(originalMemo, isNew) {
     currentTitle !== (originalMemo.title || "") ||
     currentContent !== (originalMemo.content || "") ||
     currentStarred !== (originalMemo.starred || false)
+  );
+}
+
+/*━━━━━━━━━━ 空のメモ判定機能 ━━━━━━━━━━*/
+function isEmptyMemo(memo) {
+  return (
+    (!memo.title || memo.title.trim() === "") &&
+    (!memo.content || memo.content.trim() === "")
   );
 }
 

@@ -352,6 +352,18 @@ async function renderList() {
 
   prompts = await load(PROMPT_KEY);
 
+  // 既存のアーカイブデータから空のアイテムをクリーンアップ
+  const hasEmptyItems = prompts.some((p) => p.archived && isEmptyPrompt(p));
+  if (hasEmptyItems) {
+    console.log("[ARCH] 空のアーカイブプロンプトをクリーンアップ中...");
+    const cleanedPrompts = prompts.filter(
+      (p) => !(p.archived && isEmptyPrompt(p))
+    );
+    await save(PROMPT_KEY, cleanedPrompts);
+    prompts = cleanedPrompts;
+    console.log("[ARCH] 空のアーカイブプロンプトのクリーンアップ完了");
+  }
+
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
@@ -444,7 +456,7 @@ async function renderList() {
       <div class="prompt-empty-state">
         <div class="prompt-empty-state-content">
           <div class="prompt-empty-state-icon">
-            <i class="bi bi-terminal-x"></i>
+            <i class="bi bi-terminal"></i>
           </div>
           <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
           <p class="prompt-empty-state-message">
@@ -489,17 +501,11 @@ async function renderList() {
         <div class="prompt-empty-state">
           <div class="prompt-empty-state-content">
             <div class="prompt-empty-state-icon">
-              <i class="bi bi-archive"></i>
+              <i class="bi bi-terminal"></i>
             </div>
-            <h3 class="prompt-empty-state-title">
-              ${
-                hasArchived
-                  ? "すべてアーカイブされています"
-                  : "新しいプロンプトを作成"
-              }
-            </h3>
+            <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
             <p class="prompt-empty-state-message">
-              新しいプロンプトを作成するか、<br>アーカイブから復元してください。
+              最初のプロンプトを作成してみましょう。
             </p>
             <div class="prompt-empty-state-action">
               <button class="btn-add-first-prompt">
@@ -593,6 +599,80 @@ async function renderList() {
       archiveIcon.title = "アーカイブへ移動";
       archiveIcon.addEventListener("click", async (e) => {
         e.stopPropagation();
+
+        // 空のプロンプトまたは無題プロンプトの判定
+        const isEmptyPrompt =
+          (!p.title || p.title.trim() === "") &&
+          (!p.fields ||
+            p.fields.length === 0 ||
+            p.fields.every((field) => !field.text || field.text.trim() === ""));
+        const isUntitledPrompt =
+          (!p.title || p.title.trim() === "" || p.title.trim() === "(無題)") &&
+          (!p.fields ||
+            p.fields.length === 0 ||
+            p.fields.every((field) => !field.text || field.text.trim() === ""));
+
+        if (isEmptyPrompt || isUntitledPrompt) {
+          console.log(
+            "[PROMPT] 空のプロンプトまたは無題プロンプトを一覧から削除（アーカイブには保存しない）:",
+            p.id
+          );
+
+          // アニメーション付きで削除（アーカイブには保存しない）
+          if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+            await window.AppUtils.animateArchiveItem(li, async () => {
+              // プロンプトを完全に削除（アーカイブではない）
+              const promptIndex = prompts.findIndex(
+                (prompt) => prompt.id === p.id
+              );
+              if (promptIndex !== -1) {
+                prompts.splice(promptIndex, 1);
+                await save(PROMPT_KEY, prompts);
+                window.prompts = prompts;
+
+                // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
+                const activePrompts = prompts.filter((p) => !p.archived);
+                if (activePrompts.length === 0) {
+                  renderList();
+                }
+              }
+            });
+          } else {
+            // AppUtilsが利用できない場合の代替処理
+            console.log(
+              "[PROMPT] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
+            );
+
+            // シンプルなアニメーション
+            li.style.transition = "all 0.5s ease-in-out";
+            li.style.transform = "translateY(-20px) scale(0.95)";
+            li.style.opacity = "0";
+
+            await new Promise((resolve) => {
+              setTimeout(async () => {
+                // プロンプトを完全に削除（アーカイブではない）
+                const promptIndex = prompts.findIndex(
+                  (prompt) => prompt.id === p.id
+                );
+                if (promptIndex !== -1) {
+                  prompts.splice(promptIndex, 1);
+                  await save(PROMPT_KEY, prompts);
+                  window.prompts = prompts;
+
+                  // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
+                  const activePrompts = prompts.filter((p) => !p.archived);
+                  if (activePrompts.length === 0) {
+                    renderList();
+                  }
+                }
+
+                console.log("[PROMPT] 代替削除アニメーション完了");
+                resolve();
+              }, 500);
+            });
+          }
+          return;
+        }
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
@@ -704,11 +784,11 @@ async function renderArchiveView() {
       <div class="prompt-empty-state">
         <div class="prompt-empty-state-content">
           <div class="prompt-empty-state-icon">
-            <i class="bi bi-archive-x"></i>
+            <i class="bi bi-terminal"></i>
           </div>
-          <h3 class="prompt-empty-state-title">アーカイブは空です</h3>
+          <h3 class="prompt-empty-state-title">アーカイブされた<br>プロンプトはありません</h3>
           <p class="prompt-empty-state-message">
-            アーカイブされたプロンプトはありません。
+            プロンプトをアーカイブすると、<br>ここに表示されます。
           </p>
         </div>
       </div>`;
@@ -1501,11 +1581,11 @@ function renderRun(idx) {
       <div class="prompt-empty-state">
         <div class="prompt-empty-state-content">
           <div class="prompt-empty-state-icon">
-            <i class="bi bi-terminal-x"></i>
+            <i class="bi bi-terminal"></i>
           </div>
           <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
           <p class="prompt-empty-state-message">
-            プロンプトを追加してください。
+            最初のプロンプトを作成してみましょう。
           </p>
           <div class="prompt-empty-state-action">
             <button class="btn-add-first-prompt">
@@ -1972,6 +2052,16 @@ function checkForUnsavedChanges(originalObj, isNew) {
   }
 
   return false;
+}
+
+/*━━━━━━━━━━ 空のプロンプト判定機能 ━━━━━━━━━━*/
+function isEmptyPrompt(prompt) {
+  return (
+    (!prompt.title || prompt.title.trim() === "") &&
+    (!prompt.fields ||
+      prompt.fields.length === 0 ||
+      prompt.fields.every((field) => !field.text || field.text.trim() === ""))
+  );
 }
 
 // 削除：showSaveConfirmDialog関数はutils.jsのshowSaveConfirmDialogを使用
