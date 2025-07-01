@@ -586,10 +586,69 @@ async function renderList() {
       runBtn.className = "prompt-action";
       runBtn.textContent = "一括入力";
       runBtn.title = "プロンプトを一括入力";
-      runBtn.addEventListener("click", (e) => {
+      // デバウンス用のlocked変数
+      let locked = false;
+
+      runBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
+        if (locked) return;
+        locked = true;
+
         console.log(`一括入力ボタンクリック: ${p.title}`);
-        renderRun(originalIndex);
+
+        // 実行画面と同じ一括入力処理を実行
+        try {
+          // 有効なフィールドのみを抽出
+          const validFields = p.fields
+            .map((field, index) => ({
+              ...field,
+              index,
+            }))
+            .filter((field) => field.on && field.text.trim());
+
+          if (validFields.length === 0) {
+            console.warn(
+              "[一覧一括入力] 有効なプロンプトフィールドがありません"
+            );
+            return;
+          }
+
+          // 一括入力用のペイロードを作成
+          const payload = validFields
+            .map((field) => field.text.trim())
+            .join("\n\n");
+
+          // 実行画面と同じsendToFocused関数を使用
+          sendToFocused(payload);
+
+          console.log(
+            `[一覧一括入力] 成功: ${p.title} (${validFields.length}個のフィールド)`
+          );
+
+          // 成功時の視覚的フィードバック
+          const originalText = runBtn.textContent;
+          runBtn.textContent = "送信完了";
+          runBtn.style.filter = "brightness(1.2)";
+
+          setTimeout(() => {
+            runBtn.textContent = originalText;
+            runBtn.style.filter = "";
+            locked = false; // ロック解除
+          }, 120); // 実行画面と同じ120ms
+        } catch (error) {
+          console.error("[一覧一括入力] エラー:", error);
+
+          // エラー時の視覚的フィードバック
+          const originalText = runBtn.textContent;
+          runBtn.textContent = "エラー";
+          runBtn.style.filter = "brightness(0.8)";
+
+          setTimeout(() => {
+            runBtn.textContent = originalText;
+            runBtn.style.filter = "";
+            locked = false; // ロック解除
+          }, 120); // 実行画面と同じ120ms
+        }
       });
       li.appendChild(runBtn);
 
