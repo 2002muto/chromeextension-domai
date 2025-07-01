@@ -132,7 +132,7 @@ async function renderClipboardView() {
   if (addClipBtn) {
     addClipBtn.addEventListener("click", async () => {
       console.log("クリップを追加ボタンがクリックされました");
-      clips.push("");
+      clips.unshift(""); // 配列の先頭に追加（一番上に表示）
       await saveStorage(CLIP_KEY, clips);
       renderClipboardView();
     });
@@ -168,7 +168,7 @@ async function renderClipboardView() {
     if (firstClipBtn) {
       firstClipBtn.addEventListener("click", async () => {
         console.log("最初のクリップボードを作成ボタンがクリックされました");
-        clips.push("");
+        clips.unshift(""); // 配列の先頭に追加（一番上に表示）
         await saveStorage(CLIP_KEY, clips);
         renderClipboardView();
       });
