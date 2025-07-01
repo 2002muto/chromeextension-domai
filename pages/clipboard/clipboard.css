@@ -175,14 +175,12 @@
   min-width: 0; /* 親幅内で縮む */
   box-sizing: border-box; /* padding を含めて高さ幅計算 */
 
-  min-height: 48px; /* Increase the minimum height to 48px */
-  padding: 12px 16px; /* Adjust padding for more space */
-  line-height: 24px; /* 行の高さを増加 */
+  min-height: 48px; /* 最小高さを48pxに設定 */
+  padding: 12px 16px; /* パディング調整 */
+  line-height: 24px; /* 行の高さを24pxに固定 */
   white-space: pre-wrap; /* 改行を許可 */
-  overflow: hidden; /* スクロールバーを非表示 */
-
   overflow-x: hidden; /* 横スクロール禁止 */
-  overflow-y: auto; /* 縦スクロールを許可 */
+  overflow-y: hidden; /* 初期状態では縦スクロールを非表示（JSで制御） */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
   resize: none; /* リサイズ無効 */
@@ -191,8 +189,13 @@
   border: none;
   border-radius: 4px;
   font-size: 0.9rem; /* フォントサイズ統一 */
-  transition: all 0.2s ease; /* スムーズなサイズ変更 */
+  transition: height 0.2s ease; /* 高さ変更のみスムーズに */
   place-self: center stretch; /* 垂直方向中央、水平方向引き伸ばし */
+}
+
+/* スクロールが必要な場合のスタイル */
+.clipboard-textarea.scrollable {
+  overflow-y: auto !important;
 }
 
 /* プレースホルダーテキストのスタイル */
@@ -267,7 +270,7 @@
 
 .clipboard-empty-state-message {
   color: #e2e8f0;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   line-height: 1.4;
   margin-bottom: 24px;
   opacity: 0.8;
@@ -297,5 +300,220 @@
 .btn-add-first-clip:hover {
   filter: brightness(1.1);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(4, 233, 73, 0.3);
+  box-shadow: 0 6px 16px rgba(7, 138, 185, 0.3);
+}
+
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功トースト通知 ━━━━━━━━━━*/
+.drag-drop-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #00a31e, #008f1a);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10000;
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.drag-drop-toast i {
+  font-size: 1.1rem;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.drag-drop-toast.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* トースト通知のアニメーション */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.drag-drop-toast {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/*━━━━━━━━━━ アーカイブ画面のスタイル ━━━━━━━━━━*/
+.archive-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.archive-title {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.select-all-label {
+  color: #ffffff;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.select-all-label input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 16px;
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+}
+
+.archive-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.archive-list::-webkit-scrollbar-track {
+  background: rgba(45, 45, 45, 0.5);
+  border-radius: 4px;
+}
+
+.archive-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.archive-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.archive-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #4a4d58, #363940);
+  min-height: 48px;
+  gap: 12px;
+}
+
+.archive-item .arch-check {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.archive-item .arch-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.archive-item .arch-title {
+  color: #e2e8f0;
+  font-size: 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+  font-weight: 500;
+}
+
+.archive-item .clipboard-preview {
+  color: #a0aec0;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.archive-item .restore-btn {
+  background: #00a31e;
+  color: #ffffff;
+  border: none;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 28px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archive-item .restore-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
+}
+
+.archive-item .restore-btn:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
+.archive-item .restore-btn:disabled:hover {
+  filter: none;
+  transform: none;
+}
+
+/* 復元アニメーション用スタイル */
+.archive-item.restoring {
+  transition: all 0.5s ease-in-out;
+  transform: translateY(-50px) scale(0.9);
+  opacity: 0;
+  filter: blur(2px);
+}
+
+/* 復元ボタンのアクティブ状態 */
+.archive-item .restore-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* アーカイブモード時のコンテンツスタイル */
+.memo-content.archive {
+  background: #2d2d2d;
+  border-radius: 12px;
+  margin: 32px 16px 16px 16px;
+  padding: 0;
+  height: calc(100vh - 153px) !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }

@@ -352,6 +352,18 @@ async function renderList() {
 
   prompts = await load(PROMPT_KEY);
 
+  // 既存のアーカイブデータから空のアイテムをクリーンアップ
+  const hasEmptyItems = prompts.some((p) => p.archived && isEmptyPrompt(p));
+  if (hasEmptyItems) {
+    console.log("[ARCH] 空のアーカイブプロンプトをクリーンアップ中...");
+    const cleanedPrompts = prompts.filter(
+      (p) => !(p.archived && isEmptyPrompt(p))
+    );
+    await save(PROMPT_KEY, cleanedPrompts);
+    prompts = cleanedPrompts;
+    console.log("[ARCH] 空のアーカイブプロンプトのクリーンアップ完了");
+  }
+
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
@@ -444,7 +456,7 @@ async function renderList() {
       <div class="prompt-empty-state">
         <div class="prompt-empty-state-content">
           <div class="prompt-empty-state-icon">
-            <i class="bi bi-terminal-x"></i>
+            <i class="bi bi-terminal"></i>
           </div>
           <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
           <p class="prompt-empty-state-message">
@@ -489,17 +501,11 @@ async function renderList() {
         <div class="prompt-empty-state">
           <div class="prompt-empty-state-content">
             <div class="prompt-empty-state-icon">
-              <i class="bi bi-archive"></i>
+              <i class="bi bi-terminal"></i>
             </div>
-            <h3 class="prompt-empty-state-title">
-              ${
-                hasArchived
-                  ? "すべてアーカイブされています"
-                  : "新しいプロンプトを作成"
-              }
-            </h3>
+            <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
             <p class="prompt-empty-state-message">
-              新しいプロンプトを作成するか、<br>アーカイブから復元してください。
+              最初のプロンプトを作成してみましょう。
             </p>
             <div class="prompt-empty-state-action">
               <button class="btn-add-first-prompt">
@@ -580,10 +586,69 @@ async function renderList() {
       runBtn.className = "prompt-action";
       runBtn.textContent = "一括入力";
       runBtn.title = "プロンプトを一括入力";
-      runBtn.addEventListener("click", (e) => {
+      // デバウンス用のlocked変数
+      let locked = false;
+
+      runBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
+        if (locked) return;
+        locked = true;
+
         console.log(`一括入力ボタンクリック: ${p.title}`);
-        renderRun(originalIndex);
+
+        // 実行画面と同じ一括入力処理を実行
+        try {
+          // 有効なフィールドのみを抽出
+          const validFields = p.fields
+            .map((field, index) => ({
+              ...field,
+              index,
+            }))
+            .filter((field) => field.on && field.text.trim());
+
+          if (validFields.length === 0) {
+            console.warn(
+              "[一覧一括入力] 有効なプロンプトフィールドがありません"
+            );
+            return;
+          }
+
+          // 一括入力用のペイロードを作成
+          const payload = validFields
+            .map((field) => field.text.trim())
+            .join("\n\n");
+
+          // 実行画面と同じsendToFocused関数を使用
+          sendToFocused(payload);
+
+          console.log(
+            `[一覧一括入力] 成功: ${p.title} (${validFields.length}個のフィールド)`
+          );
+
+          // 成功時の視覚的フィードバック
+          const originalText = runBtn.textContent;
+          runBtn.textContent = "送信完了";
+          runBtn.style.filter = "brightness(1.2)";
+
+          setTimeout(() => {
+            runBtn.textContent = originalText;
+            runBtn.style.filter = "";
+            locked = false; // ロック解除
+          }, 120); // 実行画面と同じ120ms
+        } catch (error) {
+          console.error("[一覧一括入力] エラー:", error);
+
+          // エラー時の視覚的フィードバック
+          const originalText = runBtn.textContent;
+          runBtn.textContent = "エラー";
+          runBtn.style.filter = "brightness(0.8)";
+
+          setTimeout(() => {
+            runBtn.textContent = originalText;
+            runBtn.style.filter = "";
+            locked = false; // ロック解除
+          }, 120); // 実行画面と同じ120ms
+        }
       });
       li.appendChild(runBtn);
 
@@ -593,6 +658,80 @@ async function renderList() {
       archiveIcon.title = "アーカイブへ移動";
       archiveIcon.addEventListener("click", async (e) => {
         e.stopPropagation();
+
+        // 空のプロンプトまたは無題プロンプトの判定
+        const isEmptyPrompt =
+          (!p.title || p.title.trim() === "") &&
+          (!p.fields ||
+            p.fields.length === 0 ||
+            p.fields.every((field) => !field.text || field.text.trim() === ""));
+        const isUntitledPrompt =
+          (!p.title || p.title.trim() === "" || p.title.trim() === "(無題)") &&
+          (!p.fields ||
+            p.fields.length === 0 ||
+            p.fields.every((field) => !field.text || field.text.trim() === ""));
+
+        if (isEmptyPrompt || isUntitledPrompt) {
+          console.log(
+            "[PROMPT] 空のプロンプトまたは無題プロンプトを一覧から削除（アーカイブには保存しない）:",
+            p.id
+          );
+
+          // アニメーション付きで削除（アーカイブには保存しない）
+          if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+            await window.AppUtils.animateArchiveItem(li, async () => {
+              // プロンプトを完全に削除（アーカイブではない）
+              const promptIndex = prompts.findIndex(
+                (prompt) => prompt.id === p.id
+              );
+              if (promptIndex !== -1) {
+                prompts.splice(promptIndex, 1);
+                await save(PROMPT_KEY, prompts);
+                window.prompts = prompts;
+
+                // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
+                const activePrompts = prompts.filter((p) => !p.archived);
+                if (activePrompts.length === 0) {
+                  renderList();
+                }
+              }
+            });
+          } else {
+            // AppUtilsが利用できない場合の代替処理
+            console.log(
+              "[PROMPT] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
+            );
+
+            // シンプルなアニメーション
+            li.style.transition = "all 0.5s ease-in-out";
+            li.style.transform = "translateY(-20px) scale(0.95)";
+            li.style.opacity = "0";
+
+            await new Promise((resolve) => {
+              setTimeout(async () => {
+                // プロンプトを完全に削除（アーカイブではない）
+                const promptIndex = prompts.findIndex(
+                  (prompt) => prompt.id === p.id
+                );
+                if (promptIndex !== -1) {
+                  prompts.splice(promptIndex, 1);
+                  await save(PROMPT_KEY, prompts);
+                  window.prompts = prompts;
+
+                  // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
+                  const activePrompts = prompts.filter((p) => !p.archived);
+                  if (activePrompts.length === 0) {
+                    renderList();
+                  }
+                }
+
+                console.log("[PROMPT] 代替削除アニメーション完了");
+                resolve();
+              }, 500);
+            });
+          }
+          return;
+        }
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
@@ -704,11 +843,11 @@ async function renderArchiveView() {
       <div class="prompt-empty-state">
         <div class="prompt-empty-state-content">
           <div class="prompt-empty-state-icon">
-            <i class="bi bi-archive-x"></i>
+            <i class="bi bi-terminal"></i>
           </div>
-          <h3 class="prompt-empty-state-title">アーカイブは空です</h3>
+          <h3 class="prompt-empty-state-title">アーカイブされた<br>プロンプトはありません</h3>
           <p class="prompt-empty-state-message">
-            アーカイブされたプロンプトはありません。
+            プロンプトをアーカイブすると、<br>ここに表示されます。
           </p>
         </div>
       </div>`;
@@ -1133,6 +1272,41 @@ function renderEdit(idx, isNew = false) {
   const form = body.querySelector(".memo-input-form");
   const titleSection = form.querySelector(".title-section");
   const promptFields = form.querySelectorAll(".prompt-field");
+
+  // 既存のtextareaに自動リサイズ機能を適用
+  setTimeout(() => {
+    const existingTextareas = form.querySelectorAll(".prompt-field-textarea");
+    existingTextareas.forEach((textarea) => {
+      // 自動リサイズのイベントリスナーを追加
+      textarea.addEventListener("input", () => autoResize(textarea));
+      textarea.addEventListener("paste", () =>
+        setTimeout(() => autoResize(textarea), 10)
+      );
+      textarea.addEventListener("cut", () => autoResize(textarea));
+      textarea.addEventListener("compositionend", () => autoResize(textarea));
+      textarea.addEventListener("focus", () => autoResize(textarea));
+      textarea.addEventListener("blur", () => autoResize(textarea));
+      textarea.addEventListener("change", () => autoResize(textarea));
+      textarea.addEventListener("keydown", (e) => {
+        // エンターキーで改行した時も自動リサイズ
+        if (e.key === "Enter") {
+          setTimeout(() => autoResize(textarea), 10);
+        }
+      });
+
+      // ドラッグ&ドロップ対応
+      textarea.addEventListener("drop", () =>
+        setTimeout(() => autoResize(textarea), 10)
+      );
+
+      // 初期化時の高さ設定
+      setTimeout(() => autoResize(textarea), 50);
+    });
+
+    console.log(
+      `PROMPT編集画面の既存textarea ${existingTextareas.length}個に自動リサイズ機能を適用しました`
+    );
+  }, 100);
   const addFieldBtn = form.querySelector(".btn-add-field");
 
   // 初期状態設定（CSS transitionが適用されるまで少し待つ）
@@ -1354,6 +1528,39 @@ function renderEdit(idx, isNew = false) {
     setTimeout(() => {
       row.classList.add("show");
 
+      // 新しく追加されたtextareaに自動リサイズ機能を適用
+      const newTextarea = row.querySelector(".prompt-field-textarea");
+      if (newTextarea) {
+        // 自動リサイズのイベントリスナーを追加
+        newTextarea.addEventListener("input", () => autoResize(newTextarea));
+        newTextarea.addEventListener("paste", () =>
+          setTimeout(() => autoResize(newTextarea), 10)
+        );
+        newTextarea.addEventListener("cut", () => autoResize(newTextarea));
+        newTextarea.addEventListener("compositionend", () =>
+          autoResize(newTextarea)
+        );
+        newTextarea.addEventListener("focus", () => autoResize(newTextarea));
+        newTextarea.addEventListener("blur", () => autoResize(newTextarea));
+        newTextarea.addEventListener("change", () => autoResize(newTextarea));
+        newTextarea.addEventListener("keydown", (e) => {
+          // エンターキーで改行した時も自動リサイズ
+          if (e.key === "Enter") {
+            setTimeout(() => autoResize(newTextarea), 10);
+          }
+        });
+
+        // ドラッグ&ドロップ対応
+        newTextarea.addEventListener("drop", () =>
+          setTimeout(() => autoResize(newTextarea), 10)
+        );
+
+        // 初期化時の高さ設定
+        setTimeout(() => autoResize(newTextarea), 50);
+
+        console.log("PROMPT編集画面のtextareaに自動リサイズ機能を適用しました");
+      }
+
       // ドラッグ＆ドロップの初期化を確実に行う
       if (row.draggable) {
         console.log("[DND] 新しいフィールドのドラッグ＆ドロップを初期化:", row);
@@ -1501,11 +1708,11 @@ function renderRun(idx) {
       <div class="prompt-empty-state">
         <div class="prompt-empty-state-content">
           <div class="prompt-empty-state-icon">
-            <i class="bi bi-terminal-x"></i>
+            <i class="bi bi-terminal"></i>
           </div>
           <h3 class="prompt-empty-state-title">プロンプトがありません</h3>
           <p class="prompt-empty-state-message">
-            プロンプトを追加してください。
+            最初のプロンプトを作成してみましょう。
           </p>
           <div class="prompt-empty-state-action">
             <button class="btn-add-first-prompt">
@@ -1684,17 +1891,21 @@ function renderRun(idx) {
     }
   });
 
-  /* ── 自動リサイズ関数 ── */
+  /* ── 自動リサイズ関数（改行・エンターで無限に広がる） ── */
   function autoResize(textarea) {
     // 一時的に高さをリセットして正確なscrollHeightを取得
     textarea.style.height = "auto";
 
-    // 最小高さ（80px）と内容に応じた高さの大きい方を設定
+    // 最小高さ（80px）と内容に応じた高さの大きい方を設定（最大高さ制限なし）
     const minHeight = 80;
     const contentHeight = textarea.scrollHeight;
     const newHeight = Math.max(minHeight, contentHeight);
 
     textarea.style.height = newHeight + "px";
+
+    console.log(
+      `PROMPT textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px)`
+    );
   }
 
   /* ── 内部 send() ── */
@@ -1972,6 +2183,16 @@ function checkForUnsavedChanges(originalObj, isNew) {
   }
 
   return false;
+}
+
+/*━━━━━━━━━━ 空のプロンプト判定機能 ━━━━━━━━━━*/
+function isEmptyPrompt(prompt) {
+  return (
+    (!prompt.title || prompt.title.trim() === "") &&
+    (!prompt.fields ||
+      prompt.fields.length === 0 ||
+      prompt.fields.every((field) => !field.text || field.text.trim() === ""))
+  );
 }
 
 // 削除：showSaveConfirmDialog関数はutils.jsのshowSaveConfirmDialogを使用
