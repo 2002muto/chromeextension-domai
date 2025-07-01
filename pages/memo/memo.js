@@ -282,7 +282,7 @@ async function renderListView() {
       // title
       const span = document.createElement("span");
       span.className = "title";
-      span.textContent = m.title;
+      span.textContent = m.title || "無題";
       li.appendChild(span);
 
       // archive-icon (just UI, no action)
@@ -1009,14 +1009,49 @@ async function renderInputForm(id) {
 
   // delete/cancel handler
   document.querySelector(".delete-btn").addEventListener("click", async () => {
-    if (id !== undefined) {
-      memos = memos.filter((m) => m.id !== id);
-      console.log("delete memo id=", id);
-      await saveStorage(MEMO_KEY, memos);
-      // グローバルに最新のmemosを設定
-      window.memos = memos;
+    // 削除前の確認処理
+    const originalMemo =
+      id !== undefined ? memos.find((m) => m.id === id) : null;
+    const hasChanges = checkForUnsavedMemoChanges(
+      originalMemo,
+      id === undefined
+    );
+
+    // タイトルまたは内容がある場合は削除確認ダイアログを表示
+    if (
+      hasChanges ||
+      (originalMemo && (originalMemo.title || originalMemo.content))
+    ) {
+      window.AppUtils.showConfirmDialog({
+        title: "メモを削除しますか？",
+        message:
+          'このメモを完全に削除します。<br><span style="color: #dc3545; font-weight: bold;">この操作は取り消せません。</span>',
+        onConfirm: async () => {
+          // 削除を実行
+          if (id !== undefined) {
+            memos = memos.filter((m) => m.id !== id);
+            console.log("delete memo id=", id);
+            await saveStorage(MEMO_KEY, memos);
+            // グローバルに最新のmemosを設定
+            window.memos = memos;
+          }
+          renderListView();
+        },
+        onCancel: () => {
+          console.log("メモの削除をキャンセルしました");
+        },
+      });
+    } else {
+      // 空のメモまたは新規作成で内容がない場合は直接削除
+      if (id !== undefined) {
+        memos = memos.filter((m) => m.id !== id);
+        console.log("delete empty memo id=", id);
+        await saveStorage(MEMO_KEY, memos);
+        // グローバルに最新のmemosを設定
+        window.memos = memos;
+      }
+      renderListView();
     }
-    renderListView();
   });
 
   console.log("renderInputForm: end");
