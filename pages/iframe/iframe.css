@@ -25,6 +25,21 @@ body {
   box-sizing: border-box;
   flex: 1;
   min-height: 0;
+  position: relative; /* 追加：回転枠線の基準位置 */
+}
+
+/* ─── 外枠だけのカラフルボーダー ─── */
+.memo-content.animate.show::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 15px; /* memo-contentより少し大きく */
+  background: linear-gradient(45deg, #e95404, #a600cf, #e95404, #a600cf);
+  background-size: 400% 400%;
+  z-index: -1;
 }
 
 /* ─── Empty State（URL未入力時の表示） ─── */
@@ -71,7 +86,7 @@ body {
   opacity: 0.8;
 }
 
-/* ─── URL入力エリア ─── */
+/* ─── 検索入力エリア ─── */
 .iframe-url-input-row {
   display: flex;
   flex-direction: column; /* 最小サイズのレイアウトを適用 */
@@ -81,7 +96,7 @@ body {
   width: 100%; /* 最小サイズの幅を適用 */
 }
 
-.url-input {
+.search-input {
   width: 100%; /* 最小サイズの幅を適用 */
   max-width: 100%; /* 最小サイズの最大幅を適用 */
   background: rgba(255, 255, 255, 0.9);
@@ -94,18 +109,18 @@ body {
   transition: all 0.3s ease;
 }
 
-.url-input:focus {
+.search-input:focus {
   background: #ffffff;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3); /* 最小サイズのボックスシャドウを適用 */
 }
 
-.url-input::placeholder {
+.search-input::placeholder {
   color: #999;
   font-size: 0.75rem; /* 最小サイズのフォントサイズを適用 */
 }
 
-.url-submit-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+.search-submit-btn {
+  background: linear-gradient(135deg, #e95404, #a600cf);
   color: #ffffff;
   border: none;
   border-radius: 6px; /* 最小サイズのボーダーラディウスを適用 */
@@ -120,19 +135,19 @@ body {
   width: 100%; /* 最小サイズの幅を適用 */
 }
 
-.url-submit-btn:hover {
+.search-submit-btn:hover {
   filter: brightness(1.1);
   transform: translateY(-1px); /* 最小サイズの変形を適用 */
   box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3); /* 最小サイズのボックスシャドウを適用 */
 }
 
-.url-submit-btn:disabled {
+.search-submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
-.url-submit-btn i {
+.search-submit-btn i {
   font-size: 0.9rem; /* 最小サイズのフォントサイズを適用 */
 }
 
@@ -156,7 +171,7 @@ body {
   justify-content: flex-end;
 }
 
-.new-url-btn {
+.new-search-btn {
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: #ffffff;
   border: none;
@@ -170,13 +185,13 @@ body {
   gap: 3px; /* 最小サイズのギャップを適用 */
 }
 
-.new-url-btn:hover {
+.new-search-btn:hover {
   filter: brightness(1.1);
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3); /* 最小サイズのボックスシャドウを適用 */
 }
 
-.new-url-btn i {
+.new-search-btn i {
   font-size: 0.6rem; /* 最小サイズのフォントサイズを適用 */
 }
 

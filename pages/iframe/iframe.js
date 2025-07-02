@@ -44,8 +44,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 function initializeIframePage() {
   console.log("IFRAMEページを初期化中...");
 
-  const urlInput = document.querySelector(".url-input");
-  const submitBtn = document.querySelector(".url-submit-btn");
+  const searchInput = document.querySelector(".search-input");
+  const submitBtn = document.querySelector(".search-submit-btn");
   const iframeDisplay = document.getElementById("iframe-display");
   const iframeDisplayContainer = document.getElementById(
     "iframe-display-container"
@@ -57,7 +57,7 @@ function initializeIframePage() {
   const urlInputRow = document.querySelector(".iframe-url-input-row");
 
   if (
-    !urlInput ||
+    !searchInput ||
     !submitBtn ||
     !iframeDisplay ||
     !iframeDisplayContainer ||
@@ -65,7 +65,7 @@ function initializeIframePage() {
     !urlInputRow
   ) {
     console.error("必要な要素が見つかりません:", {
-      urlInput: !!urlInput,
+      searchInput: !!searchInput,
       submitBtn: !!submitBtn,
       iframeDisplay: !!iframeDisplay,
       iframeDisplayContainer: !!iframeDisplayContainer,
@@ -79,28 +79,28 @@ function initializeIframePage() {
   showEmptyState();
   iframeDisplayContainer.style.display = "none";
 
-  // URL送信ボタンのクリックイベント
+  // 検索送信ボタンのクリックイベント
   submitBtn.addEventListener("click", () => {
-    console.log("実行ボタンがクリックされました");
-    loadUrlInIframe();
+    console.log("検索ボタンがクリックされました");
+    performSearch();
   });
 
-  // Enterキーでの送信
-  urlInput.addEventListener("keypress", (e) => {
+  // Enterキーでの検索
+  searchInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       console.log("Enterキーが押されました");
-      loadUrlInIframe();
+      performSearch();
     }
   });
 
-  // URL入力フィールドのフォーカス
-  urlInput.addEventListener("focus", () => {
-    urlInput.select();
+  // 検索入力フィールドのフォーカス
+  searchInput.addEventListener("focus", () => {
+    searchInput.select();
   });
 
   // 入力欄の内容が空になったらEmpty Stateを再表示
-  urlInput.addEventListener("input", () => {
-    if (!urlInput.value.trim()) {
+  searchInput.addEventListener("input", () => {
+    if (!searchInput.value.trim()) {
       showEmptyState();
       iframeDisplayContainer.style.display = "none";
       iframeDisplay.src = "";
@@ -109,26 +109,26 @@ function initializeIframePage() {
     }
   });
 
-  // 新しいURLボタンのイベントリスナー
-  const newUrlBtn = document.getElementById("new-url-btn");
-  if (newUrlBtn) {
-    newUrlBtn.addEventListener("click", () => {
-      console.log("新しいURLボタンがクリックされました");
+  // 新しい検索ボタンのイベントリスナー
+  const newSearchBtn = document.getElementById("new-search-btn");
+  if (newSearchBtn) {
+    newSearchBtn.addEventListener("click", () => {
+      console.log("新しい検索ボタンがクリックされました");
       // 入力行を表示、iframeを非表示
       urlInputRow.style.display = "flex";
       iframeDisplayContainer.style.display = "none";
       iframeDisplay.src = "";
-      // URL入力欄をクリアしてフォーカス
-      urlInput.value = "";
-      urlInput.focus();
+      // 検索入力欄をクリアしてフォーカス
+      searchInput.value = "";
+      searchInput.focus();
       // Empty Stateを表示
       showEmptyState();
     });
   }
 
-  // 初期状態でURL入力フィールドにフォーカス
+  // 初期状態で検索入力フィールドにフォーカス
   setTimeout(() => {
-    urlInput.focus();
+    searchInput.focus();
     showEmptyState();
   }, 100);
 
@@ -156,12 +156,12 @@ function initializeIframePage() {
 }
 
 // ───────────────────────────────────────
-// URLをiframeに読み込む
+// 検索またはURLをiframeに読み込む
 // ───────────────────────────────────────
-function loadUrlInIframe() {
-  const urlInput = document.querySelector(".url-input");
+function performSearch() {
+  const searchInput = document.querySelector(".search-input");
   const iframeDisplay = document.getElementById("iframe-display");
-  const submitBtn = document.querySelector(".url-submit-btn");
+  const submitBtn = document.querySelector(".search-submit-btn");
   const iframeDisplayContainer = document.getElementById(
     "iframe-display-container"
   );
@@ -172,7 +172,7 @@ function loadUrlInIframe() {
   const urlInputRow = document.querySelector(".iframe-url-input-row");
 
   if (
-    !urlInput ||
+    !searchInput ||
     !iframeDisplay ||
     !iframeDisplayContainer ||
     !emptyState ||
@@ -182,11 +182,11 @@ function loadUrlInIframe() {
     return;
   }
 
-  let url = urlInput.value.trim();
-  console.log("入力されたURL:", url);
+  let query = searchInput.value.trim();
+  console.log("入力された検索語:", query);
 
-  if (!url) {
-    console.log("URLが空です - Empty Stateを表示");
+  if (!query) {
+    console.log("検索語が空です - Empty Stateを表示");
     // 空欄ならEmpty State表示・iframe非表示・入力行表示
     emptyState.style.display = "flex";
     urlInputRow.style.display = "flex";
@@ -198,10 +198,24 @@ function loadUrlInIframe() {
     return;
   }
 
-  // URLスキームがない場合はhttps://を追加
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    url = "https://" + url;
-    console.log("URLスキームを追加:", url);
+  let url;
+
+  // URLかどうかを判定（http/httpsスキームまたはドメイン形式）
+  if (
+    query.startsWith("http://") ||
+    query.startsWith("https://") ||
+    (query.includes(".") && !query.includes(" "))
+  ) {
+    // URLとして処理
+    url = query;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
+    console.log("URLとして処理:", url);
+  } else {
+    // Google検索として処理
+    url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    console.log("Google検索として処理:", url);
   }
 
   try {
@@ -224,13 +238,13 @@ function loadUrlInIframe() {
     iframeDisplay.onload = () => {
       console.log("iframe読み込み完了");
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-arrow-right"></i>';
+      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
     };
 
     iframeDisplay.onerror = () => {
       console.log("iframe読み込みエラー");
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-arrow-right"></i>';
+      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
       iframeDisplay.srcdoc = `
         <html>
           <head>
@@ -269,7 +283,7 @@ function loadUrlInIframe() {
             <div class='error-container'>
               <div class='error-icon'>⚠️</div>
               <div class='error-title'>ページを読み込めませんでした</div>
-              <div class='error-message'>URLを確認して再度お試しください</div>
+              <div class='error-message'>検索語やURLを確認して再度お試しください</div>
             </div>
           </body>
         </html>
@@ -322,8 +336,8 @@ function loadUrlInIframe() {
         <body>
           <div class='error-container'>
             <div class='error-icon'>❌</div>
-            <div class='error-title'>無効なURLです</div>
-            <div class='error-message'>正しいURLを入力してください</div>
+            <div class='error-title'>検索できませんでした</div>
+            <div class='error-message'>検索語またはURLを確認してください</div>
           </div>
         </body>
       </html>
@@ -335,4 +349,4 @@ function loadUrlInIframe() {
 // グローバル関数として公開
 // ───────────────────────────────────────
 window.initializeIframePage = initializeIframePage;
-window.loadUrlInIframe = loadUrlInIframe;
+window.performSearch = performSearch;

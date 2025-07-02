@@ -50,6 +50,10 @@
         <i class="bi bi-question-lg"></i>
         <span class="nav-text">AI</span>
       </a>
+      <a href="../status/status.html" class="nav-btn" id="btn-status">
+        <i class="bi bi-wifi"></i>
+        <span class="nav-text">STATUS</span>
+      </a>
       <a href="../setting/setting.html" class="nav-btn" id="btn-setting">
         <i class="bi bi-gear-fill"></i>
         <span class="nav-text">SETTING</span>
@@ -61,14 +65,15 @@
       <!-- JS で「＋新しいプロンプト」とカード群をここに生成します -->
     </div>
 
-    <!-- ★フッター（左右 2 ボタンに拡張しやすい） -->
+    <!-- MEMO/CLIPBOARDと同じfooter構造に統一 -->
     <footer class="memo-footer">
-      <button class="footer-btn btn-archive">
-        <i class="bi bi-archive-fill"></i> アーカイブ
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
+        <i class="bi bi-archive"></i>
+        <span class="nav-text">アーカイブ</span>
       </button>
-      <button class="footer-btn btn-extra">
-        <i class=""></i> 予備
-        <!-- <i class="bi bi-three-dots"></i> 予備 -->
+      <button class="nav-btn encrypt-btn">
+        <i class="bi bi-download"></i>
+        <span class="nav-text">バックアップ</span>
       </button>
     </footer>
 

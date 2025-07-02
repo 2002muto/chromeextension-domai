@@ -1,8 +1,9 @@
+<!-- File: pages/status/status.html -->
 <!DOCTYPE html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>Clipboard</title>
+    <title>STATUS</title>
     <link
       rel="stylesheet"
       href="../../vendor/bootstrap/css/bootstrap.min.css"
@@ -10,7 +11,7 @@
 
     <link rel="stylesheet" href="../../style.css" />
     <link rel="stylesheet" href="../memo/memo.css" />
-    <link rel="stylesheet" href="clipboard.css" />
+    <link rel="stylesheet" href="status.css" />
     <link
       rel="stylesheet"
       href="../../vendor/bootstrap-icons/bootstrap-icons.css"
@@ -23,7 +24,7 @@
         <i class="bi bi-clipboard2-minus"></i>
         <span class="nav-text">MEMO</span>
       </a>
-      <a href="clipboard.html" class="nav-btn active" id="btn-clipboard">
+      <a href="../clipboard/clipboard.html" class="nav-btn" id="btn-clipboard">
         <i class="bi bi-journal-text"></i>
         <span class="nav-text">CLIPBOARD</span>
       </a>
@@ -44,7 +45,7 @@
         <i class="bi bi-question-lg"></i>
         <span class="nav-text">AI</span>
       </a>
-      <a href="../status/status.html" class="nav-btn" id="btn-status">
+      <a href="status.html" class="nav-btn active" id="btn-status">
         <i class="bi bi-wifi"></i>
         <span class="nav-text">STATUS</span>
       </a>
@@ -57,22 +58,17 @@
     <!-- メインコンテンツ -->
     <div class="memo-content"></div>
 
-    <!-- フッター -->
-    <footer class="memo-footer" style="display: flex">
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
-        <i class="bi bi-archive"></i>
-        <span class="nav-text">アーカイブ</span>
-      </button>
-      <button class="nav-btn encrypt-btn">
-        <i class="bi bi-download"></i>
-        <span class="nav-text">バックアップ</span>
+    <!-- フッター（STATUSページでは非表示） -->
+    <footer class="memo-footer status-footer" style="display: none">
+      <button class="nav-btn">
+        <i class="bi bi-arrow-clockwise"></i>
+        <span class="nav-text">更新</span>
       </button>
     </footer>
 
     <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../utils.js"></script>
     <script src="../common.js"></script>
-    <script src="clipboard.js"></script>
-    <script src="../memo/archive.js"></script>
+    <script src="status.js"></script>
   </body>
 </html>

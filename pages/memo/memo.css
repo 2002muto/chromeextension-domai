@@ -48,13 +48,15 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
   margin: 32px 16px 16px 16px;
   padding: 0;
-  height: calc(100vh - 153px) !important;
+  height: calc(100vh - 168px) !important;
 }
 
 /* MEMOページ（一覧表示）のみカード状背景を適用 */
 .memo-content:not(.edit-mode) {
   margin: 32px 16px 16px 16px; /* Match CLIPBOARD margin */
-  height: calc(100vh - 153px) !important; /* Match CLIPBOARD height */
+  height: calc(
+    100vh - 168px
+  ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
   background: #2d2d2d;
   border-radius: 12px;
   padding: 0; /* パディングを削除してボタンとリストを分離 */

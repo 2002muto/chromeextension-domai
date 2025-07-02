@@ -8,8 +8,8 @@
   border-radius: 12px;
   margin: 32px 16px 16px 16px;
   padding: 0; /* パディングを削除してボタンとリストを分離 */
-  /* 一覧表示ではmargin分を追加で考慮: 172px + top-margin(16px) + bottom-margin(16px) = 204px */
-  height: calc(100vh - 153px) !important;
+  /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
+  height: calc(100vh - 168px) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
@@ -512,7 +512,9 @@
   border-radius: 12px;
   margin: 32px 16px 16px 16px;
   padding: 0;
-  height: calc(100vh - 153px) !important;
+  height: calc(
+    100vh - 168px
+  ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
   display: flex;
   flex-direction: column;
   overflow: hidden;

@@ -84,6 +84,7 @@ body::-webkit-scrollbar,
 #btn-prompt:hover:not(.active),
 #btn-iframe:hover:not(.active),
 #btn-ai:hover:not(.active),
+#btn-status:hover:not(.active),
 #btn-setting:hover:not(.active) {
   width: 100px; /* 120pxから100pxに縮小 */
   border-radius: 18px; /* 24pxから18pxに縮小 */
@@ -98,6 +99,7 @@ body::-webkit-scrollbar,
 #btn-prompt:hover:not(.active) i,
 #btn-iframe:hover:not(.active) i,
 #btn-ai:hover:not(.active) i,
+#btn-status:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
   display: none;
 }
@@ -108,6 +110,7 @@ body::-webkit-scrollbar,
 #btn-prompt:hover:not(.active) .nav-text,
 #btn-iframe:hover:not(.active) .nav-text,
 #btn-ai:hover:not(.active) .nav-text,
+#btn-status:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
   opacity: 1;
   position: absolute;
@@ -237,6 +240,11 @@ body::-webkit-scrollbar,
 }
 
 #btn-ai.active {
+
+#btn-status.active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
   background: linear-gradient(135deg, #af008f, #6b00d9);
   box-shadow: 0 4px 12px rgba(175, 0, 143, 0.3);
 }
