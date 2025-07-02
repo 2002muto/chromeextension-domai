@@ -21,7 +21,7 @@ body {
 .memo-content {
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 12px; /* 最小サイズのパディングを適用 */
   box-sizing: border-box;
   flex: 1;
   min-height: 0;
@@ -38,7 +38,8 @@ body {
 
 .iframe-empty-state-content {
   text-align: center;
-  max-width: 400px;
+  max-width: 250px; /* 最小サイズの幅を適用 */
+  padding: 0 4px; /* 最小サイズのパディングを適用 */
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -50,22 +51,22 @@ body {
 }
 
 .iframe-empty-state-icon {
-  font-size: 64px;
+  font-size: 28px; /* 最小サイズのアイコンサイズを適用 */
   color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 24px;
+  margin-bottom: 8px; /* 最小サイズのマージンを適用 */
 }
 
 .iframe-empty-state-title {
   color: #ffffff;
-  font-size: 1.3rem;
+  font-size: 0.9rem; /* 最小サイズのフォントサイズを適用 */
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 4px; /* 最小サイズのマージンを適用 */
   line-height: 1.4;
 }
 
 .iframe-empty-state-message {
   color: #e2e8f0;
-  font-size: 1rem;
+  font-size: 0.75rem; /* 最小サイズのフォントサイズを適用 */
   line-height: 1.5;
   opacity: 0.8;
 }
@@ -73,21 +74,21 @@ body {
 /* ─── URL入力エリア ─── */
 .iframe-url-input-row {
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* 最小サイズのレイアウトを適用 */
   align-items: center;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 6px; /* 最小サイズのギャップを適用 */
+  margin-top: 12px; /* 最小サイズのマージンを適用 */
+  width: 100%; /* 最小サイズの幅を適用 */
 }
 
 .url-input {
-  flex: 1 1 220px;
-  min-width: 0;
-  max-width: 320px;
+  width: 100%; /* 最小サイズの幅を適用 */
+  max-width: 100%; /* 最小サイズの最大幅を適用 */
   background: rgba(255, 255, 255, 0.9);
   border: none;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 1rem;
+  border-radius: 6px; /* 最小サイズのボーダーラディウスを適用 */
+  padding: 8px 12px; /* 最小サイズのパディングを適用 */
+  font-size: 0.8rem; /* 最小サイズのフォントサイズを適用 */
   color: #333;
   outline: none;
   transition: all 0.3s ease;
@@ -95,32 +96,34 @@ body {
 
 .url-input:focus {
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3); /* 最小サイズのボックスシャドウを適用 */
 }
 
 .url-input::placeholder {
   color: #999;
+  font-size: 0.75rem; /* 最小サイズのフォントサイズを適用 */
 }
 
 .url-submit-btn {
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 1rem;
+  border-radius: 6px; /* 最小サイズのボーダーラディウスを適用 */
+  padding: 8px 12px; /* 最小サイズのパディングを適用 */
+  font-size: 0.8rem; /* 最小サイズのフォントサイズを適用 */
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
+  min-width: 36px; /* 最小サイズの最小幅を適用 */
+  width: 100%; /* 最小サイズの幅を適用 */
 }
 
 .url-submit-btn:hover {
   filter: brightness(1.1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px); /* 最小サイズの変形を適用 */
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3); /* 最小サイズのボックスシャドウを適用 */
 }
 
 .url-submit-btn:disabled {
@@ -130,24 +133,24 @@ body {
 }
 
 .url-submit-btn i {
-  font-size: 1.2rem;
+  font-size: 0.9rem; /* 最小サイズのフォントサイズを適用 */
 }
 
 /* ─── iframe表示エリア ─── */
 .iframe-display-container {
   flex: 1;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 8px; /* 最小サイズのボーダーラディウスを適用 */
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  margin-top: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* 最小サイズのボックスシャドウを適用 */
+  margin-top: 12px; /* 最小サイズのマージンを適用 */
   display: flex;
   flex-direction: column;
 }
 
 .iframe-header {
   background: #f8f9fa;
-  padding: 12px 16px;
+  padding: 6px 8px; /* 最小サイズのパディングを適用 */
   border-bottom: 1px solid #e9ecef;
   display: flex;
   justify-content: flex-end;
@@ -157,24 +160,24 @@ body {
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: #ffffff;
   border: none;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
+  border-radius: 4px; /* 最小サイズのボーダーラディウスを適用 */
+  padding: 4px 8px; /* 最小サイズのパディングを適用 */
+  font-size: 0.7rem; /* 最小サイズのフォントサイズを適用 */
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px; /* 最小サイズのギャップを適用 */
 }
 
 .new-url-btn:hover {
   filter: brightness(1.1);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3); /* 最小サイズのボックスシャドウを適用 */
 }
 
 .new-url-btn i {
-  font-size: 0.8rem;
+  font-size: 0.6rem; /* 最小サイズのフォントサイズを適用 */
 }
 
 .iframe-display {
@@ -188,39 +191,6 @@ body {
 /* ─── フッター（非表示） ─── */
 .iframe-footer {
   display: none !important;
-}
-
-/* ─── レスポンシブ対応 ─── */
-@media (max-width: 768px) {
-  .iframe-url-input-row {
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .url-input {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .url-submit-btn {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .iframe-url-input-row {
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-  .url-input {
-    width: 100%;
-    max-width: 100%;
-  }
-  .url-submit-btn {
-    width: 100%;
-  }
 }
 
 /* ─── アニメーション ─── */
@@ -248,7 +218,7 @@ header {
 .iframe-content {
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 12px; /* 最小サイズのパディングを適用 */
   box-sizing: border-box;
   /* height, padding-top, position, z-index 指定なし */
 }
@@ -257,10 +227,10 @@ header {
 .iframe-display-container {
   flex: 1;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 8px; /* 最小サイズのボーダーラディウスを適用 */
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  margin-top: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* 最小サイズのボックスシャドウを適用 */
+  margin-top: 12px; /* 最小サイズのマージンを適用 */
   display: flex;
   flex-direction: column;
   /* z-index, position 指定なし */

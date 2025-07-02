@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 68px); /* ヘッダー分を除く */
-  padding: 20px;
+  padding: 15px; /* 最小サイズのパディングを適用 */
   background: #314559; /* MEMO・PROMPTと同じ背景色 */
 }
 
@@ -23,7 +23,7 @@
   position: relative;
   background: rgba(49, 69, 89, 0.9);
   border-radius: 20px;
-  padding: 50px;
+  padding: 30px 25px; /* 最小サイズのパディングを適用 */
   text-align: center;
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
@@ -110,7 +110,7 @@
 }
 
 .coming-soon-title {
-  font-size: 2.5rem;
+  font-size: 2rem; /* 最小サイズのフォントサイズを適用 */
   font-weight: bold;
   margin-bottom: 20px;
   color: #ffffff; /* 白色に変更 */
@@ -128,7 +128,7 @@
 }
 
 .coming-soon-subtitle {
-  font-size: 1.1rem;
+  font-size: 1rem; /* 最小サイズのフォントサイズを適用 */
   color: #ffffff; /* 完全な白色に変更 */
   margin-bottom: 30px;
   animation: fadeInUp 1s ease-out 0.5s both;
@@ -182,38 +182,24 @@
   }
 }
 
-/* レスポンシブ対応 */
-@media (max-width: 480px) {
-  .ai-main {
-    padding: 15px;
-  }
-
-  .coming-soon-card {
-    padding: 30px 25px;
-  }
-
-  .coming-soon-title {
-    font-size: 2rem;
-  }
-
-  .coming-soon-subtitle {
-    font-size: 1rem;
-  }
+/* ページ表示アニメーション */
+.ai-main {
+  opacity: 0;
+  animation: fadeInScale 0.8s ease-out 0.2s forwards;
 }
 
-/* 初期表示アニメーション */
 .ai-main.show .coming-soon-card {
   animation: fadeInScale 0.8s ease-out forwards,
-    float 6s ease-in-out 0.8s infinite;
+    float 6s ease-in-out infinite 0.8s;
 }
 
 @keyframes fadeInScale {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0.5) translateY(50px);
+    transform: scale(0.9);
   }
-  to {
+  100% {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1);
   }
 }
