@@ -149,7 +149,58 @@ async function renderStatusView() {
   console.log("renderStatusView: end");
 }
 
-// 回線速度測定
+// 30秒間ダウンロードし続けて平均速度を計測する新関数
+async function measureDownloadSpeedForDuration(url, durationSec = 30) {
+  return new Promise(async (resolve, reject) => {
+    let totalBytes = 0;
+    let startTime = performance.now();
+    let elapsed = 0;
+    let abort = false;
+
+    while (!abort) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(
+          () => controller.abort(),
+          durationSec * 1000 - elapsed
+        );
+        const response = await fetch(url, {
+          cache: "no-cache",
+          mode: "cors",
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const reader = response.body.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          totalBytes += value.length;
+          elapsed = (performance.now() - startTime) / 1000;
+          if (elapsed >= durationSec) {
+            abort = true;
+            break;
+          }
+        }
+      } catch (e) {
+        if (e.name === "AbortError") {
+          // タイムアウトによる中断は正常終了
+          break;
+        } else {
+          // 通信エラー等は無視して次のループへ
+          break;
+        }
+      }
+      elapsed = (performance.now() - startTime) / 1000;
+      if (elapsed >= durationSec) break;
+    }
+    const totalTime = (performance.now() - startTime) / 1000;
+    const avgSpeed = totalBytes / totalTime;
+    resolve(avgSpeed);
+  });
+}
+
+// measureSpeedを30秒間計測方式に修正
 async function measureSpeed() {
   console.log("▶▶▶ measureSpeed関数が呼び出されました ◀◀◀");
   console.log("回線速度測定を開始します");
@@ -174,15 +225,13 @@ async function measureSpeed() {
       "https://httpbin.org/bytes/1048576",
       "https://via.placeholder.com/1024x1024.jpg",
     ];
-
     let bestSpeed = 0;
     let successCount = 0;
-
     for (const url of testUrls) {
       try {
-        console.log(`テストURL開始: ${url}`);
-        const speed = await measureDownloadSpeed(url);
-        console.log(`テストURL完了: ${url} -> ${speed} bytes/sec`);
+        console.log(`30秒間テストURL開始: ${url}`);
+        const speed = await measureDownloadSpeedForDuration(url, 30);
+        console.log(`30秒間テストURL完了: ${url} -> ${speed} bytes/sec`);
         if (speed > 0) {
           bestSpeed = Math.max(bestSpeed, speed);
           successCount++;
@@ -191,18 +240,17 @@ async function measureSpeed() {
         console.log(`テストURL ${url} でエラー:`, error);
       }
     }
-
     if (successCount === 0) {
       throw new Error("すべてのテストURLでエラーが発生しました");
     }
-
     const speedMbps = ((bestSpeed / 1024 / 1024) * 8).toFixed(2);
-    speedValue.textContent = `${speedMbps} Mbps`;
+    speedValue.textContent = `${speedMbps} Mbps (30秒平均)`;
     speedValue.className = "status-value success";
-
-    networkInfo.speed = { value: `${speedMbps} Mbps`, status: "success" };
-
-    console.log(`回線速度測定完了: ${speedMbps} Mbps`);
+    networkInfo.speed = {
+      value: `${speedMbps} Mbps (30秒平均)`,
+      status: "success",
+    };
+    console.log(`回線速度測定完了: ${speedMbps} Mbps (30秒平均)`);
   } catch (error) {
     console.error("回線速度測定エラー:", error);
     speedValue.textContent = "測定失敗";
@@ -212,50 +260,6 @@ async function measureSpeed() {
     speedItem.classList.remove("measuring");
     console.log("◀◀◀ measureSpeed関数完了 ▶▶▶");
   }
-}
-
-// ダウンロード速度測定の実装
-async function measureDownloadSpeed(url) {
-  return new Promise((resolve, reject) => {
-    const startTime = performance.now();
-    let loaded = 0;
-
-    fetch(url, {
-      cache: "no-cache",
-      mode: "cors",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const reader = response.body.getReader();
-
-        function pump() {
-          return reader.read().then(({ done, value }) => {
-            if (done) {
-              const endTime = performance.now();
-              const duration = (endTime - startTime) / 1000;
-              const speed = loaded / duration;
-              console.log(
-                `ダウンロード完了: ${loaded} bytes in ${duration.toFixed(2)}s`
-              );
-              resolve(speed);
-              return;
-            }
-
-            loaded += value.length;
-            return pump();
-          });
-        }
-
-        return pump();
-      })
-      .catch((error) => {
-        console.error(`Download speed test failed for ${url}:`, error);
-        reject(error);
-      });
-  });
 }
 
 // ローカルIP取得（WebRTC使用）

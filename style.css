@@ -451,20 +451,45 @@ main {
   top: 0 !important;
 }
 
-
 /* アクティブ・クリック時もアイコンを常に表示 */
 .nav-btn.active i,
 .nav-btn.clicked i {
   display: block !important;
 }
 
-
 /* nav-btnの順序を明示的に統一 */
-#btn-memo-list { order: 1; }
-#btn-clipboard { order: 2; }
-#btn-prompt { order: 3; }
-#btn-iframe { order: 4; }
-#btn-ai { order: 5; }
-#btn-status { order: 6; }
-#btn-setting { order: 7; }
+#btn-memo-list {
+  order: 1;
+}
+#btn-clipboard {
+  order: 2;
+}
+#btn-prompt {
+  order: 3;
+}
+#btn-iframe {
+  order: 4;
+}
+#btn-ai {
+  order: 5;
+}
+#btn-status {
+  order: 6;
+}
+#btn-setting {
+  order: 7;
+}
 
+.coming-soon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px; /* ← 400pxから拡大 */
+}
+
+.coming-soon-card {
+  /* ...既存... */
+  padding: 30px 20px; /* ← 左右パディングを25px→20pxに減らす */
+  /* ...既存... */
+}

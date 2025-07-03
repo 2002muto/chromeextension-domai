@@ -203,3 +203,101 @@
     transform: scale(1);
   }
 }
+
+/* レスポンシブデザイン - スライドバー拡大時の段階的テキストサイズ調整 */
+@media (min-width: 768px) {
+  .coming-soon-title {
+    font-size: 2.5rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.2rem;
+  }
+  .coming-soon-card {
+    padding: 35px 30px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .coming-soon-title {
+    font-size: 3rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.4rem;
+  }
+  .coming-soon-card {
+    padding: 40px 35px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .coming-soon-title {
+    font-size: 3.5rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.6rem;
+  }
+  .coming-soon-card {
+    padding: 45px 40px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .coming-soon-title {
+    font-size: 4rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.8rem;
+  }
+  .coming-soon-card {
+    padding: 50px 45px;
+  }
+}
+
+/* レスポンシブデザイン - スライドバー拡大時の段階的テキストサイズ調整 */
+@media (min-width: 768px) {
+  .coming-soon-title {
+    font-size: 2.5rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.2rem;
+  }
+  .coming-soon-card {
+    padding: 35px 30px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .coming-soon-title {
+    font-size: 3rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.4rem;
+  }
+  .coming-soon-card {
+    padding: 40px 35px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .coming-soon-title {
+    font-size: 3.5rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.6rem;
+  }
+  .coming-soon-card {
+    padding: 45px 40px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .coming-soon-title {
+    font-size: 4rem;
+  }
+  .coming-soon-subtitle {
+    font-size: 1.8rem;
+  }
+  .coming-soon-card {
+    padding: 50px 45px;
+  }
+}
