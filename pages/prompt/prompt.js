@@ -330,13 +330,11 @@ async function renderList() {
   root.querySelector(".form-header")?.remove();
 
   footer.innerHTML = `
-    <button id="btn-archive-toggle" class="nav-btn archive-toggle">
+    <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブ">
       <i class="bi bi-archive"></i>
-      <span class="nav-text">アーカイブ</span>
     </button>
     <button class="nav-btn encrypt-btn">
       <i class="bi bi-download"></i>
-      <span class="nav-text">バックアップ</span>
     </button>`;
 
   // アーカイブボタンの機能を実装
