@@ -1,0 +1,254 @@
+/* File: pages/status/status.css */
+/* =============================
+   STATUS スタイル
+   ============================= */
+
+/* ─── STATUSページ（一覧表示）のみカード状背景を適用 - MEMOページと統一 ─── */
+.memo-content:not(.edit-mode) {
+  margin: 32px 16px 16px 16px; /* MEMOページと統一 */
+  height: calc(100vh - 153px) !important; /* MEMOページと統一 */
+  background: #2d2d2d;
+  border-radius: 12px;
+  padding: 0; /* パディングを削除してボタンとリストを分離 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* memo-content自体のスクロールを無効 */
+}
+
+/* ─── ステータスリスト ─── */
+.status-list {
+  list-style: none !important;
+  margin: 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1; /* 残りの高さを使用 */
+  overflow-y: auto; /* スクロール可能 */
+  overflow-x: hidden;
+  /* スクロールバーのスタイル */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  min-height: 0; /* flexアイテムが縮まるようにする */
+  max-height: 100%; /* 親要素の高さを超えないようにする */
+}
+
+/* status-list専用スクロールバー */
+.status-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.status-list::-webkit-scrollbar-track {
+  background: rgba(45, 45, 45, 0.5);
+  border-radius: 4px;
+}
+
+.status-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.status-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ─── ステータスアイテム ─── */
+.status-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* icon, title, value */
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
+  padding: 16px;
+  border-radius: 6px;
+  min-height: 64px;
+  line-height: 1.2;
+  overflow: visible;
+  transition: all 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.status-item:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.status-item.measuring {
+  background: linear-gradient(90deg, #4a5568, #2d3748);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ─── アイコン ─── */
+.status-item .status-icon {
+  font-size: 1.4rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.status-item .status-icon.speed {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.status-item .status-icon.local-ip {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.status-item .status-icon.global-ip {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.status-item:hover .status-icon {
+  transform: scale(1.1);
+}
+
+/* ─── タイトル ─── */
+.status-item .status-title {
+  flex: 1;
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ─── 値表示 ─── */
+.status-item .status-value {
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+  min-width: 80px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.status-item .status-value.loading {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.status-item .status-value.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.status-item .status-value.success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+/* ─── ローディングスピナー ─── */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #60a5fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── リフレッシュボタンエリア ─── */
+.status-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.status-header h3 {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-refresh-all {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-refresh-all:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-refresh-all:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-refresh-all .spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ─── レスポンシブ対応 ─── */
+@media (max-width: 768px) {
+  .status-item {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .status-item .status-icon {
+    font-size: 1.2rem;
+    width: 32px;
+    height: 32px;
+  }
+
+  .status-item .status-title {
+    font-size: 0.9rem;
+  }
+
+  .status-item .status-value {
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+}

@@ -1,0 +1,261 @@
+/* File: pages/iframe/iframe.css */
+/* =============================
+   IFRAME スタイル
+   ============================= */
+
+/* ─── ベース設定 ─── */
+body {
+  background: #314559;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #e2e8f0;
+  overflow: hidden; /* スクロールバーを非表示 */
+}
+
+/* ─── ヘッダー（非表示） ─── */
+/* .iframe-header { background: #314559 !important; } */
+
+/* ─── メインコンテンツ領域 ─── */
+.memo-content {
+  display: flex;
+  flex-direction: column;
+  padding: 12px; /* 最小サイズのパディングを適用 */
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  position: relative; /* 追加：回転枠線の基準位置 */
+}
+
+/* ─── 外枠だけのカラフルボーダー ─── */
+.memo-content.animate.show::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 15px; /* memo-contentより少し大きく */
+  background: linear-gradient(45deg, #e95404, #a600cf, #e95404, #a600cf);
+  background-size: 400% 400%;
+  z-index: -1;
+}
+
+/* ─── Empty State（URL未入力時の表示） ─── */
+.iframe-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  margin-top: 0;
+}
+
+.iframe-empty-state-content {
+  text-align: center;
+  max-width: 250px; /* 最小サイズの幅を適用 */
+  padding: 0 4px; /* 最小サイズのパディングを適用 */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.iframe-empty-state-content.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.iframe-empty-state-icon {
+  font-size: 28px; /* 最小サイズのアイコンサイズを適用 */
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 8px; /* 最小サイズのマージンを適用 */
+}
+
+.iframe-empty-state-title {
+  color: #ffffff;
+  font-size: 0.9rem; /* 最小サイズのフォントサイズを適用 */
+  font-weight: 600;
+  margin-bottom: 4px; /* 最小サイズのマージンを適用 */
+  line-height: 1.4;
+}
+
+.iframe-empty-state-message {
+  color: #e2e8f0;
+  font-size: 0.75rem; /* 最小サイズのフォントサイズを適用 */
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+/* ─── 検索入力エリア ─── */
+.iframe-url-input-row {
+  display: flex;
+  flex-direction: column; /* 最小サイズのレイアウトを適用 */
+  align-items: center;
+  gap: 6px; /* 最小サイズのギャップを適用 */
+  margin-top: 12px; /* 最小サイズのマージンを適用 */
+  width: 100%; /* 最小サイズの幅を適用 */
+}
+
+.search-input {
+  width: 100%; /* 最小サイズの幅を適用 */
+  max-width: 100%; /* 最小サイズの最大幅を適用 */
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 6px; /* 最小サイズのボーダーラディウスを適用 */
+  padding: 8px 12px; /* 最小サイズのパディングを適用 */
+  font-size: 0.8rem; /* 最小サイズのフォントサイズを適用 */
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3); /* 最小サイズのボックスシャドウを適用 */
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-size: 0.75rem; /* 最小サイズのフォントサイズを適用 */
+}
+
+.search-submit-btn {
+  background: linear-gradient(135deg, #e95404, #a600cf);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px; /* 最小サイズのボーダーラディウスを適用 */
+  padding: 8px 12px; /* 最小サイズのパディングを適用 */
+  font-size: 0.8rem; /* 最小サイズのフォントサイズを適用 */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px; /* 最小サイズの最小幅を適用 */
+  width: 100%; /* 最小サイズの幅を適用 */
+}
+
+.search-submit-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px); /* 最小サイズの変形を適用 */
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3); /* 最小サイズのボックスシャドウを適用 */
+}
+
+.search-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.search-submit-btn i {
+  font-size: 0.9rem; /* 最小サイズのフォントサイズを適用 */
+}
+
+/* ─── iframe表示エリア ─── */
+.iframe-display-container {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 8px; /* 最小サイズのボーダーラディウスを適用 */
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* 最小サイズのボックスシャドウを適用 */
+  margin-top: 12px; /* 最小サイズのマージンを適用 */
+  display: flex;
+  flex-direction: column;
+}
+
+.iframe-header {
+  background: #f8f9fa;
+  padding: 6px 8px; /* 最小サイズのパディングを適用 */
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.new-search-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px; /* 最小サイズのボーダーラディウスを適用 */
+  padding: 4px 8px; /* 最小サイズのパディングを適用 */
+  font-size: 0.7rem; /* 最小サイズのフォントサイズを適用 */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 3px; /* 最小サイズのギャップを適用 */
+}
+
+.new-search-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3); /* 最小サイズのボックスシャドウを適用 */
+}
+
+.new-search-btn i {
+  font-size: 0.6rem; /* 最小サイズのフォントサイズを適用 */
+}
+
+.iframe-display {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+}
+
+/* ─── フッター（非表示） ─── */
+.iframe-footer {
+  display: none !important;
+}
+
+/* ─── アニメーション ─── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iframe-content {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* --- HEADER: MEMO/PROMPTと同じくデフォルトのまま --- */
+header {
+  /* MEMO/PROMPTと同じ: position, z-index 指定なし */
+}
+
+/* --- MAIN CONTENT: MEMO/PROMPTと同じ構造 --- */
+.iframe-content {
+  display: flex;
+  flex-direction: column;
+  padding: 12px; /* 最小サイズのパディングを適用 */
+  box-sizing: border-box;
+  /* height, padding-top, position, z-index 指定なし */
+}
+
+/* --- IFRAME DISPLAY AREA --- */
+.iframe-display-container {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 8px; /* 最小サイズのボーダーラディウスを適用 */
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* 最小サイズのボックスシャドウを適用 */
+  margin-top: 12px; /* 最小サイズのマージンを適用 */
+  display: flex;
+  flex-direction: column;
+  /* z-index, position 指定なし */
+}
+
+.iframe-display {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+  /* z-index 指定なし */
+}

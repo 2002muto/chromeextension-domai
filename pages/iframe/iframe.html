@@ -1,0 +1,119 @@
+<!-- File: pages/iframe/iframe.html -->
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>IFRAME</title>
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap/css/bootstrap.min.css"
+    />
+
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../memo/memo.css" />
+    <link rel="stylesheet" href="iframe.css" />
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap-icons/bootstrap-icons.css"
+    />
+  </head>
+  <body>
+    <!-- 共通ヘッダー -->
+    <header>
+      <a href="../memo/memo.html" class="nav-btn" id="btn-memo-list">
+        <i class="bi bi-clipboard2-minus"></i>
+        <span class="nav-text">MEMO</span>
+      </a>
+      <a href="../clipboard/clipboard.html" class="nav-btn" id="btn-clipboard">
+        <i class="bi bi-journal-text"></i>
+        <span class="nav-text">CLIPBOARD</span>
+      </a>
+      <a href="../prompt/prompt.html" class="nav-btn" id="btn-prompt">
+        <i class="bi bi-terminal"></i>
+        <span class="nav-text">PROMPT</span>
+      </a>
+      <a href="iframe.html" class="nav-btn active" id="btn-iframe">
+        <i class="bi bi-layout-split"></i>
+        <span class="nav-text">IFRAME</span>
+      </a>
+      <a
+        href="../ai/ai.html"
+        class="nav-btn"
+        id="btn-ai"
+        data-click-tooltip="Coming Soon!"
+      >
+        <i class="bi bi-question-lg"></i>
+        <span class="nav-text">AI</span>
+      </a>
+      <a href="../status/status.html" class="nav-btn" id="btn-status">
+        <i class="bi bi-wifi"></i>
+        <span class="nav-text">STATUS</span>
+      </a>
+      <a href="../setting/setting.html" class="nav-btn" id="btn-setting">
+        <i class="bi bi-gear-fill"></i>
+        <span class="nav-text">SETTING</span>
+      </a>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <div class="memo-content animate show" id="iframe-main-content">
+      <!-- Empty State（URL未入力時に表示） -->
+      <div class="iframe-empty-state" id="iframe-empty-state">
+        <div class="iframe-empty-state-content">
+          <div class="iframe-empty-state-icon">
+            <i class="bi bi-search"></i>
+          </div>
+          <h3 class="iframe-empty-state-title">検索してください</h3>
+          <p class="iframe-empty-state-message">
+            検索したいキーワード<br />またはURLを入力してください。
+          </p>
+          <div class="iframe-url-input-row">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="キーワードまたはhttps://example.com"
+            />
+            <button class="search-submit-btn">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- iframe表示エリア（URL入力時のみ表示） -->
+      <div
+        class="iframe-display-container"
+        id="iframe-display-container"
+        style="display: none"
+      >
+        <div class="iframe-header">
+          <button class="new-search-btn" id="new-search-btn">
+            <i class="bi bi-plus-lg"></i> 新しい検索
+          </button>
+        </div>
+        <iframe
+          id="iframe-display"
+          class="iframe-display"
+          frameborder="0"
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- フッター（IFRAMEページでは非表示） -->
+    <footer class="memo-footer iframe-footer" style="display: none">
+      <button class="nav-btn">
+        <i class="bi bi-plus-lg"></i>
+        <span class="nav-text">追加</span>
+      </button>
+      <button class="nav-btn">
+        <i class="bi bi-gear"></i>
+        <span class="nav-text">設定</span>
+      </button>
+    </footer>
+
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../utils.js"></script>
+    <script src="../common.js"></script>
+    <script src="iframe.js"></script>
+  </body>
+</html>

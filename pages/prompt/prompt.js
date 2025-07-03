@@ -330,25 +330,19 @@ async function renderList() {
   root.querySelector(".form-header")?.remove();
 
   footer.innerHTML = `
-    <button class="nav-btn archive-btn">
-      <i class="bi bi-archive-fill"></i>
+    <button id="btn-archive-toggle" class="nav-btn archive-toggle">
+      <i class="bi bi-archive"></i>
       <span class="nav-text">アーカイブ</span>
     </button>
-    <button class="nav-btn extra-btn">
-      <i class="bi bi-three-dots"></i>
-      <span class="nav-text">予備</span>
+    <button class="nav-btn encrypt-btn">
+      <i class="bi bi-download"></i>
+      <span class="nav-text">バックアップ</span>
     </button>`;
 
   // アーカイブボタンの機能を実装
-  footer.querySelector(".archive-btn").addEventListener("click", () => {
+  footer.querySelector("#btn-archive-toggle").addEventListener("click", () => {
     console.log("アーカイブボタンがクリックされました");
     renderArchiveView();
-  });
-
-  // 予備ボタンの機能を実装（将来の拡張用）
-  footer.querySelector(".extra-btn").addEventListener("click", () => {
-    console.log("予備ボタンがクリックされました - 将来の機能用");
-    // 将来的にはバックアップ機能などを実装予定
   });
 
   // アニメーション処理（MEMOページと同じ順序）
