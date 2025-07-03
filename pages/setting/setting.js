@@ -124,7 +124,301 @@ window.addEventListener("DOMContentLoaded", () => {
       // 共有機能の実装
     });
   }
+
+  // ─── カスタム設定機能の初期化 ───
+  initializeCustomSettings();
 });
+
+// カスタム設定機能の初期化
+function initializeCustomSettings() {
+  console.log("カスタム設定機能を初期化中...");
+
+  // 設定の読み込み
+  loadCustomSettings();
+
+  // イベントリスナーの設定
+  setupCustomSettingListeners();
+}
+
+// カスタム設定の読み込み
+function loadCustomSettings() {
+  // Chrome Storageから設定を読み込み
+  chrome.storage.local.get(["customSettings"], (result) => {
+    const settings = result.customSettings || getDefaultCustomSettings();
+
+    // アイコン選択状態を反映
+    updateIconSelection(
+      settings.selectedIcons || getDefaultCustomSettings().selectedIcons
+    );
+
+    console.log("カスタム設定を読み込みました:", settings);
+  });
+}
+
+// デフォルト設定の取得
+function getDefaultCustomSettings() {
+  return {
+    selectedIcons: [
+      "memo",
+      "clipboard",
+      "prompt",
+      "iframe",
+      "status",
+      "setting",
+    ], // AIを除外
+  };
+}
+
+// カスタム設定のイベントリスナー設定
+function setupCustomSettingListeners() {
+  // リセットボタン
+  const resetBtn = document.getElementById("btn-reset-custom");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      console.log("カスタム設定をリセット");
+      resetCustomSettings();
+    });
+  }
+
+  // 保存ボタン
+  const saveBtn = document.getElementById("btn-save-custom");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      console.log("カスタム設定を保存");
+      saveCustomSettings();
+    });
+  }
+
+  // アイコン選択のイベントリスナー
+  setupIconSelectionListeners();
+
+  // AIドロップダウンのイベントリスナー
+  setupAIDropdownListeners();
+}
+
+// カスタム設定のリセット
+function resetCustomSettings() {
+  const defaultSettings = getDefaultCustomSettings();
+
+  // アイコン選択をリセット
+  updateIconSelection(defaultSettings.selectedIcons);
+
+  // 設定を適用
+  applyCustomSettings();
+
+  // 成功メッセージを表示
+  showCustomSettingMessage("設定をデフォルトに戻しました");
+}
+
+// カスタム設定の保存
+function saveCustomSettings() {
+  const settings = getCurrentCustomSettings();
+
+  chrome.storage.local.set(
+    {
+      customSettings: settings,
+    },
+    () => {
+      console.log("カスタム設定を保存しました:", settings);
+      showCustomSettingMessage("設定を保存しました");
+    }
+  );
+}
+
+// 現在のカスタム設定を取得
+function getCurrentCustomSettings() {
+  return {
+    selectedIcons: getSelectedIcons(),
+  };
+}
+
+// カスタム設定の適用
+function applyCustomSettings() {
+  const settings = getCurrentCustomSettings();
+
+  // アイコン表示の適用
+  applyIconVisibility(settings.selectedIcons);
+
+  console.log("カスタム設定を適用しました:", settings);
+}
+
+// カスタム設定メッセージの表示
+function showCustomSettingMessage(message) {
+  // 既存のメッセージがあれば削除
+  const existingMessage = document.querySelector(".custom-setting-message");
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+
+  const messageElement = document.createElement("div");
+  messageElement.className = "custom-setting-message";
+  messageElement.textContent = message;
+
+  // カスタム設定パネルに追加
+  const customPanel = document.getElementById("custom-panel");
+  if (customPanel) {
+    customPanel.appendChild(messageElement);
+
+    // 3秒後に自動削除
+    setTimeout(() => {
+      if (messageElement.parentNode) {
+        messageElement.remove();
+      }
+    }, 3000);
+  }
+}
+
+// アイコン選択のイベントリスナー設定
+function setupIconSelectionListeners() {
+  const iconOptions = document.querySelectorAll(".icon-option");
+
+  iconOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      // Coming Soonアイコンは無効化
+      if (option.classList.contains("coming-soon")) {
+        console.log("Coming Soonアイコンは選択できません");
+        return;
+      }
+
+      const iconType = option.dataset.icon;
+      const isSelected = option.classList.contains("selected");
+
+      if (isSelected) {
+        // 選択解除（最低1つは選択状態を保つ）
+        const selectedCount = document.querySelectorAll(
+          ".icon-option.selected:not(.coming-soon)"
+        ).length;
+        if (selectedCount > 1) {
+          option.classList.remove("selected");
+          console.log(`アイコン選択解除: ${iconType}`);
+        } else {
+          showCustomSettingMessage("最低1つのアイコンは選択してください");
+          return;
+        }
+      } else {
+        // 選択
+        option.classList.add("selected");
+        console.log(`アイコン選択: ${iconType}`);
+      }
+
+      // リアルタイムで設定を適用
+      applyCustomSettings();
+    });
+  });
+}
+
+// アイコン選択状態を更新
+function updateIconSelection(selectedIcons) {
+  const iconOptions = document.querySelectorAll(".icon-option");
+
+  iconOptions.forEach((option) => {
+    const iconType = option.dataset.icon;
+    if (selectedIcons.includes(iconType)) {
+      option.classList.add("selected");
+    } else {
+      option.classList.remove("selected");
+    }
+  });
+}
+
+// 選択されているアイコンを取得
+function getSelectedIcons() {
+  const selectedOptions = document.querySelectorAll(
+    ".icon-option.selected:not(.coming-soon)"
+  );
+  return Array.from(selectedOptions).map((option) => option.dataset.icon);
+}
+
+// アイコン表示の適用
+function applyIconVisibility(selectedIcons) {
+  const header = document.querySelector("header");
+  if (!header) return;
+
+  const navButtons = header.querySelectorAll(".nav-btn");
+
+  navButtons.forEach((button) => {
+    const buttonId = button.id;
+    const iconType = getIconTypeFromId(buttonId);
+
+    if (selectedIcons.includes(iconType)) {
+      button.style.display = "flex";
+    } else {
+      button.style.display = "none";
+    }
+  });
+}
+
+// ボタンIDからアイコンタイプを取得
+function getIconTypeFromId(buttonId) {
+  const iconMap = {
+    "btn-memo-list": "memo",
+    "btn-clipboard": "clipboard",
+    "btn-prompt": "prompt",
+    "btn-iframe": "iframe",
+    "btn-ai": "ai",
+    "btn-status": "status",
+    "btn-setting": "setting",
+  };
+
+  return iconMap[buttonId] || buttonId;
+}
+
+// AIドロップダウンのイベントリスナー設定
+function setupAIDropdownListeners() {
+  const aiDropdownTrigger = document.querySelector(
+    ".icon-option.coming-soon.dropdown-trigger"
+  );
+
+  if (aiDropdownTrigger) {
+    // クリックイベントでドロップダウンを表示/非表示
+    aiDropdownTrigger.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const dropdown = aiDropdownTrigger.querySelector(".coming-soon-dropdown");
+      const isVisible = dropdown.style.display === "block";
+
+      // 他のドロップダウンを閉じる
+      document.querySelectorAll(".coming-soon-dropdown").forEach((d) => {
+        d.style.display = "none";
+      });
+
+      // このドロップダウンの表示/非表示を切り替え
+      dropdown.style.display = isVisible ? "none" : "block";
+    });
+
+    // ドロップダウンアイテムのクリックイベント
+    const dropdownItems = aiDropdownTrigger.querySelectorAll(".dropdown-item");
+    dropdownItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const itemText = item.querySelector("span").textContent;
+        console.log(`AI機能選択: ${itemText}`);
+
+        // ドロップダウンを閉じる
+        const dropdown = aiDropdownTrigger.querySelector(
+          ".coming-soon-dropdown"
+        );
+        dropdown.style.display = "none";
+
+        // 選択された機能のメッセージを表示
+        showCustomSettingMessage(`${itemText}は今後実装予定です`);
+      });
+    });
+
+    // ドキュメント全体のクリックでドロップダウンを閉じる
+    document.addEventListener("click", (e) => {
+      if (!aiDropdownTrigger.contains(e.target)) {
+        const dropdown = aiDropdownTrigger.querySelector(
+          ".coming-soon-dropdown"
+        );
+        dropdown.style.display = "none";
+      }
+    });
+  }
+}
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderSettingMain = renderSettingMain;

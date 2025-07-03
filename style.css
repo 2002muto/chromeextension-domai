@@ -8,6 +8,8 @@ header {
   padding: 16px 16px 0; /* 左右のパディングを増やして、壁からの余白を確保 */
   gap: 12px; /* アイコン間のスペースはそのまま */
   /* background: #001f3f; */
+  /* ドラッグ＆ドロップ機能のため、DOM順序のみで制御 */
+  flex-wrap: nowrap;
 }
 
 /* サイドパネル全体の背景色 */
@@ -458,26 +460,9 @@ main {
 }
 
 /* nav-btnの順序を明示的に統一 */
-#btn-memo-list {
-  order: 1;
-}
-#btn-clipboard {
-  order: 2;
-}
-#btn-prompt {
-  order: 3;
-}
-#btn-iframe {
-  order: 4;
-}
-#btn-ai {
-  order: 5;
-}
-#btn-status {
-  order: 6;
-}
-#btn-setting {
-  order: 7;
+/* ドラッグ＆ドロップ機能のため、orderプロパティを完全に無効化 */
+.nav-btn {
+  order: unset !important;
 }
 
 .coming-soon-container {
@@ -492,4 +477,118 @@ main {
   /* ...既存... */
   padding: 30px 20px; /* ← 左右パディングを25px→20pxに減らす */
   /* ...既存... */
+}
+
+/* ━━━━━━━━━━ ヘッダーナビゲーションのドラッグ＆ドロップスタイル ━━━━━━━━━━ */
+
+/* 長押し中のボタン */
+.nav-btn.holding {
+  transform: scale(0.95) !important;
+  opacity: 0.8 !important;
+  cursor: grabbing !important;
+  transition: all 0.2s ease !important;
+  z-index: 1000 !important;
+}
+
+/* ドラッグ中のボタン */
+.nav-btn.dragging {
+  opacity: 0.5 !important;
+  transform: scale(0.95) !important;
+  z-index: 1000 !important;
+  cursor: grabbing !important;
+  transition: all 0.2s ease !important;
+}
+
+/* ドロップ可能エリア */
+.nav-btn.drag-over {
+  background-color: rgba(59, 130, 246, 0.3) !important;
+  border: 2px dashed #3b82f6 !important;
+  transform: scale(1.05) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* ドラッグ可能であることを示すカーソル */
+.nav-btn {
+  cursor: grab !important;
+  user-select: none !important; /* テキスト選択を無効化 */
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+.nav-btn:active {
+  cursor: grabbing !important;
+}
+
+/* 長押し中のホバー効果を無効化 */
+.nav-btn.holding:hover {
+  transform: scale(0.95) !important;
+  filter: none !important;
+}
+
+/* ドラッグ＆ドロップ成功トースト */
+.nav-drag-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: slideInRight 0.3s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-drag-toast i {
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
+.nav-drag-toast.fade-out {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+/* リンク要素のドラッグを有効化 */
+.nav-btn {
+  -webkit-user-drag: element !important;
+  -khtml-user-drag: element !important;
+  -moz-user-drag: element !important;
+  -o-user-drag: element !important;
+  user-drag: element !important;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .nav-drag-toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    font-size: 0.8rem;
+    padding: 10px 16px;
+  }
 }
