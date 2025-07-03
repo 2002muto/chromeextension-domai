@@ -240,13 +240,13 @@ body::-webkit-scrollbar,
 }
 
 #btn-ai.active {
+  background: linear-gradient(135deg, #af008f, #6b00d9);
+  box-shadow: 0 4px 12px rgba(175, 0, 143, 0.3);
+}
 
 #btn-status.active {
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-  background: linear-gradient(135deg, #af008f, #6b00d9);
-  box-shadow: 0 4px 12px rgba(175, 0, 143, 0.3);
 }
 
 #btn-setting.active {
@@ -337,3 +337,134 @@ main {
   z-index: 2;
   transition: all 0.3s ease;
 }
+
+/* ═══════════════════════════════════════
+   ヘッダーアイコンのみ表示の修正
+   ═══════════════════════════════════════ */
+
+/* テキストは完全に非表示 */
+.nav-btn .nav-text {
+  display: none !important;
+}
+
+/* ボタンサイズをアイコン専用に調整 */
+.nav-btn {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  transition: all 0.3s ease !important;
+}
+
+/* ホバー時の拡張動作を無効化 */
+.nav-btn:hover:not(.active) {
+  width: 40px !important;
+  border-radius: 50% !important;
+  animation: none !important;
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+/* 拡張状態を無効化 */
+.nav-btn.expanded {
+  width: 40px !important;
+  border-radius: 50% !important;
+  animation: none !important;
+}
+
+/* アクティブ状態も同じサイズ */
+.nav-btn.active {
+  width: 40px !important;
+  border-radius: 50% !important;
+}
+
+/* アイコンのスタイル調整 */
+.nav-btn i {
+  color: #bbb !important;
+  filter: grayscale(1) brightness(0.8);
+  transition: color 0.3s, filter 0.3s;
+  display: block !important;
+}
+
+/* アクティブなアイコンのみカラー */
+.nav-btn.active i {
+  color: #fff !important;
+  filter: none;
+}
+
+/* ホバー時のアイコン非表示を解除 */
+.nav-btn:hover:not(.active) i {
+  display: block !important;
+  color: #fff !important;
+  filter: none;
+}
+
+/* 拡張時のアイコン非表示を解除 */
+.nav-btn.expanded i {
+  display: block !important;
+}
+
+/* クリック時のツールチップを完全に無効化 */
+.nav-btn::before {
+  display: none !important;
+}
+
+.nav-btn.clicked::before {
+  display: none !important;
+}
+
+/* クリック時の展開効果を完全に無効化 */
+.nav-btn.clicked {
+  width: 40px !important;
+  border-radius: 50% !important;
+  animation: none !important;
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+/* クリック時もアイコンを表示し続ける */
+.nav-btn.clicked i {
+  display: block !important;
+  color: #fff !important;
+  filter: none;
+}
+
+/* クリック時のテキスト表示を無効化 */
+.nav-btn.clicked .nav-text {
+  display: none !important;
+}
+
+/* すべてのnav-btnアイコンを中央揃え */
+.nav-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* アイコンの縦位置を中央に */
+.nav-btn i {
+  vertical-align: middle !important;
+  line-height: 1 !important;
+  font-size: 1.4rem !important;
+}
+
+/* AIアイコンの個別補正をリセット */
+#btn-ai i {
+  position: relative !important;
+  top: 0 !important;
+}
+
+
+/* アクティブ・クリック時もアイコンを常に表示 */
+.nav-btn.active i,
+.nav-btn.clicked i {
+  display: block !important;
+}
+
+
+/* nav-btnの順序を明示的に統一 */
+#btn-memo-list { order: 1; }
+#btn-clipboard { order: 2; }
+#btn-prompt { order: 3; }
+#btn-iframe { order: 4; }
+#btn-ai { order: 5; }
+#btn-status { order: 6; }
+#btn-setting { order: 7; }
+
