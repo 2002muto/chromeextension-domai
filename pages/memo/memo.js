@@ -109,7 +109,7 @@ function setFooter(mode) {
   foot.style.display = "flex";
   if (mode === "list") {
     foot.innerHTML = `
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブ">
         <i class="bi bi-archive"></i>
         <span class="nav-text">アーカイブ</span>
       </button>

@@ -72,7 +72,7 @@ function setFooter(mode) {
   foot.style.display = "flex";
   if (mode === "clipboard") {
     foot.innerHTML = `
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブ">
         <i class="bi bi-archive"></i>
         <span class="nav-text">アーカイブ</span>
       </button>
@@ -323,7 +323,7 @@ async function renderClipboardView() {
     // アーカイブアイコン（MEMOページと同様のスタイル）
     const arch = document.createElement("i");
     arch.className = "bi bi-archive-fill actions";
-    arch.title = "アーカイブへ移動";
+    arch.title = "アーカイブ";
     arch.addEventListener("click", async (e) => {
       e.stopPropagation();
 
