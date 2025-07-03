@@ -152,6 +152,16 @@ function loadCustomSettings() {
     );
 
     console.log("カスタム設定を読み込みました:", settings);
+
+    // 初期表示時にヘッダーを更新（保存された設定を反映）
+    if (settings && settings.selectedIcons) {
+      applyIconVisibility(settings.selectedIcons);
+    }
+
+    // 少し遅延してから比較を実行
+    setTimeout(() => {
+      compareIconSelectionWithHeader();
+    }, 500);
   });
 }
 
@@ -165,7 +175,7 @@ function getDefaultCustomSettings() {
       "iframe",
       "status",
       "setting",
-    ], // AIを除外
+    ], // AIを除外、settingは常に選択状態
   };
 }
 
@@ -189,6 +199,15 @@ function setupCustomSettingListeners() {
     });
   }
 
+  // 比較ボタン
+  const compareBtn = document.getElementById("btn-compare-custom");
+  if (compareBtn) {
+    compareBtn.addEventListener("click", () => {
+      console.log("アイコン選択状態とヘッダー表示状態を比較");
+      compareIconSelectionWithHeader();
+    });
+  }
+
   // アイコン選択のイベントリスナー
   setupIconSelectionListeners();
 
@@ -203,8 +222,8 @@ function resetCustomSettings() {
   // アイコン選択をリセット
   updateIconSelection(defaultSettings.selectedIcons);
 
-  // 設定を適用
-  applyCustomSettings();
+  // 設定を適用（プレビューのみ）
+  applyCustomSettingsPreview();
 
   // 成功メッセージを表示
   showCustomSettingMessage("設定をデフォルトに戻しました");
@@ -214,6 +233,13 @@ function resetCustomSettings() {
 function saveCustomSettings() {
   const settings = getCurrentCustomSettings();
 
+  // 保存ボタンを一時的に無効化
+  const saveBtn = document.getElementById("btn-save-custom");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="bi bi-check-lg"></i>保存中...';
+  }
+
   chrome.storage.local.set(
     {
       customSettings: settings,
@@ -221,6 +247,21 @@ function saveCustomSettings() {
     () => {
       console.log("カスタム設定を保存しました:", settings);
       showCustomSettingMessage("設定を保存しました");
+
+      // 設定保存時にヘッダーを更新
+      applyIconVisibility(settings.selectedIcons);
+
+      // 少し遅延してから再度ヘッダーを更新（確実性のため）
+      setTimeout(() => {
+        applyIconVisibility(settings.selectedIcons);
+        console.log("ヘッダー更新を再実行しました");
+
+        // 保存ボタンを元に戻す
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<i class="bi bi-check-lg"></i>設定を保存';
+        }
+      }, 100);
     }
   );
 }
@@ -240,6 +281,12 @@ function applyCustomSettings() {
   applyIconVisibility(settings.selectedIcons);
 
   console.log("カスタム設定を適用しました:", settings);
+}
+
+// 設定ページでのみ使用する関数（ヘッダー更新なし）
+function applyCustomSettingsPreview() {
+  const settings = getCurrentCustomSettings();
+  console.log("設定プレビュー:", settings);
 }
 
 // カスタム設定メッセージの表示
@@ -284,6 +331,12 @@ function setupIconSelectionListeners() {
       const isSelected = option.classList.contains("selected");
 
       if (isSelected) {
+        // 設定アイコンは常に選択状態を保つ
+        if (iconType === "setting") {
+          showCustomSettingMessage("設定アイコンは常に表示されます");
+          return;
+        }
+
         // 選択解除（最低1つは選択状態を保つ）
         const selectedCount = document.querySelectorAll(
           ".icon-option.selected:not(.coming-soon)"
@@ -301,8 +354,8 @@ function setupIconSelectionListeners() {
         console.log(`アイコン選択: ${iconType}`);
       }
 
-      // リアルタイムで設定を適用
-      applyCustomSettings();
+      // リアルタイム更新を無効化（設定保存ボタンでのみ適用）
+      // applyCustomSettings();
     });
   });
 }
@@ -318,6 +371,11 @@ function updateIconSelection(selectedIcons) {
     } else {
       option.classList.remove("selected");
     }
+
+    // 設定アイコンは常に選択状態にする
+    if (iconType === "setting") {
+      option.classList.add("selected");
+    }
   });
 }
 
@@ -326,26 +384,48 @@ function getSelectedIcons() {
   const selectedOptions = document.querySelectorAll(
     ".icon-option.selected:not(.coming-soon)"
   );
-  return Array.from(selectedOptions).map((option) => option.dataset.icon);
+  const selectedIcons = Array.from(selectedOptions).map(
+    (option) => option.dataset.icon
+  );
+
+  // 設定アイコンが含まれていない場合は追加
+  if (!selectedIcons.includes("setting")) {
+    selectedIcons.push("setting");
+  }
+
+  console.log("選択されたアイコン:", selectedIcons);
+  return selectedIcons;
 }
 
 // アイコン表示の適用
 function applyIconVisibility(selectedIcons) {
   const header = document.querySelector("header");
-  if (!header) return;
+  if (!header) {
+    console.log("ヘッダーが見つかりません");
+    return;
+  }
 
   const navButtons = header.querySelectorAll(".nav-btn");
+  console.log(`ヘッダー内のボタン数: ${navButtons.length}`);
 
   navButtons.forEach((button) => {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    if (selectedIcons.includes(iconType)) {
+    // 設定アイコンは常に表示
+    if (iconType === "setting") {
       button.style.display = "flex";
+      console.log(`${buttonId} (${iconType}): 表示 (設定アイコン)`);
+    } else if (selectedIcons.includes(iconType)) {
+      button.style.display = "flex";
+      console.log(`${buttonId} (${iconType}): 表示 (選択済み)`);
     } else {
       button.style.display = "none";
+      console.log(`${buttonId} (${iconType}): 非表示 (未選択)`);
     }
   });
+
+  console.log("ヘッダー更新完了 - 表示アイコン:", selectedIcons);
 }
 
 // ボタンIDからアイコンタイプを取得
@@ -420,5 +500,83 @@ function setupAIDropdownListeners() {
   }
 }
 
+// アイコン選択状態とヘッダー表示状態を比較する関数
+function compareIconSelectionWithHeader() {
+  console.log("=== アイコン選択状態とヘッダー表示状態の比較 ===");
+
+  // 1. 設定ページでの選択状態を取得
+  const selectedOptions = document.querySelectorAll(
+    ".icon-option.selected:not(.coming-soon)"
+  );
+  const selectedIcons = Array.from(selectedOptions).map(
+    (option) => option.dataset.icon
+  );
+
+  // 設定アイコンが含まれていない場合は追加
+  if (!selectedIcons.includes("setting")) {
+    selectedIcons.push("setting");
+  }
+
+  console.log("設定ページで選択されているアイコン:", selectedIcons);
+
+  // 2. 現在のヘッダー表示状態を取得
+  const header = document.querySelector("header");
+  if (!header) {
+    console.log("ヘッダーが見つかりません");
+    return;
+  }
+
+  const navButtons = header.querySelectorAll(".nav-btn");
+  const visibleIcons = [];
+  const hiddenIcons = [];
+
+  navButtons.forEach((button) => {
+    const buttonId = button.id;
+    const iconType = getIconTypeFromId(buttonId);
+    const isVisible = button.style.display !== "none";
+
+    if (isVisible) {
+      visibleIcons.push(iconType);
+    } else {
+      hiddenIcons.push(iconType);
+    }
+  });
+
+  console.log("ヘッダーで表示されているアイコン:", visibleIcons);
+  console.log("ヘッダーで非表示のアイコン:", hiddenIcons);
+
+  // 3. 比較
+  const shouldBeVisible = selectedIcons;
+  const actuallyVisible = visibleIcons;
+
+  const missingIcons = shouldBeVisible.filter(
+    (icon) => !actuallyVisible.includes(icon)
+  );
+  const extraIcons = actuallyVisible.filter(
+    (icon) => !shouldBeVisible.includes(icon)
+  );
+
+  if (missingIcons.length === 0 && extraIcons.length === 0) {
+    console.log("✅ アイコン選択状態とヘッダー表示状態は一致しています");
+    showCustomSettingMessage(
+      "アイコン選択状態とヘッダー表示状態は一致しています"
+    );
+  } else {
+    console.log("❌ アイコン選択状態とヘッダー表示状態が一致していません");
+    if (missingIcons.length > 0) {
+      console.log("表示されるべきだが非表示のアイコン:", missingIcons);
+    }
+    if (extraIcons.length > 0) {
+      console.log("非表示になるべきだが表示されているアイコン:", extraIcons);
+    }
+    showCustomSettingMessage(
+      "アイコン選択状態とヘッダー表示状態が一致していません"
+    );
+  }
+
+  console.log("=== 比較完了 ===");
+}
+
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderSettingMain = renderSettingMain;
+window.compareIconSelectionWithHeader = compareIconSelectionWithHeader;

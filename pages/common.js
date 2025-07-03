@@ -1592,20 +1592,32 @@ function applyIconVisibilityFromStorage() {
 // アイコン表示の適用（common.js版）
 function applyIconVisibility(selectedIcons) {
   const header = document.querySelector("header");
-  if (!header) return;
+  if (!header) {
+    console.log("COMMON: ヘッダーが見つかりません");
+    return;
+  }
 
   const navButtons = header.querySelectorAll(".nav-btn");
+  console.log(`COMMON: ヘッダー内のボタン数: ${navButtons.length}`);
 
   navButtons.forEach((button) => {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    if (selectedIcons.includes(iconType)) {
+    // 設定アイコンは常に表示
+    if (iconType === "setting") {
       button.style.display = "flex";
+      console.log(`COMMON: ${buttonId} (${iconType}): 表示 (設定アイコン)`);
+    } else if (selectedIcons.includes(iconType)) {
+      button.style.display = "flex";
+      console.log(`COMMON: ${buttonId} (${iconType}): 表示 (選択済み)`);
     } else {
       button.style.display = "none";
+      console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (未選択)`);
     }
   });
+
+  console.log("COMMON: ヘッダー更新完了 - 表示アイコン:", selectedIcons);
 }
 
 // ボタンIDからアイコンタイプを取得（common.js版）

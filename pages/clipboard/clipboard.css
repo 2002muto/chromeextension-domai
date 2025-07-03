@@ -121,11 +121,11 @@
 }
 
 .clipboard-copy {
-  background: #00a31e;
+  background: transparent;
   border: none;
   padding: 8px;
   border-radius: 4px;
-  color: #fff;
+  color: #04e949;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 36px; /* 固定幅 */
@@ -137,9 +137,10 @@
 }
 
 .clipboard-copy:hover {
-  background: #00b821;
+  background: transparent;
+  color: #00b0cf;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 163, 30, 0.3);
+  box-shadow: none;
 }
 
 /* clipboardページのアーカイブアイコン（copyボタンと同じサイズ） */

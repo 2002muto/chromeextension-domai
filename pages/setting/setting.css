@@ -208,6 +208,16 @@
   transform: translateY(-1px);
 }
 
+.btn-compare {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.btn-compare:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
 /* カスタム設定メッセージ */
 .custom-setting-message {
   background: linear-gradient(135deg, #10b981, #059669);
@@ -391,6 +401,18 @@
   border-color: #3b82f6;
   background: rgba(59, 130, 246, 0.1);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6),
+      0 0 30px rgba(59, 130, 246, 0.4);
+  }
 }
 
 .icon-option i {
@@ -422,31 +444,101 @@
 .icon-option[data-icon="memo"].selected {
   background: linear-gradient(135deg, #078ab9, #024881);
   border-color: #078ab9;
+  animation: glowPulseMemo 2s ease-in-out infinite;
 }
 
 .icon-option[data-icon="clipboard"].selected {
   background: linear-gradient(135deg, #04e949, #00b0cf);
   border-color: #04e949;
+  animation: glowPulseClipboard 2s ease-in-out infinite;
 }
 
 .icon-option[data-icon="prompt"].selected {
   background: linear-gradient(135deg, #667eea, #764ba2);
   border-color: #667eea;
+  animation: glowPulsePrompt 2s ease-in-out infinite;
 }
 
 .icon-option[data-icon="iframe"].selected {
   background: linear-gradient(135deg, #e95404, #a600cf);
   border-color: #e95404;
+  animation: glowPulseIframe 2s ease-in-out infinite;
 }
 
 .icon-option[data-icon="status"].selected {
   background: linear-gradient(135deg, #10b981, #059669);
   border-color: #10b981;
+  animation: glowPulseStatus 2s ease-in-out infinite;
 }
 
 .icon-option[data-icon="setting"].selected {
   background: linear-gradient(135deg, #fff04b, #99902d);
   border-color: #fff04b;
+  animation: glowPulseSetting 2s ease-in-out infinite;
+}
+
+@keyframes glowPulseMemo {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(7, 138, 185, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(7, 138, 185, 0.6),
+      0 0 30px rgba(7, 138, 185, 0.4);
+  }
+}
+
+@keyframes glowPulseClipboard {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(4, 233, 73, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(4, 233, 73, 0.6), 0 0 30px rgba(4, 233, 73, 0.4);
+  }
+}
+
+@keyframes glowPulsePrompt {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6),
+      0 0 30px rgba(102, 126, 234, 0.4);
+  }
+}
+
+@keyframes glowPulseIframe {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(233, 84, 4, 0.6), 0 0 30px rgba(233, 84, 4, 0.4);
+  }
+}
+
+@keyframes glowPulseStatus {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6),
+      0 0 30px rgba(16, 185, 129, 0.4);
+  }
+}
+
+@keyframes glowPulseSetting {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(255, 240, 75, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(255, 240, 75, 0.6),
+      0 0 30px rgba(255, 240, 75, 0.4);
+  }
 }
 
 /* ─── 今後実装予定セクション ─── */
@@ -488,6 +580,14 @@
   transition: all 0.3s ease;
 }
 
+/* 設定アイコンは常に選択可能 */
+.icon-option[data-icon="setting"] {
+  cursor: pointer;
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
 .icon-option.coming-soon:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.1);
@@ -503,6 +603,12 @@
   transition: all 0.3s ease;
 }
 
+/* 設定アイコンのアイコンは常にカラー */
+.icon-option[data-icon="setting"] i {
+  color: #bbb;
+  filter: none;
+}
+
 .icon-option.coming-soon:hover i {
   color: #6b7280;
   transform: none;
@@ -515,6 +621,11 @@
   font-weight: 500;
   text-align: center;
   line-height: 1.2;
+}
+
+/* 設定アイコンのラベルは常にカラー */
+.icon-option[data-icon="setting"] .icon-label {
+  color: #e2e8f0;
 }
 
 /* Coming Soonアイコンのグラデーション効果（無効化） */

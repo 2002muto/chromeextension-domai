@@ -79,7 +79,7 @@
         <div class="detail-panel" id="custom-panel">
           <h3 class="custom-title">アイコン選択</h3>
           <p class="custom-description">
-            ヘッダーに表示するアイコンを選択できます。
+            光っているアイコンのみがヘッダーに表示されます。アイコンをクリックして選択/解除してください。設定アイコンは常に表示されます。<br />変更を反映するには「設定を保存」ボタンを押してください。<br />保存後、選択されたアイコンのみがヘッダーに表示されます。
           </p>
 
           <div class="custom-settings">
@@ -87,7 +87,7 @@
             <div class="setting-group">
               <h4 class="setting-group-title">
                 <i class="bi bi-grid-3x3-gap"></i>
-                表示するアイコン
+                ヘッダーに表示するアイコン<br />（光っているもののみ表示）
               </h4>
               <div class="setting-item">
                 <div class="setting-control">
@@ -198,6 +198,10 @@
             <button class="btn-save" id="btn-save-custom">
               <i class="bi bi-check-lg"></i>
               設定を保存
+            </button>
+            <button class="btn-compare" id="btn-compare-custom">
+              <i class="bi bi-arrow-left-right"></i>
+              状態を比較
             </button>
           </div>
         </div>
