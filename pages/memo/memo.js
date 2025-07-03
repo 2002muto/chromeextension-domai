@@ -1545,10 +1545,47 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Add event listener to MEMO button
   const memoButton = document.getElementById("btn-memo-list");
   if (memoButton) {
-    memoButton.addEventListener("click", () => {
+    memoButton.addEventListener("click", async (event) => {
       console.log("MEMO page button clicked");
-      // ヘッダーをクリックした時は常に一覧画面を表示
-      renderListView();
+
+      // Check for unsaved changes
+      const isNew = !currentEditingMemoId;
+      const originalMemo = memos.find((m) => m.id === currentEditingMemoId);
+      const hasUnsavedChanges = checkForUnsavedMemoChanges(originalMemo, isNew);
+
+      if (hasUnsavedChanges) {
+        // AppUtilsの保存確認ダイアログを使用
+        if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+          window.AppUtils.showSaveConfirmDialog({
+            title: "変更を保存しますか？",
+            message:
+              "メモ内容に変更があります。<br>保存せずに戻ると変更が失われます。",
+            onSave: async () => {
+              // 保存して戻る
+              console.log("[MEMO] 変更を保存して一覧画面に遷移");
+              await saveAndGoBack();
+            },
+            onDiscard: () => {
+              // 破棄して戻る
+              console.log("[MEMO] 変更を破棄して一覧画面に遷移");
+              discardAndGoBack();
+            },
+          });
+        } else {
+          // AppUtilsが利用できない場合は標準のconfirmを使用
+          const confirmLeave = confirm(
+            "メモ内容に変更があります。保存せずに戻ると変更が失われます。\n\n変更を破棄して戻りますか？"
+          );
+          if (!confirmLeave) {
+            event.preventDefault();
+            return;
+          }
+          await renderListView();
+        }
+      } else {
+        // 未保存の変更がない場合は直接一覧画面に遷移
+        await renderListView();
+      }
     });
   }
 
@@ -1599,6 +1636,45 @@ window.checkForUnsavedMemoChanges = checkForUnsavedMemoChanges;
 window.memos = memos;
 window.saveStorage = saveStorage;
 window.getCurrentEditingMemoId = () => currentEditingMemoId;
+
+// 保存して戻る関数
+async function saveAndGoBack() {
+  const titleInput = document.querySelector(".title-input")?.value.trim() || "";
+  const body = document.querySelector(".text-input")?.value.trim() || "";
+  const starred =
+    document.querySelector(".star-input")?.dataset.starred === "true";
+
+  // タイトルが空で内容もない場合のみ「無題」とする
+  const title = titleInput || (body ? titleInput : "無題");
+
+  if (currentEditingMemoId !== undefined) {
+    // update existing
+    const idx = memos.findIndex((m) => m.id === currentEditingMemoId);
+    memos[idx] = { id: currentEditingMemoId, title, content: body, starred };
+    console.log("[MEMO] 変更を保存して戻りました:", memos[idx]);
+  } else {
+    // add new
+    const newM = {
+      id: Date.now(),
+      title,
+      content: body,
+      starred,
+      archived: false,
+    };
+    memos.push(newM);
+    console.log("[MEMO] 新規メモを保存して戻りました:", newM);
+  }
+  await saveStorage(MEMO_KEY, memos);
+  // グローバルに最新のmemosを設定
+  window.memos = memos;
+  await renderListView();
+}
+
+// 破棄して戻る関数
+function discardAndGoBack() {
+  console.log("[MEMO] 変更を破棄して戻りました");
+  renderListView();
+}
 
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
 function showDragDropSuccessMessage(fromPosition, toPosition) {
