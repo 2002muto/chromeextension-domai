@@ -199,6 +199,7 @@ function performSearch() {
   }
 
   let url;
+  let isSearchQuery = false; // Google 検索かどうかを判定するフラグ
 
   // URLかどうかを判定（http/httpsスキームまたはドメイン形式）
   if (
@@ -213,14 +214,22 @@ function performSearch() {
     }
     console.log("URLとして処理:", url);
   } else {
-    // Google検索として処理
+    // Google検索として処理 -> 新しいタブで開くためにフラグを立てる
     url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    isSearchQuery = true;
     console.log("Google検索として処理:", url);
   }
 
   try {
     new URL(url);
     console.log("有効なURLです - iframeに読み込み中:", url);
+
+    if (isSearchQuery) {
+      // Google検索の場合は新しいタブで開いて処理終了
+      console.log("Google検索結果を新しいタブで開きます:", url);
+      chrome.tabs.create({ url });
+      return;
+    }
 
     // Empty Stateと入力行を非表示、iframeを表示
     emptyStateContent?.classList.remove("show");

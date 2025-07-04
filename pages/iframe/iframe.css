@@ -86,6 +86,14 @@ body {
   opacity: 0.8;
 }
 
+/* Google検索が新規タブで開く旨の注意書き */
+.iframe-empty-state-note {
+  color: #ffd700;
+  font-size: 0.7rem;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
 /* ─── 検索入力エリア ─── */
 .iframe-url-input-row {
   display: flex;
