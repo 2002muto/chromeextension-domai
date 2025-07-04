@@ -127,6 +127,27 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // ─── カスタム設定機能の初期化 ───
   initializeCustomSettings();
+
+  // カスタムボタンのクリックでカスタムパネルのみアニメーション表示（show→次フレームでanimate）
+  const customBtn = document.getElementById("btn-custom");
+  if (customBtn) {
+    customBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      // すべての.detail-panelからshow/animateを外す
+      document.querySelectorAll(".detail-panel").forEach((panel) => {
+        panel.classList.remove("show", "animate");
+      });
+      // #custom-panelだけにshowを付与
+      const customPanel = document.getElementById("custom-panel");
+      if (customPanel) {
+        customPanel.classList.add("show");
+        // 次フレームでanimateを付与（アニメーション発火保証）
+        requestAnimationFrame(() => {
+          customPanel.classList.add("animate");
+        });
+      }
+    });
+  }
 });
 
 // カスタム設定機能の初期化
