@@ -54,12 +54,18 @@
     <div class="memo-content">
       <!-- 左ナビメニュー -->
       <nav class="setting-nav">
-        <button class="setting-btn" id="btn-backup" title="バックアップ">
-          <span>バックアップ</span>
+        <button
+          class="setting-btn"
+          id="btn-description"
+          data-target="#description-panel"
+          title="説明"
+        >
+          <span>説明</span>
         </button>
         <button
           class="setting-btn"
           id="btn-backup-install"
+          data-target="#backup-install-panel"
           title="バックアップのインストール"
         >
           <span>バックアップのインストール</span>
@@ -83,14 +89,124 @@
       </nav>
       <!-- 詳細パネル -->
       <section class="setting-detail">
-        <div class="detail-panel show">
-          この拡張機能は、アカウント登録不要、無料で⼀切の機能制限なく使⽤できます。<br /><br />
-          この拡張は、情報漏洩やバックドアの懸念を排除するため、クラウドサーバーへの通信を完全に断ち、各端末のストレージに情報を保存することで
-          完全にスタンドアロンで動く設計にしています。<br /><br />
-          また、ユーザビリティを最優先に考え、UI/UXの劣化を防ぐ広告掲載も⾏っておりません。<br /><br />
-          この拡張機能が、皆さまの業務効率化を⽀援することを⼼から願っています。<br /><br /><br /><br />
-          <a href="#" class="donation-link">⇒ Please Donation</a
-          ><br /><br /><br />
+        <!-- 説明パネル -->
+        <div class="detail-panel show" id="description-panel">
+          <h3 class="description-title">
+            <i class="bi bi-info-circle"></i>
+            domai Extension について
+          </h3>
+          <div class="description-content">
+            <p class="description-text">
+              この拡張機能は、アカウント登録不要、無料で⼀切の機能制限なく使⽤できます。
+            </p>
+            <p class="description-text">
+              この拡張は、情報漏洩やバックドアの懸念を排除するため、クラウドサーバーへの通信を完全に断ち、<br />
+              各端末のストレージに情報を保存することで完全にスタンドアロンで動く設計にしています。
+            </p>
+            <p class="description-text">
+              また、ユーザビリティを最優先に考え、UI/UXの劣化を防ぐ広告掲載も⾏っておりません。
+            </p>
+            <p class="description-text">
+              この拡張機能が、皆さまの業務効率化を⽀援することを⼼から願っています。
+            </p>
+            <div class="donation-section">
+              <a href="#" class="donation-link">⇒ Please Donation</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- バックアップのインストールパネル -->
+        <div class="detail-panel" id="backup-install-panel">
+          <h3 class="backup-install-title">
+            <i class="bi bi-upload"></i>
+            バックアップのインストール
+          </h3>
+          <p class="backup-install-description">
+            エクスポートしたバックアップファイル（JSON）を選択して、データを復元できます。<br />
+            既存のデータがある場合は、統合または上書きするかを選択してください。
+          </p>
+
+          <div class="backup-install-content">
+            <!-- ファイル選択エリア -->
+            <div class="file-upload-area" id="file-upload-area">
+              <div class="upload-icon">
+                <i class="bi bi-cloud-upload"></i>
+              </div>
+              <div class="upload-text">
+                <span class="upload-title">バックアップファイルを選択</span>
+                <span class="upload-subtitle"
+                  >または、ここにファイルをドラッグ&ドロップ</span
+                >
+              </div>
+              <input
+                type="file"
+                id="backup-file-input"
+                accept=".json"
+                style="display: none"
+              />
+              <button class="btn-select-file" id="btn-select-file">
+                <i class="bi bi-folder2-open"></i>
+                ファイルを選択
+              </button>
+            </div>
+
+            <!-- ファイル情報表示エリア -->
+            <div class="file-info" id="file-info" style="display: none">
+              <div class="file-info-header">
+                <i class="bi bi-file-earmark-text"></i>
+                <span class="file-name" id="file-name"></span>
+                <button class="btn-remove-file" id="btn-remove-file">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <div class="file-details" id="file-details">
+                <!-- ファイルの詳細情報がここに表示される -->
+              </div>
+            </div>
+
+            <!-- インポートオプション -->
+            <div
+              class="import-options"
+              id="import-options"
+              style="display: none"
+            >
+              <h4 class="options-title">
+                <i class="bi bi-gear"></i>
+                インポートオプション
+              </h4>
+              <div class="option-group">
+                <label class="option-label">
+                  <input
+                    type="radio"
+                    name="import-mode"
+                    value="merge"
+                    checked
+                  />
+                  <span class="option-text">
+                    <strong>統合</strong> - 既存データと統合（重複は上書き）
+                  </span>
+                </label>
+                <label class="option-label">
+                  <input type="radio" name="import-mode" value="replace" />
+                  <span class="option-text">
+                    <strong>上書き</strong> - 既存データを完全に置き換え
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- インポート実行ボタン -->
+            <div
+              class="import-actions"
+              id="import-actions"
+              style="display: none"
+            >
+              <button class="btn-import" id="btn-import">
+                <i class="bi bi-download"></i>
+                インポートを実行
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- APIキー設定パネル（Coming Soon） -->

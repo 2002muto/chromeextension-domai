@@ -11,20 +11,37 @@ function renderSettingMain() {
     .querySelectorAll(".setting-btn")
     .forEach((b) => b.classList.remove("active"));
 
-  // デフォルトのdetail-panelを表示（設定ページには常に1つのパネルがある）
-  const defaultPanel = document.querySelector(".detail-panel");
-  if (defaultPanel) {
-    // すべてのパネルからshowを削除してから、デフォルトパネルにshowを追加
+  // 説明パネルを表示
+  const descriptionPanel = document.querySelector("#description-panel");
+  if (descriptionPanel) {
+    // すべてのパネルからshowとanimateを削除
     document
       .querySelectorAll(".detail-panel")
-      .forEach((p) => p.classList.remove("show"));
-    defaultPanel.classList.add("show");
+      .forEach((p) => p.classList.remove("show", "animate"));
+
+    // 説明パネルにshowクラスを追加
+    descriptionPanel.classList.add("show");
+    console.log("初期化時に説明パネルを表示しました");
+
+    // アニメーション効果を追加
+    requestAnimationFrame(() => {
+      descriptionPanel.classList.add("animate");
+      console.log("初期化時に説明パネルにanimateクラスを追加しました");
+    });
+  } else {
+    console.error("説明パネルが見つかりません");
   }
 
-  // 最初の設定ボタンを active にする（存在する場合）
-  const firstBtn = document.querySelector(".setting-btn");
-  if (firstBtn) {
-    firstBtn.classList.add("active");
+  // 「説明」ボタンを active にする（存在する場合）
+  const descriptionBtn = document.querySelector("#btn-description");
+  if (descriptionBtn) {
+    descriptionBtn.classList.add("active");
+  } else {
+    // 説明ボタンが見つからない場合は最初のボタンを active にする
+    const firstBtn = document.querySelector(".setting-btn");
+    if (firstBtn) {
+      firstBtn.classList.add("active");
+    }
   }
 
   // MEMO・PROMPTと同じアニメーション
@@ -81,6 +98,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // ─── 以下、既存のメニュー切替＋詳細パネル表示 ───
   document.querySelectorAll(".setting-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      console.log("navボタンがクリックされました:", btn.id, btn.dataset.target);
       // カスタムモードを解除（カスタムボタン以外の場合）
       if (!btn.dataset.target || btn.dataset.target !== "#custom-panel") {
         const content = document.querySelector(".memo-content");
@@ -95,10 +113,11 @@ window.addEventListener("DOMContentLoaded", () => {
         .forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
-      // 全 detail-panel を一旦 hidden
-      document
-        .querySelectorAll(".detail-panel")
-        .forEach((p) => p.classList.remove("show"));
+      // すべてのパネルからshowとanimateを削除
+      document.querySelectorAll(".detail-panel").forEach((p) => {
+        p.classList.remove("show", "animate");
+        console.log(`パネル ${p.id} からshowとanimateを削除`);
+      });
 
       // クリックしたボタンに対応するパネルを show
       const targetId = btn.dataset.target;
@@ -111,13 +130,10 @@ window.addEventListener("DOMContentLoaded", () => {
         // アニメーション効果を追加
         requestAnimationFrame(() => {
           targetPanel.classList.add("animate");
+          console.log("パネルにanimateクラスを追加:", targetId);
         });
       } else {
-        // データターゲットが設定されていない場合はデフォルトパネルを表示
-        const defaultPanel = document.querySelector(".detail-panel");
-        if (defaultPanel) {
-          defaultPanel.classList.add("show");
-        }
+        console.error("ターゲットパネルが見つかりません:", targetId);
       }
     });
   });
@@ -166,29 +182,48 @@ window.addEventListener("DOMContentLoaded", () => {
   // ─── カスタム設定機能の初期化 ───
   initializeCustomSettings();
 
-  // カスタムボタンのクリックでカスタムパネルのみアニメーション表示（show→次フレームでanimate）
+  // 初期化完了後に説明パネルを確実に表示
+  setTimeout(() => {
+    console.log("初期化完了後の説明パネル表示確認");
+    const descriptionPanel = document.querySelector("#description-panel");
+    const descriptionBtn = document.querySelector("#btn-description");
+
+    if (descriptionPanel && !descriptionPanel.classList.contains("show")) {
+      console.log("説明パネルが表示されていないため、強制的に表示します");
+
+      // すべてのパネルを非表示
+      document.querySelectorAll(".detail-panel").forEach((p) => {
+        p.classList.remove("show", "animate");
+      });
+
+      // 説明パネルを表示
+      descriptionPanel.classList.add("show");
+      requestAnimationFrame(() => {
+        descriptionPanel.classList.add("animate");
+      });
+    }
+
+    if (descriptionBtn && !descriptionBtn.classList.contains("active")) {
+      console.log("説明ボタンがアクティブでないため、アクティブにします");
+      document
+        .querySelectorAll(".setting-btn")
+        .forEach((b) => b.classList.remove("active"));
+      descriptionBtn.classList.add("active");
+    }
+  }, 500);
+
+  // カスタムボタンのクリックでカスタムモードに切り替え
   const customBtn = document.getElementById("btn-custom");
   if (customBtn) {
     customBtn.addEventListener("click", function (e) {
       e.preventDefault();
+      console.log("カスタムボタンがクリックされました");
+
       // カスタムモードに切り替え
       const content = document.querySelector(".memo-content");
       if (content) {
         content.classList.add("custom-mode");
-      }
-
-      // すべての.detail-panelからshow/animateを外す
-      document.querySelectorAll(".detail-panel").forEach((panel) => {
-        panel.classList.remove("show", "animate");
-      });
-      // #custom-panelだけにshowを付与
-      const customPanel = document.getElementById("custom-panel");
-      if (customPanel) {
-        customPanel.classList.add("show");
-        // 次フレームでanimateを付与（アニメーション発火保証）
-        requestAnimationFrame(() => {
-          customPanel.classList.add("animate");
-        });
+        console.log("カスタムモードに切り替えました");
       }
     });
   }
@@ -419,10 +454,125 @@ function setupIconSelectionListeners() {
         console.log(`アイコン選択: ${iconType}`);
       }
 
+      // アイコン選択時に説明パネルの選択状態を解除し、メッセージを表示
+      handleIconSelectionChange();
+
       // リアルタイム更新を無効化（設定保存ボタンでのみ適用）
       // applyCustomSettings();
     });
   });
+}
+
+// アイコン選択変更時の処理
+function handleIconSelectionChange() {
+  console.log("アイコン選択が変更されました");
+
+  // 現在のパネル状態をデバッグ
+  console.log("=== 現在のパネル状態 ===");
+  document.querySelectorAll(".detail-panel").forEach((panel, index) => {
+    console.log(`パネル ${index}:`, {
+      id: panel.id,
+      hasShow: panel.classList.contains("show"),
+      hasAnimate: panel.classList.contains("animate"),
+      display: window.getComputedStyle(panel).display,
+      opacity: window.getComputedStyle(panel).opacity,
+      visibility: window.getComputedStyle(panel).visibility,
+    });
+  });
+
+  // 説明ボタンをアクティブにする
+  const descriptionBtn = document.querySelector("#btn-description");
+  if (descriptionBtn) {
+    // すべての設定ボタンの active を削除
+    document
+      .querySelectorAll(".setting-btn")
+      .forEach((b) => b.classList.remove("active"));
+
+    // 説明ボタンをアクティブにする
+    descriptionBtn.classList.add("active");
+    console.log("説明ボタンをアクティブにしました");
+  }
+
+  // すべてのパネルからshowとanimateを削除
+  document.querySelectorAll(".detail-panel").forEach((p) => {
+    p.classList.remove("show", "animate");
+    console.log(`パネル ${p.id} からshowとanimateを削除`);
+  });
+
+  // 説明パネルを表示
+  const descriptionPanel = document.querySelector("#description-panel");
+  if (descriptionPanel) {
+    descriptionPanel.classList.add("show");
+    console.log("説明パネルにshowクラスを追加しました");
+
+    // アニメーション効果を追加
+    requestAnimationFrame(() => {
+      descriptionPanel.classList.add("animate");
+      console.log("説明パネルにanimateクラスを追加しました");
+    });
+  } else {
+    console.error("説明パネルが見つかりません");
+  }
+
+  // 修正後のパネル状態をデバッグ
+  setTimeout(() => {
+    console.log("=== 修正後のパネル状態 ===");
+    document.querySelectorAll(".detail-panel").forEach((panel, index) => {
+      console.log(`パネル ${index}:`, {
+        id: panel.id,
+        hasShow: panel.classList.contains("show"),
+        hasAnimate: panel.classList.contains("animate"),
+        display: window.getComputedStyle(panel).display,
+        opacity: window.getComputedStyle(panel).opacity,
+        visibility: window.getComputedStyle(panel).visibility,
+      });
+    });
+  }, 100);
+
+  // 「⇒ Please Donation」メッセージを表示
+  showDonationMessage();
+}
+
+// ドネーションメッセージの表示
+function showDonationMessage() {
+  console.log("ドネーションメッセージを表示します");
+
+  // 既存のメッセージを削除
+  const existingMessage = document.querySelector(".donation-message");
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+
+  // 新しいメッセージを作成
+  const messageElement = document.createElement("div");
+  messageElement.className = "donation-message";
+  messageElement.innerHTML = `
+    <div class="donation-content">
+      <i class="bi bi-heart-fill"></i>
+      <span>⇒ Please Donation</span>
+    </div>
+  `;
+
+  // メッセージを表示
+  const settingDetail = document.querySelector(".setting-detail");
+  if (settingDetail) {
+    settingDetail.appendChild(messageElement);
+  }
+
+  // アニメーション
+  setTimeout(() => {
+    messageElement.classList.add("show");
+  }, 100);
+
+  // 自動削除（5秒後）
+  setTimeout(() => {
+    messageElement.classList.remove("show");
+    setTimeout(() => {
+      if (messageElement.parentNode) {
+        messageElement.remove();
+      }
+    }, 300);
+  }, 5000);
 }
 
 // アイコン選択状態を更新
@@ -645,3 +795,563 @@ function compareIconSelectionWithHeader() {
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderSettingMain = renderSettingMain;
 window.compareIconSelectionWithHeader = compareIconSelectionWithHeader;
+
+// ───────────────────────────────────────
+// バックアップのインストール機能
+// ───────────────────────────────────────
+let selectedFile = null;
+let backupData = null;
+
+// バックアップのインストール機能の初期化
+function initializeBackupInstall() {
+  console.log("バックアップのインストール機能を初期化中...");
+
+  const fileUploadArea = document.getElementById("file-upload-area");
+  const fileInput = document.getElementById("backup-file-input");
+  const selectFileBtn = document.getElementById("btn-select-file");
+  const removeFileBtn = document.getElementById("btn-remove-file");
+  const importBtn = document.getElementById("btn-import");
+
+  if (!fileUploadArea || !fileInput || !selectFileBtn) {
+    console.error("バックアップのインストール機能の要素が見つかりません");
+    return;
+  }
+
+  // ファイル選択ボタンのクリックイベント
+  selectFileBtn.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  // ファイルアップロードエリアのクリックイベント
+  fileUploadArea.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  // ファイル入力の変更イベント
+  fileInput.addEventListener("change", handleFileSelect);
+
+  // ドラッグ&ドロップイベント
+  fileUploadArea.addEventListener("dragover", handleDragOver);
+  fileUploadArea.addEventListener("dragleave", handleDragLeave);
+  fileUploadArea.addEventListener("drop", handleDrop);
+
+  // ファイル削除ボタンのイベント
+  if (removeFileBtn) {
+    removeFileBtn.addEventListener("click", removeSelectedFile);
+  }
+
+  // インポート実行ボタンのイベント
+  if (importBtn) {
+    importBtn.addEventListener("click", executeImport);
+  }
+
+  console.log("バックアップのインストール機能の初期化完了");
+}
+
+// ファイル選択処理
+function handleFileSelect(event) {
+  console.log("handleFileSelect called");
+  const file = event.target.files[0];
+  console.log("Selected file:", file);
+  if (file) {
+    console.log("Processing file:", file.name, file.type, file.size);
+    processSelectedFile(file);
+  } else {
+    console.log("No file selected");
+  }
+}
+
+// ドラッグ&ドロップ処理
+function handleDragOver(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const fileUploadArea = document.getElementById("file-upload-area");
+  if (fileUploadArea) {
+    fileUploadArea.classList.add("drag-over");
+  }
+}
+
+function handleDragLeave(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const fileUploadArea = document.getElementById("file-upload-area");
+  if (fileUploadArea) {
+    fileUploadArea.classList.remove("drag-over");
+  }
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const fileUploadArea = document.getElementById("file-upload-area");
+  if (fileUploadArea) {
+    fileUploadArea.classList.remove("drag-over");
+  }
+
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    const file = files[0];
+    if (file.type === "application/json" || file.name.endsWith(".json")) {
+      processSelectedFile(file);
+    } else {
+      showImportMessage("JSONファイルを選択してください", "error");
+    }
+  }
+}
+
+// 選択されたファイルの処理
+async function processSelectedFile(file) {
+  console.log("processSelectedFile called with:", file.name);
+
+  try {
+    // ファイルの内容を読み込み
+    console.log("Reading file content...");
+    const content = await readFileAsText(file);
+    console.log("File content length:", content.length);
+
+    console.log("Parsing JSON...");
+    const data = JSON.parse(content);
+    console.log("Parsed data:", data);
+
+    // データの検証
+    console.log("Validating backup data...");
+    if (!validateBackupData(data)) {
+      console.log("Backup data validation failed");
+      showImportMessage("無効なバックアップファイルです", "error");
+      return;
+    }
+
+    console.log("Backup data validation passed");
+    selectedFile = file;
+    backupData = data;
+
+    // UIを更新
+    console.log("Updating UI...");
+    showFileInfo(file, data);
+    showImportOptions();
+    showImportActions();
+
+    showImportMessage(
+      "バックアップファイルが正常に読み込まれました",
+      "success"
+    );
+    console.log("File processing completed successfully");
+  } catch (error) {
+    console.error("ファイル処理エラー:", error);
+    showImportMessage(
+      "ファイルの読み込みに失敗しました: " + error.message,
+      "error"
+    );
+  }
+}
+
+// ファイルをテキストとして読み込み
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = (e) => reject(e);
+    reader.readAsText(file);
+  });
+}
+
+// バックアップデータの検証
+function validateBackupData(data) {
+  console.log("validateBackupData called with:", data);
+
+  if (!data || typeof data !== "object") {
+    console.log("Data is not an object");
+    return false;
+  }
+
+  // 基本的な構造チェック（バージョンとエクスポート日時は必須ではない）
+  console.log("Checking version:", data.version);
+  console.log("Checking exportDate:", data.exportDate);
+
+  // バージョンとエクスポート日時がない場合は自動的に追加
+  if (!data.version) {
+    data.version = "1.0.0";
+    console.log("Added default version");
+  }
+  if (!data.exportDate) {
+    data.exportDate = new Date().toISOString();
+    console.log("Added default export date");
+  }
+
+  // 少なくとも1つのデータタイプが含まれているかチェック
+  console.log(
+    "Checking data types - memos:",
+    data.memos,
+    "clips:",
+    data.clips,
+    "prompts:",
+    data.prompts
+  );
+  const hasValidData = data.memos || data.clips || data.prompts;
+  if (!hasValidData) {
+    console.log("No valid data types found");
+    return false;
+  }
+
+  console.log("Backup data validation passed");
+  return true;
+}
+
+// ファイル情報の表示
+function showFileInfo(file, data) {
+  const fileInfo = document.getElementById("file-info");
+  const fileName = document.getElementById("file-name");
+  const fileDetails = document.getElementById("file-details");
+
+  if (!fileInfo || !fileName || !fileDetails) {
+    return;
+  }
+
+  fileName.textContent = file.name;
+
+  // ファイル詳細情報を生成
+  const details = [];
+
+  // エクスポート日時
+  if (data.exportDate) {
+    const exportDate = new Date(data.exportDate);
+    details.push({
+      label: "エクスポート日時",
+      value: exportDate.toLocaleString("ja-JP"),
+    });
+  }
+
+  // バージョン
+  if (data.version) {
+    details.push({
+      label: "バージョン",
+      value: data.version,
+    });
+  }
+
+  // データ件数
+  if (data.memos) {
+    details.push({
+      label: "メモ数",
+      value: `${data.memoCount || data.memos.length}件`,
+    });
+  }
+
+  if (data.clips) {
+    details.push({
+      label: "クリップ数",
+      value: `${data.clipCount || data.clips.length}件`,
+    });
+  }
+
+  if (data.prompts) {
+    details.push({
+      label: "プロンプト数",
+      value: `${data.promptCount || data.prompts.length}件`,
+    });
+  }
+
+  // 詳細情報をHTMLに変換
+  fileDetails.innerHTML = details
+    .map(
+      (detail) => `
+    <div class="detail-item">
+      <span class="detail-label">${detail.label}</span>
+      <span class="detail-value">${detail.value}</span>
+    </div>
+  `
+    )
+    .join("");
+
+  fileInfo.style.display = "block";
+}
+
+// インポートオプションの表示
+function showImportOptions() {
+  const importOptions = document.getElementById("import-options");
+  if (importOptions) {
+    importOptions.style.display = "block";
+  }
+}
+
+// インポート実行ボタンの表示
+function showImportActions() {
+  const importActions = document.getElementById("import-actions");
+  if (importActions) {
+    importActions.style.display = "block";
+  }
+}
+
+// 選択されたファイルの削除
+function removeSelectedFile() {
+  console.log("removeSelectedFile called");
+
+  const fileInput = document.getElementById("backup-file-input");
+  const fileInfo = document.getElementById("file-info");
+  const importOptions = document.getElementById("import-options");
+  const importActions = document.getElementById("import-actions");
+
+  if (fileInput) {
+    fileInput.value = "";
+    console.log("File input cleared");
+  }
+
+  if (fileInfo) {
+    fileInfo.style.display = "none";
+    console.log("File info hidden");
+  }
+
+  if (importOptions) {
+    importOptions.style.display = "none";
+    console.log("Import options hidden");
+  }
+
+  if (importActions) {
+    importActions.style.display = "none";
+    console.log("Import actions hidden");
+  }
+
+  selectedFile = null;
+  backupData = null;
+  console.log("File and data cleared");
+
+  showImportMessage("ファイル選択をキャンセルしました", "info");
+}
+
+// UIをリセット（メッセージは表示しない）
+function resetImportUI() {
+  console.log("resetImportUI called");
+
+  const fileInput = document.getElementById("backup-file-input");
+  const fileInfo = document.getElementById("file-info");
+  const importOptions = document.getElementById("import-options");
+  const importActions = document.getElementById("import-actions");
+
+  if (fileInput) {
+    fileInput.value = "";
+    console.log("File input cleared");
+  }
+
+  if (fileInfo) {
+    fileInfo.style.display = "none";
+    console.log("File info hidden");
+  }
+
+  if (importOptions) {
+    importOptions.style.display = "none";
+    console.log("Import options hidden");
+  }
+
+  if (importActions) {
+    importActions.style.display = "none";
+    console.log("Import actions hidden");
+  }
+
+  selectedFile = null;
+  backupData = null;
+  console.log("File and data cleared");
+}
+
+// インポート実行
+async function executeImport() {
+  if (!backupData) {
+    showImportMessage("バックアップファイルが選択されていません", "error");
+    return;
+  }
+
+  const importMode = document.querySelector(
+    'input[name="import-mode"]:checked'
+  )?.value;
+  if (!importMode) {
+    showImportMessage("インポートモードを選択してください", "error");
+    return;
+  }
+
+  try {
+    console.log("インポートを開始します...");
+    console.log("インポートモード:", importMode);
+    console.log("バックアップデータ:", backupData);
+
+    // インポート処理を実行
+    await performImport(backupData, importMode);
+
+    showImportMessage("インポートが完了しました", "success");
+
+    // 成功後はUIをリセット（メッセージは表示しない）
+    resetImportUI();
+  } catch (error) {
+    console.error("インポートエラー:", error);
+    showImportMessage("インポートに失敗しました: " + error.message, "error");
+  }
+}
+
+// 実際のインポート処理
+async function performImport(data, mode) {
+  console.log("performImport開始:", { mode, data });
+
+  // 各データタイプをインポート
+  if (data.memos) {
+    await importMemos(data.memos, mode);
+  }
+
+  if (data.clips) {
+    await importClips(data.clips, mode);
+  }
+
+  if (data.prompts) {
+    await importPrompts(data.prompts, mode);
+  }
+
+  console.log("performImport完了");
+}
+
+// メモのインポート
+async function importMemos(memos, mode) {
+  console.log("メモのインポート開始:", { mode, count: memos.length });
+
+  if (mode === "replace") {
+    // 上書きモード: 既存データを完全に置き換え
+    await chrome.storage.local.set({ memos: memos });
+    console.log("メモを上書きしました");
+  } else {
+    // 統合モード: 既存データと統合
+    const existingMemos = (await loadStorage("memos")) || [];
+    const mergedMemos = mergeData(existingMemos, memos, "id");
+    await chrome.storage.local.set({ memos: mergedMemos });
+    console.log("メモを統合しました:", {
+      existing: existingMemos.length,
+      imported: memos.length,
+      merged: mergedMemos.length,
+    });
+  }
+}
+
+// クリップのインポート
+async function importClips(clips, mode) {
+  console.log("クリップのインポート開始:", { mode, count: clips.length });
+
+  if (mode === "replace") {
+    // 上書きモード: 既存データを完全に置き換え
+    await chrome.storage.local.set({ clips: clips });
+    console.log("クリップを上書きしました");
+  } else {
+    // 統合モード: 既存データと統合
+    const existingClips = (await loadStorage("clips")) || [];
+    const mergedClips = mergeData(existingClips, clips, "id");
+    await chrome.storage.local.set({ clips: mergedClips });
+    console.log("クリップを統合しました:", {
+      existing: existingClips.length,
+      imported: clips.length,
+      merged: mergedClips.length,
+    });
+  }
+}
+
+// プロンプトのインポート
+async function importPrompts(prompts, mode) {
+  console.log("プロンプトのインポート開始:", { mode, count: prompts.length });
+
+  if (mode === "replace") {
+    // 上書きモード: 既存データを完全に置き換え
+    await chrome.storage.local.set({ prompts: prompts });
+    console.log("プロンプトを上書きしました");
+  } else {
+    // 統合モード: 既存データと統合
+    const existingPrompts = (await loadStorage("prompts")) || [];
+    const mergedPrompts = mergeData(existingPrompts, prompts, "id");
+    await chrome.storage.local.set({ prompts: mergedPrompts });
+    console.log("プロンプトを統合しました:", {
+      existing: existingPrompts.length,
+      imported: prompts.length,
+      merged: mergedPrompts.length,
+    });
+  }
+}
+
+// データの統合（重複チェック付き）
+function mergeData(existing, imported, idField) {
+  const existingMap = new Map();
+  existing.forEach((item) => {
+    existingMap.set(item[idField], item);
+  });
+
+  const merged = [...existing];
+
+  imported.forEach((item) => {
+    if (existingMap.has(item[idField])) {
+      // 重複する場合は上書き
+      const index = merged.findIndex(
+        (existingItem) => existingItem[idField] === item[idField]
+      );
+      if (index !== -1) {
+        merged[index] = item;
+      }
+    } else {
+      // 新規の場合は追加
+      merged.push(item);
+    }
+  });
+
+  return merged;
+}
+
+// ストレージ読み込みヘルパー
+function loadStorage(key) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([key], (result) => resolve(result[key] || []));
+  });
+}
+
+// インポートメッセージの表示
+function showImportMessage(message, type = "info") {
+  console.log(`[IMPORT] ${type.toUpperCase()}: ${message}`);
+
+  // 既存のメッセージを削除
+  const existingMessage = document.querySelector(".import-message");
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+
+  // 新しいメッセージを作成
+  const messageElement = document.createElement("div");
+  messageElement.className = `import-message ${type}`;
+
+  const icon =
+    type === "success"
+      ? "check-circle"
+      : type === "error"
+      ? "exclamation-triangle"
+      : "info-circle";
+
+  messageElement.innerHTML = `
+    <i class="bi bi-${icon}"></i>
+    <span>${message}</span>
+  `;
+
+  // メッセージをbodyに直接追加（右上に表示）
+  document.body.appendChild(messageElement);
+
+  // アニメーション
+  setTimeout(() => {
+    messageElement.classList.add("show");
+  }, 100);
+
+  // 自動削除
+  setTimeout(() => {
+    messageElement.classList.remove("show");
+    setTimeout(() => {
+      if (messageElement.parentNode) {
+        messageElement.remove();
+      }
+    }, 300);
+  }, 5000);
+}
+
+// 初期化時にバックアップのインストール機能を設定
+document.addEventListener("DOMContentLoaded", () => {
+  // 既存の初期化処理の後に追加
+  setTimeout(() => {
+    initializeBackupInstall();
+  }, 100);
+});
