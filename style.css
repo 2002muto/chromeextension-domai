@@ -49,7 +49,7 @@ body::-webkit-scrollbar,
   text-decoration: none;
   font-size: 14px; /* 18pxから14pxに縮小 */
   flex: none; /* フレックス解除 */
-  overflow: hidden;
+  overflow: visible; /* ❌ボタンが表示されるように変更 */
   transform-origin: center center; /* 中心を基点に */
 }
 
@@ -188,9 +188,38 @@ body::-webkit-scrollbar,
   transform: translateX(-50%);
 }
 
-/* ホバー時のツールチップは不要 */
+/* ホバー時の❌ボタン表示 */
 .nav-btn::after {
-  display: none;
+  content: "✕";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  background: #ff4757;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s ease;
+  z-index: 10;
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+
+.nav-btn:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 設定アイコンは❌ボタンを表示しない */
+#btn-setting::after {
+  display: none !important;
 }
 
 /* クリック時のメッセージ表示（AI専用） */

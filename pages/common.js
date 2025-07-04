@@ -1188,6 +1188,23 @@ function initializeHeaderDragAndDrop() {
         // 左クリックのみ
         console.log("[DragDrop] 左クリック検出:", button.id);
 
+        // ❌ボタンがクリックされた場合の処理
+        if (isCloseButtonClick(e, button)) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("[RemoveIcon] ❌ボタンがクリックされました:", button.id);
+
+          // 設定アイコンは削除不可
+          if (button.id === "btn-setting") {
+            console.log("[RemoveIcon] 設定アイコンは削除できません");
+            return;
+          }
+
+          // アイコンを非表示にする
+          removeIconFromHeader(button.id);
+          return;
+        }
+
         startX = e.clientX;
         startY = e.clientY;
         hasMoved = false;
@@ -1453,8 +1470,8 @@ function initializeHeaderDragAndDrop() {
 
         console.log("[DragDrop] 移動後のDOM順序:", newOrder);
 
-        // 成功メッセージを表示
-        showNavigationDragDropSuccessMessage(draggedId, button.id);
+        // ドラッグ&ドロップ完了（トーストメッセージは不要）
+        console.log("[DragDrop] 移動完了:", draggedId, "→", button.id);
       }
     });
   });
@@ -1462,36 +1479,68 @@ function initializeHeaderDragAndDrop() {
   console.log("[DragDrop] ヘッダードラッグ＆ドロップ機能の初期化完了");
 }
 
-// ナビゲーションドラッグ＆ドロップ成功メッセージ
-function showNavigationDragDropSuccessMessage(fromId, toId) {
-  // 既存のトーストがあれば削除
-  const existingToast = document.querySelector(".nav-drag-toast");
-  if (existingToast) {
-    existingToast.remove();
-  }
+// ❌ボタンがクリックされたかどうかを判定
+function isCloseButtonClick(e, button) {
+  const rect = button.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
 
-  // ボタン名を取得
-  const fromName = getButtonDisplayName(fromId);
-  const toName = getButtonDisplayName(toId);
+  // ❌ボタンの位置（右上角から8px内側、18x18pxの円形エリア）
+  const closeButtonX = rect.width - 8;
+  const closeButtonY = 8;
+  const closeButtonRadius = 9; // 18px / 2
 
-  const toast = document.createElement("div");
-  toast.className = "nav-drag-toast";
-  toast.innerHTML = `
-    <i class="bi bi-check-circle-fill"></i>
-    <span>${fromName} を ${toName} の位置に移動しました</span>
-  `;
+  // クリック位置が❌ボタンの範囲内かどうかを判定
+  const distance = Math.sqrt(
+    Math.pow(x - closeButtonX, 2) + Math.pow(y - closeButtonY, 2)
+  );
 
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add("fade-out");
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.remove();
-      }
-    }, 300);
-  }, 2000);
+  return distance <= closeButtonRadius;
 }
+
+// ヘッダーからアイコンを削除
+function removeIconFromHeader(buttonId) {
+  console.log("[RemoveIcon] アイコンを削除:", buttonId);
+
+  // 現在の設定を取得
+  chrome.storage.local.get(["customSettings"], (result) => {
+    const settings = result.customSettings || {
+      selectedIcons: ["memo", "clipboard", "prompt", "iframe", "ai", "status"],
+    };
+
+    // アイコンタイプを取得
+    const iconType = getIconTypeFromId(buttonId);
+
+    // 選択されたアイコンから削除
+    settings.selectedIcons = settings.selectedIcons.filter(
+      (icon) => icon !== iconType
+    );
+
+    // 最低1つのアイコンは残す
+    if (settings.selectedIcons.length === 0) {
+      settings.selectedIcons = ["memo"]; // デフォルトでメモを残す
+    }
+
+    // 設定を保存
+    chrome.storage.local.set({ customSettings: settings }, () => {
+      console.log("[RemoveIcon] 設定を保存:", settings);
+
+      // ヘッダーを更新
+      applyIconVisibility(settings.selectedIcons);
+
+      // 設定ページが開いている場合は、そちらも更新
+      if (window.location.pathname.includes("/setting/")) {
+        // 設定ページでアイコン選択状態を更新
+        if (window.updateIconSelection) {
+          window.updateIconSelection(settings.selectedIcons);
+        }
+      }
+    });
+  });
+}
+
+// 削除済み: ナビゲーションドラッグ＆ドロップ成功メッセージ
+// UI/UXの改善のため、トーストメッセージを削除しました
 
 // ボタンIDから表示名を取得
 function getButtonDisplayName(buttonId) {
@@ -1562,8 +1611,6 @@ window.addEventListener("load", () => {
 // グローバルに公開
 window.NavigationOrderManager = NavigationOrderManager;
 window.initializeHeaderDragAndDrop = initializeHeaderDragAndDrop;
-window.showNavigationDragDropSuccessMessage =
-  showNavigationDragDropSuccessMessage;
 
 // デバッグ用のテスト関数
 window.testNavigationDragDrop = () => {
@@ -1861,14 +1908,19 @@ function applyIconVisibilityFromStorage() {
 
 // アイコン表示の適用（common.js版）
 function applyIconVisibility(selectedIcons) {
+  // 設定ページからの呼び出しかどうかを判定
+  const isSettingPage = window.location.pathname.includes("/setting/");
+  const prefix = isSettingPage ? "SETTING-COMMON" : "COMMON";
+
   const header = document.querySelector("header");
   if (!header) {
-    console.log("COMMON: ヘッダーが見つかりません");
+    console.log(`${prefix}: ヘッダーが見つかりません`);
     return;
   }
 
   const navButtons = header.querySelectorAll(".nav-btn");
-  console.log(`COMMON: ヘッダー内のボタン数: ${navButtons.length}`);
+  console.log(`${prefix}: ヘッダー内のボタン数: ${navButtons.length}`);
+  console.log(`${prefix}: 適用する選択アイコン:`, selectedIcons);
 
   navButtons.forEach((button) => {
     const buttonId = button.id;
@@ -1877,17 +1929,24 @@ function applyIconVisibility(selectedIcons) {
     // 設定アイコンは常に表示
     if (iconType === "setting") {
       button.style.display = "flex";
-      console.log(`COMMON: ${buttonId} (${iconType}): 表示 (設定アイコン)`);
+      button.style.visibility = "visible";
+      button.style.position = "relative";
+      console.log(`${prefix}: ${buttonId} (${iconType}): 表示 (設定アイコン)`);
     } else if (selectedIcons.includes(iconType)) {
       button.style.display = "flex";
-      console.log(`COMMON: ${buttonId} (${iconType}): 表示 (選択済み)`);
+      button.style.visibility = "visible";
+      button.style.position = "relative";
+      console.log(`${prefix}: ${buttonId} (${iconType}): 表示 (選択済み)`);
     } else {
       button.style.display = "none";
-      console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (未選択)`);
+      button.style.visibility = "hidden";
+      button.style.position = "absolute";
+      button.style.left = "-9999px"; // 画面外に移動
+      console.log(`${prefix}: ${buttonId} (${iconType}): 非表示 (未選択)`);
     }
   });
 
-  console.log("COMMON: ヘッダー更新完了 - 表示アイコン:", selectedIcons);
+  console.log(`${prefix}: ヘッダー更新完了 - 表示アイコン:`, selectedIcons);
 }
 
 // ボタンIDからアイコンタイプを取得（common.js版）

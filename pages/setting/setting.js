@@ -242,26 +242,39 @@ function initializeCustomSettings() {
 
 // カスタム設定の読み込み
 function loadCustomSettings() {
+  console.log("=== カスタム設定読み込み開始 ===");
+
   // Chrome Storageから設定を読み込み
   chrome.storage.local.get(["customSettings"], (result) => {
     const settings = result.customSettings || getDefaultCustomSettings();
 
+    console.log("読み込まれた設定:", settings);
+    console.log("デフォルト設定:", getDefaultCustomSettings());
+
     // アイコン選択状態を反映
-    updateIconSelection(
-      settings.selectedIcons || getDefaultCustomSettings().selectedIcons
-    );
+    const selectedIcons =
+      settings.selectedIcons || getDefaultCustomSettings().selectedIcons;
+    updateIconSelection(selectedIcons);
 
     console.log("カスタム設定を読み込みました:", settings);
+    console.log("適用するアイコン:", selectedIcons);
 
     // 初期表示時にヘッダーを更新（保存された設定を反映）
-    if (settings && settings.selectedIcons) {
-      applyIconVisibility(settings.selectedIcons);
+    if (selectedIcons && selectedIcons.length > 0) {
+      console.log("初期表示時のヘッダー更新を実行");
+      forceApplyIconVisibility(selectedIcons);
+
+      // 確実性のため少し遅延してもう一度実行
+      setTimeout(() => {
+        console.log("初期表示時のヘッダー更新を再実行");
+        forceApplyIconVisibility(selectedIcons);
+      }, 200);
     }
 
     // 少し遅延してから比較を実行
     setTimeout(() => {
       compareIconSelectionWithHeader();
-    }, 500);
+    }, 800);
   });
 }
 
@@ -333,6 +346,9 @@ function resetCustomSettings() {
 function saveCustomSettings() {
   const settings = getCurrentCustomSettings();
 
+  console.log("=== 設定保存処理開始 ===");
+  console.log("保存する設定:", settings);
+
   // 保存ボタンを一時的に無効化
   const saveBtn = document.getElementById("btn-save-custom");
   if (saveBtn) {
@@ -348,19 +364,30 @@ function saveCustomSettings() {
       console.log("カスタム設定を保存しました:", settings);
       showCustomSettingMessage("設定を保存しました");
 
-      // 設定保存時にヘッダーを更新
-      applyIconVisibility(settings.selectedIcons);
+      // 設定保存時にヘッダーを更新（強制的に実行）
+      console.log("ヘッダー更新を実行:", settings.selectedIcons);
+      forceApplyIconVisibility(settings.selectedIcons);
 
-      // 少し遅延してから再度ヘッダーを更新（確実性のため）
+      // 複数回実行して確実性を高める
       setTimeout(() => {
-        applyIconVisibility(settings.selectedIcons);
-        console.log("ヘッダー更新を再実行しました");
+        console.log("ヘッダー更新を再実行 (1回目):", settings.selectedIcons);
+        forceApplyIconVisibility(settings.selectedIcons);
 
-        // 保存ボタンを元に戻す
-        if (saveBtn) {
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = '<i class="bi bi-check-lg"></i>設定を保存';
-        }
+        setTimeout(() => {
+          console.log("ヘッダー更新を再実行 (2回目):", settings.selectedIcons);
+          forceApplyIconVisibility(settings.selectedIcons);
+
+          // 保存ボタンを元に戻す
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-check-lg"></i>設定を保存';
+          }
+
+          // 最終確認
+          setTimeout(() => {
+            compareIconSelectionWithHeader();
+          }, 200);
+        }, 100);
       }, 100);
     }
   );
@@ -454,8 +481,8 @@ function setupIconSelectionListeners() {
         console.log(`アイコン選択: ${iconType}`);
       }
 
-      // アイコン選択時に説明パネルの選択状態を解除し、メッセージを表示
-      handleIconSelectionChange();
+      // アイコン選択完了
+      console.log("アイコン選択が完了しました");
 
       // リアルタイム更新を無効化（設定保存ボタンでのみ適用）
       // applyCustomSettings();
@@ -463,117 +490,11 @@ function setupIconSelectionListeners() {
   });
 }
 
-// アイコン選択変更時の処理
-function handleIconSelectionChange() {
-  console.log("アイコン選択が変更されました");
+// 削除済み: アイコン選択時の説明パネル移動機能
+// UI/UXの改善のため、アイコン選択時に自動的に説明パネルに移動する機能を削除しました
 
-  // 現在のパネル状態をデバッグ
-  console.log("=== 現在のパネル状態 ===");
-  document.querySelectorAll(".detail-panel").forEach((panel, index) => {
-    console.log(`パネル ${index}:`, {
-      id: panel.id,
-      hasShow: panel.classList.contains("show"),
-      hasAnimate: panel.classList.contains("animate"),
-      display: window.getComputedStyle(panel).display,
-      opacity: window.getComputedStyle(panel).opacity,
-      visibility: window.getComputedStyle(panel).visibility,
-    });
-  });
-
-  // 説明ボタンをアクティブにする
-  const descriptionBtn = document.querySelector("#btn-description");
-  if (descriptionBtn) {
-    // すべての設定ボタンの active を削除
-    document
-      .querySelectorAll(".setting-btn")
-      .forEach((b) => b.classList.remove("active"));
-
-    // 説明ボタンをアクティブにする
-    descriptionBtn.classList.add("active");
-    console.log("説明ボタンをアクティブにしました");
-  }
-
-  // すべてのパネルからshowとanimateを削除
-  document.querySelectorAll(".detail-panel").forEach((p) => {
-    p.classList.remove("show", "animate");
-    console.log(`パネル ${p.id} からshowとanimateを削除`);
-  });
-
-  // 説明パネルを表示
-  const descriptionPanel = document.querySelector("#description-panel");
-  if (descriptionPanel) {
-    descriptionPanel.classList.add("show");
-    console.log("説明パネルにshowクラスを追加しました");
-
-    // アニメーション効果を追加
-    requestAnimationFrame(() => {
-      descriptionPanel.classList.add("animate");
-      console.log("説明パネルにanimateクラスを追加しました");
-    });
-  } else {
-    console.error("説明パネルが見つかりません");
-  }
-
-  // 修正後のパネル状態をデバッグ
-  setTimeout(() => {
-    console.log("=== 修正後のパネル状態 ===");
-    document.querySelectorAll(".detail-panel").forEach((panel, index) => {
-      console.log(`パネル ${index}:`, {
-        id: panel.id,
-        hasShow: panel.classList.contains("show"),
-        hasAnimate: panel.classList.contains("animate"),
-        display: window.getComputedStyle(panel).display,
-        opacity: window.getComputedStyle(panel).opacity,
-        visibility: window.getComputedStyle(panel).visibility,
-      });
-    });
-  }, 100);
-
-  // 「⇒ Please Donation」メッセージを表示
-  showDonationMessage();
-}
-
-// ドネーションメッセージの表示
-function showDonationMessage() {
-  console.log("ドネーションメッセージを表示します");
-
-  // 既存のメッセージを削除
-  const existingMessage = document.querySelector(".donation-message");
-  if (existingMessage) {
-    existingMessage.remove();
-  }
-
-  // 新しいメッセージを作成
-  const messageElement = document.createElement("div");
-  messageElement.className = "donation-message";
-  messageElement.innerHTML = `
-    <div class="donation-content">
-      <i class="bi bi-heart-fill"></i>
-      <span>⇒ Please Donation</span>
-    </div>
-  `;
-
-  // メッセージを表示
-  const settingDetail = document.querySelector(".setting-detail");
-  if (settingDetail) {
-    settingDetail.appendChild(messageElement);
-  }
-
-  // アニメーション
-  setTimeout(() => {
-    messageElement.classList.add("show");
-  }, 100);
-
-  // 自動削除（5秒後）
-  setTimeout(() => {
-    messageElement.classList.remove("show");
-    setTimeout(() => {
-      if (messageElement.parentNode) {
-        messageElement.remove();
-      }
-    }, 300);
-  }, 5000);
-}
+// 削除済み: ドネーションメッセージ機能
+// アイコン選択時の不適切なメッセージ表示を削除しました
 
 // アイコン選択状態を更新
 function updateIconSelection(selectedIcons) {
@@ -616,12 +537,12 @@ function getSelectedIcons() {
 function applyIconVisibility(selectedIcons) {
   const header = document.querySelector("header");
   if (!header) {
-    console.log("ヘッダーが見つかりません");
+    console.log("SETTING: ヘッダーが見つかりません");
     return;
   }
 
   const navButtons = header.querySelectorAll(".nav-btn");
-  console.log(`ヘッダー内のボタン数: ${navButtons.length}`);
+  console.log(`SETTING: ヘッダー内のボタン数: ${navButtons.length}`);
 
   navButtons.forEach((button) => {
     const buttonId = button.id;
@@ -630,17 +551,91 @@ function applyIconVisibility(selectedIcons) {
     // 設定アイコンは常に表示
     if (iconType === "setting") {
       button.style.display = "flex";
-      console.log(`${buttonId} (${iconType}): 表示 (設定アイコン)`);
+      console.log(`SETTING: ${buttonId} (${iconType}): 表示 (設定アイコン)`);
     } else if (selectedIcons.includes(iconType)) {
       button.style.display = "flex";
-      console.log(`${buttonId} (${iconType}): 表示 (選択済み)`);
+      console.log(`SETTING: ${buttonId} (${iconType}): 表示 (選択済み)`);
     } else {
       button.style.display = "none";
-      console.log(`${buttonId} (${iconType}): 非表示 (未選択)`);
+      console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (未選択)`);
     }
   });
 
-  console.log("ヘッダー更新完了 - 表示アイコン:", selectedIcons);
+  console.log("SETTING: ヘッダー更新完了 - 表示アイコン:", selectedIcons);
+}
+
+// 強制的にアイコン表示を適用する関数
+function forceApplyIconVisibility(selectedIcons) {
+  console.log("=== 強制的なアイコン表示適用開始 ===");
+  console.log("適用するアイコン:", selectedIcons);
+
+  const header = document.querySelector("header");
+  if (!header) {
+    console.error("FORCE: ヘッダーが見つかりません");
+    return;
+  }
+
+  const navButtons = header.querySelectorAll(".nav-btn");
+  console.log(`FORCE: ヘッダー内のボタン数: ${navButtons.length}`);
+
+  // すべてのボタンの現在の状態をログ出力
+  navButtons.forEach((button) => {
+    const buttonId = button.id;
+    const iconType = getIconTypeFromId(buttonId);
+    const currentDisplay = window.getComputedStyle(button).display;
+    console.log(
+      `FORCE: ${buttonId} (${iconType}) - 現在の表示状態: ${currentDisplay}`
+    );
+  });
+
+  // 強制的に表示/非表示を設定
+  navButtons.forEach((button) => {
+    const buttonId = button.id;
+    const iconType = getIconTypeFromId(buttonId);
+
+    // 設定アイコンは常に表示
+    if (iconType === "setting") {
+      button.style.display = "flex";
+      button.style.visibility = "visible";
+      button.style.opacity = "1";
+      button.style.position = "relative";
+      button.style.left = "auto";
+      console.log(`FORCE: ${buttonId} (${iconType}): 強制表示 (設定アイコン)`);
+    } else if (selectedIcons.includes(iconType)) {
+      button.style.display = "flex";
+      button.style.visibility = "visible";
+      button.style.opacity = "1";
+      button.style.position = "relative";
+      button.style.left = "auto";
+      console.log(`FORCE: ${buttonId} (${iconType}): 強制表示 (選択済み)`);
+    } else {
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.opacity = "0";
+      button.style.position = "absolute";
+      button.style.left = "-9999px"; // 画面外に移動
+      console.log(`FORCE: ${buttonId} (${iconType}): 強制非表示 (未選択)`);
+    }
+  });
+
+  // 適用後の状態を確認
+  setTimeout(() => {
+    console.log("=== 適用後の状態確認 ===");
+    navButtons.forEach((button) => {
+      const buttonId = button.id;
+      const iconType = getIconTypeFromId(buttonId);
+      const finalDisplay = window.getComputedStyle(button).display;
+      const finalVisibility = window.getComputedStyle(button).visibility;
+      console.log(
+        `FORCE: ${buttonId} (${iconType}) - 最終状態: display=${finalDisplay}, visibility=${finalVisibility}`
+      );
+    });
+  }, 50);
+
+  console.log(
+    "FORCE: 強制的なアイコン表示適用完了 - 表示アイコン:",
+    selectedIcons
+  );
 }
 
 // ボタンIDからアイコンタイプを取得
@@ -795,6 +790,7 @@ function compareIconSelectionWithHeader() {
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderSettingMain = renderSettingMain;
 window.compareIconSelectionWithHeader = compareIconSelectionWithHeader;
+window.updateIconSelection = updateIconSelection;
 
 // ───────────────────────────────────────
 // バックアップのインストール機能
@@ -1355,3 +1351,51 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeBackupInstall();
   }, 100);
 });
+
+// デバッグ用の関数をグローバルに公開
+window.debugCustomSettings = () => {
+  console.log("=== カスタム設定デバッグ情報 ===");
+
+  // 1. 現在の選択状態
+  const selectedOptions = document.querySelectorAll(
+    ".icon-option.selected:not(.coming-soon)"
+  );
+  const selectedIcons = Array.from(selectedOptions).map(
+    (option) => option.dataset.icon
+  );
+  console.log("設定ページでの選択アイコン:", selectedIcons);
+
+  // 2. ストレージの設定
+  chrome.storage.local.get(["customSettings"], (result) => {
+    console.log("ストレージの設定:", result.customSettings);
+  });
+
+  // 3. ヘッダーの表示状態
+  const header = document.querySelector("header");
+  if (header) {
+    const navButtons = header.querySelectorAll(".nav-btn");
+    navButtons.forEach((button) => {
+      const buttonId = button.id;
+      const iconType = getIconTypeFromId(buttonId);
+      const display = window.getComputedStyle(button).display;
+      const visibility = window.getComputedStyle(button).visibility;
+      console.log(
+        `ヘッダー ${buttonId} (${iconType}): display=${display}, visibility=${visibility}`
+      );
+    });
+  }
+
+  // 4. 強制適用テスト
+  console.log("強制適用テストを実行...");
+  forceApplyIconVisibility(selectedIcons);
+};
+
+window.testIconSave = () => {
+  console.log("=== アイコン保存テスト ===");
+  const selectedIcons = getSelectedIcons();
+  console.log("現在選択されているアイコン:", selectedIcons);
+  forceApplyIconVisibility(selectedIcons);
+};
+
+console.log("[SETTING] setting.js が読み込まれました");
+console.log("[SETTING] デバッグ関数: debugCustomSettings(), testIconSave()");
