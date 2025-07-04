@@ -335,9 +335,9 @@ body {
   left: -4px;
   right: -4px;
   height: 3px;
-  background: linear-gradient(90deg, #00a31e, #00d428);
+  background: linear-gradient(90deg, #078ab9, #024881);
   border-radius: 2px;
-  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
   z-index: 1001;
   opacity: 0;
   transform: scaleX(0);
@@ -361,13 +361,13 @@ body {
 /* メモ用のドロップインジケーターアニメーション */
 @keyframes memoDropIndicatorPulse {
   0% {
-    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
   }
   50% {
-    box-shadow: 0 0 16px rgba(0, 163, 30, 0.8);
+    box-shadow: 0 0 16px rgba(7, 138, 185, 0.8);
   }
   100% {
-    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
   }
 }
 

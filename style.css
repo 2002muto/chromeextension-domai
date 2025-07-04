@@ -592,3 +592,177 @@ main {
     padding: 10px 16px;
   }
 }
+
+/* ヘッダーナビゲーション用のドロップインジケーター */
+.nav-btn.drop-indicator {
+  position: relative;
+}
+
+.nav-btn.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  height: 3px;
+  background: linear-gradient(90deg, #078ab9, #024881);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.nav-btn.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.nav-btn.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.nav-btn.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: navDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* 各ページ固有のドロップインジケーター色 */
+#btn-clipboard.drop-indicator::before {
+  background: linear-gradient(90deg, #04e949, #00b0cf);
+  box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
+}
+
+#btn-clipboard.drop-indicator.active::before {
+  animation: navClipboardDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-prompt.drop-indicator::before {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+}
+
+#btn-prompt.drop-indicator.active::before {
+  animation: navPromptDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-iframe.drop-indicator::before {
+  background: linear-gradient(90deg, #e95404, #a600cf);
+  box-shadow: 0 0 8px rgba(233, 84, 4, 0.6);
+}
+
+#btn-iframe.drop-indicator.active::before {
+  animation: navIframeDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-ai.drop-indicator::before {
+  background: linear-gradient(90deg, #af008f, #6b00d9);
+  box-shadow: 0 0 8px rgba(175, 0, 143, 0.6);
+}
+
+#btn-ai.drop-indicator.active::before {
+  animation: navAiDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-status.drop-indicator::before {
+  background: linear-gradient(90deg, #10b981, #059669);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+#btn-status.drop-indicator.active::before {
+  animation: navStatusDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-setting.drop-indicator::before {
+  background: linear-gradient(90deg, #fff04b, #99902d);
+  box-shadow: 0 0 8px rgba(255, 240, 75, 0.6);
+}
+
+#btn-setting.drop-indicator.active::before {
+  animation: navSettingDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* ヘッダーナビゲーション用のドロップインジケーターアニメーション */
+@keyframes navDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(7, 138, 185, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  }
+}
+
+@keyframes navClipboardDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(4, 233, 73, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
+  }
+}
+
+@keyframes navPromptDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(102, 126, 234, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  }
+}
+
+@keyframes navIframeDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(233, 84, 4, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(233, 84, 4, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(233, 84, 4, 0.6);
+  }
+}
+
+@keyframes navAiDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(175, 0, 143, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(175, 0, 143, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(175, 0, 143, 0.6);
+  }
+}
+
+@keyframes navStatusDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  }
+}
+
+@keyframes navSettingDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(255, 240, 75, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 240, 75, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(255, 240, 75, 0.6);
+  }
+}

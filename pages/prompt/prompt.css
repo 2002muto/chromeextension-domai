@@ -162,9 +162,9 @@
   left: -4px;
   right: -4px;
   height: 3px;
-  background: linear-gradient(90deg, #00a31e, #00d428);
+  background: linear-gradient(90deg, #667eea, #764ba2);
   border-radius: 2px;
-  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   z-index: 1001;
   opacity: 0;
   transform: scaleX(0);
@@ -188,13 +188,13 @@
 /* プロンプト一覧用のドロップインジケーターアニメーション */
 @keyframes promptListDropIndicatorPulse {
   0% {
-    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   }
   50% {
-    box-shadow: 0 0 16px rgba(0, 163, 30, 0.8);
+    box-shadow: 0 0 16px rgba(102, 126, 234, 0.8);
   }
   100% {
-    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   }
 }
 
@@ -685,9 +685,9 @@ textarea.field-text,
   left: -4px;
   right: -4px;
   height: 3px;
-  background: linear-gradient(90deg, #00a31e, #00d428);
+  background: linear-gradient(90deg, #667eea, #764ba2);
   border-radius: 2px;
-  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   z-index: 1001;
   opacity: 0;
   transform: scaleX(0);
@@ -711,13 +711,13 @@ textarea.field-text,
 /* プロンプトブロック用のドロップインジケーターアニメーション */
 @keyframes promptBlockDropIndicatorPulse {
   0% {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   }
   50% {
-    box-shadow: 0 0 16px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 16px rgba(102, 126, 234, 0.8);
   }
   100% {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   }
 }
 
@@ -1545,4 +1545,38 @@ body .prompt-run-box .prompt-block:last-of-type,
 .pf-head strong {
   font-weight: 600;
   color: #e8ecf2;
+}
+
+/* プロンプトブロック用のドロップインジケーター（実行画面） */
+.prompt-block.drop-indicator {
+  position: relative;
+}
+
+.prompt-block.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.prompt-block.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.prompt-block.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.prompt-block.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: promptBlockDropIndicatorPulse 1s ease-in-out infinite;
 }

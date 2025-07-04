@@ -825,9 +825,9 @@
   left: -4px;
   right: -4px;
   height: 3px;
-  background: linear-gradient(90deg, #00a31e, #00d428);
+  background: linear-gradient(90deg, #04e949, #00b0cf);
   border-radius: 2px;
-  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
   z-index: 1001;
   opacity: 0;
   transform: scaleX(0);
@@ -851,13 +851,13 @@
 /* クリップボード用のドロップインジケーターアニメーション */
 @keyframes clipDropIndicatorPulse {
   0% {
-    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
   }
   50% {
-    box-shadow: 0 0 16px rgba(0, 163, 30, 0.8);
+    box-shadow: 0 0 16px rgba(4, 233, 73, 0.8);
   }
   100% {
-    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
   }
 }
 
