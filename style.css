@@ -217,8 +217,9 @@ body::-webkit-scrollbar,
   transform: scale(1);
 }
 
-/* 設定アイコンは❌ボタンを表示しない */
-#btn-setting::after {
+/* MEMOとSETTINGアイコンは❌ボタンを表示しない */
+#btn-setting::after,
+#btn-memo-list::after {
   display: none !important;
 }
 

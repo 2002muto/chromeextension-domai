@@ -1069,6 +1069,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ドラッグ状態を追跡するグローバル変数
 window.isDraggingNavigation = false;
+window.isDragDropInProgress = false; // ドラッグ&ドロップ進行中フラグ
 
 // ナビゲーション順序の管理
 const NavigationOrderManager = {
@@ -1194,9 +1195,12 @@ function initializeHeaderDragAndDrop() {
           e.stopPropagation();
           console.log("[RemoveIcon] ❌ボタンがクリックされました:", button.id);
 
-          // 設定アイコンは削除不可
-          if (button.id === "btn-setting") {
-            console.log("[RemoveIcon] 設定アイコンは削除できません");
+          // MEMOとSETTINGアイコンは削除不可
+          if (button.id === "btn-setting" || button.id === "btn-memo-list") {
+            console.log(
+              "[RemoveIcon] MEMOとSETTINGアイコンは削除できません:",
+              button.id
+            );
             return;
           }
 
@@ -1337,6 +1341,10 @@ function initializeHeaderDragAndDrop() {
         return;
       }
 
+      // ドラッグ&ドロップ進行中フラグを設定
+      window.isDragDropInProgress = true;
+      console.log("[DragDrop] ドラッグ&ドロップ進行中フラグを設定");
+
       e.dataTransfer.setData("text/plain", button.id);
       e.dataTransfer.effectAllowed = "move";
       button.classList.add("dragging");
@@ -1355,17 +1363,23 @@ function initializeHeaderDragAndDrop() {
       button.style.transform = "";
       button.style.opacity = "";
 
-      // すべてのボタンのドラッグ関連状態をクリア
+      // すべてのボタンのドラッグ関連状態をクリア（activeは除く）
       const allButtons = document.querySelectorAll("header .nav-btn");
       allButtons.forEach((btn) => {
         btn.classList.remove(
           "drag-over",
           "drop-indicator",
           "drop-above",
-          "drop-below",
-          "active"
+          "drop-below"
         );
       });
+
+      // ドラッグ&ドロップ進行中フラグをリセット
+      window.isDragDropInProgress = false;
+      console.log("[DragDrop] ドラッグ&ドロップ進行中フラグをリセット");
+
+      // アクティブ状態を復元
+      restoreActiveIconState();
     });
 
     // ドラッグオーバー
@@ -1375,14 +1389,13 @@ function initializeHeaderDragAndDrop() {
 
       // ドラッグ中のボタン自身にはドロップオーバー効果を適用しない
       if (!button.classList.contains("dragging")) {
-        // 他の要素のドロップインジケーターをクリア
+        // 他の要素のドロップインジケーターをクリア（activeは除く）
         const allButtons = document.querySelectorAll("header .nav-btn");
         allButtons.forEach((btn) => {
           btn.classList.remove(
             "drop-indicator",
             "drop-above",
             "drop-below",
-            "active",
             "drag-over"
           );
         });
@@ -1417,7 +1430,6 @@ function initializeHeaderDragAndDrop() {
         "drop-indicator",
         "drop-above",
         "drop-below",
-        "active",
         "drag-over"
       );
     });
@@ -1430,7 +1442,6 @@ function initializeHeaderDragAndDrop() {
         "drop-indicator",
         "drop-above",
         "drop-below",
-        "active",
         "drag-over"
       );
 
@@ -1472,6 +1483,9 @@ function initializeHeaderDragAndDrop() {
 
         // ドラッグ&ドロップ完了（トーストメッセージは不要）
         console.log("[DragDrop] 移動完了:", draggedId, "→", button.id);
+
+        // 現在のページに対応するアイコンのactive状態を復元
+        restoreActiveIconState();
       }
     });
   });
@@ -1498,9 +1512,81 @@ function isCloseButtonClick(e, button) {
   return distance <= closeButtonRadius;
 }
 
+// 現在のページに対応するアイコンのactive状態を復元
+function restoreActiveIconState() {
+  console.log("[ActiveIcon] アクティブアイコン状態を復元開始");
+
+  // 現在のページを確認
+  const currentPage = window.location.pathname;
+  let currentPageName = null;
+  let activeButtonId = null;
+
+  if (currentPage.includes("/memo/")) {
+    currentPageName = "memo";
+    activeButtonId = "btn-memo-list";
+  } else if (currentPage.includes("/prompt/")) {
+    currentPageName = "prompt";
+    activeButtonId = "btn-prompt";
+  } else if (currentPage.includes("/clipboard/")) {
+    currentPageName = "clipboard";
+    activeButtonId = "btn-clipboard";
+  } else if (currentPage.includes("/iframe/")) {
+    currentPageName = "iframe";
+    activeButtonId = "btn-iframe";
+  } else if (currentPage.includes("/ai/")) {
+    currentPageName = "ai";
+    activeButtonId = "btn-ai";
+  } else if (currentPage.includes("/status/")) {
+    currentPageName = "status";
+    activeButtonId = "btn-status";
+  } else if (currentPage.includes("/setting/")) {
+    currentPageName = "setting";
+    activeButtonId = "btn-setting";
+  }
+
+  console.log(
+    "[ActiveIcon] 現在のページ:",
+    currentPageName,
+    "アクティブボタン:",
+    activeButtonId
+  );
+
+  if (activeButtonId) {
+    // すべてのアイコンからactiveクラスを削除
+    const header = document.querySelector("header");
+    if (header) {
+      const navButtons = header.querySelectorAll(".nav-btn");
+      navButtons.forEach((button) => {
+        button.classList.remove("active");
+      });
+
+      // 現在のページに対応するアイコンにactiveクラスを追加
+      const activeButton = document.getElementById(activeButtonId);
+      if (activeButton) {
+        activeButton.classList.add("active");
+        console.log("[ActiveIcon] アクティブ状態を復元:", activeButtonId);
+      } else {
+        console.log(
+          "[ActiveIcon] アクティブボタンが見つかりません:",
+          activeButtonId
+        );
+      }
+    }
+  }
+}
+
 // ヘッダーからアイコンを削除
 function removeIconFromHeader(buttonId) {
   console.log("[RemoveIcon] アイコンを削除:", buttonId);
+
+  // MEMOとSETTINGアイコンは削除不可
+  if (buttonId === "btn-setting" || buttonId === "btn-memo-list") {
+    console.log(
+      "[RemoveIcon] MEMOとSETTINGアイコンは削除できません:",
+      buttonId
+    );
+    return;
+  }
 
   // 現在の設定を取得
   chrome.storage.local.get(["customSettings"], (result) => {
@@ -1527,6 +1613,9 @@ function removeIconFromHeader(buttonId) {
 
       // ヘッダーを更新
       applyIconVisibility(settings.selectedIcons);
+
+      // 現在のページに対応するアイコンのactive状態を復元
+      restoreActiveIconState();
 
       // 設定ページが開いている場合は、そちらも更新
       if (window.location.pathname.includes("/setting/")) {
@@ -1611,6 +1700,7 @@ window.addEventListener("load", () => {
 // グローバルに公開
 window.NavigationOrderManager = NavigationOrderManager;
 window.initializeHeaderDragAndDrop = initializeHeaderDragAndDrop;
+window.restoreActiveIconState = restoreActiveIconState;
 
 // デバッグ用のテスト関数
 window.testNavigationDragDrop = () => {
@@ -1889,10 +1979,14 @@ console.log("  - window.resetOrderProperties() - orderプロパティリセッ�
 console.log("  - window.testManualReorder() - 手動順序変更テスト");
 console.log("  - window.reinitializeDragDrop() - 機能再初期化");
 
-// ページ読み込み時にアイコン表示設定を適用
+// ページ読み込み時にアイコン表示設定を適用（初回のみ）
+let iconVisibilityApplied = false;
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("COMMON: DOMContentLoaded - アイコン表示設定を適用");
-  applyIconVisibilityFromStorage();
+  if (!iconVisibilityApplied) {
+    console.log("COMMON: DOMContentLoaded - アイコン表示設定を適用（初回）");
+    applyIconVisibilityFromStorage();
+    iconVisibilityApplied = true;
+  }
 });
 
 // ストレージからアイコン表示設定を適用
@@ -1908,6 +2002,14 @@ function applyIconVisibilityFromStorage() {
 
 // アイコン表示の適用（common.js版）
 function applyIconVisibility(selectedIcons) {
+  // ドラッグ&ドロップ進行中は適用しない
+  if (window.isDragDropInProgress) {
+    console.log(
+      "COMMON: ドラッグ&ドロップ進行中のため、アイコン表示設定をスキップ"
+    );
+    return;
+  }
+
   // 設定ページからの呼び出しかどうかを判定
   const isSettingPage = window.location.pathname.includes("/setting/");
   const prefix = isSettingPage ? "SETTING-COMMON" : "COMMON";
@@ -1926,12 +2028,14 @@ function applyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // 設定アイコンは常に表示
-    if (iconType === "setting") {
+    // MEMOとSETTINGアイコンは常に表示
+    if (iconType === "setting" || iconType === "memo") {
       button.style.display = "flex";
       button.style.visibility = "visible";
       button.style.position = "relative";
-      console.log(`${prefix}: ${buttonId} (${iconType}): 表示 (設定アイコン)`);
+      console.log(
+        `${prefix}: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
+      );
     } else if (selectedIcons.includes(iconType)) {
       button.style.display = "flex";
       button.style.visibility = "visible";
@@ -1947,6 +2051,9 @@ function applyIconVisibility(selectedIcons) {
   });
 
   console.log(`${prefix}: ヘッダー更新完了 - 表示アイコン:`, selectedIcons);
+
+  // 現在のページに対応するアイコンのactive状態を復元
+  restoreActiveIconState();
 }
 
 // ボタンIDからアイコンタイプを取得（common.js版）

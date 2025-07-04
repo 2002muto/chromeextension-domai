@@ -458,9 +458,9 @@ function setupIconSelectionListeners() {
       const isSelected = option.classList.contains("selected");
 
       if (isSelected) {
-        // 設定アイコンは常に選択状態を保つ
-        if (iconType === "setting") {
-          showCustomSettingMessage("設定アイコンは常に表示されます");
+        // MEMOとSETTINGアイコンは常に選択状態を保つ
+        if (iconType === "setting" || iconType === "memo") {
+          showCustomSettingMessage("MEMOとSETTINGアイコンは常に表示されます");
           return;
         }
 
@@ -508,8 +508,8 @@ function updateIconSelection(selectedIcons) {
       option.classList.remove("selected");
     }
 
-    // 設定アイコンは常に選択状態にする
-    if (iconType === "setting") {
+    // MEMOとSETTINGアイコンは常に選択状態にする
+    if (iconType === "setting" || iconType === "memo") {
       option.classList.add("selected");
     }
   });
@@ -524,9 +524,12 @@ function getSelectedIcons() {
     (option) => option.dataset.icon
   );
 
-  // 設定アイコンが含まれていない場合は追加
+  // MEMOとSETTINGアイコンが含まれていない場合は追加
   if (!selectedIcons.includes("setting")) {
     selectedIcons.push("setting");
+  }
+  if (!selectedIcons.includes("memo")) {
+    selectedIcons.push("memo");
   }
 
   console.log("選択されたアイコン:", selectedIcons);
@@ -535,6 +538,14 @@ function getSelectedIcons() {
 
 // アイコン表示の適用
 function applyIconVisibility(selectedIcons) {
+  // ドラッグ&ドロップ進行中は適用しない
+  if (window.isDragDropInProgress) {
+    console.log(
+      "SETTING: ドラッグ&ドロップ進行中のため、アイコン表示設定をスキップ"
+    );
+    return;
+  }
+
   const header = document.querySelector("header");
   if (!header) {
     console.log("SETTING: ヘッダーが見つかりません");
@@ -548,10 +559,12 @@ function applyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // 設定アイコンは常に表示
-    if (iconType === "setting") {
+    // MEMOとSETTINGアイコンは常に表示
+    if (iconType === "setting" || iconType === "memo") {
       button.style.display = "flex";
-      console.log(`SETTING: ${buttonId} (${iconType}): 表示 (設定アイコン)`);
+      console.log(
+        `SETTING: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
+      );
     } else if (selectedIcons.includes(iconType)) {
       button.style.display = "flex";
       console.log(`SETTING: ${buttonId} (${iconType}): 表示 (選択済み)`);
@@ -566,6 +579,14 @@ function applyIconVisibility(selectedIcons) {
 
 // 強制的にアイコン表示を適用する関数
 function forceApplyIconVisibility(selectedIcons) {
+  // ドラッグ&ドロップ進行中は適用しない
+  if (window.isDragDropInProgress) {
+    console.log(
+      "FORCE: ドラッグ&ドロップ進行中のため、強制アイコン表示設定をスキップ"
+    );
+    return;
+  }
+
   console.log("=== 強制的なアイコン表示適用開始 ===");
   console.log("適用するアイコン:", selectedIcons);
 
@@ -593,14 +614,16 @@ function forceApplyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // 設定アイコンは常に表示
-    if (iconType === "setting") {
+    // MEMOとSETTINGアイコンは常に表示
+    if (iconType === "setting" || iconType === "memo") {
       button.style.display = "flex";
       button.style.visibility = "visible";
       button.style.opacity = "1";
       button.style.position = "relative";
       button.style.left = "auto";
-      console.log(`FORCE: ${buttonId} (${iconType}): 強制表示 (設定アイコン)`);
+      console.log(
+        `FORCE: ${buttonId} (${iconType}): 強制表示 (MEMO/SETTINGアイコン)`
+      );
     } else if (selectedIcons.includes(iconType)) {
       button.style.display = "flex";
       button.style.visibility = "visible";
@@ -617,6 +640,13 @@ function forceApplyIconVisibility(selectedIcons) {
       console.log(`FORCE: ${buttonId} (${iconType}): 強制非表示 (未選択)`);
     }
   });
+
+  console.log("FORCE: ヘッダー更新完了 - 表示アイコン:", selectedIcons);
+
+  // 現在のページに対応するアイコンのactive状態を復元
+  if (window.restoreActiveIconState) {
+    window.restoreActiveIconState();
+  }
 
   // 適用後の状態を確認
   setTimeout(() => {
