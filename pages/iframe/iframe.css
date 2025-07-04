@@ -185,6 +185,28 @@ body {
   gap: 3px; /* 最小サイズのギャップを適用 */
 }
 
+/* ─── ズームコントロール ─── */
+.iframe-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.zoom-btn {
+  background: #e9ecef;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.zoom-level {
+  font-size: 0.75rem;
+  color: #333;
+}
+
 .new-search-btn:hover {
   filter: brightness(1.1);
   transform: translateY(-1px);
@@ -258,4 +280,26 @@ header {
   border: none;
   background: #ffffff;
   /* z-index 指定なし */
+}
+
+/* ─── タブバー ─── */
+.iframe-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f1f3f5;
+  overflow-x: auto;
+}
+
+.iframe-tab {
+  background: #dee2e6;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.iframe-tab.active {
+  background: #ffffff;
+  font-weight: bold;
 }

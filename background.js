@@ -5,6 +5,42 @@ const WIDTH = 420;
 const popups = new Map(); // baseWin.id → popup.id
 let lastTab = null; // 直近入力フォーカスのページタブ
 
+// ───────────────────────────────────────
+// 追加: iframe用ヘッダー解除ルール設定
+// ───────────────────────────────────────
+const BYPASS_RULE_ID = 100;
+
+function setupBypassHeadersRule() {
+  const extensionDomain = chrome.runtime.id;
+  const rule = {
+    id: BYPASS_RULE_ID,
+    priority: 1,
+    action: {
+      type: "modifyHeaders",
+      responseHeaders: [
+        { header: "x-frame-options", operation: "remove" },
+        { header: "content-security-policy", operation: "remove" },
+      ],
+    },
+    condition: {
+      resourceTypes: ["sub_frame"],
+      initiatorDomains: [extensionDomain],
+      tabIds: [-1],
+    },
+  };
+
+  chrome.declarativeNetRequest
+    .updateDynamicRules({ removeRuleIds: [BYPASS_RULE_ID], addRules: [rule] })
+    .then(() => {
+      console.log("[BG] Bypass header rule added");
+    })
+    .catch((err) => {
+      console.error("[BG] Failed to add bypass rule", err);
+    });
+}
+
+setupBypassHeadersRule();
+
 // 0) 拡張機能アイコンクリック時のサイドパネル制御
 chrome.action.onClicked.addListener(async (tab) => {
   console.log(`[BG] Extension icon clicked on tab ${tab.id}`);

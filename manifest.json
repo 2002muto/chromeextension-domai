@@ -2,7 +2,14 @@
   "manifest_version": 3,
   "name": "domai Extension",
   "version": "1.0.0",
-  "permissions": ["sidePanel", "storage", "scripting", "activeTab", "tabs"],
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "scripting",
+    "activeTab",
+    "tabs",
+    "declarativeNetRequestWithHostAccess"
+  ],
   "host_permissions": ["https://chat.openai.com/*", "<all_urls>"],
   "content_scripts": [
     {

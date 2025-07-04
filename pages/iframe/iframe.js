@@ -50,6 +50,38 @@ function initializeIframePage() {
   const iframeDisplayContainer = document.getElementById(
     "iframe-display-container"
   );
+  const tabsContainer = document.getElementById("iframe-tabs");
+
+  let tabs = [];
+
+  function createTab(url) {
+    if (tabs.includes(url)) {
+      setActiveTab(url);
+      return;
+    }
+    tabs.push(url);
+    const tabEl = document.createElement("div");
+    tabEl.className = "iframe-tab";
+    try {
+      tabEl.textContent = new URL(url).hostname;
+    } catch {
+      tabEl.textContent = url;
+    }
+    tabEl.dataset.url = url;
+    tabEl.addEventListener("click", () => {
+      console.log("タブ切り替え:", url);
+      setActiveTab(url);
+      iframeDisplay.src = url;
+    });
+    tabsContainer.appendChild(tabEl);
+    setActiveTab(url);
+  }
+
+  function setActiveTab(url) {
+    Array.from(tabsContainer.children).forEach((el) => {
+      el.classList.toggle("active", el.dataset.url === url);
+    });
+  }
   const emptyState = document.getElementById("iframe-empty-state");
   const emptyStateContent = emptyState?.querySelector(
     ".iframe-empty-state-content"
@@ -125,6 +157,32 @@ function initializeIframePage() {
       showEmptyState();
     });
   }
+
+  // ズームコントロールの初期化
+  const zoomInBtn = document.getElementById("zoom-in");
+  const zoomOutBtn = document.getElementById("zoom-out");
+  const zoomLevelLabel = document.getElementById("zoom-level");
+  let zoomLevel = 1;
+
+  function updateZoom() {
+    iframeDisplay.style.transform = `scale(${zoomLevel})`;
+    iframeDisplay.style.transformOrigin = "0 0";
+    zoomLevelLabel.textContent = Math.round(zoomLevel * 100) + "%";
+  }
+
+  zoomInBtn?.addEventListener("click", () => {
+    zoomLevel = Math.min(zoomLevel + 0.1, 2);
+    console.log("ズームイン:", zoomLevel);
+    updateZoom();
+  });
+
+  zoomOutBtn?.addEventListener("click", () => {
+    zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+    console.log("ズームアウト:", zoomLevel);
+    updateZoom();
+  });
+
+  updateZoom();
 
   // 初期状態で検索入力フィールドにフォーカス
   setTimeout(() => {
@@ -234,6 +292,7 @@ function performSearch() {
     submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
 
     iframeDisplay.src = url;
+    createTab(url);
 
     iframeDisplay.onload = () => {
       console.log("iframe読み込み完了");
