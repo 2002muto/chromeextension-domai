@@ -330,18 +330,35 @@ async function renderList() {
   root.querySelector(".form-header")?.remove();
 
   footer.innerHTML = `
-    <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブ">
+    <button
+      id="btn-archive-toggle"
+      class="nav-btn archive-toggle"
+      title="アーカイブ"
+    >
       <i class="bi bi-archive"></i>
+      <span class="nav-text">アーカイブ</span>
     </button>
     <button class="nav-btn encrypt-btn">
       <i class="bi bi-download"></i>
+      <span class="nav-text">バックアップ</span>
     </button>`;
 
-  // アーカイブボタンの機能を実装
-  footer.querySelector("#btn-archive-toggle").addEventListener("click", () => {
-    console.log("アーカイブボタンがクリックされました");
-    renderArchiveView();
-  });
+  // フッターボタンのイベントリスナーを設定
+  const archiveToggleBtn = footer.querySelector("#btn-archive-toggle");
+  if (archiveToggleBtn) {
+    archiveToggleBtn.addEventListener("click", () => {
+      console.log("アーカイブボタンがクリックされました");
+      renderArchiveNav("prompt");
+    });
+  }
+
+  const exportBtn = footer.querySelector(".encrypt-btn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportAllPrompts);
+  }
+
+  // ボタンの状態を更新
+  updateExportButtonState();
 
   // アニメーション処理（MEMOページと同じ順序）
   body.classList.remove("edit-mode", "run-mode");
@@ -874,7 +891,7 @@ async function renderArchiveView() {
             }
 
             // 復元後にアーカイブリストを再描画
-            renderArchiveView();
+            renderArchiveList();
           } else {
             console.error("[ARCH] 復元対象のプロンプトが見つかりません:", p.id);
             // ボタンを再度有効化
@@ -983,7 +1000,7 @@ async function renderArchiveView() {
           await save(PROMPT_KEY, prompts);
           window.prompts = prompts;
           console.log(`[ARCHIVE] ${deleteCount}件のプロンプトを削除しました`);
-          renderArchiveView(); // アーカイブ画面を再描画
+          renderArchiveList(); // アーカイブ画面を再描画
         },
         onCancel: () => {
           console.log("[ARCHIVE] 削除をキャンセルしました");
@@ -2186,7 +2203,8 @@ function isEmptyPrompt(prompt) {
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderList = renderList;
-window.renderArchiveView = renderArchiveView;
+window.renderArchiveNav = renderArchiveNav;
+window.renderArchiveList = renderArchiveList;
 window.checkForUnsavedChanges = checkForUnsavedChanges;
 // 削除：showSaveConfirmDialog関数はutils.jsに統合
 window.prompts = prompts;
@@ -2245,3 +2263,456 @@ window.discardAndGoBack = function () {
   console.log("[PROMPT] 変更を破棄して戻ります");
   // 何も保存せずに一覧画面に戻る
 };
+
+// ───────────────────────────────────────
+// アーカイブ機能
+// ───────────────────────────────────────
+const PROMPT_ARCH_KEY = "prompts_arch";
+let archiveType = null;
+
+// アーカイブ画面の表示
+function renderArchiveNav(type) {
+  console.log("renderArchiveNav: start, type=", type);
+  archiveType = type;
+
+  // ページ状態を保存
+  if (window.PageStateManager) {
+    window.PageStateManager.savePageState("prompt", {
+      mode: "archive",
+      archiveType: type,
+    });
+    window.PageStateManager.setActivePage("prompt");
+  }
+
+  // アーカイブリストとフッターを描画
+  renderArchiveList();
+  renderArchiveFooter();
+
+  console.log("renderArchiveNav: end");
+}
+
+// アーカイブリストの描画
+async function renderArchiveList() {
+  console.log("renderArchiveList: start", archiveType);
+
+  const content = document.querySelector(".memo-content");
+  if (!content) {
+    console.error(".memo-content要素が見つかりません");
+    return;
+  }
+
+  content.classList.add("archive");
+  content.classList.remove("show");
+  void content.offsetWidth;
+  content.classList.add("show");
+
+  // ストレージからアーカイブデータを読み込み
+  const rawItems = (await load(PROMPT_ARCH_KEY)) || [];
+
+  // 空のプロンプトは表示しないが、ストレージからは削除しない
+  const listData = rawItems.filter((item) => !isEmptyPrompt(item));
+
+  console.log("[ARCH] 空のプロンプトを除外して表示:", {
+    totalItems: rawItems.length,
+    displayItems: listData.length,
+    hiddenEmptyItems: rawItems.length - listData.length,
+  });
+
+  // HTML骨格
+  content.innerHTML = `
+    <div class="archive-header">
+      <h3 class="archive-title">アーカイブ</h3>
+      <label class="select-all-label">
+        <input type="checkbox" id="chk-select-all" /> 全て選択する
+      </label>
+    </div>
+    <ul class="archive-list"></ul>`;
+
+  const ul = content.querySelector(".archive-list");
+  if (!ul) {
+    console.error(".archive-list要素が見つかりません");
+    return;
+  }
+
+  console.log("[ARCH] アーカイブリスト要素:", ul);
+
+  // 行生成またはEmpty State
+  if (listData.length === 0) {
+    // Empty State: アーカイブが空の場合
+    ul.innerHTML = `
+      <div class="prompt-empty-state">
+        <div class="prompt-empty-state-content">
+          <div class="prompt-empty-state-icon">
+            <i class="bi bi-terminal"></i>
+          </div>
+          <h3 class="prompt-empty-state-title">アーカイブされた<br>プロンプトはありません</h3>
+          <p class="prompt-empty-state-message">
+            プロンプトをアーカイブすると、<br>ここに表示されます。
+          </p>
+        </div>
+      </div>
+    `;
+
+    // Empty Stateのフェードインアニメーション
+    setTimeout(() => {
+      const emptyContent = ul.querySelector(".prompt-empty-state-content");
+      if (emptyContent) {
+        emptyContent.classList.add("show");
+      }
+    }, 100);
+  } else {
+    // 通常のアーカイブアイテム表示
+    listData.forEach((it, displayIdx) => {
+      // 元の配列での実際のインデックスを取得
+      const actualIdx = rawItems.findIndex((item) => item === it);
+
+      const li = document.createElement("li");
+      li.className = "archive-item";
+
+      // 左：チェック
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "arch-check";
+      cb.dataset.index = actualIdx;
+      li.appendChild(cb);
+
+      // 中央：タイトル＋プレビューコンテナ
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "arch-content";
+
+      // タイトル
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "arch-title";
+      titleSpan.textContent = it.title || "無題";
+      contentDiv.appendChild(titleSpan);
+
+      // プロンプト固有：内容プレビュー
+      if (it.fields && it.fields.length > 0) {
+        const previewSpan = document.createElement("div");
+        previewSpan.className = "prompt-preview";
+        // 最初の有効なフィールドの内容をプレビューとして表示
+        const firstField = it.fields.find(
+          (field) => field.text && field.text.trim() !== ""
+        );
+        const previewText = firstField
+          ? firstField.text.length > 100
+            ? firstField.text.substring(0, 100) + "..."
+            : firstField.text
+          : "内容なし";
+        previewSpan.textContent = previewText;
+        contentDiv.appendChild(previewSpan);
+      }
+
+      li.appendChild(contentDiv);
+
+      // 右：復元ボタン
+      const btn = document.createElement("button");
+      btn.className = "restore-btn";
+      btn.innerHTML = '<i class="bi bi-upload"></i>';
+      btn.title = "復元";
+
+      console.log("[ARCH] 復元ボタンを作成しました:", {
+        displayIndex: displayIdx,
+        actualIndex: actualIdx,
+        itemTitle: it.title || "無題",
+        archiveType: archiveType,
+      });
+
+      btn.addEventListener("click", async (e) => {
+        console.log("[ARCH] 復元ボタンがクリックされました！");
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 重複クリックを防ぐ
+        if (btn.disabled) {
+          console.log("[ARCH] 復元処理中です...");
+          return;
+        }
+
+        // ボタンを一時的に無効化
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+
+        try {
+          console.log("[ARCH] 復元処理を開始します...");
+
+          // プロンプト: アーカイブ → アクティブへ移動
+          const act = (await load(PROMPT_KEY)) || [];
+          const arch = (await load(PROMPT_ARCH_KEY)) || [];
+          const restoredItem = arch.splice(actualIdx, 1)[0];
+          act.push(restoredItem);
+          await save(PROMPT_KEY, act);
+          await save(PROMPT_ARCH_KEY, arch);
+          console.log(
+            "[ARCH] プロンプトを復元しました:",
+            restoredItem.title || "無題"
+          );
+
+          // 復元アニメーションを実行
+          if (window.AppUtils && window.AppUtils.animateRestoreItem) {
+            await window.AppUtils.animateRestoreItem(li, async () => {
+              console.log("[ARCH] 復元アニメーション完了");
+            });
+          } else {
+            // AppUtilsが利用できない場合の代替処理
+            console.log(
+              "[ARCH] AppUtils.animateRestoreItemが利用できません。代替処理を実行します。"
+            );
+
+            // シンプルなアニメーション
+            li.style.transition = "all 0.5s ease-in-out";
+            li.style.transform = "translateY(-50px) scale(0.9)";
+            li.style.opacity = "0";
+            li.style.filter = "blur(2px)";
+
+            await new Promise((resolve) => {
+              setTimeout(() => {
+                console.log("[ARCH] 代替復元アニメーション完了");
+                resolve();
+              }, 500);
+            });
+          }
+
+          // 復元後にアーカイブリストを再描画
+          renderArchiveList();
+        } catch (error) {
+          console.error("[ARCH] 復元処理中にエラーが発生しました:", error);
+          // エラーが発生した場合はボタンを再度有効化
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          btn.style.cursor = "pointer";
+        }
+      });
+
+      li.appendChild(btn);
+      ul.appendChild(li);
+    });
+  }
+}
+
+// アーカイブフッターの描画
+function renderArchiveFooter() {
+  console.log("renderArchiveFooter: start");
+
+  const footer = document.querySelector(".memo-footer");
+  if (!footer) {
+    console.error(".memo-footer要素が見つかりません");
+    return;
+  }
+
+  // フッターボタンの状態を更新
+  const archiveBtn = footer.querySelector("#btn-archive-toggle");
+  const exportBtn = footer.querySelector(".encrypt-btn");
+
+  if (archiveBtn) {
+    archiveBtn.disabled = false; // 常に有効
+    archiveBtn.title = "アーカイブ";
+    const archiveText = archiveBtn.querySelector(".nav-text");
+    if (archiveText) {
+      archiveText.textContent = "アーカイブ";
+    }
+  }
+
+  if (exportBtn) {
+    exportBtn.disabled = false; // 常に有効
+    exportBtn.title = "バックアップ";
+    const exportText = exportBtn.querySelector(".nav-text");
+    if (exportText) {
+      exportText.textContent = "バックアップ";
+    }
+  }
+
+  console.log("renderArchiveFooter: end");
+}
+
+// ───────────────────────────────────────
+// エクスポート機能
+// ───────────────────────────────────────
+async function exportAllPrompts() {
+  try {
+    console.log("PROMPTエクスポート機能を開始します");
+
+    // アクティブなプロンプト（アーカイブされていないプロンプト）のみをフィルタリング
+    const activePrompts = prompts
+      ? prompts.filter((prompt) => {
+          return !prompt.archived;
+        })
+      : [];
+
+    // アクティブなプロンプトが0件の場合は処理を停止
+    if (activePrompts.length === 0) {
+      console.log("アクティブなプロンプトが0件のためエクスポートを中止します");
+      return;
+    }
+
+    // 現在時刻を取得してファイル名を生成
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    const fileName = `${hours}${minutes}${seconds}.json`;
+
+    console.log("ファイル名:", fileName);
+    console.log("アクティブなプロンプト数:", activePrompts.length);
+
+    // エクスポート用のデータ構造を作成（アクティブなプロンプトのみ）
+    const exportData = {
+      version: "1.0",
+      exportDate: now.toISOString(),
+      promptCount: activePrompts.length,
+      totalPromptCount: prompts ? prompts.length : 0,
+      prompts: activePrompts,
+    };
+
+    console.log("エクスポートデータ:", exportData);
+
+    // JSONファイルとしてダウンロード
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    console.log("エクスポート完了:", fileName);
+
+    // 成功メッセージを表示
+    showExportSuccessMessage(fileName);
+  } catch (error) {
+    console.error("エクスポートエラー:", error);
+    showExportErrorMessage();
+  }
+}
+
+// エクスポート成功メッセージ
+function showExportSuccessMessage(fileName) {
+  const message = document.createElement("div");
+  message.className = "export-message success";
+  message.innerHTML = `
+    <i class="bi bi-check-circle"></i>
+    <span>エクスポート完了: ${fileName}</span>
+  `;
+  document.body.appendChild(message);
+
+  setTimeout(() => {
+    message.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+    message.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 300);
+  }, 3000);
+}
+
+// エクスポートエラーメッセージ
+function showExportErrorMessage() {
+  const message = document.createElement("div");
+  message.className = "export-message error";
+  message.innerHTML = `
+    <i class="bi bi-exclamation-triangle"></i>
+    <span>エクスポートに失敗しました</span>
+  `;
+  document.body.appendChild(message);
+
+  setTimeout(() => {
+    message.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+    message.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 300);
+  }, 3000);
+}
+
+// エクスポートボタンとアーカイブボタンの状態を更新
+function updateExportButtonState() {
+  const exportBtn = document.querySelector(".encrypt-btn");
+  const archiveBtn = document.querySelector("#btn-archive-toggle");
+
+  // アクティブなプロンプト（アーカイブされていないプロンプト）のみをカウント
+  const activePrompts = prompts
+    ? prompts.filter((prompt) => {
+        return !prompt.archived;
+      })
+    : [];
+  const hasActivePrompts = activePrompts.length > 0;
+
+  // エクスポートボタンの状態更新
+  if (exportBtn) {
+    exportBtn.disabled = !hasActivePrompts;
+    exportBtn.title = hasActivePrompts
+      ? "バックアップ"
+      : "プロンプトはありません";
+
+    // ホバーテキストも更新
+    const exportText = exportBtn.querySelector(".nav-text");
+    if (exportText) {
+      exportText.textContent = hasActivePrompts
+        ? "バックアップ"
+        : "プロンプトはありません";
+    }
+  }
+
+  // アーカイブボタンの状態更新（MEMOページと同様に常に有効）
+  if (archiveBtn) {
+    archiveBtn.disabled = false; // 常に有効（MEMOページと同様）
+    archiveBtn.title = "アーカイブ";
+
+    // ホバーテキストも更新
+    const archiveText = archiveBtn.querySelector(".nav-text");
+    if (archiveText) {
+      archiveText.textContent = "アーカイブ";
+    }
+  }
+
+  console.log("ボタン状態更新:", {
+    hasActivePrompts,
+    exportDisabled: !hasActivePrompts,
+    totalPromptCount: prompts ? prompts.length : 0,
+    activePromptCount: activePrompts.length,
+  });
+}
+
+// ───────────────────────────────────────
+// 初期化処理
+// ───────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("PROMPTページ: DOMContentLoaded");
+
+  // フッターボタンのイベントリスナーを設定
+  const archiveToggleBtn = document.getElementById("btn-archive-toggle");
+  if (archiveToggleBtn) {
+    console.log("初期化: アーカイブトグルボタンを発見しました");
+    archiveToggleBtn.addEventListener("click", () =>
+      renderArchiveNav("prompt")
+    );
+  } else {
+    console.error("初期化: アーカイブトグルボタンが見つかりません");
+  }
+
+  const exportBtn = document.querySelector(".encrypt-btn");
+  if (exportBtn) {
+    console.log("初期化: エクスポートボタンを発見しました");
+    exportBtn.addEventListener("click", exportAllPrompts);
+  } else {
+    console.error("初期化: エクスポートボタンが見つかりません");
+  }
+
+  // .memo-content要素の確認
+  const memoContent = document.querySelector(".memo-content");
+  if (memoContent) {
+    console.log("初期化: .memo-content要素を発見しました");
+  } else {
+    console.error("初期化: .memo-content要素が見つかりません");
+  }
+});
