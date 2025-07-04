@@ -46,21 +46,29 @@
 }
 
 .detail-panel {
+  display: none;
+  opacity: 0;
+  transform: translateY(40px) scale(0.98);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  transition: opacity 0.7s cubic-bezier(0.23, 1.01, 0.32, 1),
+    transform 0.7s cubic-bezier(0.23, 1.01, 0.32, 1), box-shadow 0.7s;
   background: rgba(26, 32, 44, 0.8);
   color: #e2e8f0;
   padding: 20px;
   border-radius: 8px;
   line-height: 1.6;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .detail-panel.show {
+  display: block;
+}
+
+.detail-panel.animate {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .detail-panel a.donation-link {
@@ -99,6 +107,150 @@
   background-color: #047857;
 }
 
+/* ─── カスタム設定パネル ─── */
+.custom-title {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.custom-description {
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.custom-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.setting-group {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.setting-group-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-group-title i {
+  color: #3b82f6;
+  font-size: 1rem;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+}
+
+/* アクションボタン */
+.custom-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-reset,
+.btn-save {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-reset {
+  background: #4a5568;
+  color: #ffffff;
+}
+
+.btn-reset:hover {
+  background: #5a6578;
+  transform: translateY(-1px);
+}
+
+.btn-save {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-save:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.btn-compare {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.btn-compare:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+/* カスタム設定メッセージ */
+.custom-setting-message {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  animation: slideInUp 0.3s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ─── レスポンシブ対応 ─── */
 @media (max-width: 768px) {
   .memo-content {
@@ -114,6 +266,82 @@
   .detail-panel {
     padding: 16px;
     font-size: 0.9rem;
+  }
+
+  .custom-actions {
+    flex-direction: column;
+  }
+
+  .icon-selector {
+    gap: 12px;
+    justify-content: flex-start;
+  }
+
+  .icon-option {
+    width: 60px;
+    height: 60px;
+  }
+
+  .icon-option i {
+    font-size: 1.2rem;
+  }
+
+  .icon-label {
+    font-size: 0.6rem;
+  }
+
+  .coming-soon-selector {
+    gap: 12px;
+  }
+
+  .icon-option.coming-soon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .icon-option.coming-soon i {
+    font-size: 1.2rem;
+  }
+
+  .icon-option.coming-soon .icon-label {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-selector {
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .icon-option {
+    width: 55px;
+    height: 55px;
+  }
+
+  .icon-option i {
+    font-size: 1.1rem;
+  }
+
+  .icon-label {
+    font-size: 0.55rem;
+  }
+
+  .coming-soon-selector {
+    gap: 8px;
+  }
+
+  .icon-option.coming-soon {
+    width: 55px;
+    height: 55px;
+  }
+
+  .icon-option.coming-soon i {
+    font-size: 1.1rem;
+  }
+
+  .icon-option.coming-soon .icon-label {
+    font-size: 0.55rem;
   }
 }
 
@@ -141,4 +369,382 @@
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* ─── アイコン選択機能 ─── */
+.icon-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.icon-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.icon-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.icon-option.selected {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6),
+      0 0 30px rgba(59, 130, 246, 0.4);
+  }
+}
+
+.icon-option i {
+  font-size: 1.4rem;
+  color: #bbb;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.icon-option:hover i {
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.icon-option.selected i {
+  color: #fff;
+  filter: none;
+}
+
+.icon-label {
+  font-size: 0.65rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* アイコンオプションのグラデーション効果 */
+.icon-option[data-icon="memo"].selected {
+  background: linear-gradient(135deg, #078ab9, #024881);
+  border-color: #078ab9;
+  animation: glowPulseMemo 2s ease-in-out infinite;
+}
+
+.icon-option[data-icon="clipboard"].selected {
+  background: linear-gradient(135deg, #04e949, #00b0cf);
+  border-color: #04e949;
+  animation: glowPulseClipboard 2s ease-in-out infinite;
+}
+
+.icon-option[data-icon="prompt"].selected {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: #667eea;
+  animation: glowPulsePrompt 2s ease-in-out infinite;
+}
+
+.icon-option[data-icon="iframe"].selected {
+  background: linear-gradient(135deg, #e95404, #a600cf);
+  border-color: #e95404;
+  animation: glowPulseIframe 2s ease-in-out infinite;
+}
+
+.icon-option[data-icon="status"].selected {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: #10b981;
+  animation: glowPulseStatus 2s ease-in-out infinite;
+}
+
+.icon-option[data-icon="setting"].selected {
+  background: linear-gradient(135deg, #fff04b, #99902d);
+  border-color: #fff04b;
+  animation: glowPulseSetting 2s ease-in-out infinite;
+}
+
+@keyframes glowPulseMemo {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(7, 138, 185, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(7, 138, 185, 0.6),
+      0 0 30px rgba(7, 138, 185, 0.4);
+  }
+}
+
+@keyframes glowPulseClipboard {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(4, 233, 73, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(4, 233, 73, 0.6), 0 0 30px rgba(4, 233, 73, 0.4);
+  }
+}
+
+@keyframes glowPulsePrompt {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6),
+      0 0 30px rgba(102, 126, 234, 0.4);
+  }
+}
+
+@keyframes glowPulseIframe {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(233, 84, 4, 0.6), 0 0 30px rgba(233, 84, 4, 0.4);
+  }
+}
+
+@keyframes glowPulseStatus {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6),
+      0 0 30px rgba(16, 185, 129, 0.4);
+  }
+}
+
+@keyframes glowPulseSetting {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(255, 240, 75, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(255, 240, 75, 0.6),
+      0 0 30px rgba(255, 240, 75, 0.4);
+  }
+}
+
+/* ─── 今後実装予定セクション ─── */
+.coming-soon-group {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  opacity: 0.8;
+}
+
+.coming-soon-group .setting-group-title {
+  color: #a0a0a0;
+}
+
+.coming-soon-group .setting-group-title i {
+  color: #6b7280;
+}
+
+.coming-soon-selector {
+  gap: 16px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.icon-option.coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  opacity: 0.7;
+  cursor: not-allowed;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+/* 設定アイコンは常に選択可能 */
+.icon-option[data-icon="setting"] {
+  cursor: pointer;
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.icon-option.coming-soon:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+
+.icon-option.coming-soon i {
+  font-size: 1.4rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+  filter: grayscale(1);
+  transition: all 0.3s ease;
+}
+
+/* 設定アイコンのアイコンは常にカラー */
+.icon-option[data-icon="setting"] i {
+  color: #bbb;
+  filter: none;
+}
+
+.icon-option.coming-soon:hover i {
+  color: #6b7280;
+  transform: none;
+  filter: grayscale(1);
+}
+
+.icon-option.coming-soon .icon-label {
+  font-size: 0.65rem;
+  color: #9ca3af;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* 設定アイコンのラベルは常にカラー */
+.icon-option[data-icon="setting"] .icon-label {
+  color: #e2e8f0;
+}
+
+/* Coming Soonアイコンのグラデーション効果（無効化） */
+.icon-option.coming-soon[data-icon="ai"].selected {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
+  opacity: 0.7;
+}
+
+/* ─── AIアイコンドロップダウン ─── */
+.icon-option.coming-soon.dropdown-trigger {
+  cursor: pointer;
+  position: relative;
+}
+
+.icon-option.coming-soon.dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.icon-option.coming-soon.dropdown-trigger.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.coming-soon-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2d2d2d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  min-width: 180px;
+  display: none;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  margin-top: 8px;
+}
+
+.dropdown-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f59e0b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.dropdown-header i {
+  font-size: 1rem;
+}
+
+.dropdown-item {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.dropdown-item i {
+  font-size: 1rem;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.dropdown-item:hover i {
+  color: #3b82f6;
+}
+
+/* ドロップダウンの矢印 */
+.coming-soon-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #2d2d2d;
+}
+
+.coming-soon-dropdown::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid rgba(255, 255, 255, 0.1);
 }

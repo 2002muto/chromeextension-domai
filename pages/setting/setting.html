@@ -35,7 +35,12 @@
       <a href="../iframe/iframe.html" class="nav-btn" id="btn-iframe">
         <i class="bi bi-layout-split"></i>
       </a>
-      <a href="../ai/ai.html" class="nav-btn" id="btn-ai" data-click-tooltip="Coming Soon!">
+      <a
+        href="../ai/ai.html"
+        class="nav-btn"
+        id="btn-ai"
+        data-click-tooltip="Coming Soon!"
+      >
         <i class="bi bi-question-lg"></i>
       </a>
       <a href="../status/status.html" class="nav-btn" id="btn-status">
@@ -54,6 +59,9 @@
           バックアップのインストール
         </button>
         <button class="setting-btn" id="btn-api-key">APIキーの設定</button>
+        <button class="setting-btn" id="btn-custom" data-target="#custom-panel">
+          カスタム
+        </button>
       </nav>
       <!-- 詳細パネル -->
       <section class="setting-detail">
@@ -63,7 +71,140 @@
           完全にスタンドアロンで動く設計にしています。<br /><br />
           また、ユーザビリティを最優先に考え、UI/UXの劣化を防ぐ広告掲載も⾏っておりません。<br /><br />
           この拡張機能が、皆さまの業務効率化を⽀援することを⼼から願っています。<br /><br /><br /><br />
-        <a href="#" class="donation-link">⇒ Please Donation</a><br /><br /><br />
+          <a href="#" class="donation-link">⇒ Please Donation</a
+          ><br /><br /><br />
+        </div>
+
+        <!-- カスタム設定パネル -->
+        <div class="detail-panel" id="custom-panel">
+          <h3 class="custom-title">アイコン選択</h3>
+          <p class="custom-description">
+            光っているアイコンのみがヘッダーに表示されます。アイコンをクリックして選択/解除してください。設定アイコンは常に表示されます。<br />変更を反映するには「設定を保存」ボタンを押してください。<br />保存後、選択されたアイコンのみがヘッダーに表示されます。
+          </p>
+
+          <div class="custom-settings">
+            <!-- アイコン選択設定 -->
+            <div class="setting-group">
+              <h4 class="setting-group-title">
+                <i class="bi bi-grid-3x3-gap"></i>
+                ヘッダーに表示するアイコン<br />（光っているもののみ表示）
+              </h4>
+              <div class="setting-item">
+                <div class="setting-control">
+                  <div class="icon-selector">
+                    <div
+                      class="icon-option"
+                      data-icon="memo"
+                      data-id="btn-memo-list"
+                    >
+                      <i class="bi bi-clipboard2-minus"></i>
+                      <span class="icon-label">MEMO</span>
+                    </div>
+                    <div
+                      class="icon-option"
+                      data-icon="clipboard"
+                      data-id="btn-clipboard"
+                    >
+                      <i class="bi bi-journal-text"></i>
+                      <span class="icon-label">CLIPBOARD</span>
+                    </div>
+                    <div
+                      class="icon-option"
+                      data-icon="prompt"
+                      data-id="btn-prompt"
+                    >
+                      <i class="bi bi-terminal"></i>
+                      <span class="icon-label">PROMPT</span>
+                    </div>
+                    <div
+                      class="icon-option"
+                      data-icon="iframe"
+                      data-id="btn-iframe"
+                    >
+                      <i class="bi bi-layout-split"></i>
+                      <span class="icon-label">IFRAME</span>
+                    </div>
+                    <div
+                      class="icon-option"
+                      data-icon="status"
+                      data-id="btn-status"
+                    >
+                      <i class="bi bi-wifi"></i>
+                      <span class="icon-label">STATUS</span>
+                    </div>
+                    <div
+                      class="icon-option"
+                      data-icon="setting"
+                      data-id="btn-setting"
+                    >
+                      <i class="bi bi-gear-fill"></i>
+                      <span class="icon-label">SETTING</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 今後実装予定 -->
+            <div class="setting-group coming-soon-group">
+              <h4 class="setting-group-title">
+                <i class="bi bi-clock-history"></i>
+                今後実装予定
+              </h4>
+              <div class="setting-item">
+                <div class="setting-control">
+                  <div class="icon-selector coming-soon-selector">
+                    <div
+                      class="icon-option coming-soon dropdown-trigger"
+                      data-icon="ai"
+                      data-id="btn-ai"
+                    >
+                      <i class="bi bi-question-lg"></i>
+                      <span class="icon-label">AI</span>
+                      <div class="coming-soon-dropdown">
+                        <div class="dropdown-header">
+                          <i class="bi bi-clock-history"></i>
+                          <span>今後実装予定</span>
+                        </div>
+                        <div class="dropdown-item">
+                          <i class="bi bi-chat-dots"></i>
+                          <span>AI チャット</span>
+                        </div>
+                        <div class="dropdown-item">
+                          <i class="bi bi-lightning"></i>
+                          <span>AI 要約</span>
+                        </div>
+                        <div class="dropdown-item">
+                          <i class="bi bi-translate"></i>
+                          <span>AI 翻訳</span>
+                        </div>
+                        <div class="dropdown-item">
+                          <i class="bi bi-magic"></i>
+                          <span>AI 生成</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="custom-actions">
+            <button class="btn-reset" id="btn-reset-custom">
+              <i class="bi bi-arrow-clockwise"></i>
+              デフォルトに戻す
+            </button>
+            <button class="btn-save" id="btn-save-custom">
+              <i class="bi bi-check-lg"></i>
+              設定を保存
+            </button>
+            <button class="btn-compare" id="btn-compare-custom">
+              <i class="bi bi-arrow-left-right"></i>
+              状態を比較
+            </button>
+          </div>
+        </div>
       </section>
     </div>
     <!-- フッター（画面下部固定） -->

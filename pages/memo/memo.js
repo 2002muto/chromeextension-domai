@@ -505,22 +505,62 @@ async function renderInputForm(id) {
   const ta = content.querySelector(".text-input");
   console.log("Initialized MEMO textarea", ta);
 
-  // 自動リサイズ機能を追加（改行・エンターで無限に広がる）
-  function autoResizeTextarea() {
-    // 一時的に高さをリセットして正確なscrollHeightを取得
-    ta.style.height = "auto";
+  function setDynamicPaddingBottom() {
+    const btns = content.querySelector(".textarea-buttons");
+    if (btns) {
+      const btnsHeight = btns.offsetHeight || 0;
+      const extra = 12; // 余白
+      ta.style.paddingBottom = btnsHeight + extra + "px";
+      console.log(`Set textarea padding-bottom: ${btnsHeight + extra}px`);
+    }
+  }
 
-    // 内容に応じた高さを設定（最小高さは200px）
+  function autoResizeTextarea() {
+    setDynamicPaddingBottom();
+    ta.style.height = "auto";
     const minHeight = 200;
     const contentHeight = ta.scrollHeight;
-    const newHeight = Math.max(minHeight, contentHeight);
-
+    const lines = ta.value.split("\n").length;
+    const computedStyle = window.getComputedStyle(ta);
+    const lineHeight =
+      parseInt(computedStyle.lineHeight) ||
+      parseInt(computedStyle.fontSize) * 1.2;
+    const paddingTop = parseInt(computedStyle.paddingTop) || 0;
+    const paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
+    const viewportHeight = window.innerHeight;
+    const headerHeight =
+      document.querySelector(".memo-input-form .input-header")?.offsetHeight ||
+      0;
+    const footerHeight =
+      document.querySelector(".memo-footer")?.offsetHeight || 0;
+    const formTitleHeight =
+      document.querySelector(".form-title")?.offsetHeight || 0;
+    const cardNavHeight =
+      document.querySelector(".card-nav")?.offsetHeight || 0;
+    const margins = 20; // 余白をさらに縮小
+    const maxAvailableHeight =
+      viewportHeight -
+      headerHeight -
+      footerHeight -
+      formTitleHeight -
+      cardNavHeight -
+      margins;
+    const minLinesHeight =
+      Math.max(50, lines + 20) * lineHeight + paddingTop + paddingBottom;
+    const calculatedHeight = Math.max(
+      contentHeight,
+      minLinesHeight,
+      maxAvailableHeight
+    );
+    const newHeight = Math.max(minHeight, calculatedHeight);
     ta.style.height = newHeight + "px";
-
     console.log(
-      `MEMO textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px)`
+      `MEMO textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, lines: ${lines}, minLinesHeight: ${minLinesHeight}px, maxAvailableHeight: ${maxAvailableHeight}px, viewportHeight: ${viewportHeight}px)`
     );
   }
+
+  // 初期化時にもpadding-bottomを設定
+  setTimeout(setDynamicPaddingBottom, 30);
 
   // 自動リサイズのイベントリスナーを追加
   ta.addEventListener("input", autoResizeTextarea);
@@ -543,116 +583,73 @@ async function renderInputForm(id) {
   // 初期化時の高さ設定
   setTimeout(autoResizeTextarea, 50);
 
+  // ウィンドウリサイズ時にも高さを調整
+  window.addEventListener("resize", () => {
+    setTimeout(autoResizeTextarea, 100);
+  });
+
+  // 強制的に最大高さを設定する関数
+  function forceMaxHeight() {
+    const viewportHeight = window.innerHeight;
+    const maxHeight = Math.floor(viewportHeight * 0.7); // ビューポートの70%
+    ta.style.height = maxHeight + "px";
+    console.log(
+      `Forced max height: ${maxHeight}px (viewport: ${viewportHeight}px)`
+    );
+  }
+
+  // 初期化時に強制的に最大高さを設定
+  setTimeout(forceMaxHeight, 100);
+
   console.log("MEMO textarea auto-resize enabled");
 
-  // クリックした位置にカーソルを移動する機能を追加
-  ta.addEventListener("click", function (e) {
-    // クリック座標からカーソル位置を計算
+  // クリックで任意の行に自動入力・カーソル移動
+  ta.addEventListener("mousedown", function (e) {
+    // クリック座標から行位置を計算
     const rect = ta.getBoundingClientRect();
-    const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
-    // 一時的に空のdivを作成してテキストの描画を模擬
-    const mirror = document.createElement("div");
+    const scrollTop = ta.scrollTop;
+    const adjustedY = y + scrollTop;
     const computedStyle = window.getComputedStyle(ta);
-
-    // textareaのスタイルをコピー
-    mirror.style.cssText = `
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-      width: ${
-        ta.offsetWidth -
-        parseInt(computedStyle.paddingLeft) -
-        parseInt(computedStyle.paddingRight)
-      }px;
-      height: auto;
-      font-family: ${computedStyle.fontFamily};
-      font-size: ${computedStyle.fontSize};
-      font-weight: ${computedStyle.fontWeight};
-      line-height: ${computedStyle.lineHeight};
-      letter-spacing: ${computedStyle.letterSpacing};
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      padding: 0;
-      margin: 0;
-      border: 0;
-      overflow: hidden;
-    `;
-
-    document.body.appendChild(mirror);
-
-    const text = ta.value;
-    const lines = text.split("\n");
     const lineHeight =
       parseInt(computedStyle.lineHeight) ||
       parseInt(computedStyle.fontSize) * 1.2;
     const paddingTop = parseInt(computedStyle.paddingTop) || 0;
+    const clickedLine = Math.floor((adjustedY - paddingTop) / lineHeight);
 
-    // クリックされた行を計算
-    const clickedLine = Math.floor((y - paddingTop) / lineHeight);
-
-    console.log(
-      `Clicked line: ${clickedLine}, total lines: ${lines.length}, text length: ${text.length}`
-    );
-
-    // 完全に空のtextareaで任意の行をクリックした場合
-    if (text.length === 0 && clickedLine > 0) {
-      const newText = "\n".repeat(clickedLine);
-      ta.value = newText;
-      ta.setSelectionRange(newText.length, newText.length);
-      ta.focus();
-      console.log(`Empty textarea: added ${clickedLine} newlines`);
-      document.body.removeChild(mirror);
-      return;
+    const lines = ta.value.split("\n");
+    if (clickedLine > lines.length - 1) {
+      // 不足分の改行を挿入
+      const addLines = clickedLine - (lines.length - 1);
+      ta.value += "\n".repeat(addLines);
+      // 高さ調整
+      setTimeout(() => {
+        autoResizeTextarea();
+        // カーソルをクリック行の先頭に移動
+        let pos = 0;
+        for (let i = 0; i < clickedLine; i++)
+          pos += (lines[i] ? lines[i].length : 0) + 1;
+        ta.setSelectionRange(pos, pos);
+        ta.focus();
+      }, 0);
+      e.preventDefault();
+      e.stopPropagation();
     }
+    // 既存行数内なら標準動作
+  });
 
-    if (clickedLine >= 0 && clickedLine < lines.length) {
-      // その行の開始位置を計算
-      let position = 0;
-      for (let i = 0; i < clickedLine; i++) {
-        position += lines[i].length + 1; // +1 for newline character
-      }
-
-      // その行内での位置を計算
-      const lineText = lines[clickedLine];
-      mirror.textContent = lineText;
-
-      let charPosition = 0;
-      for (let i = 0; i <= lineText.length; i++) {
-        mirror.textContent = lineText.substring(0, i);
-        if (mirror.offsetWidth > x) {
-          charPosition = Math.max(0, i - 1);
-          break;
-        }
-        charPosition = i;
-      }
-
-      const finalPosition = position + charPosition;
-
-      // カーソル位置を設定
-      ta.setSelectionRange(finalPosition, finalPosition);
-      ta.focus();
-    } else if (clickedLine >= lines.length) {
-      // 最後の行より下をクリックした場合、必要な改行を追加
-      const currentText = ta.value;
-      const neededNewlines = clickedLine - lines.length + 1;
-      const newText = currentText + "\n".repeat(neededNewlines);
-
-      ta.value = newText;
-
-      // 新しい行の開始位置にカーソルを設定
-      const newPosition = newText.length;
-      ta.setSelectionRange(newPosition, newPosition);
-      ta.focus();
-
-      console.log(
-        `Added ${neededNewlines} newlines, cursor at position ${newPosition}`
-      );
-    }
-
-    // 一時的なelementを削除
-    document.body.removeChild(mirror);
+  // デバッグ用：クリックイベントの詳細ログ
+  ta.addEventListener("click", function (e) {
+    console.log("Textarea click event:", {
+      value: ta.value,
+      valueLength: ta.value.length,
+      selectionStart: ta.selectionStart,
+      selectionEnd: ta.selectionEnd,
+      scrollTop: ta.scrollTop,
+      scrollLeft: ta.scrollLeft,
+      clientX: e.clientX,
+      clientY: e.clientY,
+    });
   });
 
   // フォントサイズ調整機能を追加
@@ -1545,10 +1542,47 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Add event listener to MEMO button
   const memoButton = document.getElementById("btn-memo-list");
   if (memoButton) {
-    memoButton.addEventListener("click", () => {
+    memoButton.addEventListener("click", async (event) => {
       console.log("MEMO page button clicked");
-      // ヘッダーをクリックした時は常に一覧画面を表示
-      renderListView();
+
+      // Check for unsaved changes
+      const isNew = !currentEditingMemoId;
+      const originalMemo = memos.find((m) => m.id === currentEditingMemoId);
+      const hasUnsavedChanges = checkForUnsavedMemoChanges(originalMemo, isNew);
+
+      if (hasUnsavedChanges) {
+        // AppUtilsの保存確認ダイアログを使用
+        if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+          window.AppUtils.showSaveConfirmDialog({
+            title: "変更を保存しますか？",
+            message:
+              "メモ内容に変更があります。<br>保存せずに戻ると変更が失われます。",
+            onSave: async () => {
+              // 保存して戻る
+              console.log("[MEMO] 変更を保存して一覧画面に遷移");
+              await saveAndGoBack();
+            },
+            onDiscard: () => {
+              // 破棄して戻る
+              console.log("[MEMO] 変更を破棄して一覧画面に遷移");
+              discardAndGoBack();
+            },
+          });
+        } else {
+          // AppUtilsが利用できない場合は標準のconfirmを使用
+          const confirmLeave = confirm(
+            "メモ内容に変更があります。保存せずに戻ると変更が失われます。\n\n変更を破棄して戻りますか？"
+          );
+          if (!confirmLeave) {
+            event.preventDefault();
+            return;
+          }
+          await renderListView();
+        }
+      } else {
+        // 未保存の変更がない場合は直接一覧画面に遷移
+        await renderListView();
+      }
     });
   }
 
@@ -1599,6 +1633,45 @@ window.checkForUnsavedMemoChanges = checkForUnsavedMemoChanges;
 window.memos = memos;
 window.saveStorage = saveStorage;
 window.getCurrentEditingMemoId = () => currentEditingMemoId;
+
+// 保存して戻る関数
+async function saveAndGoBack() {
+  const titleInput = document.querySelector(".title-input")?.value.trim() || "";
+  const body = document.querySelector(".text-input")?.value.trim() || "";
+  const starred =
+    document.querySelector(".star-input")?.dataset.starred === "true";
+
+  // タイトルが空で内容もない場合のみ「無題」とする
+  const title = titleInput || (body ? titleInput : "無題");
+
+  if (currentEditingMemoId !== undefined) {
+    // update existing
+    const idx = memos.findIndex((m) => m.id === currentEditingMemoId);
+    memos[idx] = { id: currentEditingMemoId, title, content: body, starred };
+    console.log("[MEMO] 変更を保存して戻りました:", memos[idx]);
+  } else {
+    // add new
+    const newM = {
+      id: Date.now(),
+      title,
+      content: body,
+      starred,
+      archived: false,
+    };
+    memos.push(newM);
+    console.log("[MEMO] 新規メモを保存して戻りました:", newM);
+  }
+  await saveStorage(MEMO_KEY, memos);
+  // グローバルに最新のmemosを設定
+  window.memos = memos;
+  await renderListView();
+}
+
+// 破棄して戻る関数
+function discardAndGoBack() {
+  console.log("[MEMO] 変更を破棄して戻りました");
+  renderListView();
+}
 
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
 function showDragDropSuccessMessage(fromPosition, toPosition) {
