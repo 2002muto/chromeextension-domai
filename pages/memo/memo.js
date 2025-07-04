@@ -51,16 +51,48 @@ function handleDragOver(e) {
   // 異なるカテゴリ間のドロップを禁止
   if (dragSrcStarred !== dropTargetStarred) {
     this.classList.add("drag-invalid");
-    this.classList.remove("drag-over");
+    this.classList.remove(
+      "drop-indicator",
+      "drop-above",
+      "drop-below",
+      "active"
+    );
     console.log("MEMO drag invalid: different categories");
     return;
   }
 
-  this.classList.add("drag-over");
+  // 他の要素のドロップインジケーターをクリア
+  document.querySelectorAll(".memo-item.drop-indicator").forEach((el) => {
+    el.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
+  });
+
+  // マウスの位置に基づいてドロップ位置を判定
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+
+  // ドロップ位置のインジケーターを表示
+  this.classList.add("drop-indicator", "active");
   this.classList.remove("drag-invalid");
+
+  if (mouseY < itemCenter) {
+    // マウスが要素の上半分にある場合、要素の上に挿入
+    this.classList.add("drop-above");
+    console.log("[MEMO DND] ドロップ位置: 上に挿入");
+  } else {
+    // マウスが要素の下半分にある場合、要素の下に挿入
+    this.classList.add("drop-below");
+    console.log("[MEMO DND] ドロップ位置: 下に挿入");
+  }
 }
 function handleDragLeave() {
-  this.classList.remove("drag-over", "drag-invalid");
+  this.classList.remove(
+    "drop-indicator",
+    "drop-above",
+    "drop-below",
+    "active",
+    "drag-invalid"
+  );
 }
 async function handleDrop(e) {
   e.stopPropagation();
@@ -78,20 +110,47 @@ async function handleDrop(e) {
   console.log(`MEMO drop from ${dragSrcIndex} to ${dropIndex}`);
   if (dragSrcIndex === null || dragSrcIndex === dropIndex) return;
 
+  // ドロップ位置を判定
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+  const dropAbove = mouseY < itemCenter;
+
+  let actualToIndex = dropIndex;
+
   // reorder in array
   const [moved] = memos.splice(dragSrcIndex, 1);
-  memos.splice(dropIndex, 0, moved);
+
+  if (dropAbove) {
+    // 要素の上に挿入
+    memos.splice(dropIndex, 0, moved);
+    console.log("[MEMO DND] 要素の上に挿入:", dragSrcIndex, "→", dropIndex);
+  } else {
+    // 要素の下に挿入
+    actualToIndex = dropIndex + 1;
+    memos.splice(actualToIndex, 0, moved);
+    console.log("[MEMO DND] 要素の下に挿入:", dragSrcIndex, "→", actualToIndex);
+  }
+
   await saveStorage(MEMO_KEY, memos);
 
   // ドラッグ＆ドロップ成功メッセージを表示
-  showDragDropSuccessMessage(dragSrcIndex + 1, dropIndex + 1);
+  showDragDropSuccessMessage(dragSrcIndex + 1, actualToIndex + 1);
 
   renderListView();
 }
 function handleDragEnd() {
   document
     .querySelectorAll(".memo-item")
-    .forEach((el) => el.classList.remove("drag-over", "drag-invalid"));
+    .forEach((el) =>
+      el.classList.remove(
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active",
+        "drag-invalid"
+      )
+    );
   dragSrcIndex = null;
   dragSrcStarred = null;
 }

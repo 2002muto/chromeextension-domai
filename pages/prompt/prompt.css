@@ -151,6 +151,53 @@
   transform: scale(0.95);
 }
 
+/* プロンプト一覧用のドロップインジケーター */
+.prompt-item.drop-indicator {
+  position: relative;
+}
+
+.prompt-item.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, #00a31e, #00d428);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.prompt-item.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.prompt-item.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.prompt-item.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: promptListDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* プロンプト一覧用のドロップインジケーターアニメーション */
+@keyframes promptListDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(0, 163, 30, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  }
+}
+
 /* 左：スターアイコン */
 .prompt-item .star {
   font-size: 1.2rem;
@@ -541,6 +588,56 @@ textarea.field-text,
   transition: all 0.2s ease;
 }
 
+/* ドロップ位置インジケーター */
+.drop-indicator {
+  position: relative;
+}
+
+.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00a31e, #00d428);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* ドロップ位置のアニメーション */
+@keyframes dropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(0, 163, 30, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  }
+}
+
+.drop-indicator.active::before {
+  animation: dropIndicatorPulse 1s ease-in-out infinite;
+}
+
 .drag-invalid {
   outline: 2px dashed rgba(255, 0, 0, 0.6);
   outline-offset: -4px;
@@ -562,11 +659,11 @@ textarea.field-text,
 /* プロンプトフィールド専用のドラッグ＆ドロップスタイル */
 .prompt-field.dragging {
   opacity: 0.7;
-  transform: scale(0.98) rotate(2deg);
+  transform: scale(0.98) rotate(1deg);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   background: rgba(58, 63, 74, 0.1);
   border-radius: 8px;
-  transition: none !important; /* ドラッグ中はフェードインアニメーションを無効化 */
+  transition: none !important;
 }
 
 .prompt-field.drag-over {
@@ -575,6 +672,53 @@ textarea.field-text,
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-2px);
   border-radius: 8px;
+}
+
+/* プロンプトフィールドのドロップインジケーター */
+.prompt-field.drop-indicator {
+  position: relative;
+}
+
+.prompt-field.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, #00a31e, #00d428);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.prompt-field.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.prompt-field.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.prompt-field.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: promptBlockDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* プロンプトブロック用のドロップインジケーターアニメーション */
+@keyframes promptBlockDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  }
 }
 
 /* ドラッグ中のプロンプトフィールドの子要素を無効化 */
@@ -1113,13 +1257,12 @@ body .prompt-run-box .prompt-block:last-of-type,
 
 /* ドラッグ&ドロップの視覚効果 */
 .prompt-block.dragging {
-  opacity: 0.6 !important;
-  transform: scale(0.98) !important;
-  cursor: grabbing !important;
+  opacity: 0.7;
+  transform: scale(0.98) rotate(1deg);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   background: rgba(58, 63, 74, 0.1);
   border-radius: 8px;
-  transition: none !important; /* ドラッグ中はフェードインアニメーションを無効化 */
+  transition: none !important;
 }
 
 .prompt-block.drag-over {
@@ -1127,6 +1270,7 @@ body .prompt-run-box .prompt-block:last-of-type,
   outline-offset: 4px;
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-2px);
+  border-radius: 8px;
 }
 
 /* プロンプトヘッダー（ラベル＋COPYボタン） */

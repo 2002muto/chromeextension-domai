@@ -120,16 +120,48 @@ function handlePromptDragOver(e) {
   // 異なるカテゴリ間のドロップを禁止
   if (dragPromptStarred !== dropTargetStarred) {
     this.classList.add("drag-invalid");
-    this.classList.remove("drag-over");
+    this.classList.remove(
+      "drop-indicator",
+      "drop-above",
+      "drop-below",
+      "active"
+    );
     console.log("[PRM] drag invalid: different categories");
     return;
   }
 
-  this.classList.add("drag-over");
+  // 他の要素のドロップインジケーターをクリア
+  document.querySelectorAll(".prompt-item.drop-indicator").forEach((el) => {
+    el.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
+  });
+
+  // マウスの位置に基づいてドロップ位置を判定
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+
+  // ドロップ位置のインジケーターを表示
+  this.classList.add("drop-indicator", "active");
   this.classList.remove("drag-invalid");
+
+  if (mouseY < itemCenter) {
+    // マウスが要素の上半分にある場合、要素の上に挿入
+    this.classList.add("drop-above");
+    console.log("[PRM DND] ドロップ位置: 上に挿入");
+  } else {
+    // マウスが要素の下半分にある場合、要素の下に挿入
+    this.classList.add("drop-below");
+    console.log("[PRM DND] ドロップ位置: 下に挿入");
+  }
 }
 function handlePromptDragLeave() {
-  this.classList.remove("drag-over", "drag-invalid");
+  this.classList.remove(
+    "drop-indicator",
+    "drop-above",
+    "drop-below",
+    "active",
+    "drag-invalid"
+  );
 }
 async function handlePromptDrop(e) {
   e.stopPropagation();
@@ -146,8 +178,32 @@ async function handlePromptDrop(e) {
   console.log(`[PRM] drop from ${dragPromptIndex} to ${dropIndex}`);
   if (dragPromptIndex === null || dragPromptIndex === dropIndex) return;
 
+  // ドロップ位置を判定
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+  const dropAbove = mouseY < itemCenter;
+
+  let actualToIndex = dropIndex;
+
   const [moved] = prompts.splice(dragPromptIndex, 1);
-  prompts.splice(dropIndex, 0, moved);
+
+  if (dropAbove) {
+    // 要素の上に挿入
+    prompts.splice(dropIndex, 0, moved);
+    console.log("[PRM DND] 要素の上に挿入:", dragPromptIndex, "→", dropIndex);
+  } else {
+    // 要素の下に挿入
+    actualToIndex = dropIndex + 1;
+    prompts.splice(actualToIndex, 0, moved);
+    console.log(
+      "[PRM DND] 要素の下に挿入:",
+      dragPromptIndex,
+      "→",
+      actualToIndex
+    );
+  }
+
   await save(PROMPT_KEY, prompts);
   renderList();
 }
@@ -155,7 +211,14 @@ function handlePromptDragEnd() {
   document
     .querySelectorAll(".prompt-item")
     .forEach((el) =>
-      el.classList.remove("drag-over", "dragging", "drag-invalid")
+      el.classList.remove(
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active",
+        "dragging",
+        "drag-invalid"
+      )
     );
   dragPromptIndex = null;
   dragPromptStarred = null;
@@ -1316,20 +1379,44 @@ function renderEdit(idx, isNew = false) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "move";
 
-      // 他の要素のdrag-overクラスを削除
-      wrap.querySelectorAll(".drag-over").forEach((el) => {
-        if (el !== row) {
-          el.classList.remove("drag-over");
-        }
+      // 他の要素のドロップインジケーターをクリア
+      wrap.querySelectorAll(".drop-indicator").forEach((el) => {
+        el.classList.remove(
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active"
+        );
       });
 
-      row.classList.add("drag-over");
+      // マウスの位置に基づいてドロップ位置を判定
+      const rect = row.getBoundingClientRect();
+      const mouseY = e.clientY;
+      const rowCenter = rect.top + rect.height / 2;
+
+      // ドロップ位置のインジケーターを表示
+      row.classList.add("drop-indicator", "active");
+
+      if (mouseY < rowCenter) {
+        // マウスが要素の上半分にある場合、要素の上に挿入
+        row.classList.add("drop-above");
+        console.log("[DND] ドロップ位置: 上に挿入");
+      } else {
+        // マウスが要素の下半分にある場合、要素の下に挿入
+        row.classList.add("drop-below");
+        console.log("[DND] ドロップ位置: 下に挿入");
+      }
     });
 
     row.addEventListener("dragleave", (e) => {
-      // 子要素にドラッグが入った場合はdrag-overを維持
+      // 子要素にドラッグが入った場合はドロップインジケーターを維持
       if (!row.contains(e.relatedTarget)) {
-        row.classList.remove("drag-over");
+        row.classList.remove(
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active"
+        );
       }
     });
 
@@ -1344,7 +1431,12 @@ function renderEdit(idx, isNew = false) {
 
       if (fromIndex === toIndex || fromIndex === -1 || toIndex === -1) {
         console.log("[DND] 無効なドロップ - 処理をスキップ");
-        row.classList.remove("drag-over");
+        row.classList.remove(
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active"
+        );
         return;
       }
 
@@ -1354,35 +1446,60 @@ function renderEdit(idx, isNew = false) {
         const movedNode = nodes[fromIndex];
 
         if (movedNode) {
-          if (fromIndex < toIndex) {
-            // 後ろに移動
-            wrap.insertBefore(movedNode, nodes[toIndex + 1]);
-          } else {
-            // 前に移動
+          // ドロップ位置を判定
+          const rect = row.getBoundingClientRect();
+          const mouseY = e.clientY;
+          const rowCenter = rect.top + rect.height / 2;
+          const dropAbove = mouseY < rowCenter;
+
+          let actualToIndex = toIndex;
+
+          if (dropAbove) {
+            // 要素の上に挿入
             wrap.insertBefore(movedNode, nodes[toIndex]);
+            console.log("[DND] 要素の上に挿入:", fromIndex, "→", toIndex);
+          } else {
+            // 要素の下に挿入
+            if (toIndex + 1 < nodes.length) {
+              wrap.insertBefore(movedNode, nodes[toIndex + 1]);
+            } else {
+              wrap.appendChild(movedNode);
+            }
+            actualToIndex = toIndex + 1;
+            console.log("[DND] 要素の下に挿入:", fromIndex, "→", actualToIndex);
           }
 
           console.log("[DND] ドロップ処理完了");
           renumber(); // 番号を再採番
 
           // ドラッグ＆ドロップ成功メッセージを表示
-          showDragDropSuccessMessage(fromIndex + 1, toIndex + 1);
+          showDragDropSuccessMessage(fromIndex + 1, actualToIndex + 1);
         }
       } catch (error) {
         console.error("[DND] ドロップ処理中にエラー:", error);
       }
 
-      row.classList.remove("drag-over");
+      row.classList.remove(
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active"
+      );
     });
 
     row.addEventListener("dragend", (e) => {
       console.log("[DND] ドラッグ終了");
-      row.classList.remove("dragging", "drag-over");
+      row.classList.remove("dragging");
       dragStartIndex = null;
 
-      // 他の要素のdrag-overクラスも削除
-      wrap.querySelectorAll(".drag-over").forEach((el) => {
-        el.classList.remove("drag-over");
+      // 他の要素のドロップインジケーターも削除
+      wrap.querySelectorAll(".drop-indicator").forEach((el) => {
+        el.classList.remove(
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active"
+        );
       });
     });
 
@@ -1978,16 +2095,45 @@ function renderRun(idx) {
 
   function handleRunDragOver(e) {
     e.preventDefault();
-    // 他の要素の drag-over クラスを削除
+
+    // 他の要素のドロップインジケーターをクリア
     body
-      .querySelectorAll(".prompt-block")
-      .forEach((block) => block.classList.remove("drag-over"));
-    // 現在の要素に drag-over クラスを追加
-    e.currentTarget.classList.add("drag-over");
+      .querySelectorAll(".prompt-block.drop-indicator")
+      .forEach((block) =>
+        block.classList.remove(
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active"
+        )
+      );
+
+    // マウスの位置に基づいてドロップ位置を判定
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const blockCenter = rect.top + rect.height / 2;
+
+    // ドロップ位置のインジケーターを表示
+    e.currentTarget.classList.add("drop-indicator", "active");
+
+    if (mouseY < blockCenter) {
+      // マウスが要素の上半分にある場合、要素の上に挿入
+      e.currentTarget.classList.add("drop-above");
+      console.log("[RUN DND] ドロップ位置: 上に挿入");
+    } else {
+      // マウスが要素の下半分にある場合、要素の下に挿入
+      e.currentTarget.classList.add("drop-below");
+      console.log("[RUN DND] ドロップ位置: 下に挿入");
+    }
   }
 
   function handleRunDragLeave(e) {
-    e.currentTarget.classList.remove("drag-over");
+    e.currentTarget.classList.remove(
+      "drop-indicator",
+      "drop-above",
+      "drop-below",
+      "active"
+    );
   }
 
   function handleRunDrop(e) {
@@ -1998,9 +2144,27 @@ function renderRun(idx) {
     if (fromIndex !== toIndex) {
       console.log("[DRAG DROP] from:", fromIndex, "to:", toIndex);
 
+      // ドロップ位置を判定
+      const rect = e.currentTarget.getBoundingClientRect();
+      const mouseY = e.clientY;
+      const blockCenter = rect.top + rect.height / 2;
+      const dropAbove = mouseY < blockCenter;
+
+      let actualToIndex = toIndex;
+
       // obj.fields の順序を変更
       const movedField = obj.fields.splice(fromIndex, 1)[0];
-      obj.fields.splice(toIndex, 0, movedField);
+
+      if (dropAbove) {
+        // 要素の上に挿入
+        obj.fields.splice(toIndex, 0, movedField);
+        console.log("[RUN DND] 要素の上に挿入:", fromIndex, "→", toIndex);
+      } else {
+        // 要素の下に挿入
+        actualToIndex = toIndex + 1;
+        obj.fields.splice(actualToIndex, 0, movedField);
+        console.log("[RUN DND] 要素の下に挿入:", fromIndex, "→", actualToIndex);
+      }
 
       // プロンプトデータを保存
       save(PROMPT_KEY, prompts);
@@ -2009,15 +2173,27 @@ function renderRun(idx) {
       renderRun(idx);
     }
 
-    e.currentTarget.classList.remove("drag-over");
+    e.currentTarget.classList.remove(
+      "drop-indicator",
+      "drop-above",
+      "drop-below",
+      "active"
+    );
   }
 
   function handleRunDragEnd(e) {
     e.target.classList.remove("dragging");
-    // 全ての drag-over クラスをクリーンアップ
+    // 全ての ドロップインジケーターをクリーンアップ
     body
       .querySelectorAll(".prompt-block")
-      .forEach((block) => block.classList.remove("drag-over"));
+      .forEach((block) =>
+        block.classList.remove(
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active"
+        )
+      );
   }
 
   /* ── ブロック生成 ── */

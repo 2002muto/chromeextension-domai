@@ -53,10 +53,32 @@ function handleClipDragStart(e) {
 }
 function handleClipDragOver(e) {
   e.preventDefault();
-  this.classList.add("drag-over");
+
+  // 他の要素のドロップインジケーターをクリア
+  document.querySelectorAll(".clip-item.drop-indicator").forEach((el) => {
+    el.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
+  });
+
+  // マウスの位置に基づいてドロップ位置を判定
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+
+  // ドロップ位置のインジケーターを表示
+  this.classList.add("drop-indicator", "active");
+
+  if (mouseY < itemCenter) {
+    // マウスが要素の上半分にある場合、要素の上に挿入
+    this.classList.add("drop-above");
+    console.log("[CLIP DND] ドロップ位置: 上に挿入");
+  } else {
+    // マウスが要素の下半分にある場合、要素の下に挿入
+    this.classList.add("drop-below");
+    console.log("[CLIP DND] ドロップ位置: 下に挿入");
+  }
 }
 function handleClipDragLeave() {
-  this.classList.remove("drag-over");
+  this.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
 }
 async function handleClipDrop(e) {
   e.stopPropagation();
@@ -65,20 +87,51 @@ async function handleClipDrop(e) {
   console.log(`CLIPBOARD drop from ${dragClipIndex} to ${dropIndex}`);
   if (dragClipIndex === null || dragClipIndex === dropIndex) return;
 
+  // ドロップ位置を判定
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+  const dropAbove = mouseY < itemCenter;
+
+  let actualToIndex = dropIndex;
+
   // reorder in array
   const [moved] = clips.splice(dragClipIndex, 1);
-  clips.splice(dropIndex, 0, moved);
+
+  if (dropAbove) {
+    // 要素の上に挿入
+    clips.splice(dropIndex, 0, moved);
+    console.log("[CLIP DND] 要素の上に挿入:", dragClipIndex, "→", dropIndex);
+  } else {
+    // 要素の下に挿入
+    actualToIndex = dropIndex + 1;
+    clips.splice(actualToIndex, 0, moved);
+    console.log(
+      "[CLIP DND] 要素の下に挿入:",
+      dragClipIndex,
+      "→",
+      actualToIndex
+    );
+  }
+
   await saveStorage(CLIP_KEY, clips);
 
   // ドラッグ＆ドロップ成功メッセージを表示
-  showDragDropSuccessMessage(dragClipIndex + 1, dropIndex + 1);
+  showDragDropSuccessMessage(dragClipIndex + 1, actualToIndex + 1);
 
   renderClipboardView();
 }
 function handleClipDragEnd() {
   document
-    .querySelectorAll(".clipboard-item")
-    .forEach((el) => el.classList.remove("drag-over"));
+    .querySelectorAll(".clip-item")
+    .forEach((el) =>
+      el.classList.remove(
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active"
+      )
+    );
   dragClipIndex = null;
 }
 
@@ -223,7 +276,7 @@ async function renderClipboardView() {
   // 通常のクリップ一覧表示
   clips.forEach((txt, i) => {
     const li = document.createElement("li");
-    li.className = "clipboard-item";
+    li.className = "clip-item";
     li.draggable = true;
     li.dataset.index = i;
 
@@ -238,8 +291,15 @@ async function renderClipboardView() {
     li.addEventListener("dragend", (e) => {
       handleClipDragEnd.call(li, e);
       // 全ての要素からドラッグ関連クラスを削除
-      document.querySelectorAll(".clipboard-item").forEach((item) => {
-        item.classList.remove("dragging", "drag-over", "drag-invalid");
+      document.querySelectorAll(".clip-item").forEach((item) => {
+        item.classList.remove(
+          "dragging",
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active",
+          "drag-invalid"
+        );
       });
     });
 
@@ -296,9 +356,9 @@ async function renderClipboardView() {
       // スクロールは不要（無限に広がるため）
       ta.classList.remove("scrollable");
 
-      // 親要素（clipboard-item）の最小高さを動的調整
-      const clipboardItem = ta.closest(".clipboard-item");
-      if (clipboardItem) {
+      // 親要素（clip-item）の最小高さを動的調整
+      const clipItem = ta.closest(".clip-item");
+      if (clipItem) {
         const itemPadding = 32; // 上下パディング16px * 2
         const buttonHeight = 36; // copyボタンとarchiveアイコンの高さ
         const itemMinHeight = Math.max(
@@ -306,13 +366,13 @@ async function renderClipboardView() {
           newHeight + itemPadding,
           buttonHeight + itemPadding
         );
-        clipboardItem.style.minHeight = itemMinHeight + "px";
+        clipItem.style.minHeight = itemMinHeight + "px";
 
         // レイアウト調整のためのクラス管理
         if (newHeight > minHeight) {
-          clipboardItem.classList.add("expanded");
+          clipItem.classList.add("expanded");
         } else {
-          clipboardItem.classList.remove("expanded");
+          clipItem.classList.remove("expanded");
         }
       }
 

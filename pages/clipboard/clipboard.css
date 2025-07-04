@@ -51,7 +51,7 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
-.clipboard-item {
+.clip-item {
   cursor: move;
   display: grid;
   grid-template-columns: auto 1fr auto; /* copyボタン, textarea, archiveアイコン */
@@ -68,41 +68,24 @@
 }
 
 /* ホバー効果（MEMOページと統一） */
-.clipboard-item:hover {
+.clip-item:hover {
   filter: brightness(1.05);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* ドラッグ状態のスタイル（MEMOページと統一） */
-.clipboard-item.drag-over {
-  border: 2px dashed rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.clipboard-item.drag-invalid {
-  border: 2px dashed rgba(255, 0, 0, 0.6);
-  background: rgba(255, 0, 0, 0.1);
-  cursor: not-allowed;
-}
-
-.clipboard-item.dragging {
-  opacity: 0.5;
-  transform: scale(0.95);
-}
-
-/* 拡張状態のclipboard-item */
-.clipboard-item.expanded {
+/* 拡張状態のclip-item */
+.clip-item.expanded {
   /* gridレイアウトで自動調整される */
 }
 
 /* copyボタンのホバー時の視覚的フィードバック */
-.clipboard-item .clipboard-copy {
+.clip-item .clipboard-copy {
   position: relative;
   z-index: 1;
 }
 
-.clipboard-item .clipboard-copy::before {
+.clip-item .clipboard-copy::before {
   content: "";
   position: absolute;
   top: 0;
@@ -116,7 +99,7 @@
   z-index: -1;
 }
 
-.clipboard-item .clipboard-copy:hover::before {
+.clip-item .clipboard-copy:hover::before {
   opacity: 0.1;
 }
 
@@ -316,8 +299,8 @@
   transition: all 0.3s ease;
 }
 
-/* ドラッグオーバー時のハイライト */
-.clipboard-item.drag-over {
+/* ドラッグオーバー時のハイライト（旧スタイル - 削除予定） */
+.clip-item.drag-over {
   border: 2px dashed rgba(255, 255, 255, 0.6);
 }
 
@@ -707,7 +690,7 @@
 
 /* 小画面での調整 */
 @media (max-width: 767px) {
-  .clipboard-item {
+  .clip-item {
     gap: 8px; /* 間隔を少し狭く */
     padding: 8px;
   }
@@ -726,7 +709,7 @@
     font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
   }
 
-  .clipboard-item .actions {
+  .clip-item .actions {
     width: 32px; /* アーカイブアイコンも小さく */
     height: 32px;
     font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
@@ -780,7 +763,7 @@
 
 /* ハイコントラストモード対応 */
 @media (prefers-contrast: high) {
-  .clipboard-item {
+  .clip-item {
     border: 1px solid #ffffff;
   }
 
@@ -795,19 +778,90 @@
 
 /* 動きを減らす設定に対応 */
 @media (prefers-reduced-motion: reduce) {
-  .clipboard-item,
+  .clip-item,
   .clipboard-copy,
-  .clipboard-item .actions,
+  .clip-item .actions,
   .clipboard-textarea {
     transition: none;
   }
 
-  .clipboard-item:hover {
+  .clip-item:hover {
     transform: none;
   }
 
   .clipboard-copy:hover,
-  .clipboard-item .actions:hover {
+  .clip-item .actions:hover {
     transform: none;
   }
+}
+
+/* ドラッグ＆ドロップ関連のスタイル */
+.clip-item.dragging {
+  opacity: 0.6;
+  transform: scale(0.96);
+  cursor: grabbing !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  position: relative;
+}
+
+.clip-item.drag-over {
+  outline: 2px dashed #ffffff;
+  outline-offset: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+/* ドロップ位置インジケーター */
+.clip-item.drop-indicator {
+  position: relative;
+}
+
+.clip-item.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, #00a31e, #00d428);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.clip-item.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.clip-item.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.clip-item.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: clipDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* クリップボード用のドロップインジケーターアニメーション */
+@keyframes clipDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(0, 163, 30, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 163, 30, 0.6);
+  }
+}
+
+.clip-item.drag-invalid {
+  outline: 2px dashed rgba(255, 0, 0, 0.6);
+  outline-offset: 4px;
+  background: rgba(255, 0, 0, 0.1);
+  cursor: not-allowed;
 }
