@@ -49,10 +49,16 @@
   font-weight: 500;
   position: relative;
   flex: 1;
-  min-width: 0;
+  min-width: 80px;
   white-space: nowrap;
-  overflow: visible; /* hiddenからvisibleに変更 */
+  overflow: visible;
+}
+
+.setting-btn span {
+  display: block;
+  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .setting-btn:hover {
@@ -75,7 +81,8 @@
   height: 2px;
   background: #04e949;
   border-radius: 1px;
-  z-index: 10; /* 確実に表示されるようにz-indexを追加 */
+  z-index: 100;
+  pointer-events: none;
 }
 
 /* ─── 詳細パネル ─── */
@@ -407,7 +414,8 @@
   .setting-btn {
     padding: 10px 12px;
     font-size: 0.8rem;
-    overflow: visible; /* レスポンシブ時もoverflow: visibleを維持 */
+    min-width: 60px;
+    overflow: visible;
   }
 
   .detail-panel {
@@ -497,6 +505,13 @@
 }
 
 @media (max-width: 480px) {
+  .setting-btn {
+    padding: 8px 8px;
+    font-size: 0.75rem;
+    min-width: 50px;
+    overflow: visible;
+  }
+
   .icon-selector {
     gap: 8px;
     justify-content: flex-start;

@@ -54,19 +54,31 @@
     <div class="memo-content">
       <!-- 左ナビメニュー -->
       <nav class="setting-nav">
-        <button class="setting-btn" id="btn-backup">バックアップ</button>
-        <button class="setting-btn" id="btn-backup-install">
-          バックアップのインストール
+        <button class="setting-btn" id="btn-backup" title="バックアップ">
+          <span>バックアップ</span>
+        </button>
+        <button
+          class="setting-btn"
+          id="btn-backup-install"
+          title="バックアップのインストール"
+        >
+          <span>バックアップのインストール</span>
         </button>
         <button
           class="setting-btn"
           id="btn-api-key"
           data-target="#api-key-panel"
+          title="APIキーの設定"
         >
-          APIキーの設定
+          <span>APIキーの設定</span>
         </button>
-        <button class="setting-btn" id="btn-custom" data-target="#custom-panel">
-          カスタム
+        <button
+          class="setting-btn"
+          id="btn-custom"
+          data-target="#custom-panel"
+          title="カスタム"
+        >
+          <span>カスタム</span>
         </button>
       </nav>
       <!-- 詳細パネル -->
