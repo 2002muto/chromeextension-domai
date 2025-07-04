@@ -165,6 +165,15 @@ async function renderListView() {
     .getElementById("btn-archive-toggle")
     .addEventListener("click", () => renderArchiveNav("memo"));
 
+  // エクスポート機能の追加
+  const exportBtn = document.querySelector(".encrypt-btn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportAllMemos);
+  }
+
+  // ボタンの状態を更新
+  updateExportButtonState();
+
   // animate content
   const content = document.querySelector(".memo-content");
   content.classList.remove("edit-mode", "clipboard-mode");
@@ -1712,4 +1721,129 @@ function showFallbackDragDropMessage(fromPosition, toPosition) {
       toast.remove();
     }, 300);
   }, 2000);
+}
+
+// ───────────────────────────────────────
+// エクスポート機能
+// ───────────────────────────────────────
+async function exportAllMemos() {
+  try {
+    console.log("エクスポート機能を開始します");
+
+    // アクティブなメモ（アーカイブされていないメモ）のみをフィルタリング
+    const activeMemos = memos ? memos.filter((m) => !m.archived) : [];
+
+    // アクティブなメモが0件の場合は処理を停止
+    if (activeMemos.length === 0) {
+      console.log("アクティブなメモが0件のためエクスポートを中止します");
+      return;
+    }
+
+    // 現在時刻を取得してファイル名を生成
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    const fileName = `${hours}${minutes}${seconds}.json`;
+
+    console.log("ファイル名:", fileName);
+    console.log("アクティブなメモ数:", activeMemos.length);
+
+    // エクスポート用のデータ構造を作成（アクティブなメモのみ）
+    const exportData = {
+      version: "1.0",
+      exportDate: now.toISOString(),
+      memoCount: activeMemos.length,
+      totalMemoCount: memos ? memos.length : 0,
+      archivedMemoCount: memos ? memos.filter((m) => m.archived).length : 0,
+      memos: activeMemos,
+    };
+
+    console.log("エクスポートデータ:", exportData);
+
+    // JSONファイルとしてダウンロード
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    console.log("エクスポート完了:", fileName);
+
+    // 成功メッセージを表示
+    showExportSuccessMessage(fileName);
+  } catch (error) {
+    console.error("エクスポートエラー:", error);
+    showExportErrorMessage();
+  }
+}
+
+// エクスポート成功メッセージ
+function showExportSuccessMessage(fileName) {
+  const message = document.createElement("div");
+  message.className = "export-message success";
+  message.innerHTML = `
+    <i class="bi bi-check-circle"></i>
+    <span>エクスポート完了: ${fileName}</span>
+  `;
+  document.body.appendChild(message);
+
+  setTimeout(() => {
+    message.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+    message.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 300);
+  }, 3000);
+}
+
+// エクスポートエラーメッセージ
+function showExportErrorMessage() {
+  const message = document.createElement("div");
+  message.className = "export-message error";
+  message.innerHTML = `
+    <i class="bi bi-exclamation-triangle"></i>
+    <span>エクスポートに失敗しました</span>
+  `;
+  document.body.appendChild(message);
+
+  setTimeout(() => {
+    message.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+    message.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 300);
+  }, 3000);
+}
+
+// エクスポートボタンの状態を更新
+function updateExportButtonState() {
+  const exportBtn = document.querySelector(".encrypt-btn");
+  if (exportBtn) {
+    // アクティブなメモ（アーカイブされていないメモ）のみをカウント
+    const activeMemos = memos ? memos.filter((m) => !m.archived) : [];
+    const hasActiveMemos = activeMemos.length > 0;
+
+    exportBtn.disabled = !hasActiveMemos;
+    exportBtn.title = hasActiveMemos ? "バックアップ" : "メモがありません";
+
+    console.log("エクスポートボタン状態更新:", {
+      hasActiveMemos,
+      disabled: !hasActiveMemos,
+      totalMemoCount: memos ? memos.length : 0,
+      activeMemoCount: activeMemos.length,
+    });
+  }
 }

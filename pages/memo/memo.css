@@ -204,6 +204,32 @@ body {
 .memo-footer .nav-btn.encrypt-btn {
   background-color: #2c2c2c;
 }
+
+.memo-footer .nav-btn.encrypt-btn:disabled {
+  background-color: #1a1a1a;
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover {
+  transform: none;
+  filter: grayscale(1);
+  width: 36px;
+  border-radius: 50%;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover i {
+  display: none;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
+}
 .memo-footer .nav-btn.archive-toggle {
   background-color: #2c2c2c;
 }
@@ -799,6 +825,60 @@ body {
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* ─── エクスポートメッセージ ─── */
+.export-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #2d2d2d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px 20px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  max-width: 300px;
+}
+
+.export-message.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.export-message.success {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.export-message.success i {
+  color: #10b981;
+  font-size: 16px;
+}
+
+.export-message.error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.export-message.error i {
+  color: #ef4444;
+  font-size: 16px;
+}
+
+.export-message span {
+  flex: 1;
+  word-break: break-word;
 }
 
 .drag-drop-toast {
