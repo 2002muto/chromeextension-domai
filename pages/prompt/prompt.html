@@ -53,13 +53,19 @@
     <div class="memo-content">
       <!-- JS で「＋新しいプロンプト」とカード群をここに生成します -->
     </div>
-    <!-- MEMO/CLIPBOARDと同じfooter構造に統一 -->
-    <footer class="memo-footer">
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
+    <!-- フッター（常にカードの下に追従） -->
+    <footer class="memo-footer" style="display: flex">
+      <button
+        id="btn-archive-toggle"
+        class="nav-btn archive-toggle"
+        title="アーカイブ"
+      >
         <i class="bi bi-archive"></i>
+        <span class="nav-text">アーカイブ</span>
       </button>
       <button class="nav-btn encrypt-btn">
         <i class="bi bi-download"></i>
+        <span class="nav-text">バックアップ</span>
       </button>
     </footer>
     <!-- スクリプト -->
@@ -67,5 +73,6 @@
     <script src="../utils.js"></script>
     <script src="../common.js"></script>
     <script src="prompt.js"></script>
+    <script src="../memo/archive.js"></script>
   </body>
 </html>

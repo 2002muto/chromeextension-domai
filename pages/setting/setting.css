@@ -10,55 +10,111 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 24px;
+  /* 他のページと統一した背景スタイル */
+  margin: 32px 16px 16px 16px;
+  background: #2d2d2d;
+  border-radius: 12px;
+  padding: 0;
+  height: calc(100vh - 168px) !important;
+  overflow: hidden;
 }
 
-/* ─── 設定ナビメニュー ─── */
+/* カスタム設定モード時のスタイル */
+.memo-content.custom-mode {
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* ─── 設定ナビメニュー（タブ形式） ─── */
 .setting-nav {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px 8px 0 0;
+  padding: 8px 8px 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .setting-btn {
-  background: linear-gradient(90deg, #666666, #3f3f3f);
-  color: #fff;
+  background: transparent;
+  color: #e2e8f0;
   border: none;
-  padding: 12px 16px;
-  text-align: left;
-  border-radius: 6px;
+  padding: 12px 20px;
+  text-align: center;
+  border-radius: 6px 6px 0 0;
   cursor: pointer;
-  transition: filter 0.25s, transform 0.2s;
-  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
   font-weight: 500;
+  position: relative;
+  flex: 1;
+  min-width: 80px;
+  white-space: nowrap;
+  overflow: visible;
 }
 
-.setting-btn:hover,
+.setting-btn span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.setting-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
 .setting-btn.active {
-  filter: brightness(1.2);
-  transform: translateY(-1px);
+  background: #3a3f4a;
+  color: #ffffff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.setting-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #04e949;
+  border-radius: 1px;
+  z-index: 100;
+  pointer-events: none;
 }
 
 /* ─── 詳細パネル ─── */
 .setting-detail {
   width: 100%;
+  flex: 1;
+  overflow: hidden;
 }
 
 .detail-panel {
   display: none;
   opacity: 0;
-  transform: translateY(40px) scale(0.98);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  transition: opacity 0.7s cubic-bezier(0.23, 1.01, 0.32, 1),
-    transform 0.7s cubic-bezier(0.23, 1.01, 0.32, 1), box-shadow 0.7s;
-  background: rgba(26, 32, 44, 0.8);
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  background: transparent;
   color: #e2e8f0;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 0 0 8px 8px;
   line-height: 1.6;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* パネル専用のパディング調整 */
+#custom-panel {
+  padding: 24px;
+}
+
+#api-key-panel {
+  padding: 24px;
+  position: relative;
+  min-height: 400px;
 }
 
 .detail-panel.show {
@@ -105,6 +161,87 @@
 
 .memo-footer .nav-btn.setting-share-btn:hover {
   background-color: #047857;
+}
+
+/* ─── Coming Soon コンテンツ ─── */
+.coming-soon-content {
+  text-align: center;
+  padding: 40px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+}
+
+.coming-soon-icon {
+  font-size: 4rem;
+  color: #3b82f6;
+  margin-bottom: 20px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.coming-soon-title {
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.coming-soon-message {
+  color: #e2e8f0;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.coming-soon-features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.feature-item i {
+  font-size: 1.2rem;
+  color: #3b82f6;
+}
+
+.feature-item span {
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 /* ─── カスタム設定パネル ─── */
@@ -254,13 +391,31 @@
 /* ─── レスポンシブ対応 ─── */
 @media (max-width: 768px) {
   .memo-content {
-    padding: 16px;
+    margin: 16px 8px 8px 8px;
     gap: 12px;
   }
 
+  .memo-content.custom-mode {
+    padding: 0;
+  }
+
+  #custom-panel {
+    padding: 16px;
+  }
+
+  #api-key-panel {
+    padding: 16px;
+  }
+
+  .setting-nav {
+    padding: 6px 6px 0 6px;
+  }
+
   .setting-btn {
-    padding: 10px 14px;
-    font-size: 0.9rem;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    min-width: 60px;
+    overflow: visible;
   }
 
   .detail-panel {
@@ -270,6 +425,14 @@
 
   .custom-actions {
     flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-reset,
+  .btn-save,
+  .btn-compare {
+    width: 100%;
+    justify-content: center;
   }
 
   .icon-selector {
@@ -305,10 +468,50 @@
 
   .icon-option.coming-soon .icon-label {
     font-size: 0.6rem;
+  }
+
+  .coming-soon-content {
+    padding: 20px 16px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+  }
+
+  .coming-soon-icon {
+    font-size: 3rem;
+  }
+
+  .coming-soon-title {
+    font-size: 1.5rem;
+  }
+
+  .coming-soon-message {
+    font-size: 0.9rem;
+  }
+
+  .feature-item {
+    padding: 12px;
+  }
+
+  .feature-item i {
+    font-size: 1rem;
+  }
+
+  .feature-item span {
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
+  .setting-btn {
+    padding: 8px 8px;
+    font-size: 0.75rem;
+    min-width: 50px;
+    overflow: visible;
+  }
+
   .icon-selector {
     gap: 8px;
     justify-content: flex-start;
@@ -342,32 +545,44 @@
 
   .icon-option.coming-soon .icon-label {
     font-size: 0.55rem;
+  }
+
+  .coming-soon-content {
+    padding: 16px 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
   }
 }
 
 /* ─── アニメーション強化 ─── */
 .setting-nav .setting-btn {
-  animation: slideInFromLeft 0.4s ease-out both;
+  animation: slideInFromTop 0.3s ease-out both;
 }
 
 .setting-nav .setting-btn:nth-child(1) {
   animation-delay: 0.1s;
 }
 .setting-nav .setting-btn:nth-child(2) {
-  animation-delay: 0.2s;
+  animation-delay: 0.15s;
 }
 .setting-nav .setting-btn:nth-child(3) {
-  animation-delay: 0.3s;
+  animation-delay: 0.2s;
+}
+.setting-nav .setting-btn:nth-child(4) {
+  animation-delay: 0.25s;
 }
 
-@keyframes slideInFromLeft {
+@keyframes slideInFromTop {
   from {
     opacity: 0;
-    transform: translateX(-30px);
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 

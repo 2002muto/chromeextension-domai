@@ -136,6 +136,10 @@
   place-self: center; /* グリッド内で中央配置 */
 }
 
+.clipboard-copy i {
+  font-size: 1.3rem; /* アーカイブアイコンと同じサイズ */
+}
+
 .clipboard-copy:hover {
   background: transparent;
   color: #00b0cf;
@@ -145,7 +149,7 @@
 
 /* clipboardページのアーカイブアイコン（copyボタンと同じサイズ） */
 .clipboard-item .actions {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   cursor: pointer;
   color: #ffffff;
   background: transparent;
@@ -163,6 +167,153 @@
 .clipboard-item .actions:hover {
   transform: scale(1.1);
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── エクスポートメッセージ ─── */
+.export-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #2d2d2d;
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.export-message.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.export-message.success {
+  border-left: 4px solid #04e949;
+}
+
+.export-message.success i {
+  color: #04e949;
+}
+
+.export-message.error {
+  border-left: 4px solid #ff6b6b;
+}
+
+.export-message.error i {
+  color: #ff6b6b;
+}
+
+/* フッターボタンの無効化スタイル */
+.memo-footer .nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.memo-footer .nav-btn:disabled:hover {
+  transform: none;
+  background: transparent;
+}
+
+/* アーカイブボタンが無効化された時のスタイル */
+.memo-footer .nav-btn:disabled .nav-text {
+  opacity: 0.3;
+}
+
+/* アーカイブボタンが無効化された時でもホバーテキストは表示 */
+.memo-footer .nav-btn:disabled:hover .nav-text {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* フッターボタンのホバーテキスト表示（MEMOページと統一） */
+.memo-footer .nav-btn {
+  position: relative;
+}
+
+.memo-footer .nav-btn .nav-text {
+  position: absolute;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(10px) scale(0.8);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  white-space: nowrap;
+}
+
+.memo-footer .nav-btn:hover {
+  filter: brightness(1.2);
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* フッターボタンのホバー時展開 */
+.memo-footer .nav-btn:hover {
+  width: 100px;
+  border-radius: 18px;
+  padding: 0;
+  justify-content: center;
+  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ホバー時のアイコンを非表示に */
+.memo-footer .nav-btn:hover i {
+  display: none;
+}
+
+/* ホバー時のテキストを中央配置 */
+.memo-footer .nav-btn:hover .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
+}
+
+/* アーカイブボタンの色分け（MEMOページと完全統一） */
+.memo-footer .nav-btn.archive-toggle {
+  background-color: #2c2c2c;
+}
+
+/* エクスポートボタンの色分け */
+.memo-footer .nav-btn.encrypt-btn {
+  background-color: #2c2c2c;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled {
+  background-color: #1a1a1a;
+  opacity: 0.5;
+  cursor: pointer; /* not-allowedからpointerに変更してホバーを有効化 */
+  filter: grayscale(1);
+  pointer-events: auto; /* ホバーイベントを有効にする */
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover {
+  transform: none;
+  filter: grayscale(1);
+  width: 36px;
+  border-radius: 50%;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover i {
+  display: none;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
 }
 
 /* ドラッグオーバー時のハイライト */
@@ -535,9 +686,14 @@
     height: 40px;
   }
 
+  .clipboard-copy i {
+    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
+  }
+
   .clipboard-item .actions {
     width: 40px; /* アーカイブアイコンも少し大きく */
     height: 40px;
+    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
   }
 }
 
@@ -566,9 +722,45 @@
     height: 32px;
   }
 
+  .clipboard-copy i {
+    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
+  }
+
   .clipboard-item .actions {
     width: 32px; /* アーカイブアイコンも小さく */
     height: 32px;
+    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
+  }
+
+  /* モバイル用エクスポートメッセージ */
+  .export-message {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    transform: translateY(-100%);
+  }
+
+  .export-message.show {
+    transform: translateY(0);
+  }
+
+  /* モバイル用フッターボタンテキスト */
+  .memo-footer .nav-btn .nav-text {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+}
+
+/* ─── アニメーション ─── */
+@keyframes expandCenter {
+  from {
+    width: 36px;
+    border-radius: 50%;
+  }
+  to {
+    width: 100px;
+    border-radius: 18px;
   }
 }
 

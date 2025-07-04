@@ -78,7 +78,7 @@
     </header>
     <!-- メインコンテンツ -->
     <div class="memo-content"></div>
-    <!-- フッター -->
+    <!-- フッター（常にカードの下に追従） -->
     <footer class="memo-footer" style="display: flex">
       <button
         id="btn-archive-toggle"
@@ -86,9 +86,11 @@
         title="アーカイブ"
       >
         <i class="bi bi-archive"></i>
+        <span class="nav-text">アーカイブ</span>
       </button>
       <button class="nav-btn encrypt-btn">
         <i class="bi bi-download"></i>
+        <span class="nav-text">バックアップ</span>
       </button>
     </footer>
     <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
