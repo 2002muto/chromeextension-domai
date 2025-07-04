@@ -25,6 +25,24 @@ function saveStorage(key, arr) {
 }
 
 // ───────────────────────────────────────
+// Header click handlers
+// ───────────────────────────────────────
+function handleClipboardHeaderClick(e) {
+  e.preventDefault(); // デフォルトのリンク動作を防ぐ
+  e.stopPropagation(); // イベントの伝播を停止
+  console.log("CLIPBOARDヘッダーアイコンがクリックされました");
+  console.log("現在のページ状態:", {
+    archiveType: archiveType,
+    currentMode: document
+      .querySelector(".memo-content")
+      .classList.contains("archive")
+      ? "archive"
+      : "main",
+  });
+  renderClipboardView(); // メインページに遷移
+}
+
+// ───────────────────────────────────────
 // Drag & Drop handlers for Clips
 // ───────────────────────────────────────
 let dragClipIndex = null;
@@ -83,9 +101,28 @@ async function renderClipboardView() {
   clips = await loadStorage(CLIP_KEY);
 
   // footer + archive wiring
-  document
-    .getElementById("btn-archive-toggle")
-    .addEventListener("click", () => renderArchiveNav("clip"));
+  const archiveToggleBtn = document.getElementById("btn-archive-toggle");
+  if (archiveToggleBtn) {
+    archiveToggleBtn.addEventListener("click", () => renderArchiveNav("clip"));
+    console.log("アーカイブトグルボタンにイベントリスナーを設定しました");
+  } else {
+    console.error("アーカイブトグルボタンが見つかりません");
+  }
+
+  // ヘッダーのクリップボードアイコンのクリックイベント
+  const clipboardBtn = document.getElementById("btn-clipboard");
+  if (clipboardBtn) {
+    console.log("メインページ: クリップボードヘッダーボタンを発見しました");
+    // 既存のイベントリスナーを削除
+    clipboardBtn.removeEventListener("click", handleClipboardHeaderClick);
+    // 新しいイベントリスナーを追加
+    clipboardBtn.addEventListener("click", handleClipboardHeaderClick);
+    console.log(
+      "メインページ: クリップボードヘッダーボタンにイベントリスナーを設定しました"
+    );
+  } else {
+    console.error("メインページ: クリップボードヘッダーボタンが見つかりません");
+  }
 
   // エクスポート機能の追加
   const exportBtn = document.querySelector(".encrypt-btn");
@@ -98,6 +135,10 @@ async function renderClipboardView() {
 
   // animate
   const content = document.querySelector(".memo-content");
+  if (!content) {
+    console.error(".memo-content要素が見つかりません");
+    return;
+  }
   content.classList.remove("edit-mode");
   content.classList.add("clipboard-mode");
   content.classList.remove("animate");
@@ -129,6 +170,10 @@ async function renderClipboardView() {
 
   // populate clips
   const ul = content.querySelector(".clipboard-list");
+  if (!ul) {
+    console.error(".clipboard-list要素が見つかりません");
+    return;
+  }
   ul.innerHTML = "";
 
   // Empty State: アクティブなクリップボードが何もない場合
@@ -410,6 +455,25 @@ function renderArchiveNav(type) {
   renderArchiveList();
   renderArchiveFooter();
 
+  // アーカイブ画面でもヘッダーのクリップボードアイコンのクリックイベントを設定
+  setTimeout(() => {
+    const clipboardBtn = document.getElementById("btn-clipboard");
+    if (clipboardBtn) {
+      console.log("アーカイブ画面: クリップボードヘッダーボタンを発見しました");
+      // 既存のイベントリスナーを削除
+      clipboardBtn.removeEventListener("click", handleClipboardHeaderClick);
+      // 新しいイベントリスナーを追加
+      clipboardBtn.addEventListener("click", handleClipboardHeaderClick);
+      console.log(
+        "アーカイブ画面: クリップボードヘッダーボタンにイベントリスナーを設定しました"
+      );
+    } else {
+      console.error(
+        "アーカイブ画面: クリップボードヘッダーボタンが見つかりません"
+      );
+    }
+  }, 100);
+
   console.log("renderArchiveNav: end");
 }
 
@@ -417,8 +481,13 @@ function renderArchiveNav(type) {
 async function renderArchiveList() {
   console.log("renderArchiveList: start", archiveType);
 
-  document.querySelector(".memo-content").classList.add("archive");
   const content = document.querySelector(".memo-content");
+  if (!content) {
+    console.error(".memo-content要素が見つかりません");
+    return;
+  }
+
+  content.classList.add("archive");
   content.classList.remove("show");
   void content.offsetWidth;
   content.classList.add("show");
@@ -452,6 +521,10 @@ async function renderArchiveList() {
     </div>
     <ul class="archive-list"></ul>`;
   const ul = content.querySelector(".archive-list");
+  if (!ul) {
+    console.error(".archive-list要素が見つかりません");
+    return;
+  }
 
   console.log("[ARCH] アーカイブリスト要素:", ul);
 
@@ -1008,3 +1081,38 @@ function updateExportButtonState() {
     activeClipCount: activeClips.length,
   });
 }
+
+// ───────────────────────────────────────
+// 初期化処理
+// ───────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("CLIPBOARDページ: DOMContentLoaded");
+
+  // ヘッダーのクリップボードアイコンのクリックイベントを初期設定
+  const clipboardBtn = document.getElementById("btn-clipboard");
+  if (clipboardBtn) {
+    console.log("初期化: クリップボードヘッダーボタンを発見しました");
+    clipboardBtn.addEventListener("click", handleClipboardHeaderClick);
+    console.log(
+      "初期化: クリップボードヘッダーボタンにイベントリスナーを設定しました"
+    );
+  } else {
+    console.error("初期化: クリップボードヘッダーボタンが見つかりません");
+  }
+
+  // アーカイブトグルボタンの初期設定
+  const archiveToggleBtn = document.getElementById("btn-archive-toggle");
+  if (archiveToggleBtn) {
+    console.log("初期化: アーカイブトグルボタンを発見しました");
+  } else {
+    console.error("初期化: アーカイブトグルボタンが見つかりません");
+  }
+
+  // .memo-content要素の確認
+  const memoContent = document.querySelector(".memo-content");
+  if (memoContent) {
+    console.log("初期化: .memo-content要素を発見しました");
+  } else {
+    console.error("初期化: .memo-content要素が見つかりません");
+  }
+});
