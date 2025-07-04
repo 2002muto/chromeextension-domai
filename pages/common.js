@@ -1172,17 +1172,27 @@ function initializeHeaderDragAndDrop() {
     button.draggable = false;
     button.dataset.index = index;
 
+    // デバッグ用のクラスを追加
+    button.classList.add("drag-enabled");
+
     // マウスダウン（長押し開始）
     button.addEventListener("mousedown", (e) => {
+      console.log(
+        "[DragDrop] mousedown イベント発火:",
+        button.id,
+        "button:",
+        e.button
+      );
+
       if (e.button === 0) {
         // 左クリックのみ
-        console.log("[DragDrop] mousedown:", button.id);
+        console.log("[DragDrop] 左クリック検出:", button.id);
 
         startX = e.clientX;
         startY = e.clientY;
         hasMoved = false;
 
-        // 長押しタイマー開始（500ms）
+        // 長押しタイマー開始（200ms）
         holdTimer = setTimeout(() => {
           console.log("[DragDrop] 長押し検出:", button.id);
           isHolding = true;
@@ -1192,7 +1202,14 @@ function initializeHeaderDragAndDrop() {
           // 視覚的フィードバック
           button.style.transform = "scale(0.95)";
           button.style.opacity = "0.8";
-        }, 500);
+
+          console.log(
+            "[DragDrop] ドラッグ可能状態に変更:",
+            button.id,
+            "draggable:",
+            button.draggable
+          );
+        }, 200);
       }
     });
 
@@ -1202,8 +1219,8 @@ function initializeHeaderDragAndDrop() {
         const moveX = Math.abs(e.clientX - startX);
         const moveY = Math.abs(e.clientY - startY);
 
-        // 5px以上移動したら長押しをキャンセル
-        if (moveX > 5 || moveY > 5) {
+        // 3px以上移動したら長押しをキャンセル
+        if (moveX > 3 || moveY > 3) {
           console.log("[DragDrop] 移動検出、長押しキャンセル:", button.id);
           clearTimeout(holdTimer);
           holdTimer = null;
@@ -1247,34 +1264,68 @@ function initializeHeaderDragAndDrop() {
       }
     });
 
-    // クリックイベントとの競合を避ける
-    button.addEventListener("click", (e) => {
-      if (isHolding || hasMoved) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("[DragDrop] 長押し中のクリックを無効化:", button.id);
-        return false;
-      }
-    });
-
-    // リンク要素のドラッグを有効にする
-    if (button.tagName === "A") {
-      button.addEventListener(
-        "dragstart",
-        (e) => {
+    // クリックイベントとの競合を避ける（A要素以外）
+    if (button.tagName !== "A") {
+      button.addEventListener("click", (e) => {
+        if (isHolding || hasMoved) {
           e.preventDefault();
-        },
-        { passive: false }
-      );
+          e.stopPropagation();
+          console.log("[DragDrop] 長押し中のクリックを無効化:", button.id);
+          return false;
+        }
+      });
+    }
+
+    // リンク要素のデフォルト動作を制御
+    if (button.tagName === "A") {
+      // リンクのデフォルトドラッグ動作を無効化
+      button.addEventListener("dragstart", (e) => {
+        if (!button.draggable) {
+          e.preventDefault();
+          console.log(
+            "[DragDrop] リンクのデフォルトドラッグを無効化:",
+            button.id
+          );
+        } else {
+          console.log("[DragDrop] カスタムドラッグを許可:", button.id);
+        }
+      });
+
+      // リンクのクリック動作を条件付きで無効化
+      button.addEventListener("click", (e) => {
+        if (isHolding || hasMoved) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log(
+            "[DragDrop] ドラッグ操作中のクリックを無効化:",
+            button.id
+          );
+          return false;
+        }
+      });
     }
 
     // ドラッグ開始
     button.addEventListener("dragstart", (e) => {
-      console.log("[DragDrop] dragstart:", button.id);
+      console.log("[DragDrop] dragstart イベント発火:", button.id);
+      console.log("[DragDrop] draggable状態:", button.draggable);
+      console.log("[DragDrop] isHolding:", isHolding);
+
+      if (!button.draggable) {
+        console.log(
+          "[DragDrop] ドラッグ不可状態のため処理をスキップ:",
+          button.id
+        );
+        e.preventDefault();
+        return;
+      }
+
       e.dataTransfer.setData("text/plain", button.id);
       e.dataTransfer.effectAllowed = "move";
       button.classList.add("dragging");
       button.classList.remove("holding");
+
+      console.log("[DragDrop] ドラッグ開始処理完了:", button.id);
     });
 
     // ドラッグ終了
@@ -1287,10 +1338,16 @@ function initializeHeaderDragAndDrop() {
       button.style.transform = "";
       button.style.opacity = "";
 
-      // すべてのボタンのドラッグオーバー状態をクリア
+      // すべてのボタンのドラッグ関連状態をクリア
       const allButtons = document.querySelectorAll("header .nav-btn");
       allButtons.forEach((btn) => {
-        btn.classList.remove("drag-over");
+        btn.classList.remove(
+          "drag-over",
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active"
+        );
       });
     });
 
@@ -1301,7 +1358,35 @@ function initializeHeaderDragAndDrop() {
 
       // ドラッグ中のボタン自身にはドロップオーバー効果を適用しない
       if (!button.classList.contains("dragging")) {
-        button.classList.add("drag-over");
+        // 他の要素のドロップインジケーターをクリア
+        const allButtons = document.querySelectorAll("header .nav-btn");
+        allButtons.forEach((btn) => {
+          btn.classList.remove(
+            "drop-indicator",
+            "drop-above",
+            "drop-below",
+            "active",
+            "drag-over"
+          );
+        });
+
+        // マウスの位置に基づいてドロップ位置を判定
+        const rect = button.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const buttonCenter = rect.top + rect.height / 2;
+
+        // ドロップ位置のインジケーターを表示
+        button.classList.add("drop-indicator", "active");
+
+        if (mouseY < buttonCenter) {
+          // マウスが要素の上半分にある場合、要素の上に挿入
+          button.classList.add("drop-above");
+          console.log("[DragDrop] ドロップ位置: 上に挿入");
+        } else {
+          // マウスが要素の下半分にある場合、要素の下に挿入
+          button.classList.add("drop-below");
+          console.log("[DragDrop] ドロップ位置: 下に挿入");
+        }
       }
     });
 
@@ -1311,25 +1396,56 @@ function initializeHeaderDragAndDrop() {
       if (e.relatedTarget && button.contains(e.relatedTarget)) {
         return;
       }
-      button.classList.remove("drag-over");
+      button.classList.remove(
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active",
+        "drag-over"
+      );
     });
 
     // ドロップ
     button.addEventListener("drop", (e) => {
       console.log("[DragDrop] drop:", button.id);
       e.preventDefault();
-      button.classList.remove("drag-over");
+      button.classList.remove(
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active",
+        "drag-over"
+      );
 
       const draggedId = e.dataTransfer.getData("text/plain");
       const draggedButton = document.getElementById(draggedId);
 
       if (draggedButton && draggedButton !== button) {
+        // ドロップ位置を判定
+        const rect = button.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const buttonCenter = rect.top + rect.height / 2;
+        const dropAbove = mouseY < buttonCenter;
+
         // 実際のDOM要素の位置を変更
         const header = document.querySelector("header");
 
-        // ドラッグされた要素を削除して新しい位置に挿入
-        draggedButton.remove();
-        header.insertBefore(draggedButton, button);
+        if (dropAbove) {
+          // 要素の上に挿入
+          draggedButton.remove();
+          header.insertBefore(draggedButton, button);
+          console.log("[DragDrop] 要素の上に挿入:", draggedId, "→", button.id);
+        } else {
+          // 要素の下に挿入
+          const nextButton = button.nextElementSibling;
+          draggedButton.remove();
+          if (nextButton) {
+            header.insertBefore(draggedButton, nextButton);
+          } else {
+            header.appendChild(draggedButton);
+          }
+          console.log("[DragDrop] 要素の下に挿入:", draggedId, "→", button.id);
+        }
 
         // 新しい順序を取得して保存
         const newOrder = Array.from(header.children).map((btn) => btn.id);
@@ -1354,11 +1470,15 @@ function showNavigationDragDropSuccessMessage(fromId, toId) {
     existingToast.remove();
   }
 
+  // ボタン名を取得
+  const fromName = getButtonDisplayName(fromId);
+  const toName = getButtonDisplayName(toId);
+
   const toast = document.createElement("div");
   toast.className = "nav-drag-toast";
   toast.innerHTML = `
     <i class="bi bi-check-circle-fill"></i>
-    <span>ナビゲーション順序を変更しました</span>
+    <span>${fromName} を ${toName} の位置に移動しました</span>
   `;
 
   document.body.appendChild(toast);
@@ -1373,17 +1493,51 @@ function showNavigationDragDropSuccessMessage(fromId, toId) {
   }, 2000);
 }
 
+// ボタンIDから表示名を取得
+function getButtonDisplayName(buttonId) {
+  const nameMap = {
+    "btn-memo-list": "MEMO",
+    "btn-clipboard": "CLIPBOARD",
+    "btn-prompt": "PROMPT",
+    "btn-iframe": "IFRAME",
+    "btn-ai": "AI",
+    "btn-status": "STATUS",
+    "btn-setting": "SETTING",
+  };
+  return nameMap[buttonId] || buttonId;
+}
+
 // ページ読み込み時にナビゲーション機能を初期化
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[NavigationOrder] DOMContentLoaded - ナビゲーション機能初期化");
 
+  // デバッグ情報を出力
+  console.log("[DEBUG] DOM要素の状態:");
+  console.log("- header:", document.querySelector("header"));
+  console.log("- nav-btn count:", document.querySelectorAll(".nav-btn").length);
+  console.log("- nav-btn elements:", document.querySelectorAll(".nav-btn"));
+
   // 少し遅延してから初期化（他のスクリプトの読み込みを待つ）
   setTimeout(() => {
+    console.log("[DEBUG] 初期化開始");
+
     // 保存された順序でヘッダーを再構築
     NavigationOrderManager.rebuildHeader();
 
     // ドラッグ＆ドロップ機能を初期化
     initializeHeaderDragAndDrop();
+
+    // 初期化後の状態を確認
+    console.log("[DEBUG] 初期化後の状態:");
+    const buttons = document.querySelectorAll("header .nav-btn");
+    buttons.forEach((btn, index) => {
+      console.log(`[DEBUG] Button ${index}:`, {
+        id: btn.id,
+        draggable: btn.draggable,
+        hasMousedownListener: btn.onmousedown !== null,
+        className: btn.className,
+      });
+    });
   }, 100);
 });
 
@@ -1395,10 +1549,13 @@ window.addEventListener("load", () => {
 
   // まだ初期化されていない場合のみ実行
   if (!document.querySelector("header .nav-btn[draggable]")) {
+    console.log("[DEBUG] フォールバック初期化実行");
     setTimeout(() => {
       NavigationOrderManager.rebuildHeader();
       initializeHeaderDragAndDrop();
     }, 50);
+  } else {
+    console.log("[DEBUG] 既に初期化済み");
   }
 });
 
@@ -1622,6 +1779,55 @@ window.testManualReorder = () => {
         Array.from(header.children).map((btn) => btn.id)
       );
     }, 100);
+  }
+};
+
+// 手動でテストできる関数を追加
+window.testDragDropSetup = () => {
+  console.log("[TEST] ドラッグ&ドロップセットアップテスト");
+
+  const header = document.querySelector("header");
+  const buttons = document.querySelectorAll("header .nav-btn");
+
+  console.log("Header:", header);
+  console.log("Buttons count:", buttons.length);
+
+  buttons.forEach((btn, index) => {
+    console.log(`Button ${index}:`, {
+      id: btn.id,
+      tagName: btn.tagName,
+      draggable: btn.draggable,
+      className: btn.className,
+      href: btn.href,
+      addEventListener: typeof btn.addEventListener === "function",
+    });
+  });
+
+  // 手動でイベントリスナーをテスト
+  if (buttons.length > 0) {
+    const testBtn = buttons[0];
+    console.log("Testing first button:", testBtn.id);
+
+    // マウスダウンイベントを手動で発火
+    const mouseDownEvent = new MouseEvent("mousedown", {
+      button: 0,
+      bubbles: true,
+      cancelable: true,
+      clientX: 100,
+      clientY: 100,
+    });
+
+    testBtn.dispatchEvent(mouseDownEvent);
+
+    // 200ms後にマウスアップ
+    setTimeout(() => {
+      const mouseUpEvent = new MouseEvent("mouseup", {
+        button: 0,
+        bubbles: true,
+        cancelable: true,
+      });
+      testBtn.dispatchEvent(mouseUpEvent);
+    }, 250);
   }
 };
 
