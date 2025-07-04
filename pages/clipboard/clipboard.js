@@ -65,26 +65,6 @@ function handleClipDragEnd() {
 }
 
 // ───────────────────────────────────────
-// Renders the bottom footer depending on mode
-// ───────────────────────────────────────
-function setFooter(mode) {
-  const foot = document.querySelector(".memo-footer");
-  foot.style.display = "flex";
-  if (mode === "clipboard") {
-    foot.innerHTML = `
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブ">
-        <i class="bi bi-archive"></i>
-        <span class="nav-text">アーカイブ</span>
-      </button>
-      <button class="nav-btn encrypt-btn">
-        <i class="bi bi-download"></i>
-        <span class="nav-text">バックアップ</span>
-      </button>
-    `;
-  }
-}
-
-// ───────────────────────────────────────
 // Clipboard view + Archive toggle
 // ───────────────────────────────────────
 async function renderClipboardView() {
@@ -103,10 +83,18 @@ async function renderClipboardView() {
   clips = await loadStorage(CLIP_KEY);
 
   // footer + archive wiring
-  setFooter("clipboard");
   document
     .getElementById("btn-archive-toggle")
     .addEventListener("click", () => renderArchiveNav("clip"));
+
+  // エクスポート機能の追加
+  const exportBtn = document.querySelector(".encrypt-btn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportAllClips);
+  }
+
+  // ボタンの状態を更新
+  updateExportButtonState();
 
   // animate
   const content = document.querySelector(".memo-content");
@@ -135,6 +123,7 @@ async function renderClipboardView() {
       clips.unshift(""); // 配列の先頭に追加（一番上に表示）
       await saveStorage(CLIP_KEY, clips);
       renderClipboardView();
+      updateExportButtonState(); // ボタン状態を更新
     });
   }
 
@@ -171,6 +160,7 @@ async function renderClipboardView() {
         clips.unshift(""); // 配列の先頭に追加（一番上に表示）
         await saveStorage(CLIP_KEY, clips);
         renderClipboardView();
+        updateExportButtonState(); // ボタン状態を更新
       });
     }
 
@@ -859,4 +849,162 @@ function showFallbackDragDropMessage(fromPosition, toPosition) {
 /*━━━━━━━━━━ 空のクリップ判定機能 ━━━━━━━━━━*/
 function isEmptyClip(clip) {
   return !clip || clip.trim() === "";
+}
+
+// ───────────────────────────────────────
+// エクスポート機能
+// ───────────────────────────────────────
+async function exportAllClips() {
+  try {
+    console.log("CLIPBOARDエクスポート機能を開始します");
+
+    // アクティブなクリップ（アーカイブされていないクリップ）のみをフィルタリング
+    const activeClips = clips
+      ? clips.filter((clip, index) => {
+          // アーカイブされたクリップを除外（アーカイブ機能がある場合）
+          // 現在のCLIPBOARDページではアーカイブ機能が実装されているか確認が必要
+          return true; // 一旦全てのクリップを対象とする
+        })
+      : [];
+
+    // アクティブなクリップが0件の場合は処理を停止
+    if (activeClips.length === 0) {
+      console.log("アクティブなクリップが0件のためエクスポートを中止します");
+      return;
+    }
+
+    // 現在時刻を取得してファイル名を生成
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    const fileName = `${hours}${minutes}${seconds}.json`;
+
+    console.log("ファイル名:", fileName);
+    console.log("アクティブなクリップ数:", activeClips.length);
+
+    // エクスポート用のデータ構造を作成（アクティブなクリップのみ）
+    const exportData = {
+      version: "1.0",
+      exportDate: now.toISOString(),
+      clipCount: activeClips.length,
+      totalClipCount: clips ? clips.length : 0,
+      clips: activeClips,
+    };
+
+    console.log("エクスポートデータ:", exportData);
+
+    // JSONファイルとしてダウンロード
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    console.log("エクスポート完了:", fileName);
+
+    // 成功メッセージを表示
+    showExportSuccessMessage(fileName);
+  } catch (error) {
+    console.error("エクスポートエラー:", error);
+    showExportErrorMessage();
+  }
+}
+
+// エクスポート成功メッセージ
+function showExportSuccessMessage(fileName) {
+  const message = document.createElement("div");
+  message.className = "export-message success";
+  message.innerHTML = `
+    <i class="bi bi-check-circle"></i>
+    <span>エクスポート完了: ${fileName}</span>
+  `;
+  document.body.appendChild(message);
+
+  setTimeout(() => {
+    message.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+    message.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 300);
+  }, 3000);
+}
+
+// エクスポートエラーメッセージ
+function showExportErrorMessage() {
+  const message = document.createElement("div");
+  message.className = "export-message error";
+  message.innerHTML = `
+    <i class="bi bi-exclamation-triangle"></i>
+    <span>エクスポートに失敗しました</span>
+  `;
+  document.body.appendChild(message);
+
+  setTimeout(() => {
+    message.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+    message.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 300);
+  }, 3000);
+}
+
+// エクスポートボタンとアーカイブボタンの状態を更新
+function updateExportButtonState() {
+  const exportBtn = document.querySelector(".encrypt-btn");
+  const archiveBtn = document.querySelector("#btn-archive-toggle");
+
+  // アクティブなクリップ（アーカイブされていないクリップ）のみをカウント
+  const activeClips = clips
+    ? clips.filter((clip, index) => {
+        // アーカイブされたクリップを除外（アーカイブ機能がある場合）
+        return true; // 一旦全てのクリップを対象とする
+      })
+    : [];
+  const hasActiveClips = activeClips.length > 0;
+
+  // エクスポートボタンの状態更新
+  if (exportBtn) {
+    exportBtn.disabled = !hasActiveClips;
+    exportBtn.title = hasActiveClips ? "バックアップ" : "クリップはありません";
+
+    // ホバーテキストも更新
+    const exportText = exportBtn.querySelector(".nav-text");
+    if (exportText) {
+      exportText.textContent = hasActiveClips
+        ? "バックアップ"
+        : "クリップはありません";
+    }
+  }
+
+  // アーカイブボタンの状態更新（MEMOページと同様に常に有効）
+  if (archiveBtn) {
+    archiveBtn.disabled = false; // 常に有効（MEMOページと同様）
+    archiveBtn.title = "アーカイブ";
+
+    // ホバーテキストも更新
+    const archiveText = archiveBtn.querySelector(".nav-text");
+    if (archiveText) {
+      archiveText.textContent = "アーカイブ";
+    }
+  }
+
+  console.log("ボタン状態更新:", {
+    hasActiveClips,
+    exportDisabled: !hasActiveClips,
+    totalClipCount: clips ? clips.length : 0,
+    activeClipCount: activeClips.length,
+  });
 }
