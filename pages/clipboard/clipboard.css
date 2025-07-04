@@ -136,6 +136,10 @@
   place-self: center; /* グリッド内で中央配置 */
 }
 
+.clipboard-copy i {
+  font-size: 1.3rem; /* アーカイブアイコンと同じサイズ */
+}
+
 .clipboard-copy:hover {
   background: transparent;
   color: #00b0cf;
@@ -145,7 +149,7 @@
 
 /* clipboardページのアーカイブアイコン（copyボタンと同じサイズ） */
 .clipboard-item .actions {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   cursor: pointer;
   color: #ffffff;
   background: transparent;
@@ -535,9 +539,14 @@
     height: 40px;
   }
 
+  .clipboard-copy i {
+    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
+  }
+
   .clipboard-item .actions {
     width: 40px; /* アーカイブアイコンも少し大きく */
     height: 40px;
+    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
   }
 }
 
@@ -566,9 +575,14 @@
     height: 32px;
   }
 
+  .clipboard-copy i {
+    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
+  }
+
   .clipboard-item .actions {
     width: 32px; /* アーカイブアイコンも小さく */
     height: 32px;
+    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
   }
 }
 

@@ -81,6 +81,14 @@ window.addEventListener("DOMContentLoaded", () => {
   // ─── 以下、既存のメニュー切替＋詳細パネル表示 ───
   document.querySelectorAll(".setting-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      // カスタムモードを解除（カスタムボタン以外の場合）
+      if (!btn.dataset.target || btn.dataset.target !== "#custom-panel") {
+        const content = document.querySelector(".memo-content");
+        if (content) {
+          content.classList.remove("custom-mode");
+        }
+      }
+
       // ボタンの active 切替
       document
         .querySelectorAll(".setting-btn")
@@ -94,9 +102,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
       // クリックしたボタンに対応するパネルを show
       const targetId = btn.dataset.target;
+      console.log("クリックされたボタンのターゲット:", targetId);
       const targetPanel = document.querySelector(targetId);
+      console.log("ターゲットパネル:", targetPanel);
       if (targetPanel) {
         targetPanel.classList.add("show");
+        console.log("パネルにshowクラスを追加:", targetId);
+        // アニメーション効果を追加
+        requestAnimationFrame(() => {
+          targetPanel.classList.add("animate");
+        });
       } else {
         // データターゲットが設定されていない場合はデフォルトパネルを表示
         const defaultPanel = document.querySelector(".detail-panel");
@@ -115,6 +130,13 @@ window.addEventListener("DOMContentLoaded", () => {
     contactBtn.addEventListener("click", () => {
       console.log("お問合せボタンがクリックされました");
       // お問合せ機能の実装
+      const email = "support@domai-extension.com";
+      const subject = "domai Extension お問合せ";
+      const body = "お問合せ内容をここに記載してください。\n\n---\n\n";
+      const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(body)}`;
+      window.open(mailtoLink);
     });
   }
 
@@ -122,6 +144,22 @@ window.addEventListener("DOMContentLoaded", () => {
     shareBtn.addEventListener("click", () => {
       console.log("共有ボタンがクリックされました");
       // 共有機能の実装
+      if (navigator.share) {
+        navigator.share({
+          title: "domai Extension",
+          text: "効率的なブラウザ拡張機能です。",
+          url: "https://github.com/your-repo/domai-extension",
+        });
+      } else {
+        // フォールバック: クリップボードにコピー
+        const shareText =
+          "domai Extension - 効率的なブラウザ拡張機能\nhttps://github.com/your-repo/domai-extension";
+        navigator.clipboard.writeText(shareText).then(() => {
+          showCustomSettingMessage(
+            "共有リンクをクリップボードにコピーしました"
+          );
+        });
+      }
     });
   }
 
@@ -133,6 +171,12 @@ window.addEventListener("DOMContentLoaded", () => {
   if (customBtn) {
     customBtn.addEventListener("click", function (e) {
       e.preventDefault();
+      // カスタムモードに切り替え
+      const content = document.querySelector(".memo-content");
+      if (content) {
+        content.classList.add("custom-mode");
+      }
+
       // すべての.detail-panelからshow/animateを外す
       document.querySelectorAll(".detail-panel").forEach((panel) => {
         panel.classList.remove("show", "animate");

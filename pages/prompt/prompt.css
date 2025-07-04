@@ -456,7 +456,7 @@ textarea.field-text,
 
 .btn-remove-field i {
   pointer-events: none;
-  font-size: 14px; /* アイコンサイズを統一 */
+  font-size: 12px; /* アイコンサイズを小さく */
   line-height: 1; /* 行間を1に設定 */
 }
 

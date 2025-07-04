@@ -58,7 +58,13 @@
         <button class="setting-btn" id="btn-backup-install">
           バックアップのインストール
         </button>
-        <button class="setting-btn" id="btn-api-key">APIキーの設定</button>
+        <button
+          class="setting-btn"
+          id="btn-api-key"
+          data-target="#api-key-panel"
+        >
+          APIキーの設定
+        </button>
         <button class="setting-btn" id="btn-custom" data-target="#custom-panel">
           カスタム
         </button>
@@ -75,11 +81,40 @@
           ><br /><br /><br />
         </div>
 
+        <!-- APIキー設定パネル（Coming Soon） -->
+        <div class="detail-panel" id="api-key-panel">
+          <div class="coming-soon-content">
+            <div class="coming-soon-icon">
+              <i class="bi bi-key-fill"></i>
+            </div>
+            <h3 class="coming-soon-title">APIキーの設定</h3>
+            <p class="coming-soon-message">
+              外部APIとの連携機能は現在開発中です。<br />
+              今後、AI機能やその他の外部サービスとの連携が可能になります。
+            </p>
+            <div class="coming-soon-features">
+              <div class="feature-item">
+                <i class="bi bi-chat-dots"></i>
+                <span>AI チャット連携</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-translate"></i>
+                <span>翻訳サービス連携</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-lightning"></i>
+                <span>要約機能</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- カスタム設定パネル -->
         <div class="detail-panel" id="custom-panel">
           <h3 class="custom-title">アイコン選択</h3>
           <p class="custom-description">
-            光っているアイコンのみがヘッダーに表示されます。アイコンをクリックして選択/解除してください。設定アイコンは常に表示されます。<br />変更を反映するには「設定を保存」ボタンを押してください。<br />保存後、選択されたアイコンのみがヘッダーに表示されます。
+            光っているアイコンのみがヘッダーに表示されます。アイコンをクリックして選択/解除してください。<br />
+            設定アイコンは常に表示されます。変更を反映するには「設定を保存」ボタンを押してください。
           </p>
 
           <div class="custom-settings">

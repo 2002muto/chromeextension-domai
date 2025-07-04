@@ -1382,7 +1382,7 @@ function renderEdit(idx, isNew = false) {
           <label class="form-check-label toggle-label ms-2 ${
             enabled ? "on" : "off"
           }">
-            ${enabled ? "有効" : "無効"}
+            ${enabled ? "表示" : "非表示"}
           </label>
         </div>
                     <button class="btn-remove-field">
@@ -1444,7 +1444,7 @@ function renderEdit(idx, isNew = false) {
     const label = row.querySelector(".toggle-label");
     toggle.onchange = (e) => {
       const on = e.target.checked;
-      label.textContent = on ? "有効" : "無効";
+      label.textContent = on ? "表示" : "非表示";
       label.classList.toggle("on", on);
       label.classList.toggle("off", !on);
     };
