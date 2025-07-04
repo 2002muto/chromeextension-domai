@@ -2,8 +2,24 @@
   "manifest_version": 3,
   "name": "domai Extension",
   "version": "1.0.0",
-  "permissions": ["sidePanel", "storage", "scripting", "activeTab", "tabs"],
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "scripting",
+    "activeTab",
+    "tabs",
+    "declarativeNetRequest"
+  ],
   "host_permissions": ["https://chat.openai.com/*", "<all_urls>"],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "iframe_rules",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
