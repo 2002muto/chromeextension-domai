@@ -104,6 +104,8 @@
   line-height: 1.6;
   height: 100%;
   overflow-y: auto;
+  position: relative;
+  z-index: 1;
 }
 
 /* パネル専用のパディング調整 */
@@ -119,12 +121,14 @@
 
 .detail-panel.show {
   display: block;
+  z-index: 10;
 }
 
 .detail-panel.animate {
   opacity: 1;
   transform: translateY(0) scale(1);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
 
 .detail-panel a.donation-link {
@@ -1314,4 +1318,133 @@
 
 .import-message i {
   font-size: 1rem;
+}
+
+/* ─── 説明パネル ─── */
+#description-panel {
+  padding: 24px;
+  z-index: 15;
+}
+
+#description-panel.show {
+  display: block !important;
+  z-index: 15;
+}
+
+#description-panel.animate {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  z-index: 15;
+}
+
+.description-title {
+  color: #e2e8f0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.description-title i {
+  color: #3b82f6;
+  font-size: 1.4rem;
+}
+
+.description-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.description-text {
+  color: #a0a0a0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.donation-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  #description-panel {
+    padding: 16px;
+  }
+
+  .description-title {
+    font-size: 1.3rem;
+  }
+
+  .description-text {
+    font-size: 0.9rem;
+  }
+}
+
+/* ─── ドネーションメッセージ ─── */
+.donation-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(189, 255, 97, 0.95);
+  border: 2px solid #bdff61;
+  border-radius: 12px;
+  padding: 20px 30px;
+  box-shadow: 0 8px 24px rgba(189, 255, 97, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+  transition: all 0.3s ease;
+}
+
+.donation-message.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.donation-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1a1a1a;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.donation-content i {
+  color: #ff4757;
+  font-size: 1.4rem;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .donation-message {
+    padding: 16px 24px;
+  }
+
+  .donation-content {
+    font-size: 1rem;
+  }
+
+  .donation-content i {
+    font-size: 1.2rem;
+  }
 }

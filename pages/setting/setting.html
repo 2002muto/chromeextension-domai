@@ -54,8 +54,13 @@
     <div class="memo-content">
       <!-- 左ナビメニュー -->
       <nav class="setting-nav">
-        <button class="setting-btn" id="btn-backup" title="バックアップ">
-          <span>バックアップ</span>
+        <button
+          class="setting-btn"
+          id="btn-description"
+          data-target="#description-panel"
+          title="説明"
+        >
+          <span>説明</span>
         </button>
         <button
           class="setting-btn"
@@ -84,14 +89,30 @@
       </nav>
       <!-- 詳細パネル -->
       <section class="setting-detail">
-        <div class="detail-panel show">
-          この拡張機能は、アカウント登録不要、無料で⼀切の機能制限なく使⽤できます。<br /><br />
-          この拡張は、情報漏洩やバックドアの懸念を排除するため、クラウドサーバーへの通信を完全に断ち、各端末のストレージに情報を保存することで
-          完全にスタンドアロンで動く設計にしています。<br /><br />
-          また、ユーザビリティを最優先に考え、UI/UXの劣化を防ぐ広告掲載も⾏っておりません。<br /><br />
-          この拡張機能が、皆さまの業務効率化を⽀援することを⼼から願っています。<br /><br /><br /><br />
-          <a href="#" class="donation-link">⇒ Please Donation</a
-          ><br /><br /><br />
+        <!-- 説明パネル -->
+        <div class="detail-panel show" id="description-panel">
+          <h3 class="description-title">
+            <i class="bi bi-info-circle"></i>
+            domai Extension について
+          </h3>
+          <div class="description-content">
+            <p class="description-text">
+              この拡張機能は、アカウント登録不要、無料で⼀切の機能制限なく使⽤できます。
+            </p>
+            <p class="description-text">
+              この拡張は、情報漏洩やバックドアの懸念を排除するため、クラウドサーバーへの通信を完全に断ち、各端末のストレージに情報を保存することで
+              完全にスタンドアロンで動く設計にしています。
+            </p>
+            <p class="description-text">
+              また、ユーザビリティを最優先に考え、UI/UXの劣化を防ぐ広告掲載も⾏っておりません。
+            </p>
+            <p class="description-text">
+              この拡張機能が、皆さまの業務効率化を⽀援することを⼼から願っています。
+            </p>
+            <div class="donation-section">
+              <a href="#" class="donation-link">⇒ Please Donation</a>
+            </div>
+          </div>
         </div>
 
         <!-- バックアップのインストールパネル -->

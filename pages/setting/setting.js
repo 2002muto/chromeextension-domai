@@ -11,20 +11,37 @@ function renderSettingMain() {
     .querySelectorAll(".setting-btn")
     .forEach((b) => b.classList.remove("active"));
 
-  // デフォルトのdetail-panelを表示（設定ページには常に1つのパネルがある）
-  const defaultPanel = document.querySelector(".detail-panel");
-  if (defaultPanel) {
-    // すべてのパネルからshowを削除してから、デフォルトパネルにshowを追加
+  // 説明パネルを表示
+  const descriptionPanel = document.querySelector("#description-panel");
+  if (descriptionPanel) {
+    // すべてのパネルからshowとanimateを削除
     document
       .querySelectorAll(".detail-panel")
-      .forEach((p) => p.classList.remove("show"));
-    defaultPanel.classList.add("show");
+      .forEach((p) => p.classList.remove("show", "animate"));
+
+    // 説明パネルにshowクラスを追加
+    descriptionPanel.classList.add("show");
+    console.log("初期化時に説明パネルを表示しました");
+
+    // アニメーション効果を追加
+    requestAnimationFrame(() => {
+      descriptionPanel.classList.add("animate");
+      console.log("初期化時に説明パネルにanimateクラスを追加しました");
+    });
+  } else {
+    console.error("説明パネルが見つかりません");
   }
 
-  // 最初の設定ボタンを active にする（存在する場合）
-  const firstBtn = document.querySelector(".setting-btn");
-  if (firstBtn) {
-    firstBtn.classList.add("active");
+  // 「説明」ボタンを active にする（存在する場合）
+  const descriptionBtn = document.querySelector("#btn-description");
+  if (descriptionBtn) {
+    descriptionBtn.classList.add("active");
+  } else {
+    // 説明ボタンが見つからない場合は最初のボタンを active にする
+    const firstBtn = document.querySelector(".setting-btn");
+    if (firstBtn) {
+      firstBtn.classList.add("active");
+    }
   }
 
   // MEMO・PROMPTと同じアニメーション
@@ -81,6 +98,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // ─── 以下、既存のメニュー切替＋詳細パネル表示 ───
   document.querySelectorAll(".setting-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      console.log("navボタンがクリックされました:", btn.id, btn.dataset.target);
       // カスタムモードを解除（カスタムボタン以外の場合）
       if (!btn.dataset.target || btn.dataset.target !== "#custom-panel") {
         const content = document.querySelector(".memo-content");
@@ -95,10 +113,11 @@ window.addEventListener("DOMContentLoaded", () => {
         .forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
-      // 全 detail-panel を一旦 hidden
-      document
-        .querySelectorAll(".detail-panel")
-        .forEach((p) => p.classList.remove("show"));
+      // すべてのパネルからshowとanimateを削除
+      document.querySelectorAll(".detail-panel").forEach((p) => {
+        p.classList.remove("show", "animate");
+        console.log(`パネル ${p.id} からshowとanimateを削除`);
+      });
 
       // クリックしたボタンに対応するパネルを show
       const targetId = btn.dataset.target;
@@ -111,13 +130,10 @@ window.addEventListener("DOMContentLoaded", () => {
         // アニメーション効果を追加
         requestAnimationFrame(() => {
           targetPanel.classList.add("animate");
+          console.log("パネルにanimateクラスを追加:", targetId);
         });
       } else {
-        // データターゲットが設定されていない場合はデフォルトパネルを表示
-        const defaultPanel = document.querySelector(".detail-panel");
-        if (defaultPanel) {
-          defaultPanel.classList.add("show");
-        }
+        console.error("ターゲットパネルが見つかりません:", targetId);
       }
     });
   });
@@ -166,29 +182,48 @@ window.addEventListener("DOMContentLoaded", () => {
   // ─── カスタム設定機能の初期化 ───
   initializeCustomSettings();
 
-  // カスタムボタンのクリックでカスタムパネルのみアニメーション表示（show→次フレームでanimate）
+  // 初期化完了後に説明パネルを確実に表示
+  setTimeout(() => {
+    console.log("初期化完了後の説明パネル表示確認");
+    const descriptionPanel = document.querySelector("#description-panel");
+    const descriptionBtn = document.querySelector("#btn-description");
+
+    if (descriptionPanel && !descriptionPanel.classList.contains("show")) {
+      console.log("説明パネルが表示されていないため、強制的に表示します");
+
+      // すべてのパネルを非表示
+      document.querySelectorAll(".detail-panel").forEach((p) => {
+        p.classList.remove("show", "animate");
+      });
+
+      // 説明パネルを表示
+      descriptionPanel.classList.add("show");
+      requestAnimationFrame(() => {
+        descriptionPanel.classList.add("animate");
+      });
+    }
+
+    if (descriptionBtn && !descriptionBtn.classList.contains("active")) {
+      console.log("説明ボタンがアクティブでないため、アクティブにします");
+      document
+        .querySelectorAll(".setting-btn")
+        .forEach((b) => b.classList.remove("active"));
+      descriptionBtn.classList.add("active");
+    }
+  }, 500);
+
+  // カスタムボタンのクリックでカスタムモードに切り替え
   const customBtn = document.getElementById("btn-custom");
   if (customBtn) {
     customBtn.addEventListener("click", function (e) {
       e.preventDefault();
+      console.log("カスタムボタンがクリックされました");
+
       // カスタムモードに切り替え
       const content = document.querySelector(".memo-content");
       if (content) {
         content.classList.add("custom-mode");
-      }
-
-      // すべての.detail-panelからshow/animateを外す
-      document.querySelectorAll(".detail-panel").forEach((panel) => {
-        panel.classList.remove("show", "animate");
-      });
-      // #custom-panelだけにshowを付与
-      const customPanel = document.getElementById("custom-panel");
-      if (customPanel) {
-        customPanel.classList.add("show");
-        // 次フレームでanimateを付与（アニメーション発火保証）
-        requestAnimationFrame(() => {
-          customPanel.classList.add("animate");
-        });
+        console.log("カスタムモードに切り替えました");
       }
     });
   }
@@ -419,10 +454,125 @@ function setupIconSelectionListeners() {
         console.log(`アイコン選択: ${iconType}`);
       }
 
+      // アイコン選択時に説明パネルの選択状態を解除し、メッセージを表示
+      handleIconSelectionChange();
+
       // リアルタイム更新を無効化（設定保存ボタンでのみ適用）
       // applyCustomSettings();
     });
   });
+}
+
+// アイコン選択変更時の処理
+function handleIconSelectionChange() {
+  console.log("アイコン選択が変更されました");
+
+  // 現在のパネル状態をデバッグ
+  console.log("=== 現在のパネル状態 ===");
+  document.querySelectorAll(".detail-panel").forEach((panel, index) => {
+    console.log(`パネル ${index}:`, {
+      id: panel.id,
+      hasShow: panel.classList.contains("show"),
+      hasAnimate: panel.classList.contains("animate"),
+      display: window.getComputedStyle(panel).display,
+      opacity: window.getComputedStyle(panel).opacity,
+      visibility: window.getComputedStyle(panel).visibility,
+    });
+  });
+
+  // 説明ボタンをアクティブにする
+  const descriptionBtn = document.querySelector("#btn-description");
+  if (descriptionBtn) {
+    // すべての設定ボタンの active を削除
+    document
+      .querySelectorAll(".setting-btn")
+      .forEach((b) => b.classList.remove("active"));
+
+    // 説明ボタンをアクティブにする
+    descriptionBtn.classList.add("active");
+    console.log("説明ボタンをアクティブにしました");
+  }
+
+  // すべてのパネルからshowとanimateを削除
+  document.querySelectorAll(".detail-panel").forEach((p) => {
+    p.classList.remove("show", "animate");
+    console.log(`パネル ${p.id} からshowとanimateを削除`);
+  });
+
+  // 説明パネルを表示
+  const descriptionPanel = document.querySelector("#description-panel");
+  if (descriptionPanel) {
+    descriptionPanel.classList.add("show");
+    console.log("説明パネルにshowクラスを追加しました");
+
+    // アニメーション効果を追加
+    requestAnimationFrame(() => {
+      descriptionPanel.classList.add("animate");
+      console.log("説明パネルにanimateクラスを追加しました");
+    });
+  } else {
+    console.error("説明パネルが見つかりません");
+  }
+
+  // 修正後のパネル状態をデバッグ
+  setTimeout(() => {
+    console.log("=== 修正後のパネル状態 ===");
+    document.querySelectorAll(".detail-panel").forEach((panel, index) => {
+      console.log(`パネル ${index}:`, {
+        id: panel.id,
+        hasShow: panel.classList.contains("show"),
+        hasAnimate: panel.classList.contains("animate"),
+        display: window.getComputedStyle(panel).display,
+        opacity: window.getComputedStyle(panel).opacity,
+        visibility: window.getComputedStyle(panel).visibility,
+      });
+    });
+  }, 100);
+
+  // 「⇒ Please Donation」メッセージを表示
+  showDonationMessage();
+}
+
+// ドネーションメッセージの表示
+function showDonationMessage() {
+  console.log("ドネーションメッセージを表示します");
+
+  // 既存のメッセージを削除
+  const existingMessage = document.querySelector(".donation-message");
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+
+  // 新しいメッセージを作成
+  const messageElement = document.createElement("div");
+  messageElement.className = "donation-message";
+  messageElement.innerHTML = `
+    <div class="donation-content">
+      <i class="bi bi-heart-fill"></i>
+      <span>⇒ Please Donation</span>
+    </div>
+  `;
+
+  // メッセージを表示
+  const settingDetail = document.querySelector(".setting-detail");
+  if (settingDetail) {
+    settingDetail.appendChild(messageElement);
+  }
+
+  // アニメーション
+  setTimeout(() => {
+    messageElement.classList.add("show");
+  }, 100);
+
+  // 自動削除（5秒後）
+  setTimeout(() => {
+    messageElement.classList.remove("show");
+    setTimeout(() => {
+      if (messageElement.parentNode) {
+        messageElement.remove();
+      }
+    }, 300);
+  }, 5000);
 }
 
 // アイコン選択状態を更新
