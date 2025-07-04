@@ -1329,16 +1329,8 @@ function showImportMessage(message, type = "info") {
     <span>${message}</span>
   `;
 
-  // メッセージを表示
-  const backupInstallContent = document.querySelector(
-    ".backup-install-content"
-  );
-  if (backupInstallContent) {
-    backupInstallContent.insertBefore(
-      messageElement,
-      backupInstallContent.firstChild
-    );
-  }
+  // メッセージをbodyに直接追加（右上に表示）
+  document.body.appendChild(messageElement);
 
   // アニメーション
   setTimeout(() => {
