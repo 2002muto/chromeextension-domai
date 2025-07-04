@@ -1,9 +1,81 @@
 /****************************************************************************************
- * BG v8 – FOCUS_TAB / GET_LAST_PAGE_TAB / SIDE_PANEL_CONTROL
+ * BG v8 – FOCUS_TAB / GET_LAST_PAGE_TAB / SIDE_PANEL_CONTROL / IFRAME SUPPORT
  ****************************************************************************************/
 const WIDTH = 420;
 const popups = new Map(); // baseWin.id → popup.id
 let lastTab = null; // 直近入力フォーカスのページタブ
+
+// ───────────────────────────────────────
+// DeclarativeNetRequest制御
+// ───────────────────────────────────────
+let iframeRulesEnabled = true;
+
+// ルールの有効/無効を切り替え
+async function toggleIframeRules(enable) {
+  console.log(`[BG] Toggling iframe rules: ${enable}`);
+
+  try {
+    if (enable && !iframeRulesEnabled) {
+      // ルールを有効化
+      await chrome.declarativeNetRequest.updateEnabledRulesets({
+        enableRulesetIds: ["iframe_rules"],
+      });
+      iframeRulesEnabled = true;
+      console.log("[BG] Iframe rules enabled");
+    } else if (!enable && iframeRulesEnabled) {
+      // ルールを無効化
+      await chrome.declarativeNetRequest.updateEnabledRulesets({
+        disableRulesetIds: ["iframe_rules"],
+      });
+      iframeRulesEnabled = false;
+      console.log("[BG] Iframe rules disabled");
+    }
+  } catch (error) {
+    console.error("[BG] Failed to toggle iframe rules:", error);
+  }
+}
+
+// 特定のドメインのルールを動的に追加
+async function addDynamicIframeRule(domain) {
+  console.log(`[BG] Adding dynamic iframe rule for: ${domain}`);
+
+  try {
+    const ruleId = Date.now(); // ユニークID生成
+    const rule = {
+      id: ruleId,
+      priority: 1,
+      action: {
+        type: "modifyHeaders",
+        responseHeaders: [
+          {
+            header: "X-Frame-Options",
+            operation: "remove",
+          },
+          {
+            header: "Content-Security-Policy",
+            operation: "remove",
+          },
+        ],
+      },
+      condition: {
+        urlFilter: `||${domain}/*`,
+        resourceTypes: ["sub_frame"],
+        tabIds: [-1],
+        initiatorDomains: ["chrome-extension://*"],
+      },
+    };
+
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [rule],
+    });
+
+    console.log(`[BG] Dynamic rule added for ${domain} with ID: ${ruleId}`);
+    return ruleId;
+  } catch (error) {
+    console.error(`[BG] Failed to add dynamic rule for ${domain}:`, error);
+    return null;
+  }
+}
 
 // 0) 拡張機能アイコンクリック時のサイドパネル制御
 chrome.action.onClicked.addListener(async (tab) => {
@@ -35,6 +107,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
     console.log(`[BG] GET_LAST_PAGE_TAB → returning tab ${lastTab}`);
     sendRes({ tabId: lastTab });
     return true; // 非同期レスポンスを許可
+  }
+
+  // IFRAME制御メッセージ
+  if (msg.type === "TOGGLE_IFRAME_RULES") {
+    console.log(`[BG] TOGGLE_IFRAME_RULES received: ${msg.enable}`);
+    toggleIframeRules(msg.enable);
+    sendRes({ success: true });
+    return true;
+  }
+
+  if (msg.type === "ADD_DYNAMIC_IFRAME_RULE") {
+    console.log(`[BG] ADD_DYNAMIC_IFRAME_RULE received for: ${msg.domain}`);
+    addDynamicIframeRule(msg.domain).then((ruleId) => {
+      sendRes({ success: true, ruleId });
+    });
+    return true;
   }
 
   /* edgeSensor → パネル要求 */
@@ -73,4 +161,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
   //     }
   //   );
   // });
+});
+
+// 初期化時にルールを有効化
+chrome.runtime.onStartup.addListener(() => {
+  console.log("[BG] Extension startup - enabling iframe rules");
+  toggleIframeRules(true);
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  console.log("[BG] Extension installed - enabling iframe rules");
+  toggleIframeRules(true);
 });

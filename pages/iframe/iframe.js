@@ -7,6 +7,63 @@ const IFRAME_KEY = "iframes";
 let iframes = [];
 
 // ───────────────────────────────────────
+// DeclarativeNetRequest制御
+// ───────────────────────────────────────
+let iframeRulesEnabled = true;
+
+// ルールの有効/無効を切り替え
+async function toggleIframeRules(enable) {
+  console.log(`[IFRAME] Toggling iframe rules: ${enable}`);
+
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "TOGGLE_IFRAME_RULES",
+      enable: enable,
+    });
+
+    if (response.success) {
+      iframeRulesEnabled = enable;
+      console.log(`[IFRAME] Iframe rules ${enable ? "enabled" : "disabled"}`);
+    }
+  } catch (error) {
+    console.error("[IFRAME] Failed to toggle iframe rules:", error);
+  }
+}
+
+// 特定のドメインのルールを動的に追加
+async function addDynamicIframeRule(domain) {
+  console.log(`[IFRAME] Adding dynamic iframe rule for: ${domain}`);
+
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "ADD_DYNAMIC_IFRAME_RULE",
+      domain: domain,
+    });
+
+    if (response.success) {
+      console.log(
+        `[IFRAME] Dynamic rule added for ${domain} with ID: ${response.ruleId}`
+      );
+      return response.ruleId;
+    }
+  } catch (error) {
+    console.error(`[IFRAME] Failed to add dynamic rule for ${domain}:`, error);
+  }
+  return null;
+}
+
+// URLからドメインを抽出
+function extractDomain(url) {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname;
+  } catch (error) {
+    console.error("[IFRAME] Failed to extract domain:", error);
+    return null;
+  }
+}
+
+// ───────────────────────────────────────
 // Promise-wrapped Chrome Storage API
 // ───────────────────────────────────────
 function loadStorage(key) {
@@ -33,6 +90,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.log("現在のページはIFRAMEページではありません:", currentPage);
     return; // IFRAMEページでない場合は初期化をスキップ
   }
+
+  // iframeルールを有効化
+  await toggleIframeRules(true);
 
   // URL入力とiframe表示の初期化
   initializeIframePage();
@@ -158,7 +218,7 @@ function initializeIframePage() {
 // ───────────────────────────────────────
 // 検索またはURLをiframeに読み込む
 // ───────────────────────────────────────
-function performSearch() {
+async function performSearch() {
   const searchInput = document.querySelector(".search-input");
   const iframeDisplay = document.getElementById("iframe-display");
   const submitBtn = document.querySelector(".search-submit-btn");
@@ -221,6 +281,13 @@ function performSearch() {
   try {
     new URL(url);
     console.log("有効なURLです - iframeに読み込み中:", url);
+
+    // ドメインを抽出して動的ルールを追加
+    const domain = extractDomain(url);
+    if (domain) {
+      console.log(`[IFRAME] Extracted domain: ${domain}`);
+      await addDynamicIframeRule(domain);
+    }
 
     // Empty Stateと入力行を非表示、iframeを表示
     emptyStateContent?.classList.remove("show");
@@ -350,3 +417,5 @@ function performSearch() {
 // ───────────────────────────────────────
 window.initializeIframePage = initializeIframePage;
 window.performSearch = performSearch;
+window.toggleIframeRules = toggleIframeRules;
+window.addDynamicIframeRule = addDynamicIframeRule;
