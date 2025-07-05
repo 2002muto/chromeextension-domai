@@ -626,10 +626,12 @@ function applyIconVisibility(selectedIcons) {
     window.restoreActiveIconState();
   }
 
-  // ヘッダー更新モード終了を次のフレームで実行
+  // ヘッダー更新モード終了を2フレーム後に実行
   requestAnimationFrame(() => {
-    header.classList.remove("updating");
-    console.log("SETTING: ヘッダー更新モード終了");
+    requestAnimationFrame(() => {
+      header.classList.remove("updating");
+      console.log("SETTING: ヘッダー更新モード終了");
+    });
   });
 }
 
@@ -722,10 +724,12 @@ function forceApplyIconVisibility(selectedIcons) {
     window.restoreActiveIconState();
   }
 
-  // ヘッダー更新モード終了を次のフレームで実行
+  // ヘッダー更新モード終了を2フレーム後に実行
   requestAnimationFrame(() => {
-    header.classList.remove("updating");
-    console.log("FORCE: ヘッダー更新モード終了");
+    requestAnimationFrame(() => {
+      header.classList.remove("updating");
+      console.log("FORCE: ヘッダー更新モード終了");
+    });
   });
 
   // 適用後の状態を確認

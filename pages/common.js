@@ -2188,10 +2188,12 @@ function applyIconVisibilityToHeader(selectedIcons) {
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
 
-  // ヘッダー更新モード終了を次のフレームで実行し、描画タイミングを調整
+  // ヘッダー更新モード終了を2フレーム後に実行し、描画タイミングを調整
   requestAnimationFrame(() => {
-    header.classList.remove("updating");
-    console.log("COMMON: ヘッダー更新モード終了");
+    requestAnimationFrame(() => {
+      header.classList.remove("updating");
+      console.log("COMMON: ヘッダー更新モード終了");
+    });
   });
 }
 
@@ -2320,10 +2322,12 @@ function applyIconVisibility(selectedIcons) {
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
 
-  // ヘッダー更新モード終了を次のフレームで実行
+  // ヘッダー更新モード終了を2フレーム後に実行
   requestAnimationFrame(() => {
-    header.classList.remove("updating");
-    console.log(`${prefix}: ヘッダー更新モード終了`);
+    requestAnimationFrame(() => {
+      header.classList.remove("updating");
+      console.log(`${prefix}: ヘッダー更新モード終了`);
+    });
   });
 }
 
