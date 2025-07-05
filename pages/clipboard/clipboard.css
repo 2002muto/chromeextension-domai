@@ -75,7 +75,8 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 60px; /* 挿入ボタン+余白分の幅 */
+  /* ボタン幅36px + gap12px = 48px でテキストエリアに重ならない */
+  width: 48px;
   background: #00E344;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
@@ -156,7 +157,7 @@
 .clipboard-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px; /* ボタン間をよりコンパクトに */
   place-self: center; /* グリッド内で中央配置 */
 }
 
@@ -812,9 +813,9 @@
     padding: 8px;
   }
 
-  /* モバイル時のアクセント幅を調整 */
+  /* モバイル時のアクセント幅を調整（insert32px + gap8px = 40px） */
   .clip-item::before {
-    width: 48px;
+    width: 40px;
   }
 
   .clipboard-textarea {
