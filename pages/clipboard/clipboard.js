@@ -1220,6 +1220,8 @@ function updateExportButtonState() {
 // ───────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   console.log("CLIPBOARDページ: DOMContentLoaded");
+  // 新しいスタイルが適用されたか確認
+  console.log("style patch: clip-item left area uses white background");
 
   // ヘッダーのクリップボードアイコンのクリックイベントを初期設定
   const clipboardBtn = document.getElementById("btn-clipboard");

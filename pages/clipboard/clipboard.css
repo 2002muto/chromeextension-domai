@@ -57,7 +57,11 @@
   grid-template-columns: auto 1fr auto; /* 挿入ボタン, textarea, アクションボタン群 */
   align-items: center; /* 垂直方向中央揃え（テキストエリアが長くなってもボタンは中央） */
   gap: 12px;
-  background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
+  /*
+    左側の挿入ボタン部分のみ白色にするため
+    先頭 ~60px を白、その後を既存グラデーションで塗り分け
+  */
+  background: linear-gradient(90deg, #ffffff 0 60px, #6b6b6b 60px, #3a3f4a);
   padding: 10px;
   border-radius: 6px;
   min-height: 64px;
@@ -788,6 +792,8 @@
   .clip-item {
     gap: 8px; /* 間隔を少し狭く */
     padding: 8px;
+    /* モバイルでは左側幅が狭くなるため背景幅も調整 */
+    background: linear-gradient(90deg, #ffffff 0 48px, #6b6b6b 48px, #3a3f4a);
   }
 
   .clipboard-textarea {
