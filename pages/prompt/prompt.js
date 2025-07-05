@@ -2753,16 +2753,13 @@ async function exportAllPrompts() {
       prompts: activePrompts,
     };
 
-    // 正しいハッシュ値を計算（検証用）
+    // 正しいハッシュ値を計算（認証用）
     const dataForHash = { ...exportData };
     const hashResult = await generateSecurityHash(dataForHash);
 
-    // 偽のハッシュ値を生成（表示用）
-    const fakeHash = generateFakeHash(activePrompts, 64);
-
     // エクスポートデータに設定
-    exportData.securityHash = fakeHash; // 偽のハッシュ値（表示用）
-    exportData.backupnumber = hashResult.backupnumber; // 前半32文字（検証用、隠しフィールド）
+    exportData.securityHash = hashResult.securityHash; // 実際のハッシュ値（認証用）
+    exportData.backupnumber = hashResult.backupnumber; // 前半32文字（認証用）
 
     console.log("エクスポートデータ:", exportData);
 
@@ -2810,20 +2807,37 @@ async function generateSecurityHash(data) {
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
+    // 完全なSHA-256ハッシュをコンソールログに表示（確認用）
+    console.log("=== ハッシュ検証用ログ ===");
+    console.log("完全なSHA-256ハッシュ（64文字）:", sha256Hash);
+    console.log("ハッシュ長:", sha256Hash.length);
+
     // SHA-256ハッシュを前半と後半に分割（各32文字）
     const firstHalf = sha256Hash.substring(0, 32);
     const secondHalf = sha256Hash.substring(32, 64);
 
+    console.log("前半32文字（backupnumber）:", firstHalf);
+    console.log("後半32文字（securityHash前半）:", secondHalf);
+    console.log("前半長:", firstHalf.length);
+    console.log("後半長:", secondHalf.length);
+
     // ランダムな32文字のハッシュを生成（0だとバレるので、実際にランダム生成）
-    const randomBytes = new Uint8Array(32);
+    const randomBytes = new Uint8Array(16);
     crypto.getRandomValues(randomBytes);
     const randomHash = Array.from(randomBytes)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
+    console.log("ランダム32文字（securityHash後半）:", randomHash);
+    console.log("ランダム長:", randomHash.length);
+
     // backupnumber: 32桁（SHA-256の前半32桁のみ）
-    // securityHash: 64桁（SHA-256の後半32桁 + ランダム32桁）
-    const combinedHash = secondHalf + randomHash;
+    // securityHash: 64桁（ランダム32桁 + SHA-256の後半32桁）
+    const combinedHash = randomHash + secondHalf;
+
+    console.log("最終的なsecurityHash（64文字）:", combinedHash);
+    console.log("最終的なsecurityHash長:", combinedHash.length);
+    console.log("=== ハッシュ検証用ログ終了 ===");
 
     return {
       backupnumber: firstHalf,
