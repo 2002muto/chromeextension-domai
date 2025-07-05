@@ -1,8 +1,8 @@
 // File: pages/ai/ai.js
 
-// AIページのメイン画面をリフレッシュする関数
-function renderAIMain() {
-  console.log("renderAIMain: AIページをリフレッシュ");
+// TodoListページのメイン画面をリフレッシュする関数
+function renderTodoListMain() {
+  console.log("renderTodoListMain: TodoListページをリフレッシュ");
 
   // ページをリフレッシュ（COMING SOON画面のアニメーションをリスタート）
   const main = document.querySelector(".ai-main");
@@ -24,31 +24,31 @@ function renderAIMain() {
 
 // DOMContentLoaded後に初期化
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("AIページ DOMContentLoaded fired");
+  console.log("TodoListページ DOMContentLoaded fired");
 
-  // 現在のページがAIページかどうかを確認
+  // 現在のページがTodoListページかどうかを確認
   const currentPage = window.location.pathname;
   if (!currentPage.includes("/ai/")) {
-    console.log("現在のページはAIページではありません:", currentPage);
-    return; // AIページでない場合は初期化をスキップ
+    console.log("現在のページはTodoListページではありません:", currentPage);
+    return; // TodoListページでない場合は初期化をスキップ
   }
 
-  // Add event listener to AI button
-  const aiButton = document.getElementById("btn-ai");
-  if (aiButton) {
-    aiButton.addEventListener("click", () => {
-      console.log("AI page button clicked");
+  // Add event listener to TodoList button
+  const todoListButton = document.getElementById("btn-todolist");
+  if (todoListButton) {
+    todoListButton.addEventListener("click", () => {
+      console.log("TodoList page button clicked");
       // ヘッダーをクリックした時はメイン画面をリフレッシュ
-      renderAIMain();
+      renderTodoListMain();
     });
   }
 
   // ページ状態を保存
   if (window.PageStateManager) {
-    window.PageStateManager.savePageState("ai", {
+    window.PageStateManager.savePageState("todolist", {
       mode: "main",
     });
-    window.PageStateManager.setActivePage("ai");
+    window.PageStateManager.setActivePage("todolist");
   }
 
   // 初回表示アニメーション
@@ -62,4 +62,4 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // グローバルに公開してヘッダーナビから呼び出せるようにする
-window.renderAIMain = renderAIMain;
+window.renderTodoListMain = renderTodoListMain;

@@ -2063,22 +2063,165 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!iconVisibilityApplied) {
         console.log("COMMON: 遅延実行 - アイコン表示設定を適用");
 
-        // すべてのページでAIアイコンを非表示にする
-        hideAIIcon();
+        // すべてのページで今後実装予定のアイコンを非表示にする
+        hideComingSoonIcons();
 
-        // 設定ページの場合のみ、アイコン表示設定を適用
-        const isSettingPage = window.location.pathname.includes("/setting/");
-        if (isSettingPage) {
-          applyIconVisibilityFromStorage();
-        }
+        // すべてのページで保存された設定を読み込んで適用
+        loadAndApplyIconSettings();
 
         iconVisibilityApplied = true;
       }
     }, 100);
+
+    // さらに遅延して確実に適用
+    setTimeout(() => {
+      console.log("COMMON: 追加遅延実行 - アイコン表示設定を再適用");
+      loadAndApplyIconSettings();
+    }, 500);
   }
 });
 
-// ストレージからアイコン表示設定を適用
+// 保存された設定を読み込んで適用する関数
+function loadAndApplyIconSettings() {
+  console.log("COMMON: loadAndApplyIconSettings 開始");
+
+  chrome.storage.local.get(["customSettings"], (result) => {
+    const settings = result.customSettings;
+    console.log("COMMON: ストレージから取得した設定:", settings);
+
+    if (settings && settings.selectedIcons) {
+      console.log("COMMON: 保存された設定を適用:", settings.selectedIcons);
+      applyIconVisibilityFromSettings(settings.selectedIcons);
+    } else {
+      console.log("COMMON: 設定が見つからないため、デフォルト設定を適用");
+      applyDefaultIconSettings();
+    }
+  });
+}
+
+// 設定からアイコン表示を適用する関数
+function applyIconVisibilityFromSettings(selectedIcons) {
+  // ドラッグ&ドロップ進行中は適用しない
+  if (window.isDragDropInProgress) {
+    console.log(
+      "COMMON: ドラッグ&ドロップ進行中のため、アイコン表示設定をスキップ"
+    );
+    return;
+  }
+
+  console.log(
+    "COMMON: applyIconVisibilityFromSettings 呼び出し - 選択アイコン:",
+    selectedIcons
+  );
+
+  // 設定ページ以外では、選択されたアイコンのみを表示
+  const isSettingPage = window.location.pathname.includes("/setting/");
+  if (!isSettingPage) {
+    applyIconVisibilityToHeader(selectedIcons);
+  } else {
+    // 設定ページでは従来の処理
+    applyIconVisibility(selectedIcons);
+  }
+}
+
+// デフォルト設定を適用する関数
+function applyDefaultIconSettings() {
+  console.log("COMMON: デフォルト設定を適用");
+
+  const defaultIcons = [
+    "memo",
+    "clipboard",
+    "prompt",
+    "iframe",
+    "status",
+    "setting",
+  ];
+  applyIconVisibilityFromSettings(defaultIcons);
+}
+
+// ヘッダーにアイコン表示を適用する関数
+function applyIconVisibilityToHeader(selectedIcons) {
+  console.log("COMMON: ヘッダーにアイコン表示を適用:", selectedIcons);
+
+  const header = document.querySelector("header");
+  if (!header) {
+    console.log("COMMON: ヘッダーが見つかりません");
+    return;
+  }
+
+  const navButtons = header.querySelectorAll(".nav-btn");
+  console.log("COMMON: ヘッダー内のボタン数:", navButtons.length);
+
+  navButtons.forEach((button) => {
+    const buttonId = button.id;
+    const iconType = getIconTypeFromId(buttonId);
+
+    // AIアイコンは常に非表示（Coming Soon）
+    if (iconType === "ai") {
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.position = "absolute";
+      button.style.left = "-9999px";
+      console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (AI Coming Soon)`);
+    }
+    // TodoListアイコンは常に非表示（Coming Soon）
+    else if (iconType === "todolist") {
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.position = "absolute";
+      button.style.left = "-9999px";
+      console.log(
+        `COMMON: ${buttonId} (${iconType}): 非表示 (TodoList Coming Soon)`
+      );
+    }
+    // 選択されたアイコンは表示
+    else if (selectedIcons.includes(iconType)) {
+      button.style.display = "flex";
+      button.style.visibility = "visible";
+      button.style.position = "relative";
+      button.style.left = "auto";
+      console.log(`COMMON: ${buttonId} (${iconType}): 表示 (選択済み)`);
+    } else {
+      // 選択されていないアイコンは非表示
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.position = "absolute";
+      button.style.left = "-9999px";
+      console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (未選択)`);
+    }
+  });
+
+  // アイコンを左寄せにする
+  alignVisibleIconsToLeft();
+
+  // 現在のページに対応するアイコンのactive状態を復元
+  restoreActiveIconState();
+}
+
+// 表示されているアイコンを左寄せにする関数
+function alignVisibleIconsToLeft() {
+  console.log("COMMON: アイコンを左寄せにします");
+
+  const header = document.querySelector("header");
+  if (!header) {
+    console.log("COMMON: ヘッダーが見つかりません");
+    return;
+  }
+
+  const visibleButtons = header.querySelectorAll(
+    ".nav-btn[style*='display: flex']"
+  );
+  console.log("COMMON: 表示されているアイコン数:", visibleButtons.length);
+
+  // 表示されているアイコンのみを左寄せに配置
+  visibleButtons.forEach((button, index) => {
+    if (index === 0) {
+      button.style.marginLeft = "0";
+    }
+  });
+}
+
+// ストレージからアイコン表示設定を適用（設定ページ専用）
 function applyIconVisibilityFromStorage() {
   console.log("COMMON: applyIconVisibilityFromStorage 開始");
 
@@ -2182,9 +2325,9 @@ function applyIconVisibility(selectedIcons) {
   restoreActiveIconState();
 }
 
-// AIアイコンを非表示にする関数
-function hideAIIcon() {
-  console.log("COMMON: AIアイコンを非表示にする処理を開始");
+// 今後実装予定のアイコンを非表示にする関数
+function hideComingSoonIcons() {
+  console.log("COMMON: 今後実装予定のアイコンを非表示にする処理を開始");
 
   const header = document.querySelector("header");
   if (!header) {
@@ -2192,6 +2335,7 @@ function hideAIIcon() {
     return;
   }
 
+  // AIアイコンを非表示
   const aiButton = document.getElementById("btn-ai");
   if (aiButton) {
     aiButton.style.display = "none";
@@ -2201,6 +2345,18 @@ function hideAIIcon() {
     console.log("COMMON: AIアイコンを非表示にしました");
   } else {
     console.log("COMMON: AIアイコンが見つかりません");
+  }
+
+  // TodoListアイコンを非表示
+  const todoListButton = document.getElementById("btn-todolist");
+  if (todoListButton) {
+    todoListButton.style.display = "none";
+    todoListButton.style.visibility = "hidden";
+    todoListButton.style.position = "absolute";
+    todoListButton.style.left = "-9999px"; // 画面外に移動
+    console.log("COMMON: TodoListアイコンを非表示にしました");
+  } else {
+    console.log("COMMON: TodoListアイコンが見つかりません");
   }
 }
 
@@ -2212,6 +2368,7 @@ function getIconTypeFromId(buttonId) {
     "btn-prompt": "prompt",
     "btn-iframe": "iframe",
     "btn-ai": "ai",
+    "btn-todolist": "todolist",
     "btn-status": "status",
     "btn-setting": "setting",
   };
@@ -2219,23 +2376,26 @@ function getIconTypeFromId(buttonId) {
   return iconMap[buttonId] || buttonId;
 }
 
-// window.onloadでもAIアイコンを非表示にする
+// window.onloadでも今後実装予定のアイコンを非表示にする
 window.addEventListener("load", () => {
-  console.log("COMMON: window.load - AIアイコン非表示処理");
-  hideAIIcon();
+  console.log("COMMON: window.load - 今後実装予定のアイコン非表示処理");
+  hideComingSoonIcons();
 
-  // MutationObserverでAIアイコンの追加を監視
+  // MutationObserverで今後実装予定のアイコンの追加を監視
   const header = document.querySelector("header");
   if (header) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === "childList") {
           mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE && node.id === "btn-ai") {
+            if (
+              node.nodeType === Node.ELEMENT_NODE &&
+              (node.id === "btn-todolist" || node.id === "btn-ai")
+            ) {
               console.log(
-                "COMMON: AIアイコンが追加されました - 非表示にします"
+                "COMMON: 今後実装予定のアイコンが追加されました - 非表示にします"
               );
-              hideAIIcon();
+              hideComingSoonIcons();
             }
           });
         }
@@ -2247,6 +2407,6 @@ window.addEventListener("load", () => {
       subtree: true,
     });
 
-    console.log("COMMON: AIアイコン監視を開始しました");
+    console.log("COMMON: 今後実装予定のアイコン監視を開始しました");
   }
 });

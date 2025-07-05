@@ -85,7 +85,7 @@ body::-webkit-scrollbar,
 #btn-clipboard:hover:not(.active),
 #btn-prompt:hover:not(.active),
 #btn-iframe:hover:not(.active),
-#btn-ai:hover:not(.active),
+#btn-todolist:hover:not(.active),
 #btn-status:hover:not(.active),
 #btn-setting:hover:not(.active) {
   width: 100px; /* 120pxから100pxに縮小 */
@@ -100,7 +100,7 @@ body::-webkit-scrollbar,
 #btn-clipboard:hover:not(.active) i,
 #btn-prompt:hover:not(.active) i,
 #btn-iframe:hover:not(.active) i,
-#btn-ai:hover:not(.active) i,
+#btn-todolist:hover:not(.active) i,
 #btn-status:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
   display: none;
@@ -111,7 +111,7 @@ body::-webkit-scrollbar,
 #btn-clipboard:hover:not(.active) .nav-text,
 #btn-prompt:hover:not(.active) .nav-text,
 #btn-iframe:hover:not(.active) .nav-text,
-#btn-ai:hover:not(.active) .nav-text,
+#btn-todolist:hover:not(.active) .nav-text,
 #btn-status:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
   opacity: 1;
@@ -273,7 +273,7 @@ body::-webkit-scrollbar,
   box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
 }
 
-#btn-ai.active {
+#btn-todolist.active {
   background: linear-gradient(135deg, #af008f, #6b00d9);
   box-shadow: 0 4px 12px rgba(175, 0, 143, 0.3);
 }
@@ -804,6 +804,14 @@ main {
 
 /* AIアイコン（今後実装予定）を常に非表示 */
 #btn-ai {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* TodoListアイコン（今後実装予定）を常に非表示 */
+#btn-todolist {
   display: none !important;
   visibility: hidden !important;
   position: absolute !important;

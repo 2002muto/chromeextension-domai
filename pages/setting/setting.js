@@ -281,11 +281,21 @@ function loadCustomSettings() {
         console.log("初期表示時のヘッダー更新を再実行");
         forceApplyIconVisibility(selectedIcons);
       }, 200);
+
+      // さらに遅延して最終確認
+      setTimeout(() => {
+        console.log("初期表示時のヘッダー更新を最終実行");
+        forceApplyIconVisibility(selectedIcons);
+      }, 500);
     }
 
     // 少し遅延してから比較を実行
     setTimeout(() => {
       compareIconSelectionWithHeader();
+
+      // 最終的なヘッダー更新を実行
+      console.log("最終的なヘッダー更新を実行");
+      forceApplyIconVisibility(selectedIcons);
     }, 800);
   });
 }
@@ -518,7 +528,7 @@ function updateIconSelection(selectedIcons) {
 
 // 選択されているアイコンを取得
 function getSelectedIcons() {
-  // 今後実装予定のアイコン（AI）を除外し、選択されたアイコンのみを取得
+  // 今後実装予定のアイコン（AI、TodoList）を除外し、選択されたアイコンのみを取得
   const selectedOptions = document.querySelectorAll(
     ".icon-option.selected:not(.coming-soon)"
   );
@@ -526,8 +536,10 @@ function getSelectedIcons() {
     (option) => option.dataset.icon
   );
 
-  // AIアイコン（今後実装予定）を除外
-  const filteredIcons = selectedIcons.filter((icon) => icon !== "ai");
+  // AIとTodoListアイコン（今後実装予定）を除外
+  const filteredIcons = selectedIcons.filter(
+    (icon) => icon !== "ai" && icon !== "todolist"
+  );
 
   // MEMOとSETTINGアイコンが含まれていない場合は追加
   if (!filteredIcons.includes("setting")) {
@@ -636,14 +648,11 @@ function forceApplyIconVisibility(selectedIcons) {
     return;
   }
 
-  // 設定ページ以外からの呼び出しは無視
+  // 設定ページ以外からの呼び出しでも処理を続行（全ページで設定を適用）
   const isSettingPage = window.location.pathname.includes("/setting/");
-  if (!isSettingPage) {
-    console.log(
-      "FORCE: 設定ページ以外からの呼び出しのため、アイコン表示制御をスキップ"
-    );
-    return;
-  }
+  console.log(
+    `FORCE: ${isSettingPage ? "設定ページ" : "その他のページ"}からの呼び出し`
+  );
 
   console.log("=== 強制的なアイコン表示適用開始 ===");
   console.log("適用するアイコン:", selectedIcons);
@@ -674,6 +683,17 @@ function forceApplyIconVisibility(selectedIcons) {
 
     // AIアイコン（今後実装予定）は常に非表示
     if (iconType === "ai") {
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.opacity = "0";
+      button.style.position = "absolute";
+      button.style.left = "-9999px"; // 画面外に移動
+      console.log(
+        `FORCE: ${buttonId} (${iconType}): 強制非表示 (今後実装予定)`
+      );
+    }
+    // TodoListアイコン（今後実装予定）は常に非表示
+    else if (iconType === "todolist") {
       button.style.display = "none";
       button.style.visibility = "hidden";
       button.style.opacity = "0";
@@ -745,6 +765,7 @@ function getIconTypeFromId(buttonId) {
     "btn-prompt": "prompt",
     "btn-iframe": "iframe",
     "btn-ai": "ai",
+    "btn-todolist": "todolist",
     "btn-status": "status",
     "btn-setting": "setting",
   };
