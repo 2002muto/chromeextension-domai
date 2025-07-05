@@ -11,7 +11,12 @@ let lastTab = null; // 直近入力フォーカスのページタブ
 let iframeRulesEnabled = true;
 // Next unique ID for dynamically-added iframe rules. Initialized in
 // initializeDynamicRules() based on existing rules to avoid conflicts.
-let nextDynamicRuleId = 1000;
+// 最初の動的ルールID
+const INITIAL_DYNAMIC_RULE_ID = 1000;
+// DNR APIが許容する最大ID値
+const MAX_DYNAMIC_RULE_ID = 1000000;
+// 次に利用する動的ルールID
+let nextDynamicRuleId = INITIAL_DYNAMIC_RULE_ID;
 // Track domains that already have a dynamic rule so we don't add duplicates.
 const dynamicRuleIds = new Map();
 
@@ -34,7 +39,13 @@ async function initializeDynamicRules() {
         maxId = rule.id + 1;
       }
     }
-    nextDynamicRuleId = maxId;
+    nextDynamicRuleId = Math.max(maxId, INITIAL_DYNAMIC_RULE_ID);
+    if (nextDynamicRuleId > MAX_DYNAMIC_RULE_ID) {
+      console.warn(
+        `[BG] nextDynamicRuleId exceeded limit ${MAX_DYNAMIC_RULE_ID}. Resetting.`
+      );
+      nextDynamicRuleId = INITIAL_DYNAMIC_RULE_ID;
+    }
     console.log(
       `[BG] Loaded ${rules.length} dynamic rules. Next ID: ${nextDynamicRuleId}`
     );
@@ -81,6 +92,12 @@ async function addDynamicIframeRule(domain) {
     }
 
     // Ensure ruleId is an integer within allowed range
+    if (nextDynamicRuleId > MAX_DYNAMIC_RULE_ID) {
+      console.warn(
+        `[BG] nextDynamicRuleId exceeded limit ${MAX_DYNAMIC_RULE_ID}. Resetting.`
+      );
+      nextDynamicRuleId = INITIAL_DYNAMIC_RULE_ID;
+    }
     const ruleId = Math.trunc(nextDynamicRuleId++); // 1e3以上の連番IDを使用
     const rule = {
       id: ruleId,

@@ -295,10 +295,22 @@ async function performSearch() {
 
     // ドメインを抽出して動的ルールを追加
     const domain = extractDomain(url);
+    let ruleId = null;
     if (domain) {
       console.log(`[IFRAME] Extracted domain: ${domain}`);
-      const ruleId = await addDynamicIframeRule(domain);
+      ruleId = await addDynamicIframeRule(domain);
       console.log(`[IFRAME] addDynamicIframeRule returned ID: ${ruleId}`);
+    }
+
+    // 検索エンジンのURL (@検索) を事前に生成
+    const searchFallbackUrl =
+      `https://www.google.com/search?q=${encodeURIComponent("@" + query)}`;
+
+    if (ruleId === null) {
+      console.warn("[IFRAME] Failed to add dynamic rule - using fallback search");
+      iframeDisplayContainer.style.display = "block";
+      iframeDisplay.src = searchFallbackUrl;
+      return;
     }
 
     // Empty Stateと入力行を非表示、iframeを表示
@@ -311,16 +323,6 @@ async function performSearch() {
     iframeDisplayContainer.style.display = "block";
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
-
-    // エラーハンドリングを設定してからsrcを設定
-    iframeDisplay.onload = () => {
-      console.log("iframe読み込み完了");
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-    };
-
-    const searchFallbackUrl =
-      `https://www.google.com/search?q=${encodeURIComponent("@" + query)}`;
 
     iframeDisplay.onerror = () => {
       console.log("iframe読み込みエラー - fallback to search");
