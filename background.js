@@ -9,10 +9,39 @@ let lastTab = null; // 直近入力フォーカスのページタブ
 // DeclarativeNetRequest制御
 // ───────────────────────────────────────
 let iframeRulesEnabled = true;
-// Next unique ID for dynamically-added iframe rules
+// Next unique ID for dynamically-added iframe rules. Initialized in
+// initializeDynamicRules() based on existing rules to avoid conflicts.
 let nextDynamicRuleId = 1000;
-// Track domains that already have a dynamic rule
+// Track domains that already have a dynamic rule so we don't add duplicates.
 const dynamicRuleIds = new Map();
+
+// ───────────────────────────────────────
+// Existing dynamic rule initialization
+// ───────────────────────────────────────
+async function initializeDynamicRules() {
+  console.log("[BG] Initializing dynamic rules");
+  try {
+    const rules = await chrome.declarativeNetRequest.getDynamicRules();
+    let maxId = nextDynamicRuleId;
+    for (const rule of rules) {
+      // Extract the domain from the rule's urlFilter (format: ||domain/*)
+      const filter = rule.condition?.urlFilter || "";
+      const match = filter.startsWith("||") ? filter.slice(2).split("/")[0] : null;
+      if (match) {
+        dynamicRuleIds.set(match, rule.id);
+      }
+      if (rule.id >= maxId) {
+        maxId = rule.id + 1;
+      }
+    }
+    nextDynamicRuleId = maxId;
+    console.log(
+      `[BG] Loaded ${rules.length} dynamic rules. Next ID: ${nextDynamicRuleId}`
+    );
+  } catch (error) {
+    console.error("[BG] Failed to initialize dynamic rules:", error);
+  }
+}
 
 // ルールの有効/無効を切り替え
 async function toggleIframeRules(enable) {
@@ -51,7 +80,8 @@ async function addDynamicIframeRule(domain) {
       return existingId;
     }
 
-    const ruleId = nextDynamicRuleId++; // 1e3以上の連番IDを使用
+    // Ensure ruleId is an integer within allowed range
+    const ruleId = Math.trunc(nextDynamicRuleId++); // 1e3以上の連番IDを使用
     const rule = {
       id: ruleId,
       priority: 1,
@@ -184,9 +214,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
 chrome.runtime.onStartup.addListener(() => {
   console.log("[BG] Extension startup - enabling iframe rules");
   toggleIframeRules(true);
+  initializeDynamicRules();
 });
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("[BG] Extension installed - enabling iframe rules");
   toggleIframeRules(true);
+  initializeDynamicRules();
 });
+
+// サービスワーカー起動時に既存ルールを確認
+initializeDynamicRules();

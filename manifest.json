@@ -8,7 +8,8 @@
     "scripting",
     "activeTab",
     "tabs",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": ["https://chat.openai.com/*", "<all_urls>"],
   "declarative_net_request": {
