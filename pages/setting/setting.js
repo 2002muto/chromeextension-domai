@@ -591,33 +591,26 @@ function applyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // AIアイコン（今後実装予定）は常に非表示
-    if (iconType === "ai") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    let shouldHide = false;
+
+    if (iconType === "ai" || iconType === "todolist") {
+      shouldHide = true;
       console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
-    }
-    // MEMOとSETTINGアイコンは常に表示
-    else if (iconType === "setting" || iconType === "memo") {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.position = "relative";
+    } else if (iconType === "setting" || iconType === "memo") {
       console.log(
         `SETTING: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
       );
-    } else if (selectedIcons.includes(iconType)) {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.position = "relative";
-      console.log(`SETTING: ${buttonId} (${iconType}): 表示 (選択済み)`);
-    } else {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    } else if (!selectedIcons.includes(iconType)) {
+      shouldHide = true;
       console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (未選択)`);
+    } else {
+      console.log(`SETTING: ${buttonId} (${iconType}): 表示 (選択済み)`);
+    }
+
+    if (shouldHide) {
+      button.classList.add("hidden-icon");
+    } else {
+      button.classList.remove("hidden-icon");
     }
   });
 
@@ -681,52 +674,28 @@ function forceApplyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // AIアイコン（今後実装予定）は常に非表示
-    if (iconType === "ai") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.opacity = "0";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    let shouldHide = false;
+
+    if (iconType === "ai" || iconType === "todolist") {
+      shouldHide = true;
       console.log(
         `FORCE: ${buttonId} (${iconType}): 強制非表示 (今後実装予定)`
       );
-    }
-    // TodoListアイコン（今後実装予定）は常に非表示
-    else if (iconType === "todolist") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.opacity = "0";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
-      console.log(
-        `FORCE: ${buttonId} (${iconType}): 強制非表示 (今後実装予定)`
-      );
-    }
-    // MEMOとSETTINGアイコンは常に表示
-    else if (iconType === "setting" || iconType === "memo") {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.opacity = "1";
-      button.style.position = "relative";
-      button.style.left = "auto";
+    } else if (iconType === "setting" || iconType === "memo") {
       console.log(
         `FORCE: ${buttonId} (${iconType}): 強制表示 (MEMO/SETTINGアイコン)`
       );
-    } else if (selectedIcons.includes(iconType)) {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.opacity = "1";
-      button.style.position = "relative";
-      button.style.left = "auto";
-      console.log(`FORCE: ${buttonId} (${iconType}): 強制表示 (選択済み)`);
-    } else {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.opacity = "0";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    } else if (!selectedIcons.includes(iconType)) {
+      shouldHide = true;
       console.log(`FORCE: ${buttonId} (${iconType}): 強制非表示 (未選択)`);
+    } else {
+      console.log(`FORCE: ${buttonId} (${iconType}): 強制表示 (選択済み)`);
+    }
+
+    if (shouldHide) {
+      button.classList.add("hidden-icon");
+    } else {
+      button.classList.remove("hidden-icon");
     }
   });
 

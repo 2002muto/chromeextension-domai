@@ -818,6 +818,14 @@ main {
   left: -9999px !important;
 }
 
+/* 共通のアイコン非表示クラス */
+.hidden-icon {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
 /* ドラッグ&ドロップ時の挿入位置間隔拡大 */
 .nav-btn.drop-indicator.drop-above {
   margin-top: 12px; /* 上側の間隔を拡大 */
