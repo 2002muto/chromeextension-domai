@@ -58,10 +58,10 @@
   align-items: center; /* 垂直方向中央揃え（テキストエリアが長くなってもボタンは中央） */
   gap: 12px;
   /*
-    左側の挿入ボタン部分のみ白色にするため
-    先頭 ~60px を白、その後を既存グラデーションで塗り分け
+    左側の挿入ボタン部分のみアクセントカラーにするため
+    先頭 ~60px を #00E344、その後を既存グラデーションで塗り分け
   */
-  background: linear-gradient(90deg, #ffffff 0 60px, #6b6b6b 60px, #3a3f4a);
+  background: linear-gradient(90deg, #00E344 0 60px, #6b6b6b 60px, #3a3f4a);
   padding: 10px;
   border-radius: 6px;
   min-height: 64px;
@@ -125,6 +125,12 @@
 
 .clipboard-insert i {
   font-size: 1.3rem; /* アーカイブアイコンと同じサイズ */
+  color: #ffffff; /* 挿入アイコンを常に白色で表示 */
+}
+
+/* ホバー時もアイコンの白色を維持 */
+.clipboard-insert:hover i {
+  color: #ffffff;
 }
 
 .clipboard-insert:hover {
@@ -792,8 +798,11 @@
   .clip-item {
     gap: 8px; /* 間隔を少し狭く */
     padding: 8px;
-    /* モバイルでは左側幅が狭くなるため背景幅も調整 */
-    background: linear-gradient(90deg, #ffffff 0 48px, #6b6b6b 48px, #3a3f4a);
+    /*
+      モバイルでは左側幅が狭くなるため背景幅も調整
+      左端 ~48px を #00E344 に設定
+    */
+    background: linear-gradient(90deg, #00E344 0 48px, #6b6b6b 48px, #3a3f4a);
   }
 
   .clipboard-textarea {
@@ -850,11 +859,17 @@
     transform: translateY(0);
   }
 
-  /* モバイル用フッターボタンテキスト */
+/* モバイル用フッターボタンテキスト */
   .memo-footer .nav-btn .nav-text {
     font-size: 0.7rem;
     padding: 3px 6px;
   }
+
+}
+
+/* アーカイブモード戻るボタンの矢印アイコンを常に白色に */
+.memo-footer .back-btn i {
+  color: #ffffff;
 }
 
 /* ─── アニメーション ─── */

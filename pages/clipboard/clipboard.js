@@ -307,6 +307,7 @@ async function renderClipboardView() {
     const insertBtn = document.createElement("button");
     insertBtn.className = "clipboard-insert";
     insertBtn.innerHTML = '<i class="bi bi-arrow-left-circle"></i>';
+    console.log("init: insert button created with white arrow icon");
     insertBtn.title = "挿入";
     insertBtn.addEventListener("click", () => {
       // 最新の textarea の値を取得して送信
@@ -840,6 +841,7 @@ function renderArchiveFooter() {
       <span class="nav-text">一括削除</span>
     </button>
   `;
+  console.log("renderArchiveFooter: back button icon set to white via CSS");
   footer.style.display = "flex";
 
   // Back → go back to clipboard view
@@ -1221,7 +1223,7 @@ function updateExportButtonState() {
 document.addEventListener("DOMContentLoaded", () => {
   console.log("CLIPBOARDページ: DOMContentLoaded");
   // 新しいスタイルが適用されたか確認
-  console.log("style patch: clip-item left area uses white background");
+  console.log("style patch: clip-item left area uses #00E344 background");
 
   // ヘッダーのクリップボードアイコンのクリックイベントを初期設定
   const clipboardBtn = document.getElementById("btn-clipboard");
