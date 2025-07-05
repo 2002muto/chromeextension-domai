@@ -513,35 +513,35 @@ main {
 
 /* ━━━━━━━━━━ ヘッダーナビゲーションのドラッグ＆ドロップスタイル ━━━━━━━━━━ */
 
-/* 長押し中のボタン */
+/* 長押し中のボタン - 無効化 */
 .nav-btn.holding {
-  transform: scale(0.95) !important;
-  opacity: 0.8 !important;
-  cursor: grabbing !important;
-  transition: all 0.2s ease !important;
-  z-index: 1000 !important;
+  /* transform: scale(0.95) !important; */
+  /* opacity: 0.8 !important; */
+  /* cursor: grabbing !important; */
+  /* transition: all 0.2s ease !important; */
+  /* z-index: 1000 !important; */
 }
 
-/* ドラッグ中のボタン */
+/* ドラッグ中のボタン - 無効化 */
 .nav-btn.dragging {
-  opacity: 0.5 !important;
-  transform: scale(0.95) !important;
-  z-index: 1000 !important;
-  cursor: grabbing !important;
-  transition: all 0.2s ease !important;
+  /* opacity: 0.5 !important; */
+  /* transform: scale(0.95) !important; */
+  /* z-index: 1000 !important; */
+  /* cursor: grabbing !important; */
+  /* transition: all 0.2s ease !important; */
 }
 
-/* ドロップ可能エリア */
+/* ドロップ可能エリア - 無効化 */
 .nav-btn.drag-over {
-  background-color: rgba(59, 130, 246, 0.3) !important;
-  border: 2px dashed #3b82f6 !important;
-  transform: scale(1.05) !important;
-  transition: all 0.2s ease !important;
+  /* background-color: rgba(59, 130, 246, 0.3) !important; */
+  /* border: 2px dashed #3b82f6 !important; */
+  /* transform: scale(1.05) !important; */
+  /* transition: all 0.2s ease !important; */
 }
 
-/* ドラッグ可能であることを示すカーソル */
+/* ドラッグ可能であることを示すカーソル - 無効化 */
 .nav-btn {
-  cursor: grab !important;
+  cursor: pointer !important; /* grab から pointer に変更 */
   user-select: none !important; /* テキスト選択を無効化 */
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
@@ -549,7 +549,7 @@ main {
 }
 
 .nav-btn:active {
-  cursor: grabbing !important;
+  cursor: pointer !important; /* grabbing から pointer に変更 */
 }
 
 /* 長押し中のホバー効果を無効化 */
@@ -605,13 +605,13 @@ main {
   }
 }
 
-/* リンク要素のドラッグを有効化 */
+/* リンク要素のドラッグを無効化 */
 .nav-btn {
-  -webkit-user-drag: element !important;
-  -khtml-user-drag: element !important;
-  -moz-user-drag: element !important;
-  -o-user-drag: element !important;
-  user-drag: element !important;
+  -webkit-user-drag: none !important;
+  -khtml-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -o-user-drag: none !important;
+  user-drag: none !important;
 }
 
 /* レスポンシブ対応 */
@@ -625,27 +625,27 @@ main {
   }
 }
 
-/* ヘッダーナビゲーション用のドロップインジケーター */
+/* ヘッダーナビゲーション用のドロップインジケーター - 無効化 */
 .nav-btn.drop-indicator {
-  position: relative;
-  margin-left: 8px; /* 左側の間隔を拡大 */
-  margin-right: 8px; /* 右側の間隔を拡大 */
-  transition: margin 0.3s ease;
+  /* position: relative; */
+  /* margin-left: 8px; /* 左側の間隔を拡大 */
+  /* margin-right: 8px; /* 右側の間隔を拡大 */
+  /* transition: margin 0.3s ease; */
 }
 
 .nav-btn.drop-indicator::before {
-  content: "";
-  position: absolute;
-  left: -2px;
-  right: -2px;
-  height: 3px;
-  background: linear-gradient(90deg, #078ab9, #024881);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
-  z-index: 1001;
-  opacity: 0;
-  transform: scaleX(0);
-  transition: all 0.2s ease;
+  /* content: ""; */
+  /* position: absolute; */
+  /* left: -2px; */
+  /* right: -2px; */
+  /* height: 3px; */
+  /* background: linear-gradient(90deg, #078ab9, #024881); */
+  /* border-radius: 2px; */
+  /* box-shadow: 0 0 8px rgba(7, 138, 185, 0.6); */
+  /* z-index: 1001; */
+  /* opacity: 0; */
+  /* transform: scaleX(0); */
+  /* transition: all 0.2s ease; */
 }
 
 .nav-btn.drop-indicator.drop-above::before {
@@ -818,45 +818,67 @@ main {
   left: -9999px !important;
 }
 
-/* ドラッグ&ドロップ時の挿入位置間隔拡大 */
+/* 共通のアイコン非表示クラス */
+.hidden-icon {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  /* アイコン切り替え時のチラつきを防ぐためトランジションを無効化 */
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ヘッダー更新中は一時的に非表示にしてトランジションを無効化 */
+header.updating {
+  visibility: hidden !important;
+  opacity: 0 !important; /* 完全に非表示にしてチラつきを防止 */
+}
+
+header.updating .nav-btn {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ドラッグ&ドロップ時の挿入位置間隔拡大 - 無効化 */
 .nav-btn.drop-indicator.drop-above {
-  margin-top: 12px; /* 上側の間隔を拡大 */
+  /* margin-top: 12px; /* 上側の間隔を拡大 */
 }
 
 .nav-btn.drop-indicator.drop-below {
-  margin-bottom: 12px; /* 下側の間隔を拡大 */
+  /* margin-bottom: 12px; /* 下側の間隔を拡大 */
 }
 
-/* 挿入位置の前後のアイコンとの間隔調整 */
+/* 挿入位置の前後のアイコンとの間隔調整 - 無効化 */
 .nav-btn.drop-indicator + .nav-btn {
-  margin-left: 8px; /* 次のアイコンとの間隔を調整 */
+  /* margin-left: 8px; /* 次のアイコンとの間隔を調整 */
 }
 
 .nav-btn + .nav-btn.drop-indicator {
-  margin-left: 8px; /* 前のアイコンとの間隔を調整 */
+  /* margin-left: 8px; /* 前のアイコンとの間隔を調整 */
 }
 
-/* より大きな間隔拡大（ドラッグオーバー時） */
+/* より大きな間隔拡大（ドラッグオーバー時） - 無効化 */
 .nav-btn.drop-indicator.drag-over {
-  margin-left: 20px; /* 左側の間隔をさらに拡大 */
-  margin-right: 20px; /* 右側の間隔をさらに拡大 */
-  transition: margin 0.3s ease;
-  z-index: 1000; /* 前面に表示 */
+  /* margin-left: 20px; /* 左側の間隔をさらに拡大 */
+  /* margin-right: 20px; /* 右側の間隔をさらに拡大 */
+  /* transition: margin 0.3s ease; */
+  /* z-index: 1000; /* 前面に表示 */
 }
 
-/* ドラッグオーバー時の視覚的フィードバック */
+/* ドラッグオーバー時の視覚的フィードバック - 無効化 */
 .nav-btn.drop-indicator.drag-over::after {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  right: -8px;
-  bottom: -8px;
-  border: 3px dashed #00ff88;
-  border-radius: 50%;
-  animation: dragOverPulse 1s ease-in-out infinite;
-  pointer-events: none;
-  background: rgba(0, 255, 136, 0.1);
+  /* content: ""; */
+  /* position: absolute; */
+  /* top: -8px; */
+  /* left: -8px; */
+  /* right: -8px; */
+  /* bottom: -8px; */
+  /* border: 3px dashed #00ff88; */
+  /* border-radius: 50%; */
+  /* animation: dragOverPulse 1s ease-in-out infinite; */
+  /* pointer-events: none; */
+  /* background: rgba(0, 255, 136, 0.1); */
 }
 
 @keyframes dragOverPulse {
@@ -883,30 +905,30 @@ main {
   transition: margin 0.3s ease;
 }
 
-/* 挿入位置の明確な表示 */
+/* 挿入位置の明確な表示 - 無効化 */
 .nav-btn.drop-indicator::before {
-  content: "";
-  position: absolute;
-  left: -10px;
-  right: -10px;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, #00ff88, transparent);
-  border-radius: 2px;
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.8);
-  z-index: 1001;
-  opacity: 0;
-  transform: scaleX(0);
-  transition: all 0.3s ease;
+  /* content: ""; */
+  /* position: absolute; */
+  /* left: -10px; */
+  /* right: -10px; */
+  /* height: 4px; */
+  /* background: linear-gradient(90deg, transparent, #00ff88, transparent); */
+  /* border-radius: 2px; */
+  /* box-shadow: 0 0 12px rgba(0, 255, 136, 0.8); */
+  /* z-index: 1001; */
+  /* opacity: 0; */
+  /* transform: scaleX(0); */
+  /* transition: all 0.3s ease; */
 }
 
 .nav-btn.drop-indicator.drop-above::before {
-  top: -8px;
-  opacity: 1;
-  transform: scaleX(1);
+  /* top: -8px; */
+  /* opacity: 1; */
+  /* transform: scaleX(1); */
 }
 
 .nav-btn.drop-indicator.drop-below::before {
-  bottom: -8px;
-  opacity: 1;
-  transform: scaleX(1);
+  /* bottom: -8px; */
+  /* opacity: 1; */
+  /* transform: scaleX(1); */
 }

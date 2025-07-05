@@ -39,15 +39,6 @@
         <i class="bi bi-layout-split"></i>
         <span class="nav-text">IFRAME</span>
       </a>
-      <a
-        href="../ai/ai.html"
-        class="nav-btn"
-        id="btn-todolist"
-        data-click-tooltip="Coming Soon!"
-      >
-        <i class="bi bi-clipboard2-check"></i>
-        <span class="nav-text">TODOLIST</span>
-      </a>
       <a href="../status/status.html" class="nav-btn" id="btn-status">
         <i class="bi bi-wifi"></i>
         <span class="nav-text">STATUS</span>
@@ -246,10 +237,9 @@
 
         <!-- カスタム設定パネル -->
         <div class="detail-panel" id="custom-panel">
-          <h3 class="custom-title">アイコン選択</h3>
+          <h3 class="custom-title">アイコン選択・並び替え</h3>
           <p class="custom-description">
-            光っているアイコンのみがヘッダーに表示されます。アイコンをクリックして選択/解除してください。<br />
-            設定アイコンは常に表示されます。変更を反映するには「設定を保存」ボタンを押してください。
+            表示するアイコンを選択してください。選択されたアイコンのみがヘッダーに表示されます。
           </p>
 
           <div class="custom-settings">
@@ -261,52 +251,28 @@
               </h4>
               <div class="setting-item">
                 <div class="setting-control">
-                  <div class="icon-selector">
-                    <div
-                      class="icon-option"
-                      data-icon="memo"
-                      data-id="btn-memo-list"
-                    >
+                  <div class="icon-selector" id="icon-selector-main">
+                    <div class="icon-option" data-icon="memo">
                       <i class="bi bi-clipboard2-minus"></i>
                       <span class="icon-label">MEMO</span>
                     </div>
-                    <div
-                      class="icon-option"
-                      data-icon="clipboard"
-                      data-id="btn-clipboard"
-                    >
+                    <div class="icon-option" data-icon="clipboard">
                       <i class="bi bi-journal-text"></i>
                       <span class="icon-label">CLIPBOARD</span>
                     </div>
-                    <div
-                      class="icon-option"
-                      data-icon="prompt"
-                      data-id="btn-prompt"
-                    >
+                    <div class="icon-option" data-icon="prompt">
                       <i class="bi bi-terminal"></i>
                       <span class="icon-label">PROMPT</span>
                     </div>
-                    <div
-                      class="icon-option"
-                      data-icon="iframe"
-                      data-id="btn-iframe"
-                    >
+                    <div class="icon-option" data-icon="iframe">
                       <i class="bi bi-layout-split"></i>
                       <span class="icon-label">IFRAME</span>
                     </div>
-                    <div
-                      class="icon-option"
-                      data-icon="status"
-                      data-id="btn-status"
-                    >
+                    <div class="icon-option" data-icon="status">
                       <i class="bi bi-wifi"></i>
                       <span class="icon-label">STATUS</span>
                     </div>
-                    <div
-                      class="icon-option"
-                      data-icon="setting"
-                      data-id="btn-setting"
-                    >
+                    <div class="icon-option" data-icon="setting">
                       <i class="bi bi-gear-fill"></i>
                       <span class="icon-label">SETTING</span>
                     </div>
