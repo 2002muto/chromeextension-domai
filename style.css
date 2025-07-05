@@ -49,7 +49,7 @@ body::-webkit-scrollbar,
   text-decoration: none;
   font-size: 14px; /* 18pxから14pxに縮小 */
   flex: none; /* フレックス解除 */
-  overflow: hidden;
+  overflow: visible; /* ❌ボタンが表示されるように変更 */
   transform-origin: center center; /* 中心を基点に */
 }
 
@@ -85,7 +85,7 @@ body::-webkit-scrollbar,
 #btn-clipboard:hover:not(.active),
 #btn-prompt:hover:not(.active),
 #btn-iframe:hover:not(.active),
-#btn-ai:hover:not(.active),
+#btn-todolist:hover:not(.active),
 #btn-status:hover:not(.active),
 #btn-setting:hover:not(.active) {
   width: 100px; /* 120pxから100pxに縮小 */
@@ -100,7 +100,7 @@ body::-webkit-scrollbar,
 #btn-clipboard:hover:not(.active) i,
 #btn-prompt:hover:not(.active) i,
 #btn-iframe:hover:not(.active) i,
-#btn-ai:hover:not(.active) i,
+#btn-todolist:hover:not(.active) i,
 #btn-status:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
   display: none;
@@ -111,7 +111,7 @@ body::-webkit-scrollbar,
 #btn-clipboard:hover:not(.active) .nav-text,
 #btn-prompt:hover:not(.active) .nav-text,
 #btn-iframe:hover:not(.active) .nav-text,
-#btn-ai:hover:not(.active) .nav-text,
+#btn-todolist:hover:not(.active) .nav-text,
 #btn-status:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
   opacity: 1;
@@ -188,10 +188,42 @@ body::-webkit-scrollbar,
   transform: translateX(-50%);
 }
 
-/* ホバー時のツールチップは不要 */
+/* ホバー時の❌ボタン表示（一時的に無効化） */
+/*
 .nav-btn::after {
-  display: none;
+  content: "✕";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  background: #ff4757;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s ease;
+  z-index: 10;
+  cursor: pointer;
+  border: 2px solid #fff;
 }
+
+.nav-btn:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* MEMOとSETTINGアイコンは❌ボタンを表示しない */
+#btn-setting::after,
+#btn-memo-list::after {
+  display: none !important;
+}
+*/
 
 /* クリック時のメッセージ表示（AI専用） */
 .nav-btn::before {
@@ -241,7 +273,7 @@ body::-webkit-scrollbar,
   box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
 }
 
-#btn-ai.active {
+#btn-todolist.active {
   background: linear-gradient(135deg, #af008f, #6b00d9);
   box-shadow: 0 4px 12px rgba(175, 0, 143, 0.3);
 }
@@ -591,4 +623,290 @@ main {
     font-size: 0.8rem;
     padding: 10px 16px;
   }
+}
+
+/* ヘッダーナビゲーション用のドロップインジケーター */
+.nav-btn.drop-indicator {
+  position: relative;
+  margin-left: 8px; /* 左側の間隔を拡大 */
+  margin-right: 8px; /* 右側の間隔を拡大 */
+  transition: margin 0.3s ease;
+}
+
+.nav-btn.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  height: 3px;
+  background: linear-gradient(90deg, #078ab9, #024881);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.nav-btn.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.nav-btn.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.nav-btn.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: navDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* 各ページ固有のドロップインジケーター色 */
+#btn-clipboard.drop-indicator::before {
+  background: linear-gradient(90deg, #04e949, #00b0cf);
+  box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
+}
+
+#btn-clipboard.drop-indicator.active::before {
+  animation: navClipboardDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-prompt.drop-indicator::before {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+}
+
+#btn-prompt.drop-indicator.active::before {
+  animation: navPromptDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-iframe.drop-indicator::before {
+  background: linear-gradient(90deg, #e95404, #a600cf);
+  box-shadow: 0 0 8px rgba(233, 84, 4, 0.6);
+}
+
+#btn-iframe.drop-indicator.active::before {
+  animation: navIframeDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-ai.drop-indicator::before {
+  background: linear-gradient(90deg, #af008f, #6b00d9);
+  box-shadow: 0 0 8px rgba(175, 0, 143, 0.6);
+}
+
+#btn-ai.drop-indicator.active::before {
+  animation: navAiDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-status.drop-indicator::before {
+  background: linear-gradient(90deg, #10b981, #059669);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+#btn-status.drop-indicator.active::before {
+  animation: navStatusDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+#btn-setting.drop-indicator::before {
+  background: linear-gradient(90deg, #fff04b, #99902d);
+  box-shadow: 0 0 8px rgba(255, 240, 75, 0.6);
+}
+
+#btn-setting.drop-indicator.active::before {
+  animation: navSettingDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* ヘッダーナビゲーション用のドロップインジケーターアニメーション */
+@keyframes navDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(7, 138, 185, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  }
+}
+
+@keyframes navClipboardDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(4, 233, 73, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
+  }
+}
+
+@keyframes navPromptDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(102, 126, 234, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  }
+}
+
+@keyframes navIframeDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(233, 84, 4, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(233, 84, 4, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(233, 84, 4, 0.6);
+  }
+}
+
+@keyframes navAiDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(175, 0, 143, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(175, 0, 143, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(175, 0, 143, 0.6);
+  }
+}
+
+@keyframes navStatusDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  }
+}
+
+@keyframes navSettingDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(255, 240, 75, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 240, 75, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(255, 240, 75, 0.6);
+  }
+}
+
+/* AIアイコン（今後実装予定）を常に非表示 */
+#btn-ai {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* TodoListアイコン（今後実装予定）を常に非表示 */
+#btn-todolist {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* ドラッグ&ドロップ時の挿入位置間隔拡大 */
+.nav-btn.drop-indicator.drop-above {
+  margin-top: 12px; /* 上側の間隔を拡大 */
+}
+
+.nav-btn.drop-indicator.drop-below {
+  margin-bottom: 12px; /* 下側の間隔を拡大 */
+}
+
+/* 挿入位置の前後のアイコンとの間隔調整 */
+.nav-btn.drop-indicator + .nav-btn {
+  margin-left: 8px; /* 次のアイコンとの間隔を調整 */
+}
+
+.nav-btn + .nav-btn.drop-indicator {
+  margin-left: 8px; /* 前のアイコンとの間隔を調整 */
+}
+
+/* より大きな間隔拡大（ドラッグオーバー時） */
+.nav-btn.drop-indicator.drag-over {
+  margin-left: 20px; /* 左側の間隔をさらに拡大 */
+  margin-right: 20px; /* 右側の間隔をさらに拡大 */
+  transition: margin 0.3s ease;
+  z-index: 1000; /* 前面に表示 */
+}
+
+/* ドラッグオーバー時の視覚的フィードバック */
+.nav-btn.drop-indicator.drag-over::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border: 3px dashed #00ff88;
+  border-radius: 50%;
+  animation: dragOverPulse 1s ease-in-out infinite;
+  pointer-events: none;
+  background: rgba(0, 255, 136, 0.1);
+}
+
+@keyframes dragOverPulse {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+/* ドラッグ&ドロップ完了時の間隔リセット */
+.nav-btn:not(.drop-indicator) {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  transition: margin 0.3s ease;
+}
+
+/* 挿入位置の明確な表示 */
+.nav-btn.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.8);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.3s ease;
+}
+
+.nav-btn.drop-indicator.drop-above::before {
+  top: -8px;
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.nav-btn.drop-indicator.drop-below::before {
+  bottom: -8px;
+  opacity: 1;
+  transform: scaleX(1);
 }

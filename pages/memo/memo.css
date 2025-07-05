@@ -318,8 +318,57 @@ body {
 }
 
 .memo-item.drag-over {
-  border: 2px dashed rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.1);
+  outline: 2px dashed #ffffff;
+  outline-offset: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+/* ドロップ位置インジケーター */
+.memo-item.drop-indicator {
+  position: relative;
+}
+
+.memo-item.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, #078ab9, #024881);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.memo-item.drop-indicator.drop-above::before {
+  top: -2px;
+}
+
+.memo-item.drop-indicator.drop-below::before {
+  bottom: -2px;
+}
+
+.memo-item.drop-indicator.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: memoDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* メモ用のドロップインジケーターアニメーション */
+@keyframes memoDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(7, 138, 185, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(7, 138, 185, 0.6);
+  }
 }
 
 .memo-item.drag-invalid {
