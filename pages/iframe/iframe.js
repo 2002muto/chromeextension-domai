@@ -319,20 +319,25 @@ async function performSearch() {
       submitBtn.innerHTML = '<i class="bi bi-search"></i>';
     };
 
+    const searchFallbackUrl =
+      `https://www.google.com/search?q=${encodeURIComponent("@" + query)}`;
+
     iframeDisplay.onerror = () => {
-      console.log("iframe読み込みエラー");
+      console.log("iframe読み込みエラー - fallback to search");
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-      showHostError();
+      // URLの読み込みに失敗した場合は@検索に切り替える
+      iframeDisplay.src = searchFallbackUrl;
     };
 
     // タイムアウト処理を追加
-    const timeoutId = setTimeout(() => {
-      console.log("iframe読み込みタイムアウト");
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-      showHostError();
-    }, 10000); // 10秒でタイムアウト
+      const timeoutId = setTimeout(() => {
+        console.log("iframe読み込みタイムアウト - fallback to search");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-search"></i>';
+        // タイムアウト時も@検索に切り替える
+        iframeDisplay.src = searchFallbackUrl;
+      }, 10000); // 10秒でタイムアウト
 
     iframeDisplay.onload = () => {
       clearTimeout(timeoutId);
