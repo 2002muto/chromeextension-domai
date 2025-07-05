@@ -1066,8 +1066,6 @@ function isEmptyClip(clip) {
 // ───────────────────────────────────────
 async function exportAllClips() {
   try {
-    console.log("CLIPBOARDエクスポート機能を開始します");
-
     // アクティブなクリップ（アーカイブされていないクリップ）のみをフィルタリング
     const activeClips = clips
       ? clips.filter((clip, index) => {
@@ -1079,7 +1077,6 @@ async function exportAllClips() {
 
     // アクティブなクリップが0件の場合は処理を停止
     if (activeClips.length === 0) {
-      console.log("アクティブなクリップが0件のためエクスポートを中止します");
       return;
     }
 
@@ -1092,13 +1089,6 @@ async function exportAllClips() {
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
     const fileName = `${year}${month}${day}_${hours}${minutes}${seconds}.json`;
-    console.log(
-      "エクスポート用タイムスタンプ:",
-      `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-    );
-
-    console.log("ファイル名:", fileName);
-    console.log("アクティブなクリップ数:", activeClips.length);
 
     // エクスポート用のデータ構造を作成（アクティブなクリップのみ）
     const exportData = {
@@ -1122,8 +1112,6 @@ async function exportAllClips() {
     exportData.securityHash = hashResult.securityHash; // 実際のハッシュ値（認証用）
     exportData.backupnumber = hashResult.backupnumber; // 前半32文字（認証用）
 
-    console.log("エクスポートデータ:", exportData);
-
     // JSONファイルとしてダウンロード
     const jsonString = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
@@ -1136,8 +1124,6 @@ async function exportAllClips() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    console.log("エクスポート完了:", fileName);
 
     // 成功メッセージを表示
     showExportSuccessMessage(fileName);
@@ -1168,37 +1154,20 @@ async function generateSecurityHash(data) {
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    // 完全なSHA-256ハッシュをコンソールログに表示（確認用）
-    console.log("=== ハッシュ検証用ログ ===");
-    console.log("完全なSHA-256ハッシュ（64文字）:", sha256Hash);
-    console.log("ハッシュ長:", sha256Hash.length);
-
     // SHA-256ハッシュを前半と後半に分割（各32文字）
     const firstHalf = sha256Hash.substring(0, 32);
     const secondHalf = sha256Hash.substring(32, 64);
 
-    console.log("前半32文字（backupnumber）:", firstHalf);
-    console.log("後半32文字（securityHash前半）:", secondHalf);
-    console.log("前半長:", firstHalf.length);
-    console.log("後半長:", secondHalf.length);
-
-    // ランダムな32文字のハッシュを生成（0だとバレるので、実際にランダム生成）
+    // ランダムな32文字のハッシュを生成
     const randomBytes = new Uint8Array(16);
     crypto.getRandomValues(randomBytes);
     const randomHash = Array.from(randomBytes)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    console.log("ランダム32文字（securityHash後半）:", randomHash);
-    console.log("ランダム長:", randomHash.length);
-
     // backupnumber: 32桁（SHA-256の前半32桁のみ）
     // securityHash: 64桁（ランダム32桁 + SHA-256の後半32桁）
     const combinedHash = randomHash + secondHalf;
-
-    console.log("最終的なsecurityHash（64文字）:", combinedHash);
-    console.log("最終的なsecurityHash長:", combinedHash.length);
-    console.log("=== ハッシュ検証用ログ終了 ===");
 
     return {
       backupnumber: firstHalf,
