@@ -75,21 +75,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.status-item.measuring {
-  background: linear-gradient(90deg, #4a5568, #2d3748);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
 /* ─── アイコン ─── */
 .status-item .status-icon {
   font-size: 1.4rem;
@@ -100,11 +85,6 @@
   justify-content: center;
   border-radius: 50%;
   transition: all 0.3s ease;
-}
-
-.status-item .status-icon.speed {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
 }
 
 .status-item .status-icon.local-ip {
@@ -249,6 +229,15 @@
 
   .status-item .status-value {
     font-size: 0.8rem;
-    min-width: 60px;
+    min-width: 70px;
+  }
+
+  .status-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .btn-refresh-all {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 }
