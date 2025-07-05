@@ -829,6 +829,16 @@ main {
   animation: none !important;
 }
 
+/* ヘッダー更新中は一時的に非表示にしてトランジションを無効化 */
+header.updating {
+  visibility: hidden !important;
+}
+
+header.updating .nav-btn {
+  transition: none !important;
+  animation: none !important;
+}
+
 /* ドラッグ&ドロップ時の挿入位置間隔拡大 */
 .nav-btn.drop-indicator.drop-above {
   margin-top: 12px; /* 上側の間隔を拡大 */

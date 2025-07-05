@@ -2149,10 +2149,9 @@ function applyIconVisibilityToHeader(selectedIcons) {
     return;
   }
 
-  // 一時的にヘッダーを非表示にしてチラつきを防止
-  const prevVisibility = header.style.visibility;
-  header.style.visibility = "hidden";
-  console.log("COMMON: ヘッダーを一時的に非表示にして更新開始");
+  // 一時的にヘッダーを非表示にしてトランジションを抑制
+  header.classList.add("updating");
+  console.log("COMMON: ヘッダー更新モード開始");
 
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log("COMMON: ヘッダー内のボタン数:", navButtons.length);
@@ -2188,9 +2187,9 @@ function applyIconVisibilityToHeader(selectedIcons) {
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
 
-  // ヘッダーの表示を元に戻す
-  header.style.visibility = prevVisibility;
-  console.log("COMMON: ヘッダーの表示を復元");
+  // ヘッダー更新モード終了
+  header.classList.remove("updating");
+  console.log("COMMON: ヘッダー更新モード終了");
 }
 
 // 表示されているアイコンを左寄せにする関数
@@ -2275,9 +2274,8 @@ function applyIconVisibility(selectedIcons) {
   }
 
   // 非表示アイコン更新時のチラつきを抑えるためヘッダーを一旦隠す
-  const prevVisibility = header.style.visibility;
-  header.style.visibility = "hidden";
-  console.log(`${prefix}: ヘッダーを一時的に非表示にして更新開始`);
+  header.classList.add("updating");
+  console.log(`${prefix}: ヘッダー更新モード開始`);
 
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log(`${prefix}: ヘッダー内のボタン数: ${navButtons.length}`);
@@ -2318,9 +2316,9 @@ function applyIconVisibility(selectedIcons) {
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
 
-  // ヘッダー表示を元に戻す
-  header.style.visibility = prevVisibility;
-  console.log(`${prefix}: ヘッダーの表示を復元`);
+  // ヘッダー更新モード終了
+  header.classList.remove("updating");
+  console.log(`${prefix}: ヘッダー更新モード終了`);
 }
 
 // 今後実装予定のアイコンを非表示にする関数
