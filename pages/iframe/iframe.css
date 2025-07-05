@@ -5,7 +5,8 @@
 
 /* ─── ベース設定 ─── */
 body {
-  background: #314559;
+  /* 背景色を少し明るくして視認性を向上 */
+  background: #3a4f66;
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -53,8 +54,8 @@ body {
 
 .iframe-empty-state-content {
   text-align: center;
-  max-width: 250px; /* 最小サイズの幅を適用 */
-  padding: 0 4px; /* 最小サイズのパディングを適用 */
+  max-width: 300px; /* 幅を少し広げて文章を読みやすく */
+  padding: 0 8px;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -73,15 +74,15 @@ body {
 
 .iframe-empty-state-title {
   color: #ffffff;
-  font-size: 0.9rem; /* 最小サイズのフォントサイズを適用 */
+  font-size: 1rem; /* タイトルの文字を少し大きく */
   font-weight: 600;
-  margin-bottom: 4px; /* 最小サイズのマージンを適用 */
+  margin-bottom: 4px;
   line-height: 1.4;
 }
 
 .iframe-empty-state-message {
   color: #e2e8f0;
-  font-size: 0.75rem; /* 最小サイズのフォントサイズを適用 */
+  font-size: 0.85rem; /* メッセージをやや大きく */
   line-height: 1.5;
   opacity: 0.8;
 }
@@ -89,21 +90,24 @@ body {
 /* ─── 検索入力エリア ─── */
 .iframe-url-input-row {
   display: flex;
-  flex-direction: column; /* 最小サイズのレイアウトを適用 */
+  /* 横並びに変更して検索バーを1行で表示 */
+  flex-direction: row;
   align-items: center;
-  gap: 6px; /* 最小サイズのギャップを適用 */
-  margin-top: 12px; /* 最小サイズのマージンを適用 */
-  width: 100%; /* 最小サイズの幅を適用 */
+  gap: 8px;
+  margin-top: 16px;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .search-input {
-  width: 100%; /* 最小サイズの幅を適用 */
-  max-width: 100%; /* 最小サイズの最大幅を適用 */
-  background: rgba(255, 255, 255, 0.9);
+  flex: 1;
+  background: rgba(255, 255, 255, 0.95);
   border: none;
-  border-radius: 6px; /* 最小サイズのボーダーラディウスを適用 */
-  padding: 8px 12px; /* 最小サイズのパディングを適用 */
-  font-size: 0.8rem; /* 最小サイズのフォントサイズを適用 */
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
   color: #333;
   outline: none;
   transition: all 0.3s ease;
@@ -123,16 +127,15 @@ body {
   background: linear-gradient(135deg, #e95404, #a600cf);
   color: #ffffff;
   border: none;
-  border-radius: 6px; /* 最小サイズのボーダーラディウスを適用 */
-  padding: 8px 12px; /* 最小サイズのパディングを適用 */
-  font-size: 0.8rem; /* 最小サイズのフォントサイズを適用 */
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px; /* 最小サイズの最小幅を適用 */
-  width: 100%; /* 最小サイズの幅を適用 */
+  min-width: 40px;
 }
 
 .search-submit-btn:hover {

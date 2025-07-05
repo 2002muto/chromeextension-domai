@@ -219,6 +219,8 @@ function initializeIframePage() {
 // 検索またはURLをiframeに読み込む
 // ───────────────────────────────────────
 async function performSearch() {
+  // Debug: search triggered
+  console.log("[performSearch] Start");
   const searchInput = document.querySelector(".search-input");
   const iframeDisplay = document.getElementById("iframe-display");
   const submitBtn = document.querySelector(".search-submit-btn");
@@ -357,7 +359,8 @@ async function performSearch() {
       `;
     };
   } catch (error) {
-    console.log("無効なURLです:", error);
+    // Debug: invalid URL entered
+    console.log("[performSearch] Invalid URL:", error);
     // 無効なURL
     emptyStateContent?.classList.remove("show");
     setTimeout(() => {
