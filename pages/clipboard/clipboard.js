@@ -277,36 +277,19 @@ async function renderClipboardView() {
   clips.forEach((txt, i) => {
     const li = document.createElement("li");
     li.className = "clip-item";
-    li.draggable = true;
+    li.draggable = false; // ドラッグ開始はハンドルのみ
     li.dataset.index = i;
 
-    // DnD handlers
-    li.addEventListener("dragstart", (e) => {
-      handleClipDragStart.call(li, e);
-      li.classList.add("dragging");
-    });
+    // DnD handlers for drop targets only
     li.addEventListener("dragover", handleClipDragOver);
     li.addEventListener("dragleave", handleClipDragLeave);
     li.addEventListener("drop", handleClipDrop);
-    li.addEventListener("dragend", (e) => {
-      handleClipDragEnd.call(li, e);
-      // 全ての要素からドラッグ関連クラスを削除
-      document.querySelectorAll(".clip-item").forEach((item) => {
-        item.classList.remove(
-          "dragging",
-          "drop-indicator",
-          "drop-above",
-          "drop-below",
-          "active",
-          "drag-invalid"
-        );
-      });
-    });
 
     // 左側：挿入ボタン（Arrow-left-circle）
     const insertBtn = document.createElement("button");
     insertBtn.className = "clipboard-insert";
-    insertBtn.innerHTML = '<i class="bi bi-arrow-left-circle"></i>';
+    insertBtn.innerHTML = ""; // アイコンはCSSの::beforeで描画
+    console.log("init: insert button created (icon via ::before)");
     insertBtn.title = "挿入";
     insertBtn.addEventListener("click", () => {
       // 最新の textarea の値を取得して送信
@@ -481,6 +464,26 @@ async function renderClipboardView() {
     dragHandle.className = "clipboard-drag-handle";
     dragHandle.innerHTML = '<i class="bi bi-grip-vertical"></i>';
     dragHandle.title = "ドラッグして並び替え";
+    dragHandle.draggable = true; // ハンドルのみドラッグ可能
+    dragHandle.addEventListener("dragstart", (e) => {
+      console.log("drag start handle index", li.dataset.index);
+      handleClipDragStart.call(li, e);
+      li.classList.add("dragging");
+    });
+    dragHandle.addEventListener("dragend", (e) => {
+      console.log("drag end handle index", li.dataset.index);
+      handleClipDragEnd.call(li, e);
+      document.querySelectorAll(".clip-item").forEach((item) => {
+        item.classList.remove(
+          "dragging",
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "active",
+          "drag-invalid"
+        );
+      });
+    });
 
     // 右３：アーカイブボタン（bi bi-archive-fill）
     const archiveBtn = document.createElement("button");
@@ -840,6 +843,7 @@ function renderArchiveFooter() {
       <span class="nav-text">一括削除</span>
     </button>
   `;
+  console.log("renderArchiveFooter: back button icon set to white via CSS");
   footer.style.display = "flex";
 
   // Back → go back to clipboard view
@@ -1220,6 +1224,13 @@ function updateExportButtonState() {
 // ───────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   console.log("CLIPBOARDページ: DOMContentLoaded");
+  // 新しいスタイル適用を確認
+  console.log(
+    "style patch: drop indicator uses ::after; drag via grip handle only"
+  );
+  console.log(
+    "style patch: insert button centered within green accent"
+  );
 
   // ヘッダーのクリップボードアイコンのクリックイベントを初期設定
   const clipboardBtn = document.getElementById("btn-clipboard");
