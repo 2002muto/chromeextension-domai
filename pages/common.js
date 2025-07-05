@@ -2151,6 +2151,7 @@ function applyIconVisibilityToHeader(selectedIcons) {
 
   // 一時的にヘッダーを非表示にしてトランジションを抑制
   header.classList.add("updating");
+  header.offsetHeight; // Force reflow so header becomes hidden before updates
   console.log("COMMON: ヘッダー更新モード開始");
 
   const navButtons = header.querySelectorAll(".nav-btn");
@@ -2277,6 +2278,7 @@ function applyIconVisibility(selectedIcons) {
 
   // 非表示アイコン更新時のチラつきを抑えるためヘッダーを一旦隠す
   header.classList.add("updating");
+  header.offsetHeight; // Force reflow so the header hides before icon updates
   console.log(`${prefix}: ヘッダー更新モード開始`);
 
   const navButtons = header.querySelectorAll(".nav-btn");

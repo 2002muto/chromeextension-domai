@@ -584,6 +584,11 @@ function applyIconVisibility(selectedIcons) {
     return;
   }
 
+  // 一時的にヘッダーを隠して更新によるチラつきを防止
+  header.classList.add("updating");
+  header.offsetHeight; // Force reflow so header hides before icon changes
+  console.log("SETTING: ヘッダー更新モード開始");
+
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log(`SETTING: ヘッダー内のボタン数: ${navButtons.length}`);
 
@@ -620,6 +625,12 @@ function applyIconVisibility(selectedIcons) {
   if (window.restoreActiveIconState) {
     window.restoreActiveIconState();
   }
+
+  // ヘッダー更新モード終了を次のフレームで実行
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log("SETTING: ヘッダー更新モード終了");
+  });
 }
 
 // 強制的にアイコン表示を適用する関数
@@ -658,6 +669,7 @@ function forceApplyIconVisibility(selectedIcons) {
 
   // 更新中のチラつきを防ぐためヘッダーを一時的に非表示
   header.classList.add("updating");
+  header.offsetHeight; // Force reflow so header hides before icon changes
   console.log("FORCE: ヘッダー更新モード開始");
 
   const navButtons = header.querySelectorAll(".nav-btn");
