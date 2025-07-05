@@ -288,8 +288,8 @@ async function renderClipboardView() {
     // 左側：挿入ボタン（Arrow-left-circle）
     const insertBtn = document.createElement("button");
     insertBtn.className = "clipboard-insert";
-    insertBtn.innerHTML = '<i class="bi bi-arrow-left-circle"></i>';
-    console.log("init: insert button created with white arrow icon");
+    insertBtn.innerHTML = ""; // アイコンはCSSの::beforeで描画
+    console.log("init: insert button created (icon via ::before)");
     insertBtn.title = "挿入";
     insertBtn.addEventListener("click", () => {
       // 最新の textarea の値を取得して送信

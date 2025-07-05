@@ -73,7 +73,9 @@
 
 /* 挿入ボタン部分のみを彩るアクセントカラー */
 .clip-item::before {
-  content: "";
+  /* 左のアクセント領域とアイコンを描画 */
+  content: "\f12a"; /* bi-arrow-left-circle */
+  font-family: "bootstrap-icons";
   position: absolute;
   top: 0;
   bottom: 0;
@@ -85,6 +87,11 @@
   border-bottom-left-radius: 6px;
   pointer-events: none; /* クリックイベントを妨げない */
   z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff; /* アイコンは常に白色 */
+  font-size: 1.3rem; /* 他のアイコンと揃える */
 }
 
 /* ホバー効果（MEMOページと統一） */
