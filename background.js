@@ -9,6 +9,10 @@ let lastTab = null; // 直近入力フォーカスのページタブ
 // DeclarativeNetRequest制御
 // ───────────────────────────────────────
 let iframeRulesEnabled = true;
+// Next unique ID for dynamically-added iframe rules
+let nextDynamicRuleId = 1000;
+// Track domains that already have a dynamic rule
+const dynamicRuleIds = new Map();
 
 // ルールの有効/無効を切り替え
 async function toggleIframeRules(enable) {
@@ -40,7 +44,14 @@ async function addDynamicIframeRule(domain) {
   console.log(`[BG] Adding dynamic iframe rule for: ${domain}`);
 
   try {
-    const ruleId = Date.now(); // ユニークID生成
+    // 再利用できる既存ルールがあるか確認
+    if (dynamicRuleIds.has(domain)) {
+      const existingId = dynamicRuleIds.get(domain);
+      console.log(`[BG] Rule already exists for ${domain} with ID: ${existingId}`);
+      return existingId;
+    }
+
+    const ruleId = nextDynamicRuleId++; // 1e3以上の連番IDを使用
     const rule = {
       id: ruleId,
       priority: 1,
@@ -71,6 +82,9 @@ async function addDynamicIframeRule(domain) {
     await chrome.declarativeNetRequest.updateDynamicRules({
       addRules: [rule],
     });
+
+    // 追加したルールを記録
+    dynamicRuleIds.set(domain, ruleId);
 
     console.log(`[BG] Dynamic rule added for ${domain} with ID: ${ruleId}`);
     return ruleId;

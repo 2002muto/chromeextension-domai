@@ -297,7 +297,8 @@ async function performSearch() {
     const domain = extractDomain(url);
     if (domain) {
       console.log(`[IFRAME] Extracted domain: ${domain}`);
-      await addDynamicIframeRule(domain);
+      const ruleId = await addDynamicIframeRule(domain);
+      console.log(`[IFRAME] addDynamicIframeRule returned ID: ${ruleId}`);
     }
 
     // Empty Stateと入力行を非表示、iframeを表示
