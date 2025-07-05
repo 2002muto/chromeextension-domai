@@ -644,7 +644,7 @@
 
 .icon-option i {
   font-size: 1.4rem;
-  color: #bbb;
+  color: #ffffff;
   margin-bottom: 4px;
   transition: all 0.3s ease;
 }
@@ -834,7 +834,7 @@
 /* MEMOとSETTINGアイコンのアイコンは常にカラー */
 .icon-option[data-icon="setting"] i,
 .icon-option[data-icon="memo"] i {
-  color: #bbb;
+  color: #ffffff;
   filter: none;
 }
 

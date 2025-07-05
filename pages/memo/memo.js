@@ -1915,9 +1915,9 @@ function generateFakeHash(data, targetLength) {
     // より自然なランダムハッシュを生成
     const randomBytes = new Uint8Array(targetLength / 2); // 16進数なので半分のバイト数
     crypto.getRandomValues(randomBytes);
-    const randomHash = Array.from(randomBytes)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const randomHash = Array.from(randomBytes).map((b) =>
+      b.toString(16).padStart(2, "0")
+    );
 
     // 元のハッシュとランダムハッシュを組み合わせて自然なハッシュを作成
     const combinedHash = (fakeHash + randomHash).substring(0, targetLength);
