@@ -1079,7 +1079,6 @@ const NavigationOrderManager = {
     "btn-clipboard",
     "btn-prompt",
     "btn-iframe",
-    "btn-ai",
     "btn-status",
     "btn-setting",
   ],
@@ -1142,8 +1141,11 @@ const NavigationOrderManager = {
   },
 };
 
-// ドラッグ＆ドロップ機能の初期化
+// ドラッグ＆ドロップ機能の初期化 - 無効化されています
 function initializeHeaderDragAndDrop() {
+  console.log("[DragDrop] ヘッダーのドラッグ&ドロップ機能は無効化されています");
+  return; // 機能を無効化
+
   const header = document.querySelector("header");
   if (!header) {
     console.log("[DragDrop] ヘッダー要素が見つかりません");
@@ -1729,11 +1731,15 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     console.log("[DEBUG] 初期化開始");
 
-    // 保存された順序でヘッダーを再構築
-    NavigationOrderManager.rebuildHeader();
+    // 保存された順序でヘッダーを再構築 - 無効化（アイコン順序を固定）
+    // NavigationOrderManager.rebuildHeader();
+    console.log(
+      "[DEBUG] ヘッダーの順序変更は無効化されています（アイコン順序を固定）"
+    );
 
-    // ドラッグ＆ドロップ機能を初期化
-    initializeHeaderDragAndDrop();
+    // ドラッグ＆ドロップ機能を初期化 - 無効化
+    // initializeHeaderDragAndDrop();
+    console.log("[DEBUG] ヘッダーのドラッグ&ドロップ機能は無効化されています");
 
     // 初期化後の状態を確認
     console.log("[DEBUG] 初期化後の状態:");
@@ -1759,8 +1765,14 @@ window.addEventListener("load", () => {
   if (!document.querySelector("header .nav-btn[draggable]")) {
     console.log("[DEBUG] フォールバック初期化実行");
     setTimeout(() => {
-      NavigationOrderManager.rebuildHeader();
-      initializeHeaderDragAndDrop();
+      // NavigationOrderManager.rebuildHeader(); // 無効化
+      console.log(
+        "[DEBUG] ヘッダーの順序変更は無効化されています（フォールバック）"
+      );
+      // initializeHeaderDragAndDrop(); // 無効化
+      console.log(
+        "[DEBUG] ヘッダーのドラッグ&ドロップ機能は無効化されています（フォールバック）"
+      );
     }, 50);
   } else {
     console.log("[DEBUG] 既に初期化済み");
@@ -1951,10 +1963,10 @@ window.resetOrderProperties = () => {
   });
 };
 
-// 手動でドラッグ＆ドロップ機能を再初期化する関数
+// 手動でドラッグ＆ドロップ機能を再初期化する関数 - 無効化
 window.reinitializeDragDrop = () => {
-  console.log("[TEST] ドラッグ＆ドロップ機能を再初期化");
-  initializeHeaderDragAndDrop();
+  console.log("[TEST] ドラッグ＆ドロップ機能は無効化されています");
+  // initializeHeaderDragAndDrop(); // 無効化
 };
 
 // 手動でボタンの順序を変更するテスト関数
@@ -2139,7 +2151,7 @@ function applyDefaultIconSettings() {
   applyIconVisibilityFromSettings(defaultIcons);
 }
 
-// ヘッダーにアイコン表示を適用する関数
+// ヘッダーにアイコン表示を適用する関数（表示/非表示のみ、順序は固定）
 function applyIconVisibilityToHeader(selectedIcons) {
   console.log("COMMON: ヘッダーにアイコン表示を適用:", selectedIcons);
 
@@ -2149,53 +2161,52 @@ function applyIconVisibilityToHeader(selectedIcons) {
     return;
   }
 
+  // 一時的にヘッダーを非表示にしてトランジションを抑制
+  header.classList.add("updating");
+  console.log("COMMON: ヘッダー更新モード開始");
+
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log("COMMON: ヘッダー内のボタン数:", navButtons.length);
 
+  // 各ボタンの表示/非表示を制御（DOM順序は変更しない）
   navButtons.forEach((button) => {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // AIアイコンは常に非表示（Coming Soon）
-    if (iconType === "ai") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px";
-      console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (AI Coming Soon)`);
-    }
-    // TodoListアイコンは常に非表示（Coming Soon）
-    else if (iconType === "todolist") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px";
+    let shouldHide = false;
+
+    if (iconType === "ai" || iconType === "todolist") {
+      shouldHide = true;
+      console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
+    } else if (iconType === "setting" || iconType === "memo") {
+      // 常に表示
       console.log(
-        `COMMON: ${buttonId} (${iconType}): 非表示 (TodoList Coming Soon)`
+        `COMMON: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
       );
-    }
-    // 選択されたアイコンは表示
-    else if (selectedIcons.includes(iconType)) {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.position = "relative";
-      button.style.left = "auto";
-      console.log(`COMMON: ${buttonId} (${iconType}): 表示 (選択済み)`);
-    } else {
-      // 選択されていないアイコンは非表示
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px";
+    } else if (!selectedIcons.includes(iconType)) {
+      shouldHide = true;
       console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (未選択)`);
+    } else {
+      console.log(`COMMON: ${buttonId} (${iconType}): 表示 (選択済み)`);
+    }
+
+    if (shouldHide) {
+      button.classList.add("hidden-icon");
+    } else {
+      button.classList.remove("hidden-icon");
     }
   });
 
-  // アイコンを左寄せにする
-  alignVisibleIconsToLeft();
+  console.log("COMMON: アイコン表示/非表示制御完了");
 
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
+
+  // ヘッダー更新モード終了を次のフレームで実行し、描画タイミングを調整
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log("COMMON: ヘッダー更新モード終了");
+  });
 }
 
 // 表示されているアイコンを左寄せにする関数
@@ -2208,9 +2219,7 @@ function alignVisibleIconsToLeft() {
     return;
   }
 
-  const visibleButtons = header.querySelectorAll(
-    ".nav-btn[style*='display: flex']"
-  );
+  const visibleButtons = header.querySelectorAll(".nav-btn:not(.hidden-icon)");
   console.log("COMMON: 表示されているアイコン数:", visibleButtons.length);
 
   // 表示されているアイコンのみを左寄せに配置
@@ -2279,6 +2288,10 @@ function applyIconVisibility(selectedIcons) {
     return;
   }
 
+  // 非表示アイコン更新時のチラつきを抑えるためヘッダーを一旦隠す
+  header.classList.add("updating");
+  console.log(`${prefix}: ヘッダー更新モード開始`);
+
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log(`${prefix}: ヘッダー内のボタン数: ${navButtons.length}`);
   console.log(`${prefix}: 適用する選択アイコン:`, selectedIcons);
@@ -2287,35 +2300,29 @@ function applyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // AIアイコン（今後実装予定）は常に非表示
-    if (iconType === "ai") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    let shouldHide = false;
+
+    if (iconType === "ai" || iconType === "todolist") {
+      shouldHide = true;
       console.log(
         `${prefix}: ${buttonId} (${iconType}): 非表示 (今後実装予定)`
       );
-    }
-    // MEMOとSETTINGアイコンは常に表示
-    else if (iconType === "setting" || iconType === "memo") {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.position = "relative";
+    } else if (iconType === "setting" || iconType === "memo") {
+      // 常に表示
       console.log(
         `${prefix}: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
       );
-    } else if (selectedIcons.includes(iconType)) {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.position = "relative";
-      console.log(`${prefix}: ${buttonId} (${iconType}): 表示 (選択済み)`);
-    } else {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    } else if (!selectedIcons.includes(iconType)) {
+      shouldHide = true;
       console.log(`${prefix}: ${buttonId} (${iconType}): 非表示 (未選択)`);
+    } else {
+      console.log(`${prefix}: ${buttonId} (${iconType}): 表示 (選択済み)`);
+    }
+
+    if (shouldHide) {
+      button.classList.add("hidden-icon");
+    } else {
+      button.classList.remove("hidden-icon");
     }
   });
 
@@ -2323,6 +2330,12 @@ function applyIconVisibility(selectedIcons) {
 
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
+
+  // ヘッダー更新モード終了を次のフレームで実行
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log(`${prefix}: ヘッダー更新モード終了`);
+  });
 }
 
 // 今後実装予定のアイコンを非表示にする関数
@@ -2338,10 +2351,7 @@ function hideComingSoonIcons() {
   // AIアイコンを非表示
   const aiButton = document.getElementById("btn-ai");
   if (aiButton) {
-    aiButton.style.display = "none";
-    aiButton.style.visibility = "hidden";
-    aiButton.style.position = "absolute";
-    aiButton.style.left = "-9999px"; // 画面外に移動
+    aiButton.classList.add("hidden-icon");
     console.log("COMMON: AIアイコンを非表示にしました");
   } else {
     console.log("COMMON: AIアイコンが見つかりません");
@@ -2350,10 +2360,7 @@ function hideComingSoonIcons() {
   // TodoListアイコンを非表示
   const todoListButton = document.getElementById("btn-todolist");
   if (todoListButton) {
-    todoListButton.style.display = "none";
-    todoListButton.style.visibility = "hidden";
-    todoListButton.style.position = "absolute";
-    todoListButton.style.left = "-9999px"; // 画面外に移動
+    todoListButton.classList.add("hidden-icon");
     console.log("COMMON: TodoListアイコンを非表示にしました");
   } else {
     console.log("COMMON: TodoListアイコンが見つかりません");

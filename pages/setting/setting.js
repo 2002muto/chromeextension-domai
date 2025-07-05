@@ -310,7 +310,7 @@ function getDefaultCustomSettings() {
       "iframe",
       "status",
       "setting",
-    ], // AIを除外、settingは常に選択状態
+    ], // 指定された順序: MEMO・CLIPBOARD・PROMPT・IFRAME・STATUS・SETTING
   };
 }
 
@@ -457,8 +457,19 @@ function showCustomSettingMessage(message) {
 function setupIconSelectionListeners() {
   const iconOptions = document.querySelectorAll(".icon-option");
 
+  // 既存のイベントリスナーを削除してから再設定
   iconOptions.forEach((option) => {
-    option.addEventListener("click", () => {
+    // 既存のイベントリスナーをクローンで削除
+    const newOption = option.cloneNode(true);
+    option.parentNode.replaceChild(newOption, option);
+  });
+
+  // 更新されたオプションを再取得
+  const updatedOptions = document.querySelectorAll(".icon-option");
+
+  updatedOptions.forEach((option) => {
+    // クリックイベント（選択/解除）
+    option.addEventListener("click", (e) => {
       // Coming Soonアイコンは無効化
       if (option.classList.contains("coming-soon")) {
         console.log("Coming Soonアイコンは選択できません");
@@ -494,23 +505,21 @@ function setupIconSelectionListeners() {
 
       // アイコン選択完了
       console.log("アイコン選択が完了しました");
-
-      // リアルタイム更新を無効化（設定保存ボタンでのみ適用）
-      // applyCustomSettings();
     });
   });
 }
 
-// 削除済み: アイコン選択時の説明パネル移動機能
-// UI/UXの改善のため、アイコン選択時に自動的に説明パネルに移動する機能を削除しました
-
-// 削除済み: ドネーションメッセージ機能
-// アイコン選択時の不適切なメッセージ表示を削除しました
-
-// アイコン選択状態を更新
+// アイコン選択状態を更新（順序機能を削除）
 function updateIconSelection(selectedIcons) {
-  const iconOptions = document.querySelectorAll(".icon-option");
+  console.log("アイコン選択状態を更新:", selectedIcons);
 
+  const iconOptions = document.querySelectorAll(".icon-option");
+  if (!iconOptions.length) {
+    console.error("アイコンオプションが見つかりません");
+    return;
+  }
+
+  // 選択状態を更新
   iconOptions.forEach((option) => {
     const iconType = option.dataset.icon;
     if (selectedIcons.includes(iconType)) {
@@ -524,36 +533,59 @@ function updateIconSelection(selectedIcons) {
       option.classList.add("selected");
     }
   });
+
+  console.log("アイコン選択状態の更新完了");
+
+  // イベントリスナーを再設定
+  setupIconSelectionListeners();
 }
 
-// 選択されているアイコンを取得
+// 選択されているアイコンを取得（順序機能を削除）
 function getSelectedIcons() {
-  // 今後実装予定のアイコン（AI、TodoList）を除外し、選択されたアイコンのみを取得
   const selectedOptions = document.querySelectorAll(
     ".icon-option.selected:not(.coming-soon)"
   );
-  const selectedIcons = Array.from(selectedOptions).map(
-    (option) => option.dataset.icon
-  );
+  const selectedIcons = [];
 
-  // AIとTodoListアイコン（今後実装予定）を除外
-  const filteredIcons = selectedIcons.filter(
-    (icon) => icon !== "ai" && icon !== "todolist"
-  );
+  selectedOptions.forEach((option) => {
+    const iconType = option.dataset.icon;
+
+    // 今後実装予定のアイコン（AI、TodoList）を除外
+    if (iconType === "ai" || iconType === "todolist") {
+      return;
+    }
+
+    selectedIcons.push(iconType);
+  });
+
+  // デフォルト順序でソート
+  const defaultOrder = [
+    "memo",
+    "clipboard",
+    "prompt",
+    "iframe",
+    "status",
+    "setting",
+  ];
+  selectedIcons.sort((a, b) => {
+    const indexA = defaultOrder.indexOf(a);
+    const indexB = defaultOrder.indexOf(b);
+    return indexA - indexB;
+  });
 
   // MEMOとSETTINGアイコンが含まれていない場合は追加
-  if (!filteredIcons.includes("setting")) {
-    filteredIcons.push("setting");
+  if (!selectedIcons.includes("memo")) {
+    selectedIcons.unshift("memo");
   }
-  if (!filteredIcons.includes("memo")) {
-    filteredIcons.push("memo");
+  if (!selectedIcons.includes("setting")) {
+    selectedIcons.push("setting");
   }
 
-  console.log("選択されたアイコン（今後実装予定を除く）:", filteredIcons);
-  return filteredIcons;
+  console.log("選択されたアイコン:", selectedIcons);
+  return selectedIcons;
 }
 
-// アイコン表示の適用
+// アイコン表示の適用（表示/非表示のみ、順序は固定）
 function applyIconVisibility(selectedIcons) {
   // ドラッグ&ドロップ進行中は適用しない
   if (window.isDragDropInProgress) {
@@ -584,40 +616,40 @@ function applyIconVisibility(selectedIcons) {
     return;
   }
 
+  // 非表示アイコン更新時のチラつきを抑えるためヘッダーを一旦隠す
+  header.classList.add("updating");
+  console.log("SETTING: ヘッダー更新モード開始");
+
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log(`SETTING: ヘッダー内のボタン数: ${navButtons.length}`);
+  console.log(`SETTING: 適用する選択アイコン:`, selectedIcons);
 
+  // 各ボタンの表示/非表示を制御（DOM順序は変更しない）
   navButtons.forEach((button) => {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // AIアイコン（今後実装予定）は常に非表示
-    if (iconType === "ai") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    let shouldHide = false;
+
+    if (iconType === "ai" || iconType === "todolist") {
+      shouldHide = true;
       console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
-    }
-    // MEMOとSETTINGアイコンは常に表示
-    else if (iconType === "setting" || iconType === "memo") {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.position = "relative";
+    } else if (iconType === "setting" || iconType === "memo") {
+      // 常に表示
       console.log(
         `SETTING: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
       );
-    } else if (selectedIcons.includes(iconType)) {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.position = "relative";
-      console.log(`SETTING: ${buttonId} (${iconType}): 表示 (選択済み)`);
-    } else {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    } else if (!selectedIcons.includes(iconType)) {
+      shouldHide = true;
       console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (未選択)`);
+    } else {
+      console.log(`SETTING: ${buttonId} (${iconType}): 表示 (選択済み)`);
+    }
+
+    if (shouldHide) {
+      button.classList.add("hidden-icon");
+    } else {
+      button.classList.remove("hidden-icon");
     }
   });
 
@@ -627,9 +659,15 @@ function applyIconVisibility(selectedIcons) {
   if (window.restoreActiveIconState) {
     window.restoreActiveIconState();
   }
+
+  // ヘッダー更新モード終了を次のフレームで実行
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log("SETTING: ヘッダー更新モード終了");
+  });
 }
 
-// 強制的にアイコン表示を適用する関数
+// 強制的にアイコン表示を適用する関数（表示/非表示のみ、順序は固定）
 function forceApplyIconVisibility(selectedIcons) {
   console.log(
     "FORCE: forceApplyIconVisibility 呼び出し - 選択アイコン:",
@@ -663,90 +701,66 @@ function forceApplyIconVisibility(selectedIcons) {
     return;
   }
 
+  // 更新中のチラつきを防ぐためヘッダーを一時的に非表示
+  header.classList.add("updating");
+  console.log("FORCE: ヘッダー更新モード開始");
+
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log(`FORCE: ヘッダー内のボタン数: ${navButtons.length}`);
 
-  // すべてのボタンの現在の状態をログ出力
-  navButtons.forEach((button) => {
-    const buttonId = button.id;
-    const iconType = getIconTypeFromId(buttonId);
-    const currentDisplay = window.getComputedStyle(button).display;
-    console.log(
-      `FORCE: ${buttonId} (${iconType}) - 現在の表示状態: ${currentDisplay}`
-    );
-  });
-
-  // 強制的に表示/非表示を設定
+  // 各ボタンの表示/非表示を制御（DOM順序は変更しない）
   navButtons.forEach((button) => {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
-    // AIアイコン（今後実装予定）は常に非表示
-    if (iconType === "ai") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.opacity = "0";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
+    let shouldHide = false;
+
+    if (iconType === "ai" || iconType === "todolist") {
+      shouldHide = true;
+      console.log(`FORCE: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
+    } else if (iconType === "setting" || iconType === "memo") {
       console.log(
-        `FORCE: ${buttonId} (${iconType}): 強制非表示 (今後実装予定)`
+        `FORCE: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
       );
-    }
-    // TodoListアイコン（今後実装予定）は常に非表示
-    else if (iconType === "todolist") {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.opacity = "0";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
-      console.log(
-        `FORCE: ${buttonId} (${iconType}): 強制非表示 (今後実装予定)`
-      );
-    }
-    // MEMOとSETTINGアイコンは常に表示
-    else if (iconType === "setting" || iconType === "memo") {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.opacity = "1";
-      button.style.position = "relative";
-      button.style.left = "auto";
-      console.log(
-        `FORCE: ${buttonId} (${iconType}): 強制表示 (MEMO/SETTINGアイコン)`
-      );
-    } else if (selectedIcons.includes(iconType)) {
-      button.style.display = "flex";
-      button.style.visibility = "visible";
-      button.style.opacity = "1";
-      button.style.position = "relative";
-      button.style.left = "auto";
-      console.log(`FORCE: ${buttonId} (${iconType}): 強制表示 (選択済み)`);
+    } else if (!selectedIcons.includes(iconType)) {
+      shouldHide = true;
+      console.log(`FORCE: ${buttonId} (${iconType}): 非表示 (未選択)`);
     } else {
-      button.style.display = "none";
-      button.style.visibility = "hidden";
-      button.style.opacity = "0";
-      button.style.position = "absolute";
-      button.style.left = "-9999px"; // 画面外に移動
-      console.log(`FORCE: ${buttonId} (${iconType}): 強制非表示 (未選択)`);
+      console.log(`FORCE: ${buttonId} (${iconType}): 表示 (選択済み)`);
+    }
+
+    if (shouldHide) {
+      button.classList.add("hidden-icon");
+    } else {
+      button.classList.remove("hidden-icon");
     }
   });
 
-  console.log("FORCE: ヘッダー更新完了 - 表示アイコン:", selectedIcons);
+  console.log("FORCE: アイコン表示/非表示制御完了");
 
   // 現在のページに対応するアイコンのactive状態を復元
   if (window.restoreActiveIconState) {
     window.restoreActiveIconState();
   }
 
+  // ヘッダー更新モード終了を次のフレームで実行
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log("FORCE: ヘッダー更新モード終了");
+  });
+
   // 適用後の状態を確認
   setTimeout(() => {
     console.log("=== 適用後の状態確認 ===");
-    navButtons.forEach((button) => {
+    const updatedButtons = header.querySelectorAll(".nav-btn");
+    updatedButtons.forEach((button, index) => {
       const buttonId = button.id;
       const iconType = getIconTypeFromId(buttonId);
-      const finalDisplay = window.getComputedStyle(button).display;
-      const finalVisibility = window.getComputedStyle(button).visibility;
+      const isHidden = button.classList.contains("hidden-icon");
       console.log(
-        `FORCE: ${buttonId} (${iconType}) - 最終状態: display=${finalDisplay}, visibility=${finalVisibility}`
+        `FORCE: ${buttonId} (${iconType}) - 表示状態: ${
+          isHidden ? "非表示" : "表示"
+        }`
       );
     });
   }, 50);
