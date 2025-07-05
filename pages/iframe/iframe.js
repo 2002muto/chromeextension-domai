@@ -261,17 +261,28 @@ async function performSearch() {
   let url;
 
   // URLかどうかを判定（http/httpsスキームまたはドメイン形式）
+  // @記号や特殊文字が含まれている場合は検索として処理
   if (
-    query.startsWith("http://") ||
-    query.startsWith("https://") ||
-    (query.includes(".") && !query.includes(" "))
+    (query.startsWith("http://") || query.startsWith("https://")) &&
+    !query.includes("@") &&
+    !query.includes("#") &&
+    !query.includes("?") &&
+    !query.includes("&")
   ) {
     // URLとして処理
     url = query;
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      url = "https://" + url;
-    }
     console.log("URLとして処理:", url);
+  } else if (
+    query.includes(".") &&
+    !query.includes(" ") &&
+    !query.includes("@") &&
+    !query.includes("#") &&
+    !query.includes("?") &&
+    !query.includes("&")
+  ) {
+    // ドメイン形式として処理
+    url = "https://" + query;
+    console.log("ドメインとして処理:", url);
   } else {
     // Google検索として処理
     url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
@@ -300,8 +311,7 @@ async function performSearch() {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
 
-    iframeDisplay.src = url;
-
+    // エラーハンドリングを設定してからsrcを設定
     iframeDisplay.onload = () => {
       console.log("iframe読み込み完了");
       submitBtn.disabled = false;
@@ -312,6 +322,28 @@ async function performSearch() {
       console.log("iframe読み込みエラー");
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="bi bi-search"></i>';
+      showHostError();
+    };
+
+    // タイムアウト処理を追加
+    const timeoutId = setTimeout(() => {
+      console.log("iframe読み込みタイムアウト");
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
+      showHostError();
+    }, 10000); // 10秒でタイムアウト
+
+    iframeDisplay.onload = () => {
+      clearTimeout(timeoutId);
+      console.log("iframe読み込み完了");
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
+    };
+
+    iframeDisplay.src = url;
+
+    // エラーページ表示関数
+    function showHostError() {
       iframeDisplay.srcdoc = `
         <html>
           <head>
@@ -349,13 +381,13 @@ async function performSearch() {
           <body>
             <div class='error-container'>
               <div class='error-icon'>⚠️</div>
-              <div class='error-title'>ページを読み込めませんでした</div>
-              <div class='error-message'>検索語やURLを確認して再度お試しください</div>
+              <div class='error-title'>host側のエラーです</div>
+              <div class='error-message'>ネットワークエラー、サーバーエラー、CORSエラーなどの可能性があります</div>
             </div>
           </body>
         </html>
       `;
-    };
+    }
   } catch (error) {
     console.log("無効なURLです:", error);
     // 無効なURL
@@ -403,8 +435,8 @@ async function performSearch() {
         <body>
           <div class='error-container'>
             <div class='error-icon'>❌</div>
-            <div class='error-title'>検索できませんでした</div>
-            <div class='error-message'>検索語またはURLを確認してください</div>
+            <div class='error-title'>host側のエラーです</div>
+            <div class='error-message'>ネットワークエラー、サーバーエラー、CORSエラーなどの可能性があります</div>
           </div>
         </body>
       </html>
