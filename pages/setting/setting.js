@@ -656,6 +656,11 @@ function forceApplyIconVisibility(selectedIcons) {
     return;
   }
 
+  // 更新中のチラつきを防ぐためヘッダーを一時的に非表示
+  const prevVisibility = header.style.visibility;
+  header.style.visibility = "hidden";
+  console.log("FORCE: ヘッダーを一時的に非表示にして更新開始");
+
   const navButtons = header.querySelectorAll(".nav-btn");
   console.log(`FORCE: ヘッダー内のボタン数: ${navButtons.length}`);
 
@@ -705,6 +710,10 @@ function forceApplyIconVisibility(selectedIcons) {
   if (window.restoreActiveIconState) {
     window.restoreActiveIconState();
   }
+
+  // ヘッダーの表示を復元
+  header.style.visibility = prevVisibility;
+  console.log("FORCE: ヘッダーの表示を復元");
 
   // 適用後の状態を確認
   setTimeout(() => {

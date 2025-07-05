@@ -824,6 +824,9 @@ main {
   visibility: hidden !important;
   position: absolute !important;
   left: -9999px !important;
+  /* アイコン切り替え時のチラつきを防ぐためトランジションを無効化 */
+  transition: none !important;
+  animation: none !important;
 }
 
 /* ドラッグ&ドロップ時の挿入位置間隔拡大 */
