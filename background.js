@@ -58,12 +58,15 @@ async function addDynamicIframeRule(domain) {
         ],
       },
       condition: {
+        // Match any sub_frame requests to the specified domain
         urlFilter: `||${domain}/*`,
         resourceTypes: ["sub_frame"],
-        tabIds: [-1],
-        initiatorDomains: ["chrome-extension://*"],
+        // Removing tabIds and initiatorDomains to avoid mismatches
       },
     };
+
+    // ルール内容をデバッグ出力
+    console.log("[BG] Rule details:", rule);
 
     await chrome.declarativeNetRequest.updateDynamicRules({
       addRules: [rule],
