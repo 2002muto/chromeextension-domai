@@ -496,50 +496,76 @@ async function renderClipboardView() {
       // 現在のテキストエリアの値を取得
       const currentText = ta.value;
 
-      // 空のクリップでもアーカイブを実行（アーカイブ画面で非表示にする）
       console.log(
-        "[CLIPBOARD] クリップをアーカイブします:",
+        "[CLIPBOARD] アーカイブボタンがクリックされました:",
         currentText.substring(0, 50) + "..."
       );
 
-      // アニメーション付きでアーカイブ
+      const isEmpty = isEmptyClip(currentText);
+
+      // 空のクリップはアーカイブせず単に削除
+      if (isEmpty) {
+        console.log("[CLIPBOARD] 空のクリップを削除します", { index: i });
+
+        if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+          await window.AppUtils.animateArchiveItem(li, async () => {
+            clips.splice(i, 1);
+            await saveStorage(CLIP_KEY, clips);
+            window.clips = clips;
+          });
+        } else {
+          // AppUtilsが利用できない場合の代替処理
+          console.log(
+            "[CLIPBOARD] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
+          );
+
+          li.style.transition = "all 0.5s ease-in-out";
+          li.style.transform = "translateY(-20px) scale(0.95)";
+          li.style.opacity = "0";
+
+          await new Promise((resolve) => {
+            setTimeout(async () => {
+              clips.splice(i, 1);
+              await saveStorage(CLIP_KEY, clips);
+              window.clips = clips;
+              console.log("[CLIPBOARD] 代替削除アニメーション完了");
+              resolve();
+            }, 500);
+          });
+        }
+
+        renderClipboardView();
+        return;
+      }
+
+      // 空でない場合はアーカイブ処理
       if (window.AppUtils && window.AppUtils.animateArchiveItem) {
         await window.AppUtils.animateArchiveItem(li, async () => {
-          // アーカイブ処理
           const archivedClips = await loadStorage(CLIP_ARCH_KEY);
           archivedClips.push(currentText);
           await saveStorage(CLIP_ARCH_KEY, archivedClips);
 
-          // アクティブなクリップから削除
           clips.splice(i, 1);
           await saveStorage(CLIP_KEY, clips);
-
-          // グローバルに最新のclipsを設定
           window.clips = clips;
         });
       } else {
-        // AppUtilsが利用できない場合の代替処理
         console.log(
           "[CLIPBOARD] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
         );
 
-        // シンプルなアニメーション
         li.style.transition = "all 0.5s ease-in-out";
         li.style.transform = "translateY(-20px) scale(0.95)";
         li.style.opacity = "0";
 
         await new Promise((resolve) => {
           setTimeout(async () => {
-            // アーカイブ処理
             const archivedClips = await loadStorage(CLIP_ARCH_KEY);
             archivedClips.push(currentText);
             await saveStorage(CLIP_ARCH_KEY, archivedClips);
 
-            // アクティブなクリップから削除
             clips.splice(i, 1);
             await saveStorage(CLIP_KEY, clips);
-
-            // グローバルに最新のclipsを設定
             window.clips = clips;
 
             console.log("[CLIPBOARD] 代替アーカイブアニメーション完了");
@@ -548,7 +574,6 @@ async function renderClipboardView() {
         });
       }
 
-      // アーカイブ処理後は常に画面を再描画
       renderClipboardView();
     });
 
