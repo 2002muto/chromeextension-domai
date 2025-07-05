@@ -52,8 +52,17 @@ function renderSettingMain() {
   }
 }
 
+// 設定ページの初期化フラグ
+let settingPageInitialized = false;
+
 window.addEventListener("DOMContentLoaded", () => {
   console.log("SETTINGページ DOMContentLoaded fired");
+
+  // 重複初期化を防ぐ
+  if (settingPageInitialized) {
+    console.log("SETTINGページは既に初期化済みです");
+    return;
+  }
 
   // 現在のページがSETTINGページかどうかを確認
   const currentPage = window.location.pathname;
@@ -61,6 +70,9 @@ window.addEventListener("DOMContentLoaded", () => {
     console.log("現在のページはSETTINGページではありません:", currentPage);
     return; // SETTINGページでない場合は初期化をスキップ
   }
+
+  settingPageInitialized = true;
+  console.log("SETTINGページ初期化フラグを設定");
 
   // Add event listener to SETTING button
   const settingButton = document.getElementById("btn-setting");
@@ -364,31 +376,20 @@ function saveCustomSettings() {
       console.log("カスタム設定を保存しました:", settings);
       showCustomSettingMessage("設定を保存しました");
 
-      // 設定保存時にヘッダーを更新（強制的に実行）
+      // 設定保存時にヘッダーを更新
       console.log("ヘッダー更新を実行:", settings.selectedIcons);
       forceApplyIconVisibility(settings.selectedIcons);
 
-      // 複数回実行して確実性を高める
+      // 保存ボタンを元に戻す
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="bi bi-check-lg"></i>設定を保存';
+      }
+
+      // 最終確認
       setTimeout(() => {
-        console.log("ヘッダー更新を再実行 (1回目):", settings.selectedIcons);
-        forceApplyIconVisibility(settings.selectedIcons);
-
-        setTimeout(() => {
-          console.log("ヘッダー更新を再実行 (2回目):", settings.selectedIcons);
-          forceApplyIconVisibility(settings.selectedIcons);
-
-          // 保存ボタンを元に戻す
-          if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="bi bi-check-lg"></i>設定を保存';
-          }
-
-          // 最終確認
-          setTimeout(() => {
-            compareIconSelectionWithHeader();
-          }, 200);
-        }, 100);
-      }, 100);
+        compareIconSelectionWithHeader();
+      }, 200);
     }
   );
 }
@@ -546,6 +547,12 @@ function applyIconVisibility(selectedIcons) {
     return;
   }
 
+  console.log(
+    "SETTING: applyIconVisibility 呼び出し - 選択アイコン:",
+    selectedIcons
+  );
+  console.log("SETTING: 呼び出し元のスタックトレース:", new Error().stack);
+
   const header = document.querySelector("header");
   if (!header) {
     console.log("SETTING: ヘッダーが見つかりません");
@@ -562,23 +569,44 @@ function applyIconVisibility(selectedIcons) {
     // MEMOとSETTINGアイコンは常に表示
     if (iconType === "setting" || iconType === "memo") {
       button.style.display = "flex";
+      button.style.visibility = "visible";
+      button.style.position = "relative";
       console.log(
         `SETTING: ${buttonId} (${iconType}): 表示 (MEMO/SETTINGアイコン)`
       );
     } else if (selectedIcons.includes(iconType)) {
       button.style.display = "flex";
+      button.style.visibility = "visible";
+      button.style.position = "relative";
       console.log(`SETTING: ${buttonId} (${iconType}): 表示 (選択済み)`);
     } else {
       button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.position = "absolute";
+      button.style.left = "-9999px"; // 画面外に移動
       console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (未選択)`);
     }
   });
 
   console.log("SETTING: ヘッダー更新完了 - 表示アイコン:", selectedIcons);
+
+  // 現在のページに対応するアイコンのactive状態を復元
+  if (window.restoreActiveIconState) {
+    window.restoreActiveIconState();
+  }
 }
 
 // 強制的にアイコン表示を適用する関数
 function forceApplyIconVisibility(selectedIcons) {
+  console.log(
+    "FORCE: forceApplyIconVisibility 呼び出し - 選択アイコン:",
+    selectedIcons
+  );
+  console.log(
+    "FORCE: ドラッグ&ドロップフラグ状態:",
+    window.isDragDropInProgress
+  );
+
   // ドラッグ&ドロップ進行中は適用しない
   if (window.isDragDropInProgress) {
     console.log(

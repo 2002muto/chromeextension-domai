@@ -1448,6 +1448,13 @@ function initializeHeaderDragAndDrop() {
       const draggedId = e.dataTransfer.getData("text/plain");
       const draggedButton = document.getElementById(draggedId);
 
+      console.log(
+        "[DragDrop] ドラッグされた要素:",
+        draggedId,
+        "存在:",
+        !!draggedButton
+      );
+
       if (draggedButton && draggedButton !== button) {
         // ドロップ位置を判定
         const rect = button.getBoundingClientRect();
@@ -1457,6 +1464,10 @@ function initializeHeaderDragAndDrop() {
 
         // 実際のDOM要素の位置を変更
         const header = document.querySelector("header");
+        console.log(
+          "[DragDrop] 移動前のヘッダー内要素:",
+          Array.from(header.children).map((btn) => btn.id)
+        );
 
         if (dropAbove) {
           // 要素の上に挿入
@@ -1475,6 +1486,11 @@ function initializeHeaderDragAndDrop() {
           console.log("[DragDrop] 要素の下に挿入:", draggedId, "→", button.id);
         }
 
+        console.log(
+          "[DragDrop] 移動後のヘッダー内要素:",
+          Array.from(header.children).map((btn) => btn.id)
+        );
+
         // 新しい順序を取得して保存
         const newOrder = Array.from(header.children).map((btn) => btn.id);
         NavigationOrderManager.saveOrder(newOrder);
@@ -1484,8 +1500,15 @@ function initializeHeaderDragAndDrop() {
         // ドラッグ&ドロップ完了（トーストメッセージは不要）
         console.log("[DragDrop] 移動完了:", draggedId, "→", button.id);
 
+        // ドラッグ&ドロップフラグをリセット
+        window.isDragDropInProgress = false;
+        console.log("[DragDrop] ドラッグ&ドロップフラグをリセット");
+
         // 現在のページに対応するアイコンのactive状態を復元
         restoreActiveIconState();
+      } else {
+        console.log("[DragDrop] 無効なドロップ操作:", draggedId);
+        window.isDragDropInProgress = false;
       }
     });
   });
@@ -1515,6 +1538,14 @@ function isCloseButtonClick(e, button) {
 // 現在のページに対応するアイコンのactive状態を復元
 function restoreActiveIconState() {
   console.log("[ActiveIcon] アクティブアイコン状態を復元開始");
+
+  // ドラッグ&ドロップ進行中は適用しない
+  if (window.isDragDropInProgress) {
+    console.log(
+      "[ActiveIcon] ドラッグ&ドロップ進行中のため、アクティブ状態復元をスキップ"
+    );
+    return;
+  }
 
   // 現在のページを確認
   const currentPage = window.location.pathname;
@@ -1981,21 +2012,37 @@ console.log("  - window.reinitializeDragDrop() - 機能再初期化");
 
 // ページ読み込み時にアイコン表示設定を適用（初回のみ）
 let iconVisibilityApplied = false;
+let domContentLoadedHandled = false;
+
 document.addEventListener("DOMContentLoaded", () => {
-  if (!iconVisibilityApplied) {
+  if (!domContentLoadedHandled) {
     console.log("COMMON: DOMContentLoaded - アイコン表示設定を適用（初回）");
-    applyIconVisibilityFromStorage();
-    iconVisibilityApplied = true;
+    domContentLoadedHandled = true;
+
+    // 少し遅延してから適用（他のスクリプトの読み込みを待つ）
+    setTimeout(() => {
+      if (!iconVisibilityApplied) {
+        console.log("COMMON: 遅延実行 - アイコン表示設定を適用");
+        applyIconVisibilityFromStorage();
+        iconVisibilityApplied = true;
+      }
+    }, 100);
   }
 });
 
 // ストレージからアイコン表示設定を適用
 function applyIconVisibilityFromStorage() {
+  console.log("COMMON: applyIconVisibilityFromStorage 開始");
+
   chrome.storage.local.get(["customSettings"], (result) => {
     const settings = result.customSettings;
+    console.log("COMMON: ストレージから取得した設定:", settings);
+
     if (settings && settings.selectedIcons) {
+      console.log("COMMON: 選択アイコンを適用:", settings.selectedIcons);
       applyIconVisibility(settings.selectedIcons);
-      console.log("アイコン表示設定を適用:", settings.selectedIcons);
+    } else {
+      console.log("COMMON: 設定が見つからないか、選択アイコンがありません");
     }
   });
 }
@@ -2013,6 +2060,12 @@ function applyIconVisibility(selectedIcons) {
   // 設定ページからの呼び出しかどうかを判定
   const isSettingPage = window.location.pathname.includes("/setting/");
   const prefix = isSettingPage ? "SETTING-COMMON" : "COMMON";
+
+  console.log(
+    `${prefix}: applyIconVisibility 呼び出し - 選択アイコン:`,
+    selectedIcons
+  );
+  console.log(`${prefix}: 呼び出し元のスタックトレース:`, new Error().stack);
 
   const header = document.querySelector("header");
   if (!header) {

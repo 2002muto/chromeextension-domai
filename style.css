@@ -188,7 +188,8 @@ body::-webkit-scrollbar,
   transform: translateX(-50%);
 }
 
-/* ホバー時の❌ボタン表示 */
+/* ホバー時の❌ボタン表示（一時的に無効化） */
+/*
 .nav-btn::after {
   content: "✕";
   position: absolute;
@@ -222,6 +223,7 @@ body::-webkit-scrollbar,
 #btn-memo-list::after {
   display: none !important;
 }
+*/
 
 /* クリック時のメッセージ表示（AI専用） */
 .nav-btn::before {
