@@ -54,7 +54,7 @@
 .clip-item {
   cursor: move;
   display: grid;
-  grid-template-columns: auto 1fr auto; /* copyボタン, textarea, archiveアイコン */
+  grid-template-columns: auto 1fr auto; /* 挿入ボタン, textarea, アクションボタン群 */
   align-items: center; /* 垂直方向中央揃え（テキストエリアが長くなってもボタンは中央） */
   gap: 12px;
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
@@ -79,13 +79,13 @@
   /* gridレイアウトで自動調整される */
 }
 
-/* copyボタンのホバー時の視覚的フィードバック */
-.clip-item .clipboard-copy {
+/* 左側：挿入ボタンのホバー時の視覚的フィードバック */
+.clip-item .clipboard-insert {
   position: relative;
   z-index: 1;
 }
 
-.clip-item .clipboard-copy::before {
+.clip-item .clipboard-insert::before {
   content: "";
   position: absolute;
   top: 0;
@@ -99,11 +99,11 @@
   z-index: -1;
 }
 
-.clip-item .clipboard-copy:hover::before {
+.clip-item .clipboard-insert:hover::before {
   opacity: 0.1;
 }
 
-.clipboard-copy {
+.clipboard-insert {
   background: transparent;
   border: none;
   padding: 8px;
@@ -119,39 +119,111 @@
   place-self: center; /* グリッド内で中央配置 */
 }
 
-.clipboard-copy i {
+.clipboard-insert i {
   font-size: 1.3rem; /* アーカイブアイコンと同じサイズ */
 }
 
-.clipboard-copy:hover {
+.clipboard-insert:hover {
   background: transparent;
   color: #00b0cf;
   transform: translateY(-1px);
   box-shadow: none;
 }
 
-/* アーカイブアイコン（MEMOとPROMPTページと統一） */
-.clip-item .actions {
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #ffffff;
+/* 右側：アクションボタン群 */
+.clipboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  place-self: center; /* グリッド内で中央配置 */
+}
+
+/* コピーボタン */
+.clipboard-copy {
   background: transparent;
   border: none;
-  padding: 0;
-  height: 36px; /* Match clipboard icon size */
-  width: 36px; /* Match clipboard icon size */
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
-  transition: transform 0.2s ease; /* Match clipboard transition */
-  place-self: center; /* Center in grid */
-  border-radius: 4px; /* Match clipboard border radius */
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
 }
 
-.clip-item .actions:hover {
-  transform: scale(1.1); /* Match clipboard hover effect */
-  background: rgba(255, 255, 255, 0.1); /* Match clipboard hover background */
+.clipboard-copy i {
+  font-size: 1.2rem;
+}
+
+.clipboard-copy:hover {
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.clipboard-copy:active {
+  transform: translateY(0);
+}
+
+.clipboard-copy.copied {
+  color: #6b7280; /* グレー色 */
+}
+
+.clipboard-copy.copied:hover {
+  color: #6b7280; /* ホバー時もグレーを維持 */
+  transform: none; /* アニメーションを無効化 */
+}
+
+/* ドラッグハンドル */
+.clipboard-drag-handle {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  color: #999999;
+  cursor: move;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clipboard-drag-handle i {
+  font-size: 1.2rem;
+}
+
+.clipboard-drag-handle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* アーカイブボタン */
+.clipboard-archive {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clipboard-archive i {
+  font-size: 1.2rem;
+}
+
+.clipboard-archive:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
 }
 
 /* ─── エクスポートメッセージ ─── */
@@ -666,6 +738,15 @@
     padding: 16px 20px; /* パディングを増やして余裕を持たせる */
   }
 
+  .clipboard-insert {
+    width: 40px; /* ボタンを少し大きく */
+    height: 40px;
+  }
+
+  .clipboard-insert i {
+    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
+  }
+
   .clipboard-copy {
     width: 40px; /* ボタンを少し大きく */
     height: 40px;
@@ -675,9 +756,21 @@
     font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
   }
 
-  .clip-item .actions {
-    width: 40px; /* アーカイブアイコンも少し大きく */
+  .clipboard-drag-handle {
+    width: 40px; /* ボタンを少し大きく */
     height: 40px;
+  }
+
+  .clipboard-drag-handle i {
+    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
+  }
+
+  .clipboard-archive {
+    width: 40px; /* ボタンを少し大きく */
+    height: 40px;
+  }
+
+  .clipboard-archive i {
     font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
   }
 }
@@ -702,6 +795,15 @@
     padding: 10px 14px;
   }
 
+  .clipboard-insert {
+    width: 32px; /* ボタンを小さく */
+    height: 32px;
+  }
+
+  .clipboard-insert i {
+    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
+  }
+
   .clipboard-copy {
     width: 32px; /* ボタンを小さく */
     height: 32px;
@@ -711,9 +813,21 @@
     font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
   }
 
-  .clip-item .actions {
-    width: 32px; /* アーカイブアイコンも小さく */
+  .clipboard-drag-handle {
+    width: 32px; /* ボタンを小さく */
     height: 32px;
+  }
+
+  .clipboard-drag-handle i {
+    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
+  }
+
+  .clipboard-archive {
+    width: 32px; /* ボタンを小さく */
+    height: 32px;
+  }
+
+  .clipboard-archive i {
     font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
   }
 
@@ -757,8 +871,10 @@
   outline-offset: 2px;
 }
 
+.clipboard-insert:focus,
 .clipboard-copy:focus,
-.clip-item .actions:focus {
+.clipboard-drag-handle:focus,
+.clipboard-archive:focus {
   outline: 2px solid #ffffff;
   outline-offset: 2px;
 }
@@ -773,7 +889,19 @@
     border: 1px solid #ffffff;
   }
 
+  .clipboard-insert {
+    border: 2px solid #ffffff;
+  }
+
   .clipboard-copy {
+    border: 2px solid #ffffff;
+  }
+
+  .clipboard-drag-handle {
+    border: 2px solid #ffffff;
+  }
+
+  .clipboard-archive {
     border: 2px solid #ffffff;
   }
 }
@@ -791,8 +919,10 @@
     transform: none;
   }
 
+  .clipboard-insert:hover,
   .clipboard-copy:hover,
-  .clip-item .actions:hover {
+  .clipboard-drag-handle:hover,
+  .clipboard-archive:hover {
     transform: none;
   }
 }

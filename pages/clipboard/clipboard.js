@@ -303,12 +303,13 @@ async function renderClipboardView() {
       });
     });
 
-    // 挿入ボタン（Arrow-left-circle）- 左側
-    const copy = document.createElement("button");
-    copy.className = "clipboard-copy";
-    copy.innerHTML = '<i class="bi bi-arrow-left-circle"></i>';
-    copy.addEventListener("click", () => {
-      // ★修正★ 最新の textarea の値を取得して送信
+    // 左側：挿入ボタン（Arrow-left-circle）
+    const insertBtn = document.createElement("button");
+    insertBtn.className = "clipboard-insert";
+    insertBtn.innerHTML = '<i class="bi bi-arrow-left-circle"></i>';
+    insertBtn.title = "挿入";
+    insertBtn.addEventListener("click", () => {
+      // 最新の textarea の値を取得して送信
       const currentText = ta.value;
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (!tabs.length) return;
@@ -322,7 +323,7 @@ async function renderClipboardView() {
                 chrome.runtime.lastError.message
               );
             } else {
-              console.log("copy:", currentText);
+              console.log("insert:", currentText);
             }
           }
         );
@@ -412,20 +413,87 @@ async function renderClipboardView() {
     }, 50);
 
     // 正しい順序で要素を追加：左→真ん中→右
-    li.appendChild(copy); // 左：コピーボタン
+    li.appendChild(insertBtn); // 左：挿入ボタン
     li.appendChild(ta); // 真ん中：テキストエリア
 
-    // アーカイブアイコン（MEMOページと同様のスタイル）
-    const arch = document.createElement("i");
-    arch.className = "bi bi-archive-fill actions";
-    arch.title = "アーカイブ";
-    arch.addEventListener("click", async (e) => {
-      e.stopPropagation();
+    // 右側のアクションボタン群を作成
+    const actionsContainer = document.createElement("div");
+    actionsContainer.className = "clipboard-actions";
 
-      // ★修正★ 現在のテキストエリアの値を取得
+    // 右１：コピーボタン（bi bi-copy）
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "clipboard-copy";
+    copyBtn.innerHTML = '<i class="bi bi-copy"></i>';
+    copyBtn.title = "コピー";
+    copyBtn.addEventListener("click", async () => {
       const currentText = ta.value;
 
-      // ★修正★ 空のクリップでもアーカイブを実行（アーカイブ画面で非表示にする）
+      if (currentText.trim() === "") {
+        console.log("No text to copy");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(currentText);
+        console.log("Text copied to clipboard");
+
+        // コピー成功時の視覚的フィードバック
+        const icon = copyBtn.querySelector("i");
+        const originalClass = icon.className;
+
+        // アイコンをチェックマークに変更してグレーにする
+        icon.className = "bi bi-check";
+        copyBtn.classList.add("copied");
+
+        // 1秒後に元に戻す
+        setTimeout(() => {
+          icon.className = originalClass;
+          copyBtn.classList.remove("copied");
+        }, 1000);
+      } catch (err) {
+        console.error("Failed to copy text: ", err);
+
+        // 失敗時のフィードバック（古いブラウザ対応）
+        try {
+          ta.select();
+          document.execCommand("copy");
+          console.log("Text copied using fallback method");
+
+          // 成功時の視覚的フィードバック
+          const icon = copyBtn.querySelector("i");
+          const originalClass = icon.className;
+
+          icon.className = "bi bi-check";
+          copyBtn.classList.add("copied");
+
+          setTimeout(() => {
+            icon.className = originalClass;
+            copyBtn.classList.remove("copied");
+          }, 1000);
+        } catch (fallbackErr) {
+          console.error("Fallback copy also failed: ", fallbackErr);
+        }
+      }
+    });
+
+    // 右２：ドラッグハンドル（bi bi-grip-vertical）
+    const dragHandle = document.createElement("div");
+    dragHandle.className = "clipboard-drag-handle";
+    dragHandle.innerHTML = '<i class="bi bi-grip-vertical"></i>';
+    dragHandle.title = "ドラッグして並び替え";
+
+    // 右３：アーカイブボタン（bi bi-archive-fill）
+    const archiveBtn = document.createElement("button");
+    archiveBtn.className = "clipboard-archive";
+    archiveBtn.innerHTML = '<i class="bi bi-archive-fill"></i>';
+    archiveBtn.title = "アーカイブ";
+    archiveBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+
+      // 現在のテキストエリアの値を取得
+      const currentText = ta.value;
+
+      // 空のクリップでもアーカイブを実行（アーカイブ画面で非表示にする）
       console.log(
         "[CLIPBOARD] クリップをアーカイブします:",
         currentText.substring(0, 50) + "..."
@@ -477,10 +545,15 @@ async function renderClipboardView() {
         });
       }
 
-      // ★修正★ アーカイブ処理後は常に画面を再描画
+      // アーカイブ処理後は常に画面を再描画
       renderClipboardView();
     });
-    li.appendChild(arch);
+
+    // アクションボタン群を右側に追加
+    actionsContainer.appendChild(copyBtn);
+    actionsContainer.appendChild(dragHandle);
+    actionsContainer.appendChild(archiveBtn);
+    li.appendChild(actionsContainer);
 
     ul.appendChild(li);
 
