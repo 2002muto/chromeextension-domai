@@ -295,9 +295,22 @@ async function performSearch() {
 
     // ドメインを抽出して動的ルールを追加
     const domain = extractDomain(url);
+    let ruleId = null;
     if (domain) {
       console.log(`[IFRAME] Extracted domain: ${domain}`);
-      await addDynamicIframeRule(domain);
+      ruleId = await addDynamicIframeRule(domain);
+      console.log(`[IFRAME] addDynamicIframeRule returned ID: ${ruleId}`);
+    }
+
+    // 検索エンジンのURL (@検索) を事前に生成
+    const searchFallbackUrl =
+      `https://www.google.com/search?q=${encodeURIComponent("@" + query)}`;
+
+    if (ruleId === null) {
+      console.warn("[IFRAME] Failed to add dynamic rule - using fallback search");
+      iframeDisplayContainer.style.display = "block";
+      iframeDisplay.src = searchFallbackUrl;
+      return;
     }
 
     // Empty Stateと入力行を非表示、iframeを表示
@@ -311,27 +324,22 @@ async function performSearch() {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
 
-    // エラーハンドリングを設定してからsrcを設定
-    iframeDisplay.onload = () => {
-      console.log("iframe読み込み完了");
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-    };
-
     iframeDisplay.onerror = () => {
-      console.log("iframe読み込みエラー");
+      console.log("iframe読み込みエラー - fallback to search");
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-      showHostError();
+      // URLの読み込みに失敗した場合は@検索に切り替える
+      iframeDisplay.src = searchFallbackUrl;
     };
 
     // タイムアウト処理を追加
-    const timeoutId = setTimeout(() => {
-      console.log("iframe読み込みタイムアウト");
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-      showHostError();
-    }, 10000); // 10秒でタイムアウト
+      const timeoutId = setTimeout(() => {
+        console.log("iframe読み込みタイムアウト - fallback to search");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-search"></i>';
+        // タイムアウト時も@検索に切り替える
+        iframeDisplay.src = searchFallbackUrl;
+      }, 10000); // 10秒でタイムアウト
 
     iframeDisplay.onload = () => {
       clearTimeout(timeoutId);

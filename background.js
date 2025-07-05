@@ -9,6 +9,50 @@ let lastTab = null; // 直近入力フォーカスのページタブ
 // DeclarativeNetRequest制御
 // ───────────────────────────────────────
 let iframeRulesEnabled = true;
+// Next unique ID for dynamically-added iframe rules. Initialized in
+// initializeDynamicRules() based on existing rules to avoid conflicts.
+// 最初の動的ルールID
+const INITIAL_DYNAMIC_RULE_ID = 1000;
+// DNR APIが許容する最大ID値
+const MAX_DYNAMIC_RULE_ID = 1000000;
+// 次に利用する動的ルールID
+let nextDynamicRuleId = INITIAL_DYNAMIC_RULE_ID;
+// Track domains that already have a dynamic rule so we don't add duplicates.
+const dynamicRuleIds = new Map();
+
+// ───────────────────────────────────────
+// Existing dynamic rule initialization
+// ───────────────────────────────────────
+async function initializeDynamicRules() {
+  console.log("[BG] Initializing dynamic rules");
+  try {
+    const rules = await chrome.declarativeNetRequest.getDynamicRules();
+    let maxId = nextDynamicRuleId;
+    for (const rule of rules) {
+      // Extract the domain from the rule's urlFilter (format: ||domain/*)
+      const filter = rule.condition?.urlFilter || "";
+      const match = filter.startsWith("||") ? filter.slice(2).split("/")[0] : null;
+      if (match) {
+        dynamicRuleIds.set(match, rule.id);
+      }
+      if (rule.id >= maxId) {
+        maxId = rule.id + 1;
+      }
+    }
+    nextDynamicRuleId = Math.max(maxId, INITIAL_DYNAMIC_RULE_ID);
+    if (nextDynamicRuleId > MAX_DYNAMIC_RULE_ID) {
+      console.warn(
+        `[BG] nextDynamicRuleId exceeded limit ${MAX_DYNAMIC_RULE_ID}. Resetting.`
+      );
+      nextDynamicRuleId = INITIAL_DYNAMIC_RULE_ID;
+    }
+    console.log(
+      `[BG] Loaded ${rules.length} dynamic rules. Next ID: ${nextDynamicRuleId}`
+    );
+  } catch (error) {
+    console.error("[BG] Failed to initialize dynamic rules:", error);
+  }
+}
 
 // ルールの有効/無効を切り替え
 async function toggleIframeRules(enable) {
@@ -40,7 +84,21 @@ async function addDynamicIframeRule(domain) {
   console.log(`[BG] Adding dynamic iframe rule for: ${domain}`);
 
   try {
-    const ruleId = Date.now(); // ユニークID生成
+    // 再利用できる既存ルールがあるか確認
+    if (dynamicRuleIds.has(domain)) {
+      const existingId = dynamicRuleIds.get(domain);
+      console.log(`[BG] Rule already exists for ${domain} with ID: ${existingId}`);
+      return existingId;
+    }
+
+    // Ensure ruleId is an integer within allowed range
+    if (nextDynamicRuleId > MAX_DYNAMIC_RULE_ID) {
+      console.warn(
+        `[BG] nextDynamicRuleId exceeded limit ${MAX_DYNAMIC_RULE_ID}. Resetting.`
+      );
+      nextDynamicRuleId = INITIAL_DYNAMIC_RULE_ID;
+    }
+    const ruleId = Math.trunc(nextDynamicRuleId++); // 1e3以上の連番IDを使用
     const rule = {
       id: ruleId,
       priority: 1,
@@ -58,16 +116,22 @@ async function addDynamicIframeRule(domain) {
         ],
       },
       condition: {
+        // Match any sub_frame requests to the specified domain
         urlFilter: `||${domain}/*`,
         resourceTypes: ["sub_frame"],
-        tabIds: [-1],
-        initiatorDomains: ["chrome-extension://*"],
+        // Removing tabIds and initiatorDomains to avoid mismatches
       },
     };
+
+    // ルール内容をデバッグ出力
+    console.log("[BG] Rule details:", rule);
 
     await chrome.declarativeNetRequest.updateDynamicRules({
       addRules: [rule],
     });
+
+    // 追加したルールを記録
+    dynamicRuleIds.set(domain, ruleId);
 
     console.log(`[BG] Dynamic rule added for ${domain} with ID: ${ruleId}`);
     return ruleId;
@@ -167,9 +231,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
 chrome.runtime.onStartup.addListener(() => {
   console.log("[BG] Extension startup - enabling iframe rules");
   toggleIframeRules(true);
+  initializeDynamicRules();
 });
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("[BG] Extension installed - enabling iframe rules");
   toggleIframeRules(true);
+  initializeDynamicRules();
 });
+
+// サービスワーカー起動時に既存ルールを確認
+initializeDynamicRules();
