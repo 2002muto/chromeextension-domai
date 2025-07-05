@@ -1222,8 +1222,8 @@ function updateExportButtonState() {
 // ───────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   console.log("CLIPBOARDページ: DOMContentLoaded");
-  // 新しいスタイルが適用されたか確認
-  console.log("style patch: clip-item left area uses #00E344 background");
+  // 新しいスタイル適用を確認
+  console.log("style patch: clip-item now uses ::before accent #00E344");
 
   // ヘッダーのクリップボードアイコンのクリックイベントを初期設定
   const clipboardBtn = document.getElementById("btn-clipboard");
