@@ -1807,13 +1807,21 @@ async function exportAllMemos() {
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
     const fileName = `${year}${month}${day}_${hours}${minutes}${seconds}.json`;
-    console.log("エクスポート用タイムスタンプ:", `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`);
+    console.log(
+      "エクスポート用タイムスタンプ:",
+      `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    );
 
     console.log("ファイル名:", fileName);
     console.log("アクティブなメモ数:", activeMemos.length);
 
     // エクスポート用のデータ構造を作成（アクティブなメモのみ）
     const exportData = {
+      // 特別なID（この拡張機能からのエクスポートであることを示す）
+      extensionId: "chromeextension-domai-v1.0",
+      extensionName: "Chrome Extension Domain Assistant",
+      extensionVersion: "1.0.0",
+      // 既存のデータ
       version: "1.0",
       exportDate: now.toISOString(),
       memoCount: activeMemos.length,
@@ -1821,6 +1829,17 @@ async function exportAllMemos() {
       archivedMemoCount: memos ? memos.filter((m) => m.archived).length : 0,
       memos: activeMemos,
     };
+
+    // 正しいハッシュ値を計算（検証用）
+    const dataForHash = { ...exportData };
+    const hashResult = await generateSecurityHash(dataForHash);
+
+    // 偽のハッシュ値を生成（表示用）
+    const fakeHash = generateFakeHash(activeMemos, 64);
+
+    // エクスポートデータに設定
+    exportData.securityHash = fakeHash; // 偽のハッシュ値（表示用）
+    exportData.backupnumber = hashResult.backupnumber; // 前半32文字（検証用、隠しフィールド）
 
     console.log("エクスポートデータ:", exportData);
 
@@ -1844,6 +1863,106 @@ async function exportAllMemos() {
   } catch (error) {
     console.error("エクスポートエラー:", error);
     showExportErrorMessage();
+  }
+}
+
+// SHA-256ハッシュを生成し、分割してセキュリティ強化する関数
+async function generateSecurityHash(data) {
+  try {
+    // データを文字列化
+    const dataString = JSON.stringify(data);
+
+    // 文字列をUint8Arrayに変換
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(dataString);
+
+    // SHA-256ハッシュを計算
+    const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
+
+    // ArrayBufferをUint8Arrayに変換
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+    // 16進数文字列に変換
+    const sha256Hash = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // SHA-256ハッシュを前半と後半に分割（各32文字）
+    const firstHalf = sha256Hash.substring(0, 32);
+    const secondHalf = sha256Hash.substring(32, 64);
+
+    // ランダムな32文字のハッシュを生成（0だとバレるので、実際にランダム生成）
+    const randomBytes = new Uint8Array(32);
+    crypto.getRandomValues(randomBytes);
+    const randomHash = Array.from(randomBytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // backupnumber: 32桁（SHA-256の前半32桁のみ）
+    // securityHash: 64桁（SHA-256の後半32桁 + ランダム32桁）
+    const combinedHash = secondHalf + randomHash;
+
+    return {
+      backupnumber: firstHalf,
+      securityHash: combinedHash,
+    };
+  } catch (error) {
+    console.error("内緒だよ");
+    return null;
+  }
+}
+
+// 偽のハッシュ値を生成する関数（表示用）- より自然なランダムハッシュ
+function generateFakeHash(data, targetLength) {
+  try {
+    // データを文字列化してハッシュを生成
+    const dataString = JSON.stringify(data);
+    let hash = 0;
+
+    // 異なるアルゴリズムでハッシュを生成（偽装用）
+    for (let i = 0; i < dataString.length; i++) {
+      const char = dataString.charCodeAt(i);
+      hash = (hash << 3) + hash + char; // 異なる計算式
+      hash = hash & hash;
+    }
+
+    // 16進数文字列に変換
+    let fakeHash = hash.toString(16);
+
+    // より自然なランダムハッシュを生成
+    const randomBytes = new Uint8Array(targetLength / 2); // 16進数なので半分のバイト数
+    crypto.getRandomValues(randomBytes);
+    const randomHash = Array.from(randomBytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // 元のハッシュとランダムハッシュを組み合わせて自然なハッシュを作成
+    const combinedHash = (fakeHash + randomHash).substring(0, targetLength);
+
+    // 長さを調整（短い場合はランダムで埋める、長い場合は切り詰める）
+    if (combinedHash.length < targetLength) {
+      const remainingLength = targetLength - combinedHash.length;
+      const additionalRandomBytes = new Uint8Array(
+        Math.ceil(remainingLength / 2)
+      );
+      crypto.getRandomValues(additionalRandomBytes);
+      const additionalHash = Array.from(additionalRandomBytes)
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("")
+        .substring(0, remainingLength);
+      return combinedHash + additionalHash;
+    } else {
+      return combinedHash;
+    }
+  } catch (error) {
+    console.error("偽ハッシュ生成エラー:", error);
+    // エラー時もランダムハッシュを生成
+    const fallbackBytes = new Uint8Array(targetLength / 2);
+    crypto.getRandomValues(fallbackBytes);
+    return Array.from(fallbackBytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+      .substring(0, targetLength);
   }
 }
 

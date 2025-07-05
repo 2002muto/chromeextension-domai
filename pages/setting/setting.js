@@ -29,7 +29,7 @@ function renderSettingMain() {
       console.log("初期化時に説明パネルにanimateクラスを追加しました");
     });
   } else {
-    console.error("説明パネルが見つかりません");
+    console.error("内緒だよ");
   }
 
   // 「説明」ボタンを active にする（存在する場合）
@@ -145,7 +145,7 @@ window.addEventListener("DOMContentLoaded", () => {
           console.log("パネルにanimateクラスを追加:", targetId);
         });
       } else {
-        console.error("ターゲットパネルが見つかりません:", targetId);
+        console.error("内緒だよ");
       }
     });
   });
@@ -515,7 +515,7 @@ function updateIconSelection(selectedIcons) {
 
   const iconOptions = document.querySelectorAll(".icon-option");
   if (!iconOptions.length) {
-    console.error("アイコンオプションが見つかりません");
+    console.error("内緒だよ");
     return;
   }
 
@@ -697,7 +697,7 @@ function forceApplyIconVisibility(selectedIcons) {
 
   const header = document.querySelector("header");
   if (!header) {
-    console.error("FORCE: ヘッダーが見つかりません");
+    console.error("内緒だよ");
     return;
   }
 
@@ -943,7 +943,7 @@ function initializeBackupInstall() {
   const importBtn = document.getElementById("btn-import");
 
   if (!fileUploadArea || !fileInput || !selectFileBtn) {
-    console.error("バックアップのインストール機能の要素が見つかりません");
+    console.error("内緒だよ");
     return;
   }
 
@@ -1035,6 +1035,24 @@ async function processSelectedFile(file) {
   console.log("processSelectedFile called with:", file.name);
 
   try {
+    // ファイル形式の検証
+    if (!file.name.toLowerCase().endsWith(".json")) {
+      console.error("内緒だよ");
+      showImportMessage("アップロードに失敗しました。", "error");
+      return;
+    }
+
+    // MIMEタイプの検証（可能な場合）
+    if (
+      file.type &&
+      file.type !== "application/json" &&
+      file.type !== "text/plain"
+    ) {
+      console.error("内緒だよ");
+      showImportMessage("アップロードに失敗しました。", "error");
+      return;
+    }
+
     // ファイルの内容を読み込み
     console.log("Reading file content...");
     const content = await readFileAsText(file);
@@ -1046,9 +1064,10 @@ async function processSelectedFile(file) {
 
     // データの検証
     console.log("Validating backup data...");
-    if (!validateBackupData(data)) {
+    const isValid = await validateBackupData(data);
+    if (!isValid) {
       console.log("Backup data validation failed");
-      showImportMessage("無効なバックアップファイルです", "error");
+      showImportMessage("アップロードに失敗しました。", "error");
       return;
     }
 
@@ -1068,11 +1087,8 @@ async function processSelectedFile(file) {
     );
     console.log("File processing completed successfully");
   } catch (error) {
-    console.error("ファイル処理エラー:", error);
-    showImportMessage(
-      "ファイルの読み込みに失敗しました: " + error.message,
-      "error"
-    );
+    console.error("内緒だよ");
+    showImportMessage("アップロードに失敗しました。", "error");
   }
 }
 
@@ -1087,12 +1103,39 @@ function readFileAsText(file) {
 }
 
 // バックアップデータの検証
-function validateBackupData(data) {
+async function validateBackupData(data) {
   console.log("validateBackupData called with:", data);
 
   if (!data || typeof data !== "object") {
     console.log("Data is not an object");
     return false;
+  }
+
+  // 特別なIDの検証（この拡張機能からのエクスポートであることを確認）
+  if (!data.extensionId || data.extensionId !== "chromeextension-domai-v1.0") {
+    console.log("Invalid extension ID:", data.extensionId);
+    showImportMessage("アップロードに失敗しました。", "error");
+    return false;
+  }
+
+  // 拡張機能名の検証
+  if (
+    !data.extensionName ||
+    data.extensionName !== "Chrome Extension Domain Assistant"
+  ) {
+    console.log("Invalid extension name:", data.extensionName);
+    showImportMessage("アップロードに失敗しました。", "error");
+    return false;
+  }
+
+  // セキュリティハッシュの検証
+  if (data.securityHash) {
+    const isValidHash = await validateSecurityHash(data);
+    if (!isValidHash) {
+      console.log("Invalid security hash");
+      showImportMessage("アップロードに失敗しました。", "error");
+      return false;
+    }
   }
 
   // 基本的な構造チェック（バージョンとエクスポート日時は必須ではない）
@@ -1121,11 +1164,103 @@ function validateBackupData(data) {
   const hasValidData = data.memos || data.clips || data.prompts;
   if (!hasValidData) {
     console.log("No valid data types found");
+    showImportMessage("アップロードに失敗しました。", "error");
     return false;
   }
 
   console.log("Backup data validation passed");
   return true;
+}
+
+// セキュリティハッシュを検証する関数
+async function validateSecurityHash(data) {
+  try {
+    // 隠しフィールドの正しいハッシュ値を使用して検証
+    if (!data.backupnumber || !data.securityHash) {
+      console.error("内緒だよ");
+      return false;
+    }
+
+    // データからsecurityHash、backupnumber、digitalSignatureを除外してハッシュを再計算
+    const dataForHash = { ...data };
+    delete dataForHash.securityHash;
+    delete dataForHash.backupnumber;
+    delete dataForHash.digitalSignature;
+
+    // 再計算したハッシュを取得
+    const calculatedResult = await generateSHA256Hash(dataForHash);
+    if (!calculatedResult) {
+      console.error("内緒だよ");
+      return false;
+    }
+
+    // backupnumber（前半）とsecurityHashの後半32文字を組み合わせて元のSHA-256を復元
+    const originalFirstHalf = data.backupnumber;
+    const originalSecondHalf = data.securityHash.substring(0, 32);
+    const originalFullHash = originalFirstHalf + originalSecondHalf;
+
+    // 計算したハッシュと比較
+    const calculatedFullHash =
+      calculatedResult.backupnumber +
+      calculatedResult.securityHash.substring(0, 32);
+    const hashValid = originalFullHash === calculatedFullHash;
+
+    console.log("セキュリティ検証結果:", {
+      hashValid,
+      isValid: hashValid,
+    });
+
+    return hashValid;
+  } catch (error) {
+    console.error("内緒だよ");
+    return false;
+  }
+}
+
+// SHA-256ハッシュを生成し、分割してセキュリティ強化する関数
+async function generateSHA256Hash(data) {
+  try {
+    // データを文字列化
+    const dataString = JSON.stringify(data);
+
+    // 文字列をUint8Arrayに変換
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(dataString);
+
+    // SHA-256ハッシュを計算
+    const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
+
+    // ArrayBufferをUint8Arrayに変換
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+    // 16進数文字列に変換
+    const sha256Hash = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // SHA-256ハッシュを前半と後半に分割（各32文字）
+    const firstHalf = sha256Hash.substring(0, 32);
+    const secondHalf = sha256Hash.substring(32, 64);
+
+    // ランダムな32文字のハッシュを生成（0だとバレるので、実際にランダム生成）
+    const randomBytes = new Uint8Array(32);
+    crypto.getRandomValues(randomBytes);
+    const randomHash = Array.from(randomBytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // backupnumber: 32桁（SHA-256の前半32桁のみ）
+    // securityHash: 64桁（SHA-256の後半32桁 + ランダム32桁）
+    const combinedHash = secondHalf + randomHash;
+
+    return {
+      backupnumber: firstHalf,
+      securityHash: combinedHash,
+    };
+  } catch (error) {
+    console.error("内緒だよ");
+    return null;
+  }
 }
 
 // ファイル情報の表示
@@ -1143,6 +1278,21 @@ function showFileInfo(file, data) {
   // ファイル詳細情報を生成
   const details = [];
 
+  // 拡張機能情報
+  if (data.extensionName) {
+    details.push({
+      label: "拡張機能",
+      value: data.extensionName,
+    });
+  }
+
+  if (data.extensionVersion) {
+    details.push({
+      label: "拡張機能バージョン",
+      value: data.extensionVersion,
+    });
+  }
+
   // エクスポート日時
   if (data.exportDate) {
     const exportDate = new Date(data.exportDate);
@@ -1157,6 +1307,14 @@ function showFileInfo(file, data) {
     details.push({
       label: "バージョン",
       value: data.version,
+    });
+  }
+
+  // セキュリティ情報
+  if (data.securityHash) {
+    details.push({
+      label: "セキュリティ",
+      value: "✓ 検証済み",
     });
   }
 
@@ -1311,8 +1469,8 @@ async function executeImport() {
     // 成功後はUIをリセット（メッセージは表示しない）
     resetImportUI();
   } catch (error) {
-    console.error("インポートエラー:", error);
-    showImportMessage("インポートに失敗しました: " + error.message, "error");
+    console.error("内緒だよ");
+    showImportMessage("インポートに失敗しました", "error");
   }
 }
 
