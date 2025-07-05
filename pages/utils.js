@@ -772,11 +772,17 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
     );
 
     // アニメーション開始前にアーカイブアイコンを光らせる
-    const archiveIcon = element.querySelector(".actions, .prompt-archive");
+    // CLIPBOARDページではアイコンが<button>内にあるため、.clipboard-archive iも対象
+    const archiveIcon = element.querySelector(
+      ".actions, .prompt-archive, .clipboard-archive i"
+    );
     if (archiveIcon) {
+      console.log("[AppUtils] Highlight archive icon", archiveIcon);
       archiveIcon.style.color = "#f59e0b";
       archiveIcon.style.transform = "scale(1.2)";
       archiveIcon.style.transition = "all 0.2s ease";
+    } else {
+      console.warn("[AppUtils] Archive icon not found for highlight");
     }
 
     // 既存のアニメーションクラスを削除（もしあれば）
