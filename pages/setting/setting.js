@@ -710,9 +710,11 @@ function forceApplyIconVisibility(selectedIcons) {
     window.restoreActiveIconState();
   }
 
-  // ヘッダー更新モード終了
-  header.classList.remove("updating");
-  console.log("FORCE: ヘッダー更新モード終了");
+  // ヘッダー更新モード終了を次のフレームで実行
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log("FORCE: ヘッダー更新モード終了");
+  });
 
   // 適用後の状態を確認
   setTimeout(() => {

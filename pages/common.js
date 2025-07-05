@@ -2187,9 +2187,11 @@ function applyIconVisibilityToHeader(selectedIcons) {
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
 
-  // ヘッダー更新モード終了
-  header.classList.remove("updating");
-  console.log("COMMON: ヘッダー更新モード終了");
+  // ヘッダー更新モード終了を次のフレームで実行し、描画タイミングを調整
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log("COMMON: ヘッダー更新モード終了");
+  });
 }
 
 // 表示されているアイコンを左寄せにする関数
@@ -2316,9 +2318,11 @@ function applyIconVisibility(selectedIcons) {
   // 現在のページに対応するアイコンのactive状態を復元
   restoreActiveIconState();
 
-  // ヘッダー更新モード終了
-  header.classList.remove("updating");
-  console.log(`${prefix}: ヘッダー更新モード終了`);
+  // ヘッダー更新モード終了を次のフレームで実行
+  requestAnimationFrame(() => {
+    header.classList.remove("updating");
+    console.log(`${prefix}: ヘッダー更新モード終了`);
+  });
 }
 
 // 今後実装予定のアイコンを非表示にする関数

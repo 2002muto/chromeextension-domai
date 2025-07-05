@@ -832,6 +832,7 @@ main {
 /* ヘッダー更新中は一時的に非表示にしてトランジションを無効化 */
 header.updating {
   visibility: hidden !important;
+  opacity: 0 !important; /* 完全に非表示にしてチラつきを防止 */
 }
 
 header.updating .nav-btn {
