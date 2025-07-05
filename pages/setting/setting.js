@@ -518,6 +518,7 @@ function updateIconSelection(selectedIcons) {
 
 // 選択されているアイコンを取得
 function getSelectedIcons() {
+  // 今後実装予定のアイコン（AI）を除外し、選択されたアイコンのみを取得
   const selectedOptions = document.querySelectorAll(
     ".icon-option.selected:not(.coming-soon)"
   );
@@ -525,16 +526,19 @@ function getSelectedIcons() {
     (option) => option.dataset.icon
   );
 
+  // AIアイコン（今後実装予定）を除外
+  const filteredIcons = selectedIcons.filter((icon) => icon !== "ai");
+
   // MEMOとSETTINGアイコンが含まれていない場合は追加
-  if (!selectedIcons.includes("setting")) {
-    selectedIcons.push("setting");
+  if (!filteredIcons.includes("setting")) {
+    filteredIcons.push("setting");
   }
-  if (!selectedIcons.includes("memo")) {
-    selectedIcons.push("memo");
+  if (!filteredIcons.includes("memo")) {
+    filteredIcons.push("memo");
   }
 
-  console.log("選択されたアイコン:", selectedIcons);
-  return selectedIcons;
+  console.log("選択されたアイコン（今後実装予定を除く）:", filteredIcons);
+  return filteredIcons;
 }
 
 // アイコン表示の適用
@@ -553,6 +557,15 @@ function applyIconVisibility(selectedIcons) {
   );
   console.log("SETTING: 呼び出し元のスタックトレース:", new Error().stack);
 
+  // 設定ページ以外からの呼び出しは無視
+  const isSettingPage = window.location.pathname.includes("/setting/");
+  if (!isSettingPage) {
+    console.log(
+      "SETTING: 設定ページ以外からの呼び出しのため、アイコン表示制御をスキップ"
+    );
+    return;
+  }
+
   const header = document.querySelector("header");
   if (!header) {
     console.log("SETTING: ヘッダーが見つかりません");
@@ -566,8 +579,16 @@ function applyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
+    // AIアイコン（今後実装予定）は常に非表示
+    if (iconType === "ai") {
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.position = "absolute";
+      button.style.left = "-9999px"; // 画面外に移動
+      console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
+    }
     // MEMOとSETTINGアイコンは常に表示
-    if (iconType === "setting" || iconType === "memo") {
+    else if (iconType === "setting" || iconType === "memo") {
       button.style.display = "flex";
       button.style.visibility = "visible";
       button.style.position = "relative";
@@ -615,6 +636,15 @@ function forceApplyIconVisibility(selectedIcons) {
     return;
   }
 
+  // 設定ページ以外からの呼び出しは無視
+  const isSettingPage = window.location.pathname.includes("/setting/");
+  if (!isSettingPage) {
+    console.log(
+      "FORCE: 設定ページ以外からの呼び出しのため、アイコン表示制御をスキップ"
+    );
+    return;
+  }
+
   console.log("=== 強制的なアイコン表示適用開始 ===");
   console.log("適用するアイコン:", selectedIcons);
 
@@ -642,8 +672,19 @@ function forceApplyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
+    // AIアイコン（今後実装予定）は常に非表示
+    if (iconType === "ai") {
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.opacity = "0";
+      button.style.position = "absolute";
+      button.style.left = "-9999px"; // 画面外に移動
+      console.log(
+        `FORCE: ${buttonId} (${iconType}): 強制非表示 (今後実装予定)`
+      );
+    }
     // MEMOとSETTINGアイコンは常に表示
-    if (iconType === "setting" || iconType === "memo") {
+    else if (iconType === "setting" || iconType === "memo") {
       button.style.display = "flex";
       button.style.visibility = "visible";
       button.style.opacity = "1";

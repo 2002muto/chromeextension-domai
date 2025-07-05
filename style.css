@@ -628,6 +628,9 @@ main {
 /* ヘッダーナビゲーション用のドロップインジケーター */
 .nav-btn.drop-indicator {
   position: relative;
+  margin-left: 8px; /* 左側の間隔を拡大 */
+  margin-right: 8px; /* 右側の間隔を拡大 */
+  transition: margin 0.3s ease;
 }
 
 .nav-btn.drop-indicator::before {
@@ -797,4 +800,105 @@ main {
   100% {
     box-shadow: 0 0 8px rgba(255, 240, 75, 0.6);
   }
+}
+
+/* AIアイコン（今後実装予定）を常に非表示 */
+#btn-ai {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* ドラッグ&ドロップ時の挿入位置間隔拡大 */
+.nav-btn.drop-indicator.drop-above {
+  margin-top: 12px; /* 上側の間隔を拡大 */
+}
+
+.nav-btn.drop-indicator.drop-below {
+  margin-bottom: 12px; /* 下側の間隔を拡大 */
+}
+
+/* 挿入位置の前後のアイコンとの間隔調整 */
+.nav-btn.drop-indicator + .nav-btn {
+  margin-left: 8px; /* 次のアイコンとの間隔を調整 */
+}
+
+.nav-btn + .nav-btn.drop-indicator {
+  margin-left: 8px; /* 前のアイコンとの間隔を調整 */
+}
+
+/* より大きな間隔拡大（ドラッグオーバー時） */
+.nav-btn.drop-indicator.drag-over {
+  margin-left: 20px; /* 左側の間隔をさらに拡大 */
+  margin-right: 20px; /* 右側の間隔をさらに拡大 */
+  transition: margin 0.3s ease;
+  z-index: 1000; /* 前面に表示 */
+}
+
+/* ドラッグオーバー時の視覚的フィードバック */
+.nav-btn.drop-indicator.drag-over::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border: 3px dashed #00ff88;
+  border-radius: 50%;
+  animation: dragOverPulse 1s ease-in-out infinite;
+  pointer-events: none;
+  background: rgba(0, 255, 136, 0.1);
+}
+
+@keyframes dragOverPulse {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+/* ドラッグ&ドロップ完了時の間隔リセット */
+.nav-btn:not(.drop-indicator) {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  transition: margin 0.3s ease;
+}
+
+/* 挿入位置の明確な表示 */
+.nav-btn.drop-indicator::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.8);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.3s ease;
+}
+
+.nav-btn.drop-indicator.drop-above::before {
+  top: -8px;
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.nav-btn.drop-indicator.drop-below::before {
+  bottom: -8px;
+  opacity: 1;
+  transform: scaleX(1);
 }

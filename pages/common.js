@@ -1189,23 +1189,14 @@ function initializeHeaderDragAndDrop() {
         // 左クリックのみ
         console.log("[DragDrop] 左クリック検出:", button.id);
 
-        // ❌ボタンがクリックされた場合の処理
+        // ❌ボタンがクリックされた場合の処理（無効化）
         if (isCloseButtonClick(e, button)) {
           e.preventDefault();
           e.stopPropagation();
-          console.log("[RemoveIcon] ❌ボタンがクリックされました:", button.id);
-
-          // MEMOとSETTINGアイコンは削除不可
-          if (button.id === "btn-setting" || button.id === "btn-memo-list") {
-            console.log(
-              "[RemoveIcon] MEMOとSETTINGアイコンは削除できません:",
-              button.id
-            );
-            return;
-          }
-
-          // アイコンを非表示にする
-          removeIconFromHeader(button.id);
+          console.log(
+            "[RemoveIcon] ❌ボタンがクリックされましたが、機能は無効化されています:",
+            button.id
+          );
           return;
         }
 
@@ -1372,6 +1363,11 @@ function initializeHeaderDragAndDrop() {
           "drop-above",
           "drop-below"
         );
+        // 間隔をリセット
+        btn.style.marginLeft = "0";
+        btn.style.marginRight = "0";
+        btn.style.marginTop = "0";
+        btn.style.marginBottom = "0";
       });
 
       // ドラッグ&ドロップ進行中フラグをリセット
@@ -1406,16 +1402,28 @@ function initializeHeaderDragAndDrop() {
         const buttonCenter = rect.top + rect.height / 2;
 
         // ドロップ位置のインジケーターを表示
-        button.classList.add("drop-indicator", "active");
+        button.classList.add("drop-indicator", "active", "drag-over");
 
         if (mouseY < buttonCenter) {
           // マウスが要素の上半分にある場合、要素の上に挿入
           button.classList.add("drop-above");
           console.log("[DragDrop] ドロップ位置: 上に挿入");
+
+          // 前のアイコンとの間隔を調整
+          const prevButton = button.previousElementSibling;
+          if (prevButton && prevButton.classList.contains("nav-btn")) {
+            prevButton.style.marginRight = "16px";
+          }
         } else {
           // マウスが要素の下半分にある場合、要素の下に挿入
           button.classList.add("drop-below");
           console.log("[DragDrop] ドロップ位置: 下に挿入");
+
+          // 次のアイコンとの間隔を調整
+          const nextButton = button.nextElementSibling;
+          if (nextButton && nextButton.classList.contains("nav-btn")) {
+            nextButton.style.marginLeft = "16px";
+          }
         }
       }
     });
@@ -1432,18 +1440,49 @@ function initializeHeaderDragAndDrop() {
         "drop-below",
         "drag-over"
       );
+
+      // 間隔を元に戻す
+      setTimeout(() => {
+        if (!button.classList.contains("drop-indicator")) {
+          button.style.marginLeft = "0";
+          button.style.marginRight = "0";
+          button.style.marginTop = "0";
+          button.style.marginBottom = "0";
+
+          // 隣接するアイコンの間隔もリセット
+          const prevButton = button.previousElementSibling;
+          const nextButton = button.nextElementSibling;
+
+          if (prevButton && prevButton.classList.contains("nav-btn")) {
+            prevButton.style.marginRight = "0";
+          }
+          if (nextButton && nextButton.classList.contains("nav-btn")) {
+            nextButton.style.marginLeft = "0";
+          }
+        }
+      }, 300);
     });
 
     // ドロップ
     button.addEventListener("drop", (e) => {
       console.log("[DragDrop] drop:", button.id);
       e.preventDefault();
-      button.classList.remove(
-        "drop-indicator",
-        "drop-above",
-        "drop-below",
-        "drag-over"
-      );
+
+      // すべてのドロップインジケーターをクリア
+      const allButtons = document.querySelectorAll("header .nav-btn");
+      allButtons.forEach((btn) => {
+        btn.classList.remove(
+          "drop-indicator",
+          "drop-above",
+          "drop-below",
+          "drag-over"
+        );
+        // 間隔をリセット
+        btn.style.marginLeft = "0";
+        btn.style.marginRight = "0";
+        btn.style.marginTop = "0";
+        btn.style.marginBottom = "0";
+      });
 
       const draggedId = e.dataTransfer.getData("text/plain");
       const draggedButton = document.getElementById(draggedId);
@@ -1504,7 +1543,7 @@ function initializeHeaderDragAndDrop() {
         window.isDragDropInProgress = false;
         console.log("[DragDrop] ドラッグ&ドロップフラグをリセット");
 
-        // 現在のページに対応するアイコンのactive状態を復元
+        // 現在のページに対応するアイコンのactive状態のみを復元（アイコン表示制御は行わない）
         restoreActiveIconState();
       } else {
         console.log("[DragDrop] 無効なドロップ操作:", draggedId);
@@ -1535,7 +1574,7 @@ function isCloseButtonClick(e, button) {
   return distance <= closeButtonRadius;
 }
 
-// 現在のページに対応するアイコンのactive状態を復元
+// 現在のページに対応するアイコンのactive状態を復元（アイコン表示制御は行わない）
 function restoreActiveIconState() {
   console.log("[ActiveIcon] アクティブアイコン状態を復元開始");
 
@@ -2023,7 +2062,16 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       if (!iconVisibilityApplied) {
         console.log("COMMON: 遅延実行 - アイコン表示設定を適用");
-        applyIconVisibilityFromStorage();
+
+        // すべてのページでAIアイコンを非表示にする
+        hideAIIcon();
+
+        // 設定ページの場合のみ、アイコン表示設定を適用
+        const isSettingPage = window.location.pathname.includes("/setting/");
+        if (isSettingPage) {
+          applyIconVisibilityFromStorage();
+        }
+
         iconVisibilityApplied = true;
       }
     }, 100);
@@ -2033,6 +2081,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // ストレージからアイコン表示設定を適用
 function applyIconVisibilityFromStorage() {
   console.log("COMMON: applyIconVisibilityFromStorage 開始");
+
+  // 設定ページ以外ではアイコン表示制御を行わない
+  const isSettingPage = window.location.pathname.includes("/setting/");
+  if (!isSettingPage) {
+    console.log("COMMON: 設定ページ以外のため、アイコン表示制御をスキップ");
+    return;
+  }
 
   chrome.storage.local.get(["customSettings"], (result) => {
     const settings = result.customSettings;
@@ -2067,6 +2122,14 @@ function applyIconVisibility(selectedIcons) {
   );
   console.log(`${prefix}: 呼び出し元のスタックトレース:`, new Error().stack);
 
+  // 設定ページ以外からの呼び出しは無視（アイコン表示制御は設定ページのみ）
+  if (!isSettingPage) {
+    console.log(
+      `${prefix}: 設定ページ以外からの呼び出しのため、アイコン表示制御をスキップ`
+    );
+    return;
+  }
+
   const header = document.querySelector("header");
   if (!header) {
     console.log(`${prefix}: ヘッダーが見つかりません`);
@@ -2081,8 +2144,18 @@ function applyIconVisibility(selectedIcons) {
     const buttonId = button.id;
     const iconType = getIconTypeFromId(buttonId);
 
+    // AIアイコン（今後実装予定）は常に非表示
+    if (iconType === "ai") {
+      button.style.display = "none";
+      button.style.visibility = "hidden";
+      button.style.position = "absolute";
+      button.style.left = "-9999px"; // 画面外に移動
+      console.log(
+        `${prefix}: ${buttonId} (${iconType}): 非表示 (今後実装予定)`
+      );
+    }
     // MEMOとSETTINGアイコンは常に表示
-    if (iconType === "setting" || iconType === "memo") {
+    else if (iconType === "setting" || iconType === "memo") {
       button.style.display = "flex";
       button.style.visibility = "visible";
       button.style.position = "relative";
@@ -2109,6 +2182,28 @@ function applyIconVisibility(selectedIcons) {
   restoreActiveIconState();
 }
 
+// AIアイコンを非表示にする関数
+function hideAIIcon() {
+  console.log("COMMON: AIアイコンを非表示にする処理を開始");
+
+  const header = document.querySelector("header");
+  if (!header) {
+    console.log("COMMON: ヘッダーが見つかりません");
+    return;
+  }
+
+  const aiButton = document.getElementById("btn-ai");
+  if (aiButton) {
+    aiButton.style.display = "none";
+    aiButton.style.visibility = "hidden";
+    aiButton.style.position = "absolute";
+    aiButton.style.left = "-9999px"; // 画面外に移動
+    console.log("COMMON: AIアイコンを非表示にしました");
+  } else {
+    console.log("COMMON: AIアイコンが見つかりません");
+  }
+}
+
 // ボタンIDからアイコンタイプを取得（common.js版）
 function getIconTypeFromId(buttonId) {
   const iconMap = {
@@ -2123,3 +2218,35 @@ function getIconTypeFromId(buttonId) {
 
   return iconMap[buttonId] || buttonId;
 }
+
+// window.onloadでもAIアイコンを非表示にする
+window.addEventListener("load", () => {
+  console.log("COMMON: window.load - AIアイコン非表示処理");
+  hideAIIcon();
+
+  // MutationObserverでAIアイコンの追加を監視
+  const header = document.querySelector("header");
+  if (header) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE && node.id === "btn-ai") {
+              console.log(
+                "COMMON: AIアイコンが追加されました - 非表示にします"
+              );
+              hideAIIcon();
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(header, {
+      childList: true,
+      subtree: true,
+    });
+
+    console.log("COMMON: AIアイコン監視を開始しました");
+  }
+});
