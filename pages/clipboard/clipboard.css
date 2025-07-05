@@ -66,6 +66,9 @@
   overflow: visible;
   transition: all 0.3s ease;
   position: relative;
+  /* 挿入ボタンサイズとアクセント幅を変数化 */
+  --insert-size: 36px; /* 挿入ボタンの基準サイズ */
+  --accent-width: 48px; /* ボタン+ギャップの幅 */
 }
 
 /* 挿入ボタン部分のみを彩るアクセントカラー */
@@ -75,8 +78,8 @@
   top: 0;
   bottom: 0;
   left: 0;
-  /* ボタン幅36px + gap12px = 48px でテキストエリアに重ならない */
-  width: 48px;
+  /* アクセント幅を変数で制御 */
+  width: var(--accent-width);
   background: #00E344;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
@@ -128,8 +131,10 @@
   color: #04e949;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 36px; /* 固定幅 */
-  height: 36px; /* 固定高さ */
+  width: var(--insert-size); /* サイズを変数化 */
+  height: var(--insert-size);
+  /* アクセント(#00E344)の幅に対してアイコンを中央に配置 */
+  margin-left: calc((var(--accent-width) - var(--insert-size)) / 2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -761,9 +766,8 @@
     padding: 16px 20px; /* パディングを増やして余裕を持たせる */
   }
 
-  .clipboard-insert {
-    width: 40px; /* ボタンを少し大きく */
-    height: 40px;
+  .clip-item {
+    --insert-size: 40px; /* ボタンを少し大きく */
   }
 
   .clipboard-insert i {
@@ -814,8 +818,9 @@
   }
 
   /* モバイル時のアクセント幅を調整（insert32px + gap8px = 40px） */
-  .clip-item::before {
-    width: 40px;
+  .clip-item {
+    --insert-size: 32px;
+    --accent-width: 40px;
   }
 
   .clipboard-textarea {
@@ -824,8 +829,7 @@
   }
 
   .clipboard-insert {
-    width: 32px; /* ボタンを小さく */
-    height: 32px;
+    /* サイズは変数で管理 */
   }
 
   .clipboard-insert i {

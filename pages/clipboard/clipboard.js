@@ -1228,6 +1228,9 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log(
     "style patch: drop indicator uses ::after; drag via grip handle only"
   );
+  console.log(
+    "style patch: insert button centered within green accent"
+  );
 
   // ヘッダーのクリップボードアイコンのクリックイベントを初期設定
   const clipboardBtn = document.getElementById("btn-clipboard");
