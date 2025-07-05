@@ -1800,10 +1800,14 @@ async function exportAllMemos() {
 
     // 現在時刻を取得してファイル名を生成
     const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
-    const fileName = `${hours}${minutes}${seconds}.json`;
+    const fileName = `${year}${month}${day}_${hours}${minutes}${seconds}.json`;
+    console.log("エクスポート用タイムスタンプ:", `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`);
 
     console.log("ファイル名:", fileName);
     console.log("アクティブなメモ数:", activeMemos.length);
