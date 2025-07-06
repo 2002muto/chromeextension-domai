@@ -425,8 +425,8 @@ function setupCustomSettingListeners() {
   // アイコン選択のイベントリスナー
   setupIconSelectionListeners();
 
-  // AIドロップダウンのイベントリスナー
-  setupAIDropdownListeners();
+  // "今後実装予定" ドロップダウンのイベントリスナー
+  setupComingSoonDropdownListeners();
 }
 
 // カスタム設定のリセット
@@ -868,19 +868,20 @@ function getIconTypeFromId(buttonId) {
   return iconMap[buttonId] || buttonId;
 }
 
-// AIドロップダウンのイベントリスナー設定
-function setupAIDropdownListeners() {
-  const aiDropdownTrigger = document.querySelector(
+// "今後実装予定" ドロップダウンのイベントリスナーを設定
+function setupComingSoonDropdownListeners() {
+  // 対象となるすべてのトリガー要素を取得
+  const triggers = document.querySelectorAll(
     ".icon-option.coming-soon.dropdown-trigger"
   );
 
-  if (aiDropdownTrigger) {
-    // クリックイベントでドロップダウンを表示/非表示
-    aiDropdownTrigger.addEventListener("click", (e) => {
+  triggers.forEach((trigger) => {
+    // クリックでドロップダウンを表示/非表示
+    trigger.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      const dropdown = aiDropdownTrigger.querySelector(".coming-soon-dropdown");
+      const dropdown = trigger.querySelector(".coming-soon-dropdown");
       const isVisible = dropdown.style.display === "block";
 
       // 他のドロップダウンを閉じる
@@ -888,41 +889,38 @@ function setupAIDropdownListeners() {
         d.style.display = "none";
       });
 
-      // このドロップダウンの表示/非表示を切り替え
+      // 表示状態を切り替え
       dropdown.style.display = isVisible ? "none" : "block";
+      console.log(
+        `COMING SOON ドロップダウン toggled: ${trigger.dataset.icon}, visible=${!isVisible}`
+      );
     });
 
-    // ドロップダウンアイテムのクリックイベント
-    const dropdownItems = aiDropdownTrigger.querySelectorAll(".dropdown-item");
+    // ドロップダウンアイテムクリック
+    const dropdownItems = trigger.querySelectorAll(".dropdown-item");
     dropdownItems.forEach((item) => {
       item.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
         const itemText = item.querySelector("span").textContent;
-        console.log(`AI機能選択: ${itemText}`);
+        console.log(`COMING SOON 選択: ${itemText}`);
 
-        // ドロップダウンを閉じる
-        const dropdown = aiDropdownTrigger.querySelector(
-          ".coming-soon-dropdown"
-        );
+        const dropdown = trigger.querySelector(".coming-soon-dropdown");
         dropdown.style.display = "none";
 
-        // 選択された機能のメッセージを表示
         showCustomSettingMessage(`${itemText}は今後実装予定です`);
       });
     });
 
-    // ドキュメント全体のクリックでドロップダウンを閉じる
+    // ドキュメントクリックで閉じる
     document.addEventListener("click", (e) => {
-      if (!aiDropdownTrigger.contains(e.target)) {
-        const dropdown = aiDropdownTrigger.querySelector(
-          ".coming-soon-dropdown"
-        );
+      if (!trigger.contains(e.target)) {
+        const dropdown = trigger.querySelector(".coming-soon-dropdown");
         dropdown.style.display = "none";
       }
     });
-  }
+  });
 }
 
 // アイコン選択状態とヘッダー表示状態を比較する関数
