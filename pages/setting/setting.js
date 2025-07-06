@@ -25,7 +25,7 @@ const SETTING_ITEMS = [
     description: "現在のデータをバックアップファイルとしてエクスポートできます",
     icon: "bi-download",
     panelId: "#backup-create-panel",
-    comingSoon: false,
+    comingSoon: true,
   },
   {
     id: "api-key",
@@ -301,9 +301,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // ─── カスタム設定機能の初期化 ───
   initializeCustomSettings();
-
-  // バックアップ作成機能の初期化
-  initializeBackupCreate();
 
   // 初期化完了後にメイン画面を表示
   setTimeout(() => {
@@ -1069,7 +1066,7 @@ async function updateBackupInfo() {
       <div class="backup-detail-item">
         <span class="backup-detail-label">エラー</span>
         <span class="backup-detail-value">情報を取得できませんでした</span>
-      </div>
+    </div>
     `;
   }
 }
