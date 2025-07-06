@@ -696,6 +696,13 @@ function applyIconVisibility(selectedIcons) {
     return;
   }
 
+  // Debug: log header and button sizes for layout tuning
+  console.log("SETTING: header width", header.offsetWidth);
+  const firstBtn = header.querySelector(".nav-btn");
+  if (firstBtn) {
+    console.log("SETTING: nav button width", firstBtn.offsetWidth);
+  }
+
   // 非表示アイコン更新時のチラつきを抑えるためヘッダーを一旦隠す
   header.classList.add("updating");
   console.log("SETTING: ヘッダー更新モード開始");
@@ -779,6 +786,13 @@ function forceApplyIconVisibility(selectedIcons) {
   if (!header) {
     console.error("内緒だよ");
     return;
+  }
+
+  // Debug: output header and button dimensions
+  console.log("FORCE: header width", header.offsetWidth);
+  const firstBtn = header.querySelector(".nav-btn");
+  if (firstBtn) {
+    console.log("FORCE: nav button width", firstBtn.offsetWidth);
   }
 
   // 更新中のチラつきを防ぐためヘッダーを一時的に非表示
