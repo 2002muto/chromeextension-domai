@@ -136,20 +136,20 @@ function showSettingDetail(settingItem) {
     settingDetail.style.display = "block";
   }
 
-      // すべてのパネルからshowとanimateを削除
-      document.querySelectorAll(".detail-panel").forEach((p) => {
-        p.classList.remove("show", "animate");
+  // すべてのパネルからshowとanimateを削除
+  document.querySelectorAll(".detail-panel").forEach((p) => {
+    p.classList.remove("show", "animate");
   });
 
   // 対象パネルを表示
   const targetPanel = document.querySelector(settingItem.panelId);
-      if (targetPanel) {
-        targetPanel.classList.add("show");
+  if (targetPanel) {
+    targetPanel.classList.add("show");
     console.log("パネルにshowクラスを追加:", settingItem.panelId);
 
-        // アニメーション効果を追加
-        requestAnimationFrame(() => {
-          targetPanel.classList.add("animate");
+    // アニメーション効果を追加
+    requestAnimationFrame(() => {
+      targetPanel.classList.add("animate");
       console.log("パネルにanimateクラスを追加:", settingItem.panelId);
     });
 
@@ -295,10 +295,10 @@ window.addEventListener("DOMContentLoaded", () => {
     window.PageStateManager.setActivePage("setting");
   }
 
-      const content = document.querySelector(".memo-content");
+  const content = document.querySelector(".memo-content");
 
   // ─── 初回ロード時にMEMO・PROMPTと同じアニメーション ───
-      if (content) {
+  if (content) {
     content.classList.remove("show", "animate");
     // 強制リフロー
     void content.offsetWidth;
@@ -906,7 +906,9 @@ function setupComingSoonDropdownListeners() {
       // 表示状態を切り替え
       dropdown.style.display = isVisible ? "none" : "block";
       console.log(
-        `COMING SOON ドロップダウン toggled: ${trigger.dataset.icon}, visible=${!isVisible}`
+        `COMING SOON ドロップダウン toggled: ${
+          trigger.dataset.icon
+        }, visible=${!isVisible}`
       );
     });
 
