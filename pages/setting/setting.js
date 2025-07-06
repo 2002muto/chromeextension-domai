@@ -20,6 +20,14 @@ const SETTING_ITEMS = [
     comingSoon: false,
   },
   {
+    id: "backup-create",
+    title: "全体のバックアップを作成",
+    description: "現在のデータをバックアップファイルとしてエクスポートできます",
+    icon: "bi-download",
+    panelId: "#backup-create-panel",
+    comingSoon: false,
+  },
+  {
     id: "api-key",
     title: "APIキーの設定",
     description: "外部APIとの連携機能（現在開発中）",
@@ -293,6 +301,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // ─── カスタム設定機能の初期化 ───
   initializeCustomSettings();
+
+  // バックアップ作成機能の初期化
+  initializeBackupCreate();
 
   // 初期化完了後にメイン画面を表示
   setTimeout(() => {
@@ -981,745 +992,187 @@ function compareIconSelectionWithHeader() {
   console.log("=== 比較完了 ===");
 }
 
-// グローバルに公開してヘッダーナビから呼び出せるようにする
-window.renderSettingMain = renderSettingMain;
-window.compareIconSelectionWithHeader = compareIconSelectionWithHeader;
-window.updateIconSelection = updateIconSelection;
+// バックアップ作成機能の初期化
+function initializeBackupCreate() {
+  console.log("バックアップ作成機能を初期化");
 
-// ───────────────────────────────────────
-// バックアップのインストール機能
-// ───────────────────────────────────────
-let selectedFile = null;
-let backupData = null;
+  // バックアップ情報を表示
+  updateBackupInfo();
 
-// バックアップのインストール機能の初期化
-function initializeBackupInstall() {
-  console.log("バックアップのインストール機能を初期化中...");
-
-  const fileUploadArea = document.getElementById("file-upload-area");
-  const fileInput = document.getElementById("backup-file-input");
-  const selectFileBtn = document.getElementById("btn-select-file");
-  const removeFileBtn = document.getElementById("btn-remove-file");
-  const importBtn = document.getElementById("btn-import");
-
-  if (!fileUploadArea || !fileInput || !selectFileBtn) {
-    console.error("内緒だよ");
-    return;
-  }
-
-  // ファイル選択ボタンのクリックイベント
-  selectFileBtn.addEventListener("click", () => {
-    fileInput.click();
-  });
-
-  // ファイルアップロードエリアのクリックイベント
-  fileUploadArea.addEventListener("click", () => {
-    fileInput.click();
-  });
-
-  // ファイル入力の変更イベント
-  fileInput.addEventListener("change", handleFileSelect);
-
-  // ドラッグ&ドロップイベント
-  fileUploadArea.addEventListener("dragover", handleDragOver);
-  fileUploadArea.addEventListener("dragleave", handleDragLeave);
-  fileUploadArea.addEventListener("drop", handleDrop);
-
-  // ファイル削除ボタンのイベント
-  if (removeFileBtn) {
-    removeFileBtn.addEventListener("click", removeSelectedFile);
-  }
-
-  // インポート実行ボタンのイベント
-  if (importBtn) {
-    importBtn.addEventListener("click", executeImport);
-  }
-
-  console.log("バックアップのインストール機能の初期化完了");
-}
-
-// ファイル選択処理
-function handleFileSelect(event) {
-  console.log("handleFileSelect called");
-  const file = event.target.files[0];
-  console.log("Selected file:", file);
-  if (file) {
-    console.log("Processing file:", file.name, file.type, file.size);
-    processSelectedFile(file);
-  } else {
-    console.log("No file selected");
+  // エクスポートボタンのイベントリスナーを設定
+  const exportBtn = document.querySelector("#btn-export");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", handleBackupExport);
   }
 }
 
-// ドラッグ&ドロップ処理
-function handleDragOver(event) {
-  event.preventDefault();
-  event.stopPropagation();
-  const fileUploadArea = document.getElementById("file-upload-area");
-  if (fileUploadArea) {
-    fileUploadArea.classList.add("drag-over");
-  }
-}
+// バックアップ情報を更新
+async function updateBackupInfo() {
+  console.log("バックアップ情報を更新");
 
-function handleDragLeave(event) {
-  event.preventDefault();
-  event.stopPropagation();
-  const fileUploadArea = document.getElementById("file-upload-area");
-  if (fileUploadArea) {
-    fileUploadArea.classList.remove("drag-over");
-  }
-}
-
-function handleDrop(event) {
-  event.preventDefault();
-  event.stopPropagation();
-
-  const fileUploadArea = document.getElementById("file-upload-area");
-  if (fileUploadArea) {
-    fileUploadArea.classList.remove("drag-over");
-  }
-
-  const files = event.dataTransfer.files;
-  if (files.length > 0) {
-    const file = files[0];
-    if (file.type === "application/json" || file.name.endsWith(".json")) {
-      processSelectedFile(file);
-    } else {
-      showImportMessage("JSONファイルを選択してください", "error");
-    }
-  }
-}
-
-// 選択されたファイルの処理
-async function processSelectedFile(file) {
-  console.log("processSelectedFile called with:", file.name);
+  const backupDetails = document.querySelector("#backup-details");
+  if (!backupDetails) return;
 
   try {
-    // ファイル形式の検証
-    if (!file.name.toLowerCase().endsWith(".json")) {
-      console.error("内緒だよ");
-      showImportMessage("アップロードに失敗しました。", "error");
-      return;
-    }
+    // 各データの件数を取得
+    const memos = (await loadStorage("memos")) || [];
+    const clips = (await loadStorage("clips")) || [];
+    const prompts = (await loadStorage("prompts")) || [];
 
-    // MIMEタイプの検証（可能な場合）
-    if (
-      file.type &&
-      file.type !== "application/json" &&
-      file.type !== "text/plain"
-    ) {
-      console.error("内緒だよ");
-      showImportMessage("アップロードに失敗しました。", "error");
-      return;
-    }
+    const memoCount = memos.length;
+    const clipCount = clips.length;
+    const promptCount = prompts.length;
+    const totalCount = memoCount + clipCount + promptCount;
 
-    // ファイルの内容を読み込み
-    console.log("Reading file content...");
-    const content = await readFileAsText(file);
-    console.log("File content length:", content.length);
-
-    console.log("Parsing JSON...");
-    const data = JSON.parse(content);
-    console.log("Parsed data:", data);
-
-    // データの検証
-    console.log("Validating backup data...");
-    const isValid = await validateBackupData(data);
-    if (!isValid) {
-      console.log("Backup data validation failed");
-      showImportMessage("アップロードに失敗しました。", "error");
-      return;
-    }
-
-    console.log("Backup data validation passed");
-    selectedFile = file;
-    backupData = data;
-
-    // UIを更新
-    console.log("Updating UI...");
-    showFileInfo(file, data);
-    showImportOptions();
-    showImportActions();
-
-    showImportMessage(
-      "バックアップファイルが正常に読み込まれました",
-      "success"
-    );
-    console.log("File processing completed successfully");
-  } catch (error) {
-    console.error("内緒だよ");
-    showImportMessage("アップロードに失敗しました。", "error");
-  }
-}
-
-// ファイルをテキストとして読み込み
-function readFileAsText(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target.result);
-    reader.onerror = (e) => reject(e);
-    reader.readAsText(file);
-  });
-}
-
-// バックアップデータの検証
-async function validateBackupData(data) {
-  console.log("validateBackupData called with:", data);
-
-  if (!data || typeof data !== "object") {
-    console.log("Data is not an object");
-    return false;
-  }
-
-  // 特別なIDの検証（この拡張機能からのエクスポートであることを確認）
-  if (!data.extensionId || data.extensionId !== "chromeextension-domai-v1.0") {
-    console.log("Invalid extension ID:", data.extensionId);
-    showImportMessage("アップロードに失敗しました。", "error");
-    return false;
-  }
-
-  // 拡張機能名の検証
-  if (
-    !data.extensionName ||
-    data.extensionName !== "Chrome Extension Domain Assistant"
-  ) {
-    console.log("Invalid extension name:", data.extensionName);
-    showImportMessage("アップロードに失敗しました。", "error");
-    return false;
-  }
-
-  // セキュリティハッシュの検証
-  if (data.securityHash) {
-    const isValidHash = await validateSecurityHash(data);
-    if (!isValidHash) {
-      console.log("Invalid security hash");
-      showImportMessage("アップロードに失敗しました。", "error");
-      return false;
-    }
-  }
-
-  // 基本的な構造チェック（バージョンとエクスポート日時は必須ではない）
-  console.log("Checking version:", data.version);
-  console.log("Checking exportDate:", data.exportDate);
-
-  // バージョンとエクスポート日時がない場合は自動的に追加
-  if (!data.version) {
-    data.version = "1.0.0";
-    console.log("Added default version");
-  }
-  if (!data.exportDate) {
-    data.exportDate = new Date().toISOString();
-    console.log("Added default export date");
-  }
-
-  // 少なくとも1つのデータタイプが含まれているかチェック
-  console.log(
-    "Checking data types - memos:",
-    data.memos,
-    "clips:",
-    data.clips,
-    "prompts:",
-    data.prompts
-  );
-  const hasValidData = data.memos || data.clips || data.prompts;
-  if (!hasValidData) {
-    console.log("No valid data types found");
-    showImportMessage("アップロードに失敗しました。", "error");
-    return false;
-  }
-
-  console.log("Backup data validation passed");
-  return true;
-}
-
-// セキュリティハッシュを検証する関数
-async function validateSecurityHash(data) {
-  try {
-    // 隠しフィールドの正しいハッシュ値を使用して検証
-    if (!data.backupnumber || !data.securityHash) {
-      console.error("内緒だよ");
-      return false;
-    }
-
-    // データからsecurityHash、backupnumber、digitalSignatureを除外してハッシュを再計算
-    const dataForHash = { ...data };
-    delete dataForHash.securityHash;
-    delete dataForHash.backupnumber;
-    delete dataForHash.digitalSignature;
-
-    // 再計算したハッシュを取得
-    const calculatedResult = await generateSHA256Hash(dataForHash);
-    if (!calculatedResult) {
-      console.error("内緒だよ");
-      return false;
-    }
-
-    // backupnumber（前半）とsecurityHashの後半32文字を組み合わせて元のSHA-256を復元
-    const originalFirstHalf = data.backupnumber;
-    const originalSecondHalf = data.securityHash.substring(32, 64);
-    const originalFullHash = originalFirstHalf + originalSecondHalf;
-
-    // 計算したハッシュと比較
-    const calculatedFullHash =
-      calculatedResult.backupnumber +
-      calculatedResult.securityHash.substring(32, 64);
-    const hashValid = originalFullHash === calculatedFullHash;
-
-    console.log("セキュリティ検証結果:", {
-      hashValid,
-      isValid: hashValid,
+    // 現在の日時を取得
+    const now = new Date();
+    const formattedDate = now.toLocaleString("ja-JP", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-    return hashValid;
+    backupDetails.innerHTML = `
+      <div class="backup-detail-item">
+        <span class="backup-detail-label">MEMO</span>
+        <span class="backup-detail-value">${memoCount}件</span>
+      </div>
+      <div class="backup-detail-item">
+        <span class="backup-detail-label">CLIPBOARD</span>
+        <span class="backup-detail-value">${clipCount}件</span>
+      </div>
+      <div class="backup-detail-item">
+        <span class="backup-detail-label">PROMPT</span>
+        <span class="backup-detail-value">${promptCount}件</span>
+      </div>
+      <div class="backup-detail-item">
+        <span class="backup-detail-label">合計</span>
+        <span class="backup-detail-value">${totalCount}件</span>
+      </div>
+      <div class="backup-detail-item">
+        <span class="backup-detail-label">最終更新</span>
+        <span class="backup-detail-value">${formattedDate}</span>
+      </div>
+    `;
+
+    console.log("バックアップ情報を更新しました:", {
+      memoCount,
+      clipCount,
+      promptCount,
+      totalCount,
+    });
   } catch (error) {
-    console.error("内緒だよ");
-    return false;
+    console.error("バックアップ情報の更新に失敗しました:", error);
+    backupDetails.innerHTML = `
+      <div class="backup-detail-item">
+        <span class="backup-detail-label">エラー</span>
+        <span class="backup-detail-value">情報を取得できませんでした</span>
+      </div>
+    `;
   }
 }
 
-// SHA-256ハッシュを生成し、分割してセキュリティ強化する関数
-async function generateSHA256Hash(data) {
+// バックアップエクスポート処理
+async function handleBackupExport() {
+  console.log("バックアップエクスポートを開始");
+
+  const exportBtn = document.querySelector("#btn-export");
+  if (exportBtn) {
+    exportBtn.disabled = true;
+    exportBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>作成中...';
+  }
+
   try {
-    // データを文字列化
-    const dataString = JSON.stringify(data);
+    // 各データを取得
+    const memos = (await loadStorage("memos")) || [];
+    const clips = (await loadStorage("clips")) || [];
+    const prompts = (await loadStorage("prompts")) || [];
 
-    // 文字列をUint8Arrayに変換
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(dataString);
-
-    // SHA-256ハッシュを計算
-    const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
-
-    // ArrayBufferをUint8Arrayに変換
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-    // 16進数文字列に変換
-    const sha256Hash = hashArray
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    // 完全なSHA-256ハッシュをコンソールログに表示（確認用）
-    console.log("=== SETTINGページ ハッシュ検証用ログ ===");
-    console.log("完全なSHA-256ハッシュ（64文字）:", sha256Hash);
-    console.log("ハッシュ長:", sha256Hash.length);
-
-    // SHA-256ハッシュを前半と後半に分割（各32文字）
-    const firstHalf = sha256Hash.substring(0, 32);
-    const secondHalf = sha256Hash.substring(32, 64);
-
-    console.log("前半32文字（backupnumber）:", firstHalf);
-    console.log("後半32文字（securityHash前半）:", secondHalf);
-    console.log("前半長:", firstHalf.length);
-    console.log("後半長:", secondHalf.length);
-
-    // ランダムな32文字のハッシュを生成（0だとバレるので、実際にランダム生成）
-    const randomBytes = new Uint8Array(16);
-    crypto.getRandomValues(randomBytes);
-    const randomHash = Array.from(randomBytes)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    console.log("ランダム32文字（securityHash後半）:", randomHash);
-    console.log("ランダム長:", randomHash.length);
-
-    // backupnumber: 32桁（SHA-256の前半32桁のみ）
-    // securityHash: 64桁（ランダム32桁 + SHA-256の後半32桁）
-    const combinedHash = randomHash + secondHalf;
-
-    console.log("最終的なsecurityHash（64文字）:", combinedHash);
-    console.log("最終的なsecurityHash長:", combinedHash.length);
-    console.log("=== SETTINGページ ハッシュ検証用ログ終了 ===");
-
-    return {
-      backupnumber: firstHalf,
-      securityHash: combinedHash,
+    // バックアップデータを構築
+    const backupData = {
+      version: "1.0",
+      timestamp: new Date().toISOString(),
+      data: {
+        memos: memos,
+        clips: clips,
+        prompts: prompts,
+      },
     };
+
+    // セキュリティハッシュを生成
+    const dataString = JSON.stringify(backupData.data);
+    const securityHash = await generateSecurityHash(dataString);
+    backupData.securityHash = securityHash;
+
+    // ファイル名を生成
+    const now = new Date();
+    const fileName = `domai-backup-${now.getFullYear()}${(now.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}-${now
+      .getHours()
+      .toString()
+      .padStart(2, "0")}${now.getMinutes().toString().padStart(2, "0")}.json`;
+
+    // ファイルをダウンロード
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // 成功メッセージを表示
+    showBackupSuccessMessage(fileName);
+
+    console.log("バックアップエクスポートが完了しました:", fileName);
   } catch (error) {
-    console.error("内緒だよ");
-    return null;
-  }
-}
-
-// ファイル情報の表示
-function showFileInfo(file, data) {
-  const fileInfo = document.getElementById("file-info");
-  const fileName = document.getElementById("file-name");
-  const fileDetails = document.getElementById("file-details");
-
-  if (!fileInfo || !fileName || !fileDetails) {
-    return;
-  }
-
-  fileName.textContent = file.name;
-
-  // ファイル詳細情報を生成
-  const details = [];
-
-  // 拡張機能情報
-  if (data.extensionName) {
-    details.push({
-      label: "拡張機能",
-      value: data.extensionName,
-    });
-  }
-
-  if (data.extensionVersion) {
-    details.push({
-      label: "拡張機能バージョン",
-      value: data.extensionVersion,
-    });
-  }
-
-  // エクスポート日時
-  if (data.exportDate) {
-    const exportDate = new Date(data.exportDate);
-    details.push({
-      label: "エクスポート日時",
-      value: exportDate.toLocaleString("ja-JP"),
-    });
-  }
-
-  // バージョン
-  if (data.version) {
-    details.push({
-      label: "バージョン",
-      value: data.version,
-    });
-  }
-
-  // セキュリティ情報
-  if (data.securityHash) {
-    details.push({
-      label: "セキュリティ",
-      value: "✓ 検証済み",
-    });
-  }
-
-  // データ件数
-  if (data.memos) {
-    details.push({
-      label: "メモ数",
-      value: `${data.memoCount || data.memos.length}件`,
-    });
-  }
-
-  if (data.clips) {
-    details.push({
-      label: "クリップ数",
-      value: `${data.clipCount || data.clips.length}件`,
-    });
-  }
-
-  if (data.prompts) {
-    details.push({
-      label: "プロンプト数",
-      value: `${data.promptCount || data.prompts.length}件`,
-    });
-  }
-
-  // 詳細情報をHTMLに変換
-  fileDetails.innerHTML = details
-    .map(
-      (detail) => `
-    <div class="detail-item">
-      <span class="detail-label">${detail.label}</span>
-      <span class="detail-value">${detail.value}</span>
-    </div>
-  `
-    )
-    .join("");
-
-  fileInfo.style.display = "block";
-}
-
-// インポートオプションの表示
-function showImportOptions() {
-  const importOptions = document.getElementById("import-options");
-  if (importOptions) {
-    importOptions.style.display = "block";
-  }
-}
-
-// インポート実行ボタンの表示
-function showImportActions() {
-  const importActions = document.getElementById("import-actions");
-  if (importActions) {
-    importActions.style.display = "block";
-  }
-}
-
-// 選択されたファイルの削除
-function removeSelectedFile() {
-  console.log("removeSelectedFile called");
-
-  const fileInput = document.getElementById("backup-file-input");
-  const fileInfo = document.getElementById("file-info");
-  const importOptions = document.getElementById("import-options");
-  const importActions = document.getElementById("import-actions");
-
-  if (fileInput) {
-    fileInput.value = "";
-    console.log("File input cleared");
-  }
-
-  if (fileInfo) {
-    fileInfo.style.display = "none";
-    console.log("File info hidden");
-  }
-
-  if (importOptions) {
-    importOptions.style.display = "none";
-    console.log("Import options hidden");
-  }
-
-  if (importActions) {
-    importActions.style.display = "none";
-    console.log("Import actions hidden");
-  }
-
-  selectedFile = null;
-  backupData = null;
-  console.log("File and data cleared");
-
-  showImportMessage("ファイル選択をキャンセルしました", "info");
-}
-
-// UIをリセット（メッセージは表示しない）
-function resetImportUI() {
-  console.log("resetImportUI called");
-
-  const fileInput = document.getElementById("backup-file-input");
-  const fileInfo = document.getElementById("file-info");
-  const importOptions = document.getElementById("import-options");
-  const importActions = document.getElementById("import-actions");
-
-  if (fileInput) {
-    fileInput.value = "";
-    console.log("File input cleared");
-  }
-
-  if (fileInfo) {
-    fileInfo.style.display = "none";
-    console.log("File info hidden");
-  }
-
-  if (importOptions) {
-    importOptions.style.display = "none";
-    console.log("Import options hidden");
-  }
-
-  if (importActions) {
-    importActions.style.display = "none";
-    console.log("Import actions hidden");
-  }
-
-  selectedFile = null;
-  backupData = null;
-  console.log("File and data cleared");
-}
-
-// インポート実行
-async function executeImport() {
-  if (!backupData) {
-    showImportMessage("バックアップファイルが選択されていません", "error");
-    return;
-  }
-
-  const importMode = document.querySelector(
-    'input[name="import-mode"]:checked'
-  )?.value;
-  if (!importMode) {
-    showImportMessage("インポートモードを選択してください", "error");
-    return;
-  }
-
-  try {
-    console.log("インポートを開始します...");
-    console.log("インポートモード:", importMode);
-    console.log("バックアップデータ:", backupData);
-
-    // インポート処理を実行
-    await performImport(backupData, importMode);
-
-    showImportMessage("インポートが完了しました", "success");
-
-    // 成功後はUIをリセット（メッセージは表示しない）
-    resetImportUI();
-  } catch (error) {
-    console.error("内緒だよ");
-    showImportMessage("インポートに失敗しました", "error");
-  }
-}
-
-// 実際のインポート処理
-async function performImport(data, mode) {
-  console.log("performImport開始:", { mode, data });
-
-  // 各データタイプをインポート
-  if (data.memos) {
-    await importMemos(data.memos, mode);
-  }
-
-  if (data.clips) {
-    await importClips(data.clips, mode);
-  }
-
-  if (data.prompts) {
-    await importPrompts(data.prompts, mode);
-  }
-
-  console.log("performImport完了");
-}
-
-// メモのインポート
-async function importMemos(memos, mode) {
-  console.log("メモのインポート開始:", { mode, count: memos.length });
-
-  if (mode === "replace") {
-    // 上書きモード: 既存データを完全に置き換え
-    await chrome.storage.local.set({ memos: memos });
-    console.log("メモを上書きしました");
-  } else {
-    // 統合モード: 既存データと統合
-    const existingMemos = (await loadStorage("memos")) || [];
-    const mergedMemos = mergeData(existingMemos, memos, "id");
-    await chrome.storage.local.set({ memos: mergedMemos });
-    console.log("メモを統合しました:", {
-      existing: existingMemos.length,
-      imported: memos.length,
-      merged: mergedMemos.length,
-    });
-  }
-}
-
-// クリップのインポート
-async function importClips(clips, mode) {
-  console.log("クリップのインポート開始:", { mode, count: clips.length });
-
-  if (mode === "replace") {
-    // 上書きモード: 既存データを完全に置き換え
-    await chrome.storage.local.set({ clips: clips });
-    console.log("クリップを上書きしました");
-  } else {
-    // 統合モード: 既存データと統合
-    const existingClips = (await loadStorage("clips")) || [];
-    const mergedClips = mergeData(existingClips, clips, "id");
-    await chrome.storage.local.set({ clips: mergedClips });
-    console.log("クリップを統合しました:", {
-      existing: existingClips.length,
-      imported: clips.length,
-      merged: mergedClips.length,
-    });
-  }
-}
-
-// プロンプトのインポート
-async function importPrompts(prompts, mode) {
-  console.log("プロンプトのインポート開始:", { mode, count: prompts.length });
-
-  if (mode === "replace") {
-    // 上書きモード: 既存データを完全に置き換え
-    await chrome.storage.local.set({ prompts: prompts });
-    console.log("プロンプトを上書きしました");
-  } else {
-    // 統合モード: 既存データと統合
-    const existingPrompts = (await loadStorage("prompts")) || [];
-    const mergedPrompts = mergeData(existingPrompts, prompts, "id");
-    await chrome.storage.local.set({ prompts: mergedPrompts });
-    console.log("プロンプトを統合しました:", {
-      existing: existingPrompts.length,
-      imported: prompts.length,
-      merged: mergedPrompts.length,
-    });
-  }
-}
-
-// データの統合（重複チェック付き）
-function mergeData(existing, imported, idField) {
-  const existingMap = new Map();
-  existing.forEach((item) => {
-    existingMap.set(item[idField], item);
-  });
-
-  const merged = [...existing];
-
-  imported.forEach((item) => {
-    if (existingMap.has(item[idField])) {
-      // 重複する場合は上書き
-      const index = merged.findIndex(
-        (existingItem) => existingItem[idField] === item[idField]
-      );
-      if (index !== -1) {
-        merged[index] = item;
-      }
-    } else {
-      // 新規の場合は追加
-      merged.push(item);
+    console.error("バックアップエクスポートに失敗しました:", error);
+    showBackupErrorMessage();
+  } finally {
+    // ボタンを元に戻す
+    if (exportBtn) {
+      exportBtn.disabled = false;
+      exportBtn.innerHTML = '<i class="bi bi-download"></i>バックアップを作成';
     }
-  });
-
-  return merged;
-}
-
-// ストレージ読み込みヘルパー
-function loadStorage(key) {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([key], (result) => resolve(result[key] || []));
-  });
-}
-
-// インポートメッセージの表示
-function showImportMessage(message, type = "info") {
-  console.log(`[IMPORT] ${type.toUpperCase()}: ${message}`);
-
-  // 既存のメッセージを削除
-  const existingMessage = document.querySelector(".import-message");
-  if (existingMessage) {
-    existingMessage.remove();
   }
+}
 
-  // 新しいメッセージを作成
-  const messageElement = document.createElement("div");
-  messageElement.className = `import-message ${type}`;
-
-  const icon =
-    type === "success"
-      ? "check-circle"
-      : type === "error"
-      ? "exclamation-triangle"
-      : "info-circle";
-
-  messageElement.innerHTML = `
-    <i class="bi bi-${icon}"></i>
-    <span>${message}</span>
+// バックアップ成功メッセージを表示
+function showBackupSuccessMessage(fileName) {
+  const message = `
+    <div class="backup-success-message">
+      <i class="bi bi-check-circle-fill"></i>
+      <div class="message-content">
+        <div class="message-title">バックアップが作成されました</div>
+        <div class="message-text">ファイル名: ${fileName}</div>
+      </div>
+    </div>
   `;
 
-  // メッセージをbodyに直接追加（右上に表示）
-  document.body.appendChild(messageElement);
-
-  // アニメーション
-  setTimeout(() => {
-    messageElement.classList.add("show");
-  }, 100);
-
-  // 自動削除
-  setTimeout(() => {
-    messageElement.classList.remove("show");
-    setTimeout(() => {
-      if (messageElement.parentNode) {
-        messageElement.remove();
-      }
-    }, 300);
-  }, 5000);
+  showCustomSettingMessage(message, "success");
 }
 
-// 初期化時にバックアップのインストール機能を設定
-document.addEventListener("DOMContentLoaded", () => {
-  // 既存の初期化処理の後に追加
-  setTimeout(() => {
-    initializeBackupInstall();
-  }, 100);
-});
+// バックアップエラーメッセージを表示
+function showBackupErrorMessage() {
+  const message = `
+    <div class="backup-error-message">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <div class="message-content">
+        <div class="message-title">バックアップの作成に失敗しました</div>
+        <div class="message-text">もう一度お試しください</div>
+      </div>
+    </div>
+  `;
+
+  showCustomSettingMessage(message, "error");
+}
 
 // デバッグ用の関数をグローバルに公開
 window.debugCustomSettings = () => {
