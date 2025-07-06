@@ -14,11 +14,22 @@
   margin: 32px 16px 16px 16px; /* MEMOページと完全統一 - 下部マージン16px */
   padding: 0;
   height: calc(
-    100vh - 168px
+    100vh - 138px
   ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.memo-content.show {
+  opacity: 1;
+  transform: translateY(0);
+  margin: 16px 16px 0px 16px;
+}
+
+/* アニメーションを発火させるためのクラス（MEMOページと統一） */
+.memo-content.animate {
+  animation: slideUpFade 0.4s ease-out both;
 }
 
 /* 編集モード時のコンテンツ高さ調整 - .form-headerとフッターを考慮 */
@@ -203,6 +214,12 @@
   font-size: 1.2rem;
   /* margin-right: 12px; */
   cursor: pointer;
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 .prompt-item .star.off {
   color: #eeeeee;
@@ -218,6 +235,12 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   min-width: 0; /* flexアイテムが縮まるようにする */
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 /* 右：実行ボタン & アーカイブ */
 .prompt-action {
@@ -240,6 +263,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 .prompt-archive {
   background: transparent;
@@ -257,6 +286,12 @@
   transition: transform 0.2s ease; /* Match clipboard transition */
   place-self: center; /* Center in grid */
   border-radius: 4px; /* Match clipboard border radius */
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 .prompt-action:hover {
   filter: brightness(1.15);
@@ -577,6 +612,7 @@ textarea.field-text,
   box-shadow: 0 4px 12px #0006;
   z-index: 1000;
   position: relative;
+  transition: all 0.2s ease;
 }
 
 /* ドロップ候補だけ点線 */
@@ -586,6 +622,7 @@ textarea.field-text,
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-2px);
   transition: all 0.2s ease;
+  border-radius: 8px;
 }
 
 /* ドロップ位置インジケーター */
@@ -643,12 +680,14 @@ textarea.field-text,
   outline-offset: -4px;
   background: rgba(255, 0, 0, 0.1);
   cursor: not-allowed;
+  border-radius: 8px;
 }
 
 /* 掴めるカーソル */
 .prompt-item,
 .prompt-field {
   cursor: grab;
+  transition: all 0.2s ease;
 }
 
 .prompt-item:active,
@@ -664,6 +703,7 @@ textarea.field-text,
   background: rgba(58, 63, 74, 0.1);
   border-radius: 8px;
   transition: none !important;
+  z-index: 1000;
 }
 
 .prompt-field.drag-over {
@@ -672,6 +712,7 @@ textarea.field-text,
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-2px);
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 /* プロンプトフィールドのドロップインジケーター */
@@ -730,56 +771,6 @@ textarea.field-text,
 .prompt-field.dragging .prompt-field-textarea {
   pointer-events: none;
   user-select: none;
-}
-
-/*━━━━━━━━━━ ドラッグ＆ドロップ成功トースト通知 ━━━━━━━━━━*/
-.drag-drop-toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #00a31e, #008f1a);
-  color: #ffffff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 10000;
-  opacity: 1;
-  transform: translateX(0);
-  transition: all 0.3s ease;
-  max-width: 300px;
-  word-wrap: break-word;
-}
-
-.drag-drop-toast i {
-  font-size: 1.1rem;
-  color: #ffffff;
-  flex-shrink: 0;
-}
-
-.drag-drop-toast.fade-out {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-/* トースト通知のアニメーション */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.drag-drop-toast {
-  animation: slideInRight 0.3s ease-out;
 }
 
 /*--------------------------------------------------------------
@@ -874,7 +865,7 @@ textarea.field-text,
   left: 0;
   right: 0;
   margin: 0;
-  padding: 16px;
+  padding: 0px 16px 16px 16px;
   display: flex;
   gap: 12px;
   background: rgba(49, 69, 89, 0.95); /* 背景を半透明に */
@@ -951,12 +942,50 @@ textarea.field-text,
   transition: all 0.3s ease;
 }
 
-/* アーカイブボタンの色分け */
+/* 一覧表示用フッターの色分け（MEMO・CLIPBOARDと統一） */
+.memo-footer .nav-btn.archive-toggle {
+  background-color: #2c2c2c;
+}
 .memo-footer .nav-btn.archive-btn {
+  background-color: #2c2c2c;
+}
+.memo-footer .nav-btn.backup-btn {
   background-color: #2c2c2c;
 }
 .memo-footer .nav-btn.extra-btn {
   background-color: #2c2c2c;
+}
+
+/* エクスポートボタンの色分け（MEMO・CLIPBOARDと統一） */
+.memo-footer .nav-btn.encrypt-btn {
+  background-color: #2c2c2c;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled {
+  background-color: #1a1a1a;
+  opacity: 0.5;
+  cursor: pointer; /* not-allowedからpointerに変更してホバーを有効化 */
+  filter: grayscale(1);
+  pointer-events: auto; /* ホバーイベントを有効にする */
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover {
+  transform: none;
+  filter: grayscale(1);
+  width: 36px;
+  border-radius: 50%;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover i {
+  display: none;
+}
+
+.memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
 }
 
 /* 編集モード時のボタンの色分け */
@@ -1417,6 +1446,18 @@ body .prompt-run-box .prompt-block:last-of-type,
   }
 }
 
+/* ─── フッターボタン展開アニメ（MEMO・CLIPBOARDと統一） ─── */
+@keyframes expandCenter {
+  from {
+    width: 36px;
+    border-radius: 50%;
+  }
+  to {
+    width: 100px;
+    border-radius: 18px;
+  }
+}
+
 /* 編集画面の段階的フェードイン（実行画面と同じ構造） */
 .memo-input-form .title-section {
   opacity: 0;
@@ -1579,4 +1620,80 @@ body .prompt-run-box .prompt-block:last-of-type,
   opacity: 1;
   transform: scaleX(1);
   animation: promptBlockDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功トースト通知 ━━━━━━━━━━*/
+.drag-drop-toast {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.6),
+    rgba(118, 75, 162, 0.6)
+  );
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+  font-size: 0.8rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10000;
+  opacity: 0.7;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+  max-width: 250px;
+  word-wrap: break-word;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.drag-drop-toast i {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.drag-drop-toast.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* フォールバックトーストのスタイル */
+.fallback-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.95),
+    rgba(118, 75, 162, 0.95)
+  );
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

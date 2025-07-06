@@ -282,12 +282,38 @@ async function handleDrop(e) {
     console.log("[MEMO DND] 要素の下に挿入:", dragSrcIndex, "→", actualToIndex);
   }
 
+  console.log("[MEMO D&D] 保存前のmemos配列:", memos);
   await saveStorage(MEMO_KEY, memos);
+  console.log("[MEMO D&D] 保存完了");
+
+  // グローバルに最新のmemosを設定
+  window.memos = memos;
+  console.log("[MEMO D&D] window.memosを更新:", window.memos);
 
   // ドラッグ＆ドロップ成功メッセージを表示
+  console.log("[MEMO D&D] showDragDropSuccessMessage呼び出し前:", {
+    dragSrcIndex: dragSrcIndex,
+    actualToIndex: actualToIndex,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
   showDragDropSuccessMessage(dragSrcIndex + 1, actualToIndex + 1);
 
-  renderListView();
+  console.log("[MEMO D&D] renderListView()呼び出し前");
+  await renderListView();
+  console.log("[MEMO D&D] renderListView()完了");
+
+  // ドラッグ＆ドロップ後の再初期化処理
+  console.log("[MEMO D&D] 再初期化処理開始");
+
+  // メモデータを再読み込み
+  memos = await loadStorage(MEMO_KEY);
+  window.memos = memos;
+  console.log("[MEMO D&D] データ再読み込み完了:", memos);
+
+  // 一覧画面を再表示
+  await renderListView();
+  console.log("[MEMO D&D] 再初期化処理完了");
 }
 function handleDragEnd() {
   document
@@ -1976,43 +2002,24 @@ function discardAndGoBack() {
 
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
 function showDragDropSuccessMessage(fromPosition, toPosition) {
-  console.log("[DND] 成功メッセージを表示:", { fromPosition, toPosition });
-
-  // AppUtilsのトースト通知が利用可能な場合
-  if (window.AppUtils && window.AppUtils.showToast) {
-    const message = `メモ ${fromPosition} を ${toPosition} 番目に移動しました`;
-    window.AppUtils.showToast(message, "success");
-  } else {
-    // AppUtilsが利用できない場合の代替処理
-    showFallbackDragDropMessage(fromPosition, toPosition);
-  }
-}
-
-function showFallbackDragDropMessage(fromPosition, toPosition) {
-  // 既存のトーストがあれば削除
-  const existingToast = document.querySelector(".drag-drop-toast");
-  if (existingToast) {
-    existingToast.remove();
-  }
-
-  // 新しいトーストを作成
+  const message = "順番を入れ替えました";
   const toast = document.createElement("div");
   toast.className = "drag-drop-toast";
   toast.innerHTML = `
     <i class="bi bi-check-circle-fill"></i>
-    メモ ${fromPosition} を ${toPosition} 番目に移動しました
+    <span>${message}</span>
   `;
-
-  // bodyに追加
   document.body.appendChild(toast);
-
-  // 2秒後にフェードアウト
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  }, 10);
   setTimeout(() => {
     toast.classList.add("fade-out");
     setTimeout(() => {
-      toast.remove();
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
     }, 300);
-  }, 2000);
+  }, 3000);
 }
 
 // ───────────────────────────────────────
@@ -2184,46 +2191,33 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
-  const message = document.createElement("div");
-  message.className = "export-message success";
-  message.innerHTML = `
-    <i class="bi bi-check-circle"></i>
-    <span>エクスポート完了: ${fileName}</span>
-  `;
-  document.body.appendChild(message);
+  console.log("[MEMO] showExportSuccessMessage呼び出し:", {
+    fileName: fileName,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
 
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[MEMO] エクスポート成功トーストを表示");
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  } else {
+    console.error("[MEMO] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
-  const message = document.createElement("div");
-  message.className = "export-message error";
-  message.innerHTML = `
-    <i class="bi bi-exclamation-triangle"></i>
-    <span>エクスポートに失敗しました</span>
-  `;
-  document.body.appendChild(message);
+  console.log("[MEMO] showExportErrorMessage呼び出し:", {
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
 
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[MEMO] エクスポートエラートーストを表示");
+    window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  } else {
+    console.error("[MEMO] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートボタンの状態を更新

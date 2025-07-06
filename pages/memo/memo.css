@@ -55,7 +55,7 @@ body {
 .memo-content:not(.edit-mode) {
   margin: 32px 16px 16px 16px; /* Match CLIPBOARD margin */
   height: calc(
-    100vh - 168px
+    100vh - 138px
   ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
   background: #2d2d2d;
   border-radius: 12px;
@@ -68,6 +68,7 @@ body {
 .memo-content.show {
   opacity: 1;
   transform: translateY(0);
+  margin: 16px 16px 0px 16px;
 }
 /* アニメーションを発火させるためのクラス */
 .memo-content.animate {
@@ -109,7 +110,7 @@ body {
   left: 0;
   right: 0;
   margin: 0;
-  padding: 16px;
+  padding: 0px 16px 16px 16px;
   display: flex;
   gap: 12px;
   background: rgba(49, 69, 89, 0.95); /* 背景を半透明に */
@@ -884,29 +885,35 @@ body {
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功トースト通知 ━━━━━━━━━━*/
 .drag-drop-toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #00a31e, #008f1a);
-  color: #ffffff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
-  font-size: 0.9rem;
-  font-weight: 500;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(7, 138, 185, 0.6),
+    rgba(2, 72, 129, 0.6)
+  );
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(7, 138, 185, 0.15);
+  font-size: 0.8rem;
+  font-weight: 400;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   z-index: 10000;
-  opacity: 1;
+  opacity: 0.7;
   transform: translateX(0);
   transition: all 0.3s ease;
-  max-width: 300px;
+  max-width: 250px;
   word-wrap: break-word;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .drag-drop-toast i {
-  font-size: 1.1rem;
-  color: #ffffff;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
   flex-shrink: 0;
 }
 

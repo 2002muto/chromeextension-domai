@@ -12,7 +12,7 @@ const PROMPT_KEY = "prompts";
 const RUN_KEY = "promptRuns";
 const $ = (sel, el = document) => el.querySelector(sel);
 const load = (k) =>
-  new Promise((r) => chrome.storage.local.get(k, (v) => r(v[k])));
+  new Promise((r) => chrome.storage.local.get([k], (v) => r(v[k] || [])));
 const save = (k, v) =>
   new Promise((r) => chrome.storage.local.set({ [k]: v }, r));
 const ce = (tag, cls = "", html = "") => {
@@ -99,23 +99,44 @@ let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデ
 // Drag & Drop handlers for prompt list
 // ───────────────────────────────────────
 function handlePromptDragStart(e) {
+  console.log("[PROMPT DEBUG] dragstart イベント発火");
+  console.log("[PROMPT DEBUG] dragstart 詳細:", {
+    target: e.target,
+    currentTarget: e.currentTarget,
+    dataset: e.currentTarget.dataset,
+    draggable: e.currentTarget.draggable,
+  });
+
   dragPromptIndex = +this.dataset.index;
   dragPromptStarred = prompts[dragPromptIndex]?.star || false;
   console.log(
     "[PRM] drag start:",
     dragPromptIndex,
     "starred:",
-    dragPromptStarred
+    dragPromptStarred,
+    "element:",
+    this,
+    "dataset.index:",
+    this.dataset.index
   );
   e.dataTransfer.effectAllowed = "move";
   this.classList.add("dragging");
+  console.log("[PROMPT DEBUG] dragging クラス追加完了");
 }
 function handlePromptDragOver(e) {
+  console.log("[PROMPT DEBUG] dragover イベント発火");
   e.preventDefault();
 
   // ドロップ先の星状態をチェック
   const dropIndex = +this.dataset.index;
   const dropTargetStarred = prompts[dropIndex]?.star || false;
+
+  console.log("[PROMPT DEBUG] dragover 詳細:", {
+    dropIndex: dropIndex,
+    dropTargetStarred: dropTargetStarred,
+    dragPromptStarred: dragPromptStarred,
+    element: this,
+  });
 
   // 異なるカテゴリ間のドロップを禁止
   if (dragPromptStarred !== dropTargetStarred) {
@@ -204,8 +225,38 @@ async function handlePromptDrop(e) {
     );
   }
 
+  console.log("[PROMPT D&D] 保存前のprompts配列:", prompts);
   await save(PROMPT_KEY, prompts);
-  renderList();
+  console.log("[PROMPT D&D] 保存完了");
+
+  // グローバルに最新のpromptsを設定（確実に更新）
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
+  console.log("[PROMPT D&D] window.promptsを更新:", window.prompts);
+
+  // ドラッグ＆ドロップ成功メッセージを表示
+  console.log("[PROMPT D&D] showDragDropSuccessMessage呼び出し前:", {
+    dragPromptIndex: dragPromptIndex,
+    actualToIndex: actualToIndex,
+    AppUtils: !!window.AppUtils,
+  });
+  showDragDropSuccessMessage(dragPromptIndex + 1, actualToIndex + 1);
+
+  // 一覧画面を即座に再表示（MEMO・CLIPBOARDと同様）
+  console.log("[PROMPT D&D] renderList()呼び出し前");
+  await renderList();
+  console.log("[PROMPT D&D] renderList()完了");
+
+  // ドラッグ＆ドロップ後の再初期化処理（MEMO・CLIPBOARDと同様）
+  console.log("[PROMPT D&D] 再初期化処理開始");
+
+  // プロンプトデータを再読み込み
+  prompts = await load(PROMPT_KEY);
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
+  console.log("[PROMPT D&D] データ再読み込み完了:", prompts);
+
+  // 一覧画面を再表示
+  await renderList();
+  console.log("[PROMPT D&D] 再初期化処理完了");
 }
 function handlePromptDragEnd() {
   document
@@ -250,77 +301,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   prompts = await load(PROMPT_KEY);
 
   // グローバルに最新のpromptsを設定（common.jsで使用される）
-  window.prompts = prompts;
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
   console.log("[PROMPT] window.promptsを設定しました:", window.prompts);
 
   // 起動時は常に一覧画面を表示（ページ状態の復元を無効化）
   console.log("PROMPTページ: 起動時に一覧画面を表示");
   await renderList();
 
-  // Add event listener to PROMPT button
-  const promptButton = document.getElementById("btn-prompt");
-  if (promptButton) {
-    promptButton.addEventListener("click", () => {
-      console.log("PROMPT page button clicked");
-
-      // 編集画面での未保存変更をチェック
-      const isEditing = document.querySelector(".memo-content.edit-mode");
-      if (isEditing) {
-        console.log("[PROMPT] 編集画面での未保存変更をチェック");
-
-        // 現在編集中のプロンプト情報を取得
-        const currentIndex = getCurrentPromptIndex();
-        const originalObj = currentIndex !== -1 ? prompts[currentIndex] : null;
-        const isNew = currentIndex === -1;
-
-        // 未保存変更があるかチェック
-        const hasChanges = checkForUnsavedChanges(originalObj, isNew);
-
-        if (hasChanges) {
-          console.log("[PROMPT] 未保存の変更を検出 - 確認ダイアログを表示");
-
-          // AppUtilsの確認ダイアログが利用可能な場合
-          if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
-            // 保存確認ダイアログを表示
-            window.AppUtils.showSaveConfirmDialog({
-              title: "変更を保存しますか？",
-              message:
-                "プロンプト内容に変更があります。<br>保存せずに戻ると変更が失われます。",
-              onSave: async () => {
-                // 保存して戻る
-                console.log("[PROMPT] 変更を保存して戻ります");
-                await saveAndGoBack();
-              },
-              onDiscard: () => {
-                // 破棄して戻る
-                console.log("[PROMPT] 変更を破棄して戻ります");
-                discardAndGoBack();
-              },
-            });
-          } else {
-            // AppUtilsが利用できない場合は警告を表示してから戻る
-            console.warn(
-              "[PROMPT] AppUtils.showSaveConfirmDialogが利用できません。変更を破棄して戻ります。"
-            );
-            if (
-              confirm(
-                "プロンプト内容に変更があります。保存せずに戻ると変更が失われます。\n\n変更を破棄して戻りますか？"
-              )
-            ) {
-              discardAndGoBack();
-            }
-          }
-        } else {
-          // 変更がない場合は直接戻る
-          console.log("[PROMPT] 変更なしで戻ります");
-          renderList();
-        }
-      } else {
-        // 編集画面でない場合は直接一覧画面を表示
-        renderList();
-      }
-    });
-  }
+  // ヘッダーボタンのクリック時の変更検知は common.js で統一して処理されるため、
+  // ここでは重複するイベントリスナーの追加は行わない
 
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
@@ -343,10 +332,13 @@ async function renderList() {
     window.PageStateManager.setActivePage("prompt");
   }
 
+  console.log("[renderList] データ読み込み前のprompts:", prompts);
   prompts = await load(PROMPT_KEY);
+  console.log("[renderList] データ読み込み後のprompts:", prompts);
 
-  // グローバルに最新のpromptsを設定
-  window.prompts = prompts;
+  // グローバルに最新のpromptsを設定（確実に更新）
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
+  console.log("[renderList] window.promptsを更新:", window.prompts);
 
   // 既存のアーカイブデータから空のアイテムをクリーンアップ
   const hasEmptyItems = prompts.some((p) => p.archived && isEmptyPrompt(p));
@@ -542,6 +534,7 @@ async function renderList() {
     }
 
     // 通常のプロンプト一覧表示
+    console.log("[renderList] アクティブなプロンプト数:", activePrompts.length);
     activePrompts.forEach((p, i) => {
       // 元の配列でのインデックスを取得
       const originalIndex = prompts.findIndex((prompt) => prompt.id === p.id);
@@ -551,18 +544,30 @@ async function renderList() {
       li.draggable = true;
       li.dataset.index = originalIndex; // 元の配列でのインデックスを設定
 
+      console.log("[PROMPT DEBUG] プロンプトアイテム作成:", {
+        promptId: p.id,
+        promptTitle: p.title,
+        originalIndex: originalIndex,
+        li: li,
+        draggable: li.draggable,
+        dataset: li.dataset,
+      });
+
       // DnD handlers
+      console.log("[PROMPT DEBUG] D&Dイベントハンドラー設定開始:", li);
       li.addEventListener("dragstart", handlePromptDragStart);
       li.addEventListener("dragover", handlePromptDragOver);
       li.addEventListener("dragleave", handlePromptDragLeave);
       li.addEventListener("drop", handlePromptDrop);
       li.addEventListener("dragend", handlePromptDragEnd);
+      console.log("[PROMPT DEBUG] D&Dイベントハンドラー設定完了:", li);
 
       // ★ star
       const star = document.createElement("i");
       star.className = p.star
         ? "bi bi-star-fill star on"
         : "bi bi-star-fill star off";
+      star.draggable = false; // ドラッグを無効化
       star.addEventListener("click", async (e) => {
         e.stopPropagation();
         p.star = !p.star;
@@ -584,6 +589,7 @@ async function renderList() {
       titleElement.className = "prompt-title";
       titleElement.textContent = p.title;
       titleElement.title = p.title; // Add title attribute for tooltip
+      titleElement.draggable = false; // ドラッグを無効化
       li.appendChild(titleElement);
 
       // 一括入力ボタン
@@ -591,6 +597,7 @@ async function renderList() {
       runBtn.className = "prompt-action";
       runBtn.textContent = "一括入力";
       runBtn.title = "プロンプトを一括入力";
+      runBtn.draggable = false; // ドラッグを無効化
       // デバウンス用のlocked変数
       let locked = false;
 
@@ -661,6 +668,7 @@ async function renderList() {
       const archiveIcon = document.createElement("i");
       archiveIcon.className = "bi bi-archive-fill prompt-archive";
       archiveIcon.title = "アーカイブへ移動";
+      archiveIcon.draggable = false; // ドラッグを無効化
       archiveIcon.addEventListener("click", async (e) => {
         e.stopPropagation();
 
@@ -788,6 +796,12 @@ async function renderList() {
       // click row → run（元の配列でのインデックスを使用）
       li.addEventListener("click", () => renderRun(originalIndex));
 
+      console.log("[PROMPT DEBUG] リストアイテムをDOMに追加:", {
+        promptId: p.id,
+        promptTitle: p.title,
+        originalIndex: originalIndex,
+        element: li,
+      });
       list.appendChild(li);
     });
   }
@@ -797,6 +811,33 @@ async function renderList() {
 
   currentPromptIndex = -1; // 一覧画面に戻ったのでリセット
   console.log("[renderList] end");
+
+  // リストの最後にデバッグ情報を追加
+  setTimeout(() => {
+    console.log("[PROMPT DEBUG] 最終的なDOM状態確認:");
+    const promptItems = list.querySelectorAll(".prompt-item");
+    console.log(`[PROMPT DEBUG] プロンプトアイテム数: ${promptItems.length}`);
+
+    promptItems.forEach((item, index) => {
+      console.log(`[PROMPT DEBUG] アイテム${index}:`, {
+        element: item,
+        draggable: item.draggable,
+        dataset: item.dataset,
+        classList: Array.from(item.classList),
+        childElements: Array.from(item.children).map((child) => ({
+          tagName: child.tagName,
+          className: child.className,
+          draggable: child.draggable,
+        })),
+      });
+    });
+
+    // トーストメッセージのテスト
+    console.log("[PROMPT DEBUG] トーストメッセージテスト開始");
+    console.log("[PROMPT DEBUG] AppUtils確認:", {
+      AppUtils: !!window.AppUtils,
+    });
+  }, 100);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1708,47 +1749,28 @@ function renderEdit(idx, isNew = false) {
     renderList();
     console.log("[DUP] 複製完了 →", clone.title);
   }
+}
 
-  /*━━━━━━━━━━ 8. ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
-  function showDragDropSuccessMessage(fromPosition, toPosition) {
-    console.log("[DND] 成功メッセージを表示:", { fromPosition, toPosition });
-
-    // AppUtilsのトースト通知が利用可能な場合
-    if (window.AppUtils && window.AppUtils.showToast) {
-      const message = `プロンプト ${fromPosition} を ${toPosition} 番目に移動しました`;
-      window.AppUtils.showToast(message, "success");
-    } else {
-      // AppUtilsが利用できない場合の代替処理
-      showFallbackDragDropMessage(fromPosition, toPosition);
-    }
-  }
-
-  function showFallbackDragDropMessage(fromPosition, toPosition) {
-    // 既存のトーストがあれば削除
-    const existingToast = document.querySelector(".drag-drop-toast");
-    if (existingToast) {
-      existingToast.remove();
-    }
-
-    // 新しいトーストを作成
-    const toast = document.createElement("div");
-    toast.className = "drag-drop-toast";
-    toast.innerHTML = `
-      <i class="bi bi-check-circle-fill"></i>
-      プロンプト ${fromPosition} を ${toPosition} 番目に移動しました
-    `;
-
-    // bodyに追加
-    document.body.appendChild(toast);
-
-    // 2秒後にフェードアウト
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ（グローバル関数） ━━━━━━━━━━*/
+function showDragDropSuccessMessage(fromPosition, toPosition) {
+  const message = "順番を入れ替えました";
+  const toast = document.createElement("div");
+  toast.className = "drag-drop-toast";
+  toast.innerHTML = `
+    <i class="bi bi-check-circle-fill"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  }, 10);
+  setTimeout(() => {
+    toast.classList.add("fade-out");
     setTimeout(() => {
-      toast.classList.add("fade-out");
-      setTimeout(() => {
-        toast.remove();
-      }, 300);
-    }, 2000);
-  }
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, 3000);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2168,6 +2190,14 @@ function renderRun(idx) {
 
       // プロンプトデータを保存
       save(PROMPT_KEY, prompts);
+
+      // ドラッグ＆ドロップ成功メッセージを表示
+      console.log("[PROMPT RUN D&D] showDragDropSuccessMessage呼び出し前:", {
+        fromIndex: fromIndex,
+        actualToIndex: actualToIndex,
+        AppUtils: !!window.AppUtils,
+      });
+      showDragDropSuccessMessage(fromIndex + 1, actualToIndex + 1);
 
       // 画面を再描画
       renderRun(idx);
@@ -2706,6 +2736,8 @@ function renderArchiveFooter() {
 // エクスポート機能
 // ───────────────────────────────────────
 async function exportAllPrompts() {
+  console.log("[PROMPT] exportAllPrompts開始");
+
   try {
     // アクティブなプロンプト（アーカイブされていないプロンプト）のみをフィルタリング
     const activePrompts = prompts
@@ -2714,8 +2746,14 @@ async function exportAllPrompts() {
         })
       : [];
 
+    console.log("[PROMPT] エクスポート対象:", {
+      totalPrompts: prompts ? prompts.length : 0,
+      activePrompts: activePrompts.length,
+    });
+
     // アクティブなプロンプトが0件の場合は処理を停止
     if (activePrompts.length === 0) {
+      console.log("[PROMPT] エクスポート対象が0件のため処理を停止");
       return;
     }
 
@@ -2728,6 +2766,8 @@ async function exportAllPrompts() {
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
     const fileName = `${year}${month}${day}_${hours}${minutes}${seconds}.json`;
+
+    console.log("[PROMPT] ファイル名生成:", fileName);
 
     // エクスポート用のデータ構造を作成（アクティブなプロンプトのみ）
     const exportData = {
@@ -2743,9 +2783,13 @@ async function exportAllPrompts() {
       prompts: activePrompts,
     };
 
+    console.log("[PROMPT] エクスポートデータ作成完了");
+
     // 正しいハッシュ値を計算（認証用）
     const dataForHash = { ...exportData };
     const hashResult = await generateSecurityHash(dataForHash);
+
+    console.log("[PROMPT] セキュリティハッシュ生成完了");
 
     // エクスポートデータに設定
     exportData.securityHash = hashResult.securityHash; // 実際のハッシュ値（認証用）
@@ -2764,10 +2808,13 @@ async function exportAllPrompts() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
+    console.log("[PROMPT] ファイルダウンロード完了");
+
     // 成功メッセージを表示
+    console.log("[PROMPT] 成功メッセージ表示開始");
     showExportSuccessMessage(fileName);
   } catch (error) {
-    console.error("エクスポートエラー:", error);
+    console.error("[PROMPT] エクスポートエラー:", error);
     showExportErrorMessage();
   }
 }
@@ -2874,46 +2921,31 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
-  const message = document.createElement("div");
-  message.className = "export-message success";
-  message.innerHTML = `
-    <i class="bi bi-check-circle"></i>
-    <span>エクスポート完了: ${fileName}</span>
-  `;
-  document.body.appendChild(message);
+  console.log("[PROMPT] showExportSuccessMessage呼び出し:", {
+    fileName: fileName,
+    AppUtils: !!window.AppUtils,
+  });
 
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[PROMPT] エクスポート成功トーストを表示");
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  } else {
+    console.error("[PROMPT] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
-  const message = document.createElement("div");
-  message.className = "export-message error";
-  message.innerHTML = `
-    <i class="bi bi-exclamation-triangle"></i>
-    <span>エクスポートに失敗しました</span>
-  `;
-  document.body.appendChild(message);
+  console.log("[PROMPT] showExportErrorMessage呼び出し:", {
+    AppUtils: !!window.AppUtils,
+  });
 
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[PROMPT] エクスポートエラートーストを表示");
+    window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  } else {
+    console.error("[PROMPT] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートボタンとアーカイブボタンの状態を更新
@@ -2965,36 +2997,11 @@ function updateExportButtonState() {
   });
 }
 
-// ───────────────────────────────────────
-// 初期化処理
-// ───────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("PROMPTページ: DOMContentLoaded");
-
-  // フッターボタンのイベントリスナーを設定
-  const archiveToggleBtn = document.getElementById("btn-archive-toggle");
-  if (archiveToggleBtn) {
-    console.log("初期化: アーカイブトグルボタンを発見しました");
-    archiveToggleBtn.addEventListener("click", () =>
-      renderArchiveNav("prompt")
-    );
-  } else {
-    console.error("初期化: アーカイブトグルボタンが見つかりません");
-  }
-
-  const exportBtn = document.querySelector(".encrypt-btn");
-  if (exportBtn) {
-    console.log("初期化: エクスポートボタンを発見しました");
-    exportBtn.addEventListener("click", exportAllPrompts);
-  } else {
-    console.error("初期化: エクスポートボタンが見つかりません");
-  }
-
-  // .memo-content要素の確認
-  const memoContent = document.querySelector(".memo-content");
-  if (memoContent) {
-    console.log("初期化: .memo-content要素を発見しました");
-  } else {
-    console.error("初期化: .memo-content要素が見つかりません");
-  }
-});
+// グローバルに公開してヘッダーナビから呼び出せるようにする
+window.renderList = renderList;
+window.checkForUnsavedChanges = checkForUnsavedChanges;
+window.saveAndGoBack = saveAndGoBack;
+window.discardAndGoBack = discardAndGoBack;
+window.prompts = prompts;
+window.save = save;
+window.getCurrentPromptIndex = getCurrentPromptIndex;

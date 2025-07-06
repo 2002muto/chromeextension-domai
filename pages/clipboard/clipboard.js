@@ -114,12 +114,37 @@ async function handleClipDrop(e) {
     );
   }
 
+  console.log("[CLIPBOARD D&D] 保存前のclips配列:", clips);
   await saveStorage(CLIP_KEY, clips);
+  console.log("[CLIPBOARD D&D] 保存完了");
+
+  // グローバルに最新のclipsを設定
+  window.clips = clips;
+  console.log("[CLIPBOARD D&D] window.clipsを更新:", window.clips);
 
   // ドラッグ＆ドロップ成功メッセージを表示
+  console.log("[CLIPBOARD D&D] showDragDropSuccessMessage呼び出し前:", {
+    dragClipIndex: dragClipIndex,
+    actualToIndex: actualToIndex,
+    AppUtils: !!window.AppUtils,
+  });
   showDragDropSuccessMessage(dragClipIndex + 1, actualToIndex + 1);
 
-  renderClipboardView();
+  console.log("[CLIPBOARD D&D] renderClipboardView()呼び出し前");
+  await renderClipboardView();
+  console.log("[CLIPBOARD D&D] renderClipboardView()完了");
+
+  // ドラッグ＆ドロップ後の再初期化処理
+  console.log("[CLIPBOARD D&D] 再初期化処理開始");
+
+  // クリップデータを再読み込み
+  clips = await loadStorage(CLIP_KEY);
+  window.clips = clips;
+  console.log("[CLIPBOARD D&D] データ再読み込み完了:", clips);
+
+  // 一覧画面を再表示
+  await renderClipboardView();
+  console.log("[CLIPBOARD D&D] 再初期化処理完了");
 }
 function handleClipDragEnd() {
   document
@@ -967,7 +992,6 @@ window.addEventListener("DOMContentLoaded", async () => {
       window.AppUtils && window.AppUtils.animateRestoreItem
     ),
     showConfirmDialog: !!(window.AppUtils && window.AppUtils.showConfirmDialog),
-    showToast: !!(window.AppUtils && window.AppUtils.showToast),
   });
 
   // 現在のページがCLIPBOARDページかどうかを確認
@@ -1017,43 +1041,24 @@ async function renderClipboardEdit(id) {
 
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
 function showDragDropSuccessMessage(fromPosition, toPosition) {
-  console.log("[DND] 成功メッセージを表示:", { fromPosition, toPosition });
-
-  // AppUtilsのトースト通知が利用可能な場合
-  if (window.AppUtils && window.AppUtils.showToast) {
-    const message = `クリップ ${fromPosition} を ${toPosition} 番目に移動しました`;
-    window.AppUtils.showToast(message, "success");
-  } else {
-    // AppUtilsが利用できない場合の代替処理
-    showFallbackDragDropMessage(fromPosition, toPosition);
-  }
-}
-
-function showFallbackDragDropMessage(fromPosition, toPosition) {
-  // 既存のトーストがあれば削除
-  const existingToast = document.querySelector(".drag-drop-toast");
-  if (existingToast) {
-    existingToast.remove();
-  }
-
-  // 新しいトーストを作成
+  const message = "順番を入れ替えました";
   const toast = document.createElement("div");
   toast.className = "drag-drop-toast";
   toast.innerHTML = `
     <i class="bi bi-check-circle-fill"></i>
-    クリップ ${fromPosition} を ${toPosition} 番目に移動しました
+    <span>${message}</span>
   `;
-
-  // bodyに追加
   document.body.appendChild(toast);
-
-  // 2秒後にフェードアウト
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  }, 10);
   setTimeout(() => {
     toast.classList.add("fade-out");
     setTimeout(() => {
-      toast.remove();
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
     }, 300);
-  }, 2000);
+  }, 3000);
 }
 
 /*━━━━━━━━━━ 空のクリップ判定機能 ━━━━━━━━━━*/
@@ -1235,46 +1240,17 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
-  const message = document.createElement("div");
-  message.className = "export-message success";
-  message.innerHTML = `
-    <i class="bi bi-check-circle"></i>
-    <span>エクスポート完了: ${fileName}</span>
-  `;
-  document.body.appendChild(message);
-
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  console.log("[CLIPBOARD] showExportSuccessMessage呼び出し:", {
+    fileName: fileName,
+    AppUtils: !!window.AppUtils,
+  });
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
-  const message = document.createElement("div");
-  message.className = "export-message error";
-  message.innerHTML = `
-    <i class="bi bi-exclamation-triangle"></i>
-    <span>エクスポートに失敗しました</span>
-  `;
-  document.body.appendChild(message);
-
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  console.log("[CLIPBOARD] showExportErrorMessage呼び出し:", {
+    AppUtils: !!window.AppUtils,
+  });
 }
 
 // エクスポートボタンとアーカイブボタンの状態を更新

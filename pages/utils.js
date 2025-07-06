@@ -1121,6 +1121,129 @@ async function animateRestoreItem(item, callback) {
   });
 }
 
+// 共通トースト通知機能
+function showToast(message, type = "info") {
+  console.log("[UTILS] showToast呼び出し:", { message, type });
+
+  // 既存のトーストがあれば削除
+  const existingToast = document.querySelector(".common-toast-message");
+  if (existingToast) {
+    console.log("[UTILS] 既存のトーストを削除");
+    existingToast.remove();
+  }
+
+  // アイコンと色をtypeで切り替え
+  let icon = "";
+  let borderColor = "#3b82f6"; // info: 青
+  let bgColor = "rgba(59, 130, 246, 0.1)";
+  let iconColor = "#3b82f6";
+  if (type === "success") {
+    icon = '<i class="bi bi-check-circle"></i>';
+    borderColor = "#10b981";
+    bgColor = "rgba(16, 185, 129, 0.1)";
+    iconColor = "#10b981";
+  } else if (type === "error") {
+    icon = '<i class="bi bi-exclamation-triangle"></i>';
+    borderColor = "#ef4444";
+    bgColor = "rgba(239, 68, 68, 0.1)";
+    iconColor = "#ef4444";
+  } else if (type === "info") {
+    icon = '<i class="bi bi-info-circle"></i>';
+    borderColor = "#3b82f6";
+    bgColor = "rgba(59, 130, 246, 0.1)";
+    iconColor = "#3b82f6";
+  } else if (type === "warn" || type === "warning") {
+    icon = '<i class="bi bi-exclamation-circle"></i>';
+    borderColor = "#f59e0b";
+    bgColor = "rgba(245, 158, 11, 0.1)";
+    iconColor = "#f59e0b";
+  }
+
+  console.log("[UTILS] トースト設定:", {
+    icon,
+    borderColor,
+    bgColor,
+    iconColor,
+  });
+
+  // トーストHTML
+  const toast = document.createElement("div");
+  toast.className = "common-toast-message";
+  toast.innerHTML = `
+    <span class="toast-icon" style="color: ${iconColor}">${icon}</span>
+    <span class="toast-text">${message}</span>
+  `;
+
+  console.log("[UTILS] トースト要素作成:", toast);
+
+  // スタイルを動的に追加（初回のみ）
+  if (!document.querySelector("#common-toast-styles")) {
+    console.log("[UTILS] トーストスタイルを追加");
+    const styles = document.createElement("style");
+    styles.id = "common-toast-styles";
+    styles.textContent = `
+      .common-toast-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${bgColor};
+        border-left: 4px solid ${borderColor};
+        color: #ffffff;
+        padding: 14px 22px;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1rem;
+        font-weight: 500;
+        z-index: 10000;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+        max-width: 340px;
+        min-width: 180px;
+        word-break: break-all;
+      }
+      .common-toast-message.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .common-toast-message .toast-icon {
+        font-size: 1.3rem;
+        flex-shrink: 0;
+      }
+      .common-toast-message .toast-text {
+        flex: 1;
+        color: #fff;
+        word-break: break-word;
+      }
+    `;
+    document.head.appendChild(styles);
+    console.log("[UTILS] トーストスタイル追加完了");
+  }
+
+  // bodyに追加
+  document.body.appendChild(toast);
+  console.log("[UTILS] トースト要素をbodyに追加:", toast);
+
+  // アニメーションで表示
+  setTimeout(() => {
+    toast.classList.add("show");
+    console.log("[UTILS] トースト表示アニメーション開始");
+  }, 50);
+
+  // 2秒後にフェードアウト
+  setTimeout(() => {
+    toast.classList.remove("show");
+    console.log("[UTILS] トースト非表示アニメーション開始");
+    setTimeout(() => {
+      toast.remove();
+      console.log("[UTILS] トースト要素を削除");
+    }, 300);
+  }, 2000);
+}
+
 console.log("[UTILS] AppUtils loaded successfully");
 
 // グローバルに公開

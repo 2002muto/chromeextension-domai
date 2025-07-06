@@ -567,159 +567,89 @@ document.addEventListener("DOMContentLoaded", function () {
           this.id === "btn-prompt"
         ) {
           // PROMPTページでPROMPTボタンがクリックされた場合
-          // 保存された状態を取得
-          const savedState = PageStateManager.getPageState("prompt");
+          console.log("PROMPTヘッダーアイコンがクリックされました");
 
-          // 編集画面からの遷移時は保存確認を行う
+          // 編集画面での未保存変更をチェック
           const isEditMode = document.querySelector(".memo-content.edit-mode");
-          const hasFormHeader = document.querySelector(".form-header");
-          const hasTitleInput = document.querySelector(".title-input");
-          const hasFieldWrap = document.querySelector("#field-wrap");
+          if (isEditMode) {
+            console.log("[PROMPT] 編集画面での未保存変更をチェック");
 
-          console.log("[DEBUG] PROMPTページ内遷移 - 編集画面判定:", {
-            isEditMode: !!isEditMode,
-            hasFormHeader: !!hasFormHeader,
-            hasTitleInput: !!hasTitleInput,
-            hasFieldWrap: !!hasFieldWrap,
-          });
-
-          if (
-            (isEditMode || hasFormHeader) &&
-            hasTitleInput &&
-            hasFieldWrap &&
-            typeof window.checkForUnsavedChanges === "function"
-          ) {
-            // 編集中のプロンプトデータを取得
-            const promptIndex = window.getCurrentPromptIndex
+            // 現在編集中のプロンプト情報を取得
+            const currentIndex = window.getCurrentPromptIndex
               ? window.getCurrentPromptIndex()
               : -1;
+            const originalObj =
+              currentIndex !== -1 && window.prompts
+                ? window.prompts[currentIndex]
+                : null;
+            const isNew = currentIndex === -1;
 
-            console.log(
-              "[DEBUG] PROMPTページ内遷移 - promptIndex:",
-              promptIndex
-            );
+            // 未保存変更があるかチェック
+            const hasChanges = window.checkForUnsavedChanges
+              ? window.checkForUnsavedChanges(originalObj, isNew)
+              : false;
 
-            // 新規作成または既存編集の判定
-            let originalObj = null;
-            let isNew = true;
-
-            if (
-              promptIndex >= 0 &&
-              window.prompts &&
-              window.prompts[promptIndex]
-            ) {
-              // 既存編集の場合
-              originalObj = window.prompts[promptIndex];
-              isNew = false;
-              console.log(
-                "[DEBUG] PROMPTページ内遷移 - 既存編集:",
-                originalObj
-              );
-            } else {
-              // 新規作成の場合
-              console.log("[DEBUG] PROMPTページ内遷移 - 新規作成");
-            }
-
-            const hasChanges = window.checkForUnsavedChanges(
-              originalObj,
-              isNew
-            );
-
-            console.log("[DEBUG] PROMPTページ内遷移 - hasChanges:", hasChanges);
+            console.log("[PROMPT] 保存確認チェック:", {
+              isNew: isNew,
+              originalObj: originalObj,
+              hasUnsavedChanges: hasChanges,
+              AppUtils: !!window.AppUtils,
+              showSaveConfirmDialog: !!(
+                window.AppUtils && window.AppUtils.showSaveConfirmDialog
+              ),
+            });
 
             if (hasChanges) {
-              e.preventDefault(); // ページ遷移を一時停止
               console.log(
-                "[DEBUG] PROMPTページ内遷移 - 保存確認ダイアログを表示"
+                "未保存の変更があります。保存確認ダイアログを表示します。"
               );
-
-              // 保存確認ダイアログを表示
-              if (
-                typeof window.AppUtils?.showSaveConfirmDialog === "function"
-              ) {
+              // AppUtilsの保存確認ダイアログを使用
+              if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
                 window.AppUtils.showSaveConfirmDialog({
                   title: "変更を保存しますか？",
                   message:
                     "プロンプト内容に変更があります。<br>保存せずに戻ると変更が失われます。",
                   onSave: async () => {
-                    try {
-                      console.log("[PROMPT NAV] 保存処理を開始します");
-
-                      // プロンプト配列の初期化確認
-                      if (!window.prompts) {
-                        window.prompts = [];
-                      }
-
-                      const titleInput = document.querySelector(".title-input");
-                      const wrap = document.querySelector("#field-wrap");
-
-                      if (titleInput && wrap) {
-                        const newPrompt = {
-                          id: Date.now(),
-                          title: titleInput.value.trim() || "(無題)",
-                          fields: [...wrap.children].map((w) => ({
-                            text: w.querySelector(".prompt-field-textarea")
-                              .value,
-                            on: w.querySelector(".field-toggle").checked,
-                          })),
-                          archived: false,
-                        };
-
-                        if (isNew) {
-                          // 新規作成の場合
-                          window.prompts.push(newPrompt);
-                          console.log(
-                            "[PROMPT NAV] 新規プロンプトを保存:",
-                            newPrompt
-                          );
-                        } else {
-                          // 既存編集の場合
-                          window.prompts[promptIndex] = newPrompt;
-                          console.log(
-                            "[PROMPT NAV] 既存プロンプトを更新:",
-                            newPrompt
-                          );
-                        }
-
-                        // 保存処理
-                        if (typeof window.save === "function") {
-                          await window.save("prompts", window.prompts);
-                        }
-
-                        console.log("[PROMPT NAV] 変更を保存しました");
-                      }
-
-                      // フォームヘッダーを削除
-                      document.querySelector(".form-header")?.remove();
-
-                      // 保存された状態に遷移
-                      restorePromptPageState(savedState);
-                    } catch (error) {
-                      console.error("[PROMPT NAV] 保存中にエラー:", error);
-                      // エラーが発生しても状態を復元
-                      restorePromptPageState(savedState);
+                    // 保存して戻る
+                    console.log("[PROMPT] 変更を保存して一覧画面に遷移");
+                    if (window.saveAndGoBack) {
+                      await window.saveAndGoBack();
+                    } else if (typeof saveAndGoBack === "function") {
+                      await saveAndGoBack();
                     }
                   },
                   onDiscard: () => {
-                    // 破棄して保存された状態に戻る
-                    console.log(
-                      "[PROMPT NAV] 変更を破棄して状態を復元しました"
-                    );
-
-                    // フォームヘッダーを削除
-                    document.querySelector(".form-header")?.remove();
-
-                    // 保存された状態に遷移
-                    restorePromptPageState(savedState);
+                    // 破棄して戻る
+                    console.log("[PROMPT] 変更を破棄して一覧画面に遷移");
+                    if (window.discardAndGoBack) {
+                      window.discardAndGoBack();
+                    } else if (typeof discardAndGoBack === "function") {
+                      discardAndGoBack();
+                    }
                   },
                 });
-                return; // ここで処理を終了
+              } else {
+                // AppUtilsが利用できない場合は何もせず中断
+                return;
               }
+              return;
             }
           }
 
-          // 変更がない場合は保存された状態に戻る
-          restorePromptPageState(savedState);
+          console.log("現在のページ状態:", {
+            currentMode: document
+              .querySelector(".memo-content")
+              .classList.contains("archive")
+              ? "archive"
+              : "main",
+          });
+
+          // 一覧画面に遷移（MEMO・CLIPBOARDと同じ処理）
+          if (window.renderList) {
+            window.renderList();
+          } else if (typeof renderList === "function") {
+            renderList();
+          }
         } else if (
           currentPage.includes("/clipboard/") &&
           this.id === "btn-clipboard"
