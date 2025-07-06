@@ -258,28 +258,20 @@ async function performSearch() {
     return;
   }
 
+  // @記号を除去する処理を追加
+  if (query.startsWith("@")) {
+    query = query.substring(1);
+    console.log("@記号を除去しました:", query);
+  }
+
   let url;
 
   // URLかどうかを判定（http/httpsスキームまたはドメイン形式）
-  // @記号や特殊文字が含まれている場合は検索として処理
-  if (
-    (query.startsWith("http://") || query.startsWith("https://")) &&
-    !query.includes("@") &&
-    !query.includes("#") &&
-    !query.includes("?") &&
-    !query.includes("&")
-  ) {
+  if (query.startsWith("http://") || query.startsWith("https://")) {
     // URLとして処理
     url = query;
     console.log("URLとして処理:", url);
-  } else if (
-    query.includes(".") &&
-    !query.includes(" ") &&
-    !query.includes("@") &&
-    !query.includes("#") &&
-    !query.includes("?") &&
-    !query.includes("&")
-  ) {
+  } else if (query.includes(".") && !query.includes(" ")) {
     // ドメイン形式として処理
     url = "https://" + query;
     console.log("ドメインとして処理:", url);
@@ -302,12 +294,15 @@ async function performSearch() {
       console.log(`[IFRAME] addDynamicIframeRule returned ID: ${ruleId}`);
     }
 
-    // 検索エンジンのURL (@検索) を事前に生成
-    const searchFallbackUrl =
-      `https://www.google.com/search?q=${encodeURIComponent("@" + query)}`;
+    // 検索エンジンのURL（@記号なし）を事前に生成
+    const searchFallbackUrl = `https://www.google.com/search?q=${encodeURIComponent(
+      query
+    )}`;
 
     if (ruleId === null) {
-      console.warn("[IFRAME] Failed to add dynamic rule - using fallback search");
+      console.warn(
+        "[IFRAME] Failed to add dynamic rule - using fallback search"
+      );
       iframeDisplayContainer.style.display = "block";
       iframeDisplay.src = searchFallbackUrl;
       return;
@@ -328,18 +323,18 @@ async function performSearch() {
       console.log("iframe読み込みエラー - fallback to search");
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-      // URLの読み込みに失敗した場合は@検索に切り替える
+      // URLの読み込みに失敗した場合は@記号なしで検索に切り替える
       iframeDisplay.src = searchFallbackUrl;
     };
 
     // タイムアウト処理を追加
-      const timeoutId = setTimeout(() => {
-        console.log("iframe読み込みタイムアウト - fallback to search");
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="bi bi-search"></i>';
-        // タイムアウト時も@検索に切り替える
-        iframeDisplay.src = searchFallbackUrl;
-      }, 10000); // 10秒でタイムアウト
+    const timeoutId = setTimeout(() => {
+      console.log("iframe読み込みタイムアウト - fallback to search");
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="bi bi-search"></i>';
+      // タイムアウト時も@記号なしで検索に切り替える
+      iframeDisplay.src = searchFallbackUrl;
+    }, 10000); // 10秒でタイムアウト
 
     iframeDisplay.onload = () => {
       clearTimeout(timeoutId);
