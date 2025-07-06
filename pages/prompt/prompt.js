@@ -242,6 +242,11 @@ async function handlePromptDrop(e) {
   });
   showDragDropSuccessMessage(dragPromptIndex + 1, actualToIndex + 1);
 
+  // 一覧画面を即座に再表示（MEMO・CLIPBOARDと同様）
+  console.log("[PROMPT D&D] renderList()呼び出し前");
+  await renderList();
+  console.log("[PROMPT D&D] renderList()完了");
+
   // ドラッグ＆ドロップ後の再初期化処理（MEMO・CLIPBOARDと同様）
   console.log("[PROMPT D&D] 再初期化処理開始");
 
@@ -251,7 +256,6 @@ async function handlePromptDrop(e) {
   console.log("[PROMPT D&D] データ再読み込み完了:", prompts);
 
   // 一覧画面を再表示
-  console.log("[PROMPT D&D] renderList()呼び出し前");
   await renderList();
   console.log("[PROMPT D&D] 再初期化処理完了");
 }
@@ -1835,87 +1839,87 @@ function renderEdit(idx, isNew = false) {
     renderList();
     console.log("[DUP] 複製完了 →", clone.title);
   }
+}
 
-  /*━━━━━━━━━━ 8. ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
-  function showDragDropSuccessMessage(fromPosition, toPosition) {
-    console.log("[PROMPT] showDragDropSuccessMessage開始:", {
-      fromPosition: fromPosition,
-      toPosition: toPosition,
-      AppUtils: !!window.AppUtils,
-      showToast: !!(window.AppUtils && window.AppUtils.showToast),
-    });
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ（グローバル関数） ━━━━━━━━━━*/
+function showDragDropSuccessMessage(fromPosition, toPosition) {
+  console.log("[PROMPT] showDragDropSuccessMessage開始:", {
+    fromPosition: fromPosition,
+    toPosition: toPosition,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
 
-    const message = `プロンプト ${fromPosition} を ${toPosition} 番目に移動しました`;
+  const message = `プロンプト ${fromPosition} を ${toPosition} 番目に移動しました`;
 
-    // まずAppUtils.showToastを試行
-    if (window.AppUtils && window.AppUtils.showToast) {
-      try {
-        console.log("[PROMPT] showToast呼び出し:", message);
-        window.AppUtils.showToast(message, "success");
-        console.log("[PROMPT] showToast呼び出し完了");
-        return;
-      } catch (error) {
-        console.error("[PROMPT] showToast呼び出しでエラー:", error);
-      }
+  // まずAppUtils.showToastを試行
+  if (window.AppUtils && window.AppUtils.showToast) {
+    try {
+      console.log("[PROMPT] showToast呼び出し:", message);
+      window.AppUtils.showToast(message, "success");
+      console.log("[PROMPT] showToast呼び出し完了");
+      return;
+    } catch (error) {
+      console.error("[PROMPT] showToast呼び出しでエラー:", error);
     }
-
-    // AppUtilsが利用できない場合のフォールバック
-    console.warn(
-      "[PROMPT] AppUtils.showToastが利用できません。フォールバックを使用します"
-    );
-
-    // フォールバックトーストの作成
-    const fallbackToast = document.createElement("div");
-    fallbackToast.className = "fallback-toast";
-    fallbackToast.innerHTML = `
-      <span class="toast-icon" style="color: #10b981;">
-        <i class="bi bi-check-circle-fill"></i>
-      </span>
-      <span class="toast-text">${message}</span>
-    `;
-
-    // フォールバックトーストのスタイル設定
-    fallbackToast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(16, 185, 129, 0.95);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      opacity: 0;
-      transform: translateX(100%);
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    `;
-
-    document.body.appendChild(fallbackToast);
-
-    // アニメーション表示
-    setTimeout(() => {
-      fallbackToast.style.opacity = "1";
-      fallbackToast.style.transform = "translateX(0)";
-    }, 100);
-
-    // 自動非表示
-    setTimeout(() => {
-      fallbackToast.style.opacity = "0";
-      fallbackToast.style.transform = "translateX(100%)";
-      setTimeout(() => {
-        if (fallbackToast.parentNode) {
-          fallbackToast.remove();
-        }
-      }, 300);
-    }, 3000);
   }
+
+  // AppUtilsが利用できない場合のフォールバック
+  console.warn(
+    "[PROMPT] AppUtils.showToastが利用できません。フォールバックを使用します"
+  );
+
+  // フォールバックトーストの作成
+  const fallbackToast = document.createElement("div");
+  fallbackToast.className = "fallback-toast";
+  fallbackToast.innerHTML = `
+    <span class="toast-icon" style="color: #10b981;">
+      <i class="bi bi-check-circle-fill"></i>
+    </span>
+    <span class="toast-text">${message}</span>
+  `;
+
+  // フォールバックトーストのスタイル設定
+  fallbackToast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(16, 185, 129, 0.95);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  `;
+
+  document.body.appendChild(fallbackToast);
+
+  // アニメーション表示
+  setTimeout(() => {
+    fallbackToast.style.opacity = "1";
+    fallbackToast.style.transform = "translateX(0)";
+  }, 100);
+
+  // 自動非表示
+  setTimeout(() => {
+    fallbackToast.style.opacity = "0";
+    fallbackToast.style.transform = "translateX(100%)";
+    setTimeout(() => {
+      if (fallbackToast.parentNode) {
+        fallbackToast.remove();
+      }
+    }, 300);
+  }, 3000);
 }
 
 /* ══════════════════════════════════════════════════════
