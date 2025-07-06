@@ -117,6 +117,12 @@ async function handleClipDrop(e) {
   await saveStorage(CLIP_KEY, clips);
 
   // ドラッグ＆ドロップ成功メッセージを表示
+  console.log("[CLIPBOARD D&D] showDragDropSuccessMessage呼び出し前:", {
+    dragClipIndex: dragClipIndex,
+    actualToIndex: actualToIndex,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
   showDragDropSuccessMessage(dragClipIndex + 1, actualToIndex + 1);
 
   renderClipboardView();
@@ -1017,43 +1023,24 @@ async function renderClipboardEdit(id) {
 
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
 function showDragDropSuccessMessage(fromPosition, toPosition) {
-  console.log("[DND] 成功メッセージを表示:", { fromPosition, toPosition });
+  console.log("[CLIPBOARD] showDragDropSuccessMessage開始:", {
+    fromPosition: fromPosition,
+    toPosition: toPosition,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
 
-  // AppUtilsのトースト通知が利用可能な場合
   if (window.AppUtils && window.AppUtils.showToast) {
     const message = `クリップ ${fromPosition} を ${toPosition} 番目に移動しました`;
+    console.log("[CLIPBOARD] showToast呼び出し:", message);
     window.AppUtils.showToast(message, "success");
+    console.log("[CLIPBOARD] showToast呼び出し完了");
   } else {
-    // AppUtilsが利用できない場合の代替処理
-    showFallbackDragDropMessage(fromPosition, toPosition);
+    console.error("[CLIPBOARD] AppUtils.showToastが利用できません:", {
+      AppUtils: !!window.AppUtils,
+      showToast: !!(window.AppUtils && window.AppUtils.showToast),
+    });
   }
-}
-
-function showFallbackDragDropMessage(fromPosition, toPosition) {
-  // 既存のトーストがあれば削除
-  const existingToast = document.querySelector(".drag-drop-toast");
-  if (existingToast) {
-    existingToast.remove();
-  }
-
-  // 新しいトーストを作成
-  const toast = document.createElement("div");
-  toast.className = "drag-drop-toast";
-  toast.innerHTML = `
-    <i class="bi bi-check-circle-fill"></i>
-    クリップ ${fromPosition} を ${toPosition} 番目に移動しました
-  `;
-
-  // bodyに追加
-  document.body.appendChild(toast);
-
-  // 2秒後にフェードアウト
-  setTimeout(() => {
-    toast.classList.add("fade-out");
-    setTimeout(() => {
-      toast.remove();
-    }, 300);
-  }, 2000);
 }
 
 /*━━━━━━━━━━ 空のクリップ判定機能 ━━━━━━━━━━*/
@@ -1235,46 +1222,16 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
-  const message = document.createElement("div");
-  message.className = "export-message success";
-  message.innerHTML = `
-    <i class="bi bi-check-circle"></i>
-    <span>エクスポート完了: ${fileName}</span>
-  `;
-  document.body.appendChild(message);
-
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
-  const message = document.createElement("div");
-  message.className = "export-message error";
-  message.innerHTML = `
-    <i class="bi bi-exclamation-triangle"></i>
-    <span>エクスポートに失敗しました</span>
-  `;
-  document.body.appendChild(message);
-
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  }
 }
 
 // エクスポートボタンとアーカイブボタンの状態を更新

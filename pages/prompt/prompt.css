@@ -203,6 +203,12 @@
   font-size: 1.2rem;
   /* margin-right: 12px; */
   cursor: pointer;
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 .prompt-item .star.off {
   color: #eeeeee;
@@ -218,6 +224,12 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   min-width: 0; /* flexアイテムが縮まるようにする */
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 /* 右：実行ボタン & アーカイブ */
 .prompt-action {
@@ -240,6 +252,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 .prompt-archive {
   background: transparent;
@@ -257,6 +275,12 @@
   transition: transform 0.2s ease; /* Match clipboard transition */
   place-self: center; /* Center in grid */
   border-radius: 4px; /* Match clipboard border radius */
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
+  -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
+  -moz-user-drag: none; /* Mozillaでのドラッグを無効化 */
+  -o-user-drag: none; /* Operaでのドラッグを無効化 */
+  user-drag: none; /* 標準でのドラッグを無効化 */
 }
 .prompt-action:hover {
   filter: brightness(1.15);
@@ -730,56 +754,6 @@ textarea.field-text,
 .prompt-field.dragging .prompt-field-textarea {
   pointer-events: none;
   user-select: none;
-}
-
-/*━━━━━━━━━━ ドラッグ＆ドロップ成功トースト通知 ━━━━━━━━━━*/
-.drag-drop-toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #00a31e, #008f1a);
-  color: #ffffff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 10000;
-  opacity: 1;
-  transform: translateX(0);
-  transition: all 0.3s ease;
-  max-width: 300px;
-  word-wrap: break-word;
-}
-
-.drag-drop-toast i {
-  font-size: 1.1rem;
-  color: #ffffff;
-  flex-shrink: 0;
-}
-
-.drag-drop-toast.fade-out {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-/* トースト通知のアニメーション */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.drag-drop-toast {
-  animation: slideInRight 0.3s ease-out;
 }
 
 /*--------------------------------------------------------------

@@ -99,23 +99,44 @@ let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデ
 // Drag & Drop handlers for prompt list
 // ───────────────────────────────────────
 function handlePromptDragStart(e) {
+  console.log("[PROMPT DEBUG] dragstart イベント発火");
+  console.log("[PROMPT DEBUG] dragstart 詳細:", {
+    target: e.target,
+    currentTarget: e.currentTarget,
+    dataset: e.currentTarget.dataset,
+    draggable: e.currentTarget.draggable,
+  });
+
   dragPromptIndex = +this.dataset.index;
   dragPromptStarred = prompts[dragPromptIndex]?.star || false;
   console.log(
     "[PRM] drag start:",
     dragPromptIndex,
     "starred:",
-    dragPromptStarred
+    dragPromptStarred,
+    "element:",
+    this,
+    "dataset.index:",
+    this.dataset.index
   );
   e.dataTransfer.effectAllowed = "move";
   this.classList.add("dragging");
+  console.log("[PROMPT DEBUG] dragging クラス追加完了");
 }
 function handlePromptDragOver(e) {
+  console.log("[PROMPT DEBUG] dragover イベント発火");
   e.preventDefault();
 
   // ドロップ先の星状態をチェック
   const dropIndex = +this.dataset.index;
   const dropTargetStarred = prompts[dropIndex]?.star || false;
+
+  console.log("[PROMPT DEBUG] dragover 詳細:", {
+    dropIndex: dropIndex,
+    dropTargetStarred: dropTargetStarred,
+    dragPromptStarred: dragPromptStarred,
+    element: this,
+  });
 
   // 異なるカテゴリ間のドロップを禁止
   if (dragPromptStarred !== dropTargetStarred) {
@@ -205,6 +226,16 @@ async function handlePromptDrop(e) {
   }
 
   await save(PROMPT_KEY, prompts);
+
+  // ドラッグ＆ドロップ成功メッセージを表示
+  console.log("[PROMPT D&D] showDragDropSuccessMessage呼び出し前:", {
+    dragPromptIndex: dragPromptIndex,
+    actualToIndex: actualToIndex,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
+  showDragDropSuccessMessage(dragPromptIndex + 1, actualToIndex + 1);
+
   renderList();
 }
 function handlePromptDragEnd() {
@@ -551,18 +582,30 @@ async function renderList() {
       li.draggable = true;
       li.dataset.index = originalIndex; // 元の配列でのインデックスを設定
 
+      console.log("[PROMPT DEBUG] プロンプトアイテム作成:", {
+        promptId: p.id,
+        promptTitle: p.title,
+        originalIndex: originalIndex,
+        li: li,
+        draggable: li.draggable,
+        dataset: li.dataset,
+      });
+
       // DnD handlers
+      console.log("[PROMPT DEBUG] D&Dイベントハンドラー設定開始:", li);
       li.addEventListener("dragstart", handlePromptDragStart);
       li.addEventListener("dragover", handlePromptDragOver);
       li.addEventListener("dragleave", handlePromptDragLeave);
       li.addEventListener("drop", handlePromptDrop);
       li.addEventListener("dragend", handlePromptDragEnd);
+      console.log("[PROMPT DEBUG] D&Dイベントハンドラー設定完了:", li);
 
       // ★ star
       const star = document.createElement("i");
       star.className = p.star
         ? "bi bi-star-fill star on"
         : "bi bi-star-fill star off";
+      star.draggable = false; // ドラッグを無効化
       star.addEventListener("click", async (e) => {
         e.stopPropagation();
         p.star = !p.star;
@@ -584,6 +627,7 @@ async function renderList() {
       titleElement.className = "prompt-title";
       titleElement.textContent = p.title;
       titleElement.title = p.title; // Add title attribute for tooltip
+      titleElement.draggable = false; // ドラッグを無効化
       li.appendChild(titleElement);
 
       // 一括入力ボタン
@@ -591,6 +635,7 @@ async function renderList() {
       runBtn.className = "prompt-action";
       runBtn.textContent = "一括入力";
       runBtn.title = "プロンプトを一括入力";
+      runBtn.draggable = false; // ドラッグを無効化
       // デバウンス用のlocked変数
       let locked = false;
 
@@ -661,6 +706,7 @@ async function renderList() {
       const archiveIcon = document.createElement("i");
       archiveIcon.className = "bi bi-archive-fill prompt-archive";
       archiveIcon.title = "アーカイブへ移動";
+      archiveIcon.draggable = false; // ドラッグを無効化
       archiveIcon.addEventListener("click", async (e) => {
         e.stopPropagation();
 
@@ -797,6 +843,27 @@ async function renderList() {
 
   currentPromptIndex = -1; // 一覧画面に戻ったのでリセット
   console.log("[renderList] end");
+
+  // リストの最後にデバッグ情報を追加
+  setTimeout(() => {
+    console.log("[PROMPT DEBUG] 最終的なDOM状態確認:");
+    const promptItems = list.querySelectorAll(".prompt-item");
+    console.log(`[PROMPT DEBUG] プロンプトアイテム数: ${promptItems.length}`);
+
+    promptItems.forEach((item, index) => {
+      console.log(`[PROMPT DEBUG] アイテム${index}:`, {
+        element: item,
+        draggable: item.draggable,
+        dataset: item.dataset,
+        classList: Array.from(item.classList),
+        childElements: Array.from(item.children).map((child) => ({
+          tagName: child.tagName,
+          className: child.className,
+          draggable: child.draggable,
+        })),
+      });
+    });
+  }, 100);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1711,43 +1778,24 @@ function renderEdit(idx, isNew = false) {
 
   /*━━━━━━━━━━ 8. ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
   function showDragDropSuccessMessage(fromPosition, toPosition) {
-    console.log("[DND] 成功メッセージを表示:", { fromPosition, toPosition });
+    console.log("[PROMPT] showDragDropSuccessMessage開始:", {
+      fromPosition: fromPosition,
+      toPosition: toPosition,
+      AppUtils: !!window.AppUtils,
+      showToast: !!(window.AppUtils && window.AppUtils.showToast),
+    });
 
-    // AppUtilsのトースト通知が利用可能な場合
     if (window.AppUtils && window.AppUtils.showToast) {
       const message = `プロンプト ${fromPosition} を ${toPosition} 番目に移動しました`;
+      console.log("[PROMPT] showToast呼び出し:", message);
       window.AppUtils.showToast(message, "success");
+      console.log("[PROMPT] showToast呼び出し完了");
     } else {
-      // AppUtilsが利用できない場合の代替処理
-      showFallbackDragDropMessage(fromPosition, toPosition);
+      console.error("[PROMPT] AppUtils.showToastが利用できません:", {
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+      });
     }
-  }
-
-  function showFallbackDragDropMessage(fromPosition, toPosition) {
-    // 既存のトーストがあれば削除
-    const existingToast = document.querySelector(".drag-drop-toast");
-    if (existingToast) {
-      existingToast.remove();
-    }
-
-    // 新しいトーストを作成
-    const toast = document.createElement("div");
-    toast.className = "drag-drop-toast";
-    toast.innerHTML = `
-      <i class="bi bi-check-circle-fill"></i>
-      プロンプト ${fromPosition} を ${toPosition} 番目に移動しました
-    `;
-
-    // bodyに追加
-    document.body.appendChild(toast);
-
-    // 2秒後にフェードアウト
-    setTimeout(() => {
-      toast.classList.add("fade-out");
-      setTimeout(() => {
-        toast.remove();
-      }, 300);
-    }, 2000);
   }
 }
 
@@ -2168,6 +2216,15 @@ function renderRun(idx) {
 
       // プロンプトデータを保存
       save(PROMPT_KEY, prompts);
+
+      // ドラッグ＆ドロップ成功メッセージを表示
+      console.log("[PROMPT RUN D&D] showDragDropSuccessMessage呼び出し前:", {
+        fromIndex: fromIndex,
+        actualToIndex: actualToIndex,
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+      });
+      showDragDropSuccessMessage(fromIndex + 1, actualToIndex + 1);
 
       // 画面を再描画
       renderRun(idx);
@@ -2874,46 +2931,16 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
-  const message = document.createElement("div");
-  message.className = "export-message success";
-  message.innerHTML = `
-    <i class="bi bi-check-circle"></i>
-    <span>エクスポート完了: ${fileName}</span>
-  `;
-  document.body.appendChild(message);
-
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
-  const message = document.createElement("div");
-  message.className = "export-message error";
-  message.innerHTML = `
-    <i class="bi bi-exclamation-triangle"></i>
-    <span>エクスポートに失敗しました</span>
-  `;
-  document.body.appendChild(message);
-
-  setTimeout(() => {
-    message.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    message.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 300);
-  }, 3000);
+  if (window.AppUtils && window.AppUtils.showToast) {
+    window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  }
 }
 
 // エクスポートボタンとアーカイブボタンの状態を更新
