@@ -86,6 +86,7 @@ body::-webkit-scrollbar,
 #btn-prompt:hover:not(.active),
 #btn-iframe:hover:not(.active),
 #btn-todolist:hover:not(.active),
+#btn-qrcode:hover:not(.active),
 #btn-status:hover:not(.active),
 #btn-setting:hover:not(.active) {
   width: 100px; /* 120pxから100pxに縮小 */
@@ -101,6 +102,7 @@ body::-webkit-scrollbar,
 #btn-prompt:hover:not(.active) i,
 #btn-iframe:hover:not(.active) i,
 #btn-todolist:hover:not(.active) i,
+#btn-qrcode:hover:not(.active) i,
 #btn-status:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
   display: none;
@@ -112,6 +114,7 @@ body::-webkit-scrollbar,
 #btn-prompt:hover:not(.active) .nav-text,
 #btn-iframe:hover:not(.active) .nav-text,
 #btn-todolist:hover:not(.active) .nav-text,
+#btn-qrcode:hover:not(.active) .nav-text,
 #btn-status:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
   opacity: 1;
@@ -278,6 +281,11 @@ body::-webkit-scrollbar,
   box-shadow: 0 4px 12px rgba(175, 0, 143, 0.3);
 }
 
+#btn-qrcode.active {
+  background: linear-gradient(135deg, #6b7280, #374151);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
 #btn-status.active {
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
@@ -305,6 +313,8 @@ main {
   display: flex;
   flex-direction: column;
   padding: 16px;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .memo-card {
@@ -351,7 +361,7 @@ main {
   font-size: 1rem;
   line-height: 1.5;
   resize: none;
-  padding: 0;
+  padding: 8px 12px;
 }
 
 .text-input:focus {
@@ -812,6 +822,14 @@ main {
 
 /* TodoListアイコン（今後実装予定）を常に非表示 */
 #btn-todolist {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* QRコードアイコン（今後実装予定）を常に非表示 */
+#btn-qrcode {
   display: none !important;
   visibility: hidden !important;
   position: absolute !important;

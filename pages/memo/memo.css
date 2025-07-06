@@ -452,10 +452,10 @@ body {
   flex-direction: column;
   background: #2d2d2d;
   padding: 0;
-  border-radius: 8px;
+  border-radius: 12px;
   min-height: 0;
   box-sizing: border-box;
-  overflow: visible;
+  overflow: hidden;
   height: 100vh;
   max-height: 95vh;
 }
@@ -467,6 +467,7 @@ body {
   padding: 6px 8px;
   background: #2d2d2d; /* ヘッダー背景 */
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* 隙間の広い白い点線 */
+  border-radius: 12px 12px 0 0; /* 上側の角を丸く */
 }
 
 .memo-input-form .star-input {
@@ -507,16 +508,11 @@ body {
   overflow: visible;
 }
 
-/* textarea本体 */
-.memo-input-form .text-input {
+/* Quill.jsエディタコンテナ */
+.memo-input-form .quill-editor {
   flex: 1;
   background: transparent;
   border: none;
-  padding: 6px 12px;
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 500;
-  resize: none;
   min-height: 200px;
   max-height: 88vh;
   height: auto;
@@ -526,12 +522,67 @@ body {
   -ms-overflow-style: none;
 }
 
-/* Chrome/Safari/Opera のスクロールバー非表示 */
-.memo-input-form .text-input::-webkit-scrollbar {
+/* Quill.jsエディタ本体 */
+.memo-input-form .quill-editor .ql-editor {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-height: 200px;
+  max-height: 88vh;
+  height: auto;
+  box-sizing: border-box;
+  outline: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Quill.jsエディタのスクロールバー非表示 */
+.memo-input-form .quill-editor .ql-editor::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
 }
+
+/* Quill.jsツールバーのスタイル調整 */
+/*
+  .memo-input-form .quill-editor .ql-toolbar {
+    background: rgba(45, 45, 45, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .memo-input-form .quill-editor .ql-toolbar button {
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: 2px;
+    transition: all 0.2s ease;
+  }
+  
+  .memo-input-form .quill-editor .ql-toolbar button:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .memo-input-form .quill-editor .ql-toolbar button.ql-active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+  }
+  */
+
+/* Quill.jsエディタのプレースホルダー */
+/*
+  .memo-input-form .quill-editor .ql-editor.ql-blank::before {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+  }
+  */
 
 /* textareaボタンコンテナ */
 .textarea-buttons {

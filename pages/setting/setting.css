@@ -173,10 +173,6 @@
   padding: 40px 20px;
   max-width: 500px;
   margin: 0 auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 100%;
 }
 
@@ -445,8 +441,8 @@
   }
 
   .icon-option {
-    width: 60px;
-    height: 60px;
+    width: 55px; /* shrink for narrow screens */
+    height: 55px; /* shrink for narrow screens */
   }
 
   .icon-option i {
@@ -462,8 +458,8 @@
   }
 
   .icon-option.coming-soon {
-    width: 60px;
-    height: 60px;
+    width: 55px; /* shrink for narrow screens */
+    height: 55px; /* shrink for narrow screens */
   }
 
   .icon-option.coming-soon i {
@@ -522,8 +518,8 @@
   }
 
   .icon-option {
-    width: 55px;
-    height: 55px;
+    width: 50px; /* extra shrink for mobile */
+    height: 50px; /* extra shrink for mobile */
   }
 
   .icon-option i {
@@ -539,8 +535,8 @@
   }
 
   .icon-option.coming-soon {
-    width: 55px;
-    height: 55px;
+    width: 50px; /* extra shrink for mobile */
+    height: 50px; /* extra shrink for mobile */
   }
 
   .icon-option.coming-soon i {
@@ -605,8 +601,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 70px;
-  height: 70px;
+  width: 64px; /* shrink from 70px to fit more icons */
+  height: 64px; /* shrink from 70px to fit more icons */
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -643,8 +639,8 @@
 }
 
 .icon-option i {
-  font-size: 1.4rem;
-  color: #bbb;
+  font-size: 1.3rem; /* adjust with new icon size */
+  color: #ffffff;
   margin-bottom: 4px;
   transition: all 0.3s ease;
 }
@@ -794,8 +790,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 70px;
-  height: 70px;
+  width: 64px; /* shrink from 70px to match selected icons */
+  height: 64px; /* shrink from 70px to match selected icons */
   background: rgba(255, 255, 255, 0.03);
   border: 2px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
@@ -834,7 +830,7 @@
 /* MEMOとSETTINGアイコンのアイコンは常にカラー */
 .icon-option[data-icon="setting"] i,
 .icon-option[data-icon="memo"] i {
-  color: #bbb;
+  color: #ffffff;
   filter: none;
 }
 
@@ -1469,4 +1465,427 @@
   .donation-content i {
     font-size: 1.2rem;
   }
+}
+
+/* ─── 設定項目リスト ─── */
+.setting-list {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.setting-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.setting-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.setting-item:active {
+  transform: translateY(0);
+}
+
+.setting-item-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.setting-item-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.3s ease;
+}
+
+.setting-item:hover .setting-item-icon {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+}
+
+.setting-item-icon i {
+  font-size: 1.5rem;
+  color: #3b82f6;
+  transition: all 0.3s ease;
+}
+
+.setting-item:hover .setting-item-icon i {
+  color: #60a5fa;
+}
+
+.setting-item-content {
+  flex: 1;
+}
+
+.setting-item-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+}
+
+.setting-item:hover .setting-item-title {
+  color: #ffffff;
+}
+
+.setting-item-description {
+  font-size: 0.9rem;
+  color: #a0a0a0;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.setting-item:hover .setting-item-description {
+  color: #cbd5e1;
+}
+
+.setting-item-arrow {
+  color: #6b7280;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.setting-item:hover .setting-item-arrow {
+  color: #3b82f6;
+  transform: translateX(4px);
+}
+
+/* Coming Soon アイテムの特別スタイル */
+.setting-item.coming-soon {
+  opacity: 0.7;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.setting-item.coming-soon:hover {
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.setting-item.coming-soon .setting-item-icon {
+  background: rgba(107, 114, 128, 0.1);
+  border-color: rgba(107, 114, 128, 0.2);
+}
+
+.setting-item.coming-soon .setting-item-icon i {
+  color: #6b7280;
+}
+
+.setting-item.coming-soon .setting-item-title {
+  color: #9ca3af;
+}
+
+.setting-item.coming-soon .setting-item-description {
+  color: #6b7280;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .setting-list {
+    padding: 16px;
+  }
+
+  .setting-item {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .setting-item-header {
+    gap: 12px;
+  }
+
+  .setting-item-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .setting-item-icon i {
+    font-size: 1.2rem;
+  }
+
+  .setting-item-title {
+    font-size: 1rem;
+  }
+
+  .setting-item-description {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .setting-list {
+    padding: 12px;
+  }
+
+  .setting-item {
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .setting-item-header {
+    gap: 10px;
+  }
+
+  .setting-item-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .setting-item-icon i {
+    font-size: 1.1rem;
+  }
+
+  .setting-item-title {
+    font-size: 0.95rem;
+  }
+
+  .setting-item-description {
+    font-size: 0.8rem;
+  }
+}
+
+/* バックアップ情報表示エリア */
+.backup-info {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.backup-info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.backup-info-header i {
+  color: #10b981;
+  font-size: 1.2rem;
+}
+
+.backup-info-title {
+  color: #e2e8f0;
+}
+
+.backup-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.backup-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.backup-detail-item:last-child {
+  border-bottom: none;
+}
+
+.backup-detail-label {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.backup-detail-value {
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* エクスポート実行ボタン */
+.export-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-export:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+.btn-export:active {
+  transform: translateY(0);
+}
+
+.btn-export i {
+  font-size: 1.2rem;
+}
+
+.btn-export:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .backup-info {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .backup-info-header {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .backup-detail-item {
+    padding: 6px 0;
+  }
+
+  .backup-detail-label,
+  .backup-detail-value {
+    font-size: 0.85rem;
+  }
+
+  .btn-export {
+    padding: 14px 24px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .backup-info {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .backup-info-header {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+
+  .backup-detail-item {
+    padding: 5px 0;
+  }
+
+  .backup-detail-label,
+  .backup-detail-value {
+    font-size: 0.8rem;
+  }
+
+  .btn-export {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* COMING SOON オーバーレイ */
+.coming-soon-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.coming-soon-overlay.show {
+  opacity: 1;
+}
+
+.coming-soon-badge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+  animation: comingSoonPulse 2s ease-in-out infinite;
+}
+
+.coming-soon-badge i {
+  font-size: 1.3rem;
+  animation: comingSoonRotate 3s linear infinite;
+}
+
+@keyframes comingSoonPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.6);
+  }
+}
+
+@keyframes comingSoonRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* パネルに相対位置を設定 */
+.detail-panel {
+  position: relative;
 }

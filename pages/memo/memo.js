@@ -29,6 +29,156 @@ function saveStorage(key, arr) {
 }
 
 // ───────────────────────────────────────
+// Header click handlers
+// ───────────────────────────────────────
+function handleOtherHeaderClick(e) {
+  e.preventDefault(); // デフォルトのリンク動作を防ぐ
+  e.stopPropagation(); // イベントの伝播を停止
+  console.log(
+    "他のHeaderアイコンがクリックされました:",
+    e.target.closest("a").id
+  );
+
+  // デバッグ情報を追加
+  const memoContent = document.querySelector(".memo-content");
+  const isEditMode = memoContent && memoContent.classList.contains("edit-mode");
+  console.log("デバッグ情報:", {
+    memoContent: !!memoContent,
+    isEditMode: isEditMode,
+    currentEditingMemoId: currentEditingMemoId,
+    memos: memos ? memos.length : 0,
+  });
+
+  // 入力画面で未保存の変更がある場合は保存確認ダイアログを表示
+  if (isEditMode) {
+    const isNew = !currentEditingMemoId;
+    const originalMemo = memos.find((m) => m.id === currentEditingMemoId);
+    const hasUnsavedChanges = checkForUnsavedMemoChanges(originalMemo, isNew);
+
+    console.log("保存確認チェック:", {
+      isNew: isNew,
+      originalMemo: originalMemo,
+      hasUnsavedChanges: hasUnsavedChanges,
+      AppUtils: !!window.AppUtils,
+      showSaveConfirmDialog: !!(
+        window.AppUtils && window.AppUtils.showSaveConfirmDialog
+      ),
+    });
+
+    if (hasUnsavedChanges) {
+      console.log("未保存の変更があります。保存確認ダイアログを表示します。");
+      // AppUtilsの保存確認ダイアログを使用
+      if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+        window.AppUtils.showSaveConfirmDialog({
+          title: "変更を保存しますか？",
+          message:
+            "メモ内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+          onSave: async () => {
+            // 保存してからページ遷移
+            console.log("[MEMO] 変更を保存してからページ遷移");
+            await saveAndGoBack();
+            // 保存後に元のリンク先に遷移
+            const href = e.target.closest("a").getAttribute("href");
+            if (href) {
+              window.location.href = href;
+            }
+          },
+          onDiscard: () => {
+            // 破棄してからページ遷移
+            console.log("[MEMO] 変更を破棄してからページ遷移");
+            discardAndGoBack();
+            // 破棄後に元のリンク先に遷移
+            const href = e.target.closest("a").getAttribute("href");
+            if (href) {
+              window.location.href = href;
+            }
+          },
+        });
+      } else {
+        // AppUtilsが利用できない場合は何もせず中断
+        return;
+      }
+      return;
+    }
+  }
+
+  // 未保存の変更がない場合は直接ページ遷移
+  const href = e.target.closest("a").getAttribute("href");
+  if (href) {
+    window.location.href = href;
+  }
+}
+
+function handleMemoHeaderClick(e) {
+  e.preventDefault(); // デフォルトのリンク動作を防ぐ
+  e.stopPropagation(); // イベントの伝播を停止
+  console.log("MEMOヘッダーアイコンがクリックされました");
+
+  // デバッグ情報を追加
+  const memoContent = document.querySelector(".memo-content");
+  const isEditMode = memoContent && memoContent.classList.contains("edit-mode");
+  console.log("MEMOデバッグ情報:", {
+    memoContent: !!memoContent,
+    isEditMode: isEditMode,
+    currentEditingMemoId: currentEditingMemoId,
+    memos: memos ? memos.length : 0,
+  });
+
+  // 入力画面で未保存の変更がある場合は保存確認ダイアログを表示
+  if (isEditMode) {
+    const isNew = !currentEditingMemoId;
+    const originalMemo = memos.find((m) => m.id === currentEditingMemoId);
+    const hasUnsavedChanges = checkForUnsavedMemoChanges(originalMemo, isNew);
+
+    console.log("MEMO保存確認チェック:", {
+      isNew: isNew,
+      originalMemo: originalMemo,
+      hasUnsavedChanges: hasUnsavedChanges,
+      AppUtils: !!window.AppUtils,
+      showSaveConfirmDialog: !!(
+        window.AppUtils && window.AppUtils.showSaveConfirmDialog
+      ),
+    });
+
+    if (hasUnsavedChanges) {
+      console.log("未保存の変更があります。保存確認ダイアログを表示します。");
+      // AppUtilsの保存確認ダイアログを使用
+      if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+        window.AppUtils.showSaveConfirmDialog({
+          title: "変更を保存しますか？",
+          message:
+            "メモ内容に変更があります。<br>保存せずに戻ると変更が失われます。",
+          onSave: async () => {
+            // 保存して戻る
+            console.log("[MEMO] 変更を保存して一覧画面に遷移");
+            await saveAndGoBack();
+          },
+          onDiscard: () => {
+            // 破棄して戻る
+            console.log("[MEMO] 変更を破棄して一覧画面に遷移");
+            discardAndGoBack();
+          },
+        });
+      } else {
+        // AppUtilsが利用できない場合は何もせず中断
+        return;
+      }
+      return;
+    }
+  }
+
+  console.log("現在のページ状態:", {
+    archiveType: archiveType,
+    currentMode: document
+      .querySelector(".memo-content")
+      .classList.contains("archive")
+      ? "archive"
+      : "main",
+  });
+  renderListView(); // メインページに遷移
+}
+
+// ───────────────────────────────────────
 // Drag & Drop handlers for MEMOs
 // ───────────────────────────────────────
 let dragSrcIndex = null;
@@ -172,7 +322,7 @@ function setFooter(mode) {
         <i class="bi bi-archive"></i>
         <span class="nav-text">アーカイブ</span>
       </button>
-      <button class="nav-btn encrypt-btn">
+      <button class="nav-btn encrypt-btn" title="バックアップ">
         <i class="bi bi-download"></i>
         <span class="nav-text">バックアップ</span>
       </button>
@@ -180,15 +330,15 @@ function setFooter(mode) {
   } else if (mode === "edit") {
     /* ← 追加：MEMO入力／編集画面用フッター */
     foot.innerHTML = `
-      <button class="nav-btn back-btn">
+      <button class="nav-btn back-btn" title="戻る">
         <i class="bi bi-arrow-left-circle"></i>
         <span class="nav-text">戻る</span>
       </button>
-      <button class="nav-btn save-btn">
+      <button class="nav-btn save-btn" title="保存">
         <i class="bi bi-save"></i>
         <span class="nav-text">保存</span>
       </button>
-      <button class="nav-btn delete-btn">
+      <button class="nav-btn delete-btn" title="削除">
         <i class="bi bi-trash"></i>
         <span class="nav-text">削除</span>
       </button>
@@ -224,6 +374,21 @@ async function renderListView() {
     .getElementById("btn-archive-toggle")
     .addEventListener("click", () => renderArchiveNav("memo"));
 
+  // ヘッダーのMEMOアイコンのクリックイベント
+  const memoBtn = document.getElementById("btn-memo-list");
+  if (memoBtn) {
+    console.log("メインページ: MEMOヘッダーボタンを発見しました");
+    // 既存のイベントリスナーを削除
+    memoBtn.removeEventListener("click", handleMemoHeaderClick);
+    // 新しいイベントリスナーを追加
+    memoBtn.addEventListener("click", handleMemoHeaderClick);
+    console.log(
+      "メインページ: MEMOヘッダーボタンにイベントリスナーを設定しました"
+    );
+  } else {
+    console.error("メインページ: MEMOヘッダーボタンが見つかりません");
+  }
+
   // エクスポート機能の追加
   const exportBtn = document.querySelector(".encrypt-btn");
   if (exportBtn) {
@@ -235,7 +400,7 @@ async function renderListView() {
 
   // animate content
   const content = document.querySelector(".memo-content");
-  content.classList.remove("edit-mode", "clipboard-mode");
+  content.classList.remove("edit-mode", "clipboard-mode", "archive");
   content.classList.remove("animate");
   void content.offsetWidth;
   content.classList.add("animate");
@@ -516,6 +681,44 @@ async function renderInputForm(id) {
   // footer → save / delete
   setFooter("edit");
 
+  // ヘッダーのMEMOアイコンのクリックイベント（入力画面）
+  const memoBtn = document.getElementById("btn-memo-list");
+  if (memoBtn) {
+    console.log("入力画面: MEMOヘッダーボタンを発見しました");
+    // 既存のイベントリスナーを削除
+    memoBtn.removeEventListener("click", handleMemoHeaderClick);
+    // 新しいイベントリスナーを追加
+    memoBtn.addEventListener("click", handleMemoHeaderClick);
+    console.log("入力画面: MEMOヘッダーボタンにイベントリスナーを設定しました");
+  } else {
+    console.error("入力画面: MEMOヘッダーボタンが見つかりません");
+  }
+
+  // 他のHeaderアイコンの保存確認機能を設定
+  const otherHeaderButtons = [
+    "btn-clipboard",
+    "btn-prompt",
+    "btn-iframe",
+    "btn-status",
+    "btn-setting",
+  ];
+
+  otherHeaderButtons.forEach((buttonId) => {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      console.log(`入力画面: ${buttonId}ボタンを発見しました`);
+      // 既存のイベントリスナーを削除
+      button.removeEventListener("click", handleOtherHeaderClick);
+      // 新しいイベントリスナーを追加
+      button.addEventListener("click", handleOtherHeaderClick);
+      console.log(
+        `入力画面: ${buttonId}ボタンにイベントリスナーを設定しました`
+      );
+    } else {
+      console.error(`入力画面: ${buttonId}ボタンが見つかりません`);
+    }
+  });
+
   // form title
   const contentElement = document.querySelector(".memo-content");
   let h2 = document.querySelector(".form-title");
@@ -528,6 +731,7 @@ async function renderInputForm(id) {
 
   // form HTML
   const content = document.querySelector(".memo-content");
+  content.classList.add("edit-mode"); // edit-modeクラスを追加
   content.innerHTML = `
     <div class="memo-input-form">
       <div class="input-header">
@@ -568,6 +772,27 @@ async function renderInputForm(id) {
       </div>
     </div>
   `;
+
+  // Initialize Quill.js editor
+  // const quillEditor = content.querySelector("#quill-editor");
+  // console.log("Initializing Quill.js editor", quillEditor);
+
+  // Quill.js configuration
+  // const quill = new Quill("#quill-editor", {
+  //   theme: "snow",
+  //   placeholder: "テキストを入力...",
+  //   modules: {
+  //     toolbar: [
+  //       ["bold", "italic", "underline"],
+  //       ["link"],
+  //       [{ list: "ordered" }, { list: "bullet" }],
+  //       ["clean"],
+  //     ],
+  //   },
+  //   bounds: "#quill-editor",
+  // });
+
+  // console.log("Quill.js editor initialized", quill);
 
   // Locate the textarea element for further manipulation
   const ta = content.querySelector(".text-input");
@@ -671,7 +896,7 @@ async function renderInputForm(id) {
 
   console.log("MEMO textarea auto-resize enabled");
 
-  // クリックで任意の行に自動入力・カーソル移動
+  // クリックで任意の行に自動入力・カーソル移動（textarea対応）
   ta.addEventListener("mousedown", function (e) {
     // クリック座標から行位置を計算
     const rect = ta.getBoundingClientRect();
@@ -685,11 +910,14 @@ async function renderInputForm(id) {
     const paddingTop = parseInt(computedStyle.paddingTop) || 0;
     const clickedLine = Math.floor((adjustedY - paddingTop) / lineHeight);
 
-    const lines = ta.value.split("\n");
+    const text = ta.value;
+    const lines = text.split("\n");
     if (clickedLine > lines.length - 1) {
       // 不足分の改行を挿入
       const addLines = clickedLine - (lines.length - 1);
-      ta.value += "\n".repeat(addLines);
+      const currentValue = ta.value;
+      ta.value = currentValue + "\n".repeat(addLines);
+
       // 高さ調整
       setTimeout(() => {
         autoResizeTextarea();
@@ -708,9 +936,9 @@ async function renderInputForm(id) {
 
   // デバッグ用：クリックイベントの詳細ログ
   ta.addEventListener("click", function (e) {
-    console.log("Textarea click event:", {
-      value: ta.value,
-      valueLength: ta.value.length,
+    console.log("MEMO textarea click event:", {
+      text: ta.value,
+      textLength: ta.value.length,
       selectionStart: ta.selectionStart,
       selectionEnd: ta.selectionEnd,
       scrollTop: ta.scrollTop,
@@ -751,6 +979,7 @@ async function renderInputForm(id) {
   });
 
   function updateFontSize() {
+    // textareaのフォントサイズを更新
     ta.style.fontSize = `${currentFontSize}px`;
     fontSizeIndicator.textContent = `${currentFontSize}px`;
     localStorage.setItem("memoFontSize", currentFontSize);
@@ -801,7 +1030,7 @@ async function renderInputForm(id) {
     ta.setSelectionRange(0, 0);
     ta.focus();
     ta.scrollTop = 0;
-    console.log("Scrolled to top of textarea");
+    console.log("Scrolled to top of MEMO textarea");
   });
 
   // コピーボタンの機能を追加
@@ -836,6 +1065,7 @@ async function renderInputForm(id) {
 
       // 失敗時のフィードバック（古いブラウザ対応）
       try {
+        // textareaのテキストを選択してコピー
         ta.select();
         document.execCommand("copy");
         console.log("Text copied using fallback method");
@@ -859,12 +1089,13 @@ async function renderInputForm(id) {
 
   // テキストの量に応じてボタンの表示/非表示を制御
   function updateButtonVisibility() {
-    const hasText = ta.value.trim().length > 0;
-    const lines = ta.value.split("\n").length;
+    const text = ta.value;
+    const hasText = text.trim().length > 0;
+    const lines = text.split("\n").length;
     const isLongText = lines > 10; // 10行以上の場合に表示
 
     // 文字数カウント：改行文字を除外した実際の文字数を表示
-    const charCountWithoutNewlines = ta.value.replace(/\n/g, "").length;
+    const charCountWithoutNewlines = text.replace(/\n/g, "").length;
 
     // 文字数カウンターを更新
     const charCounter = content.querySelector(".char-counter");
@@ -883,28 +1114,18 @@ async function renderInputForm(id) {
   // 文字数カウンターの確実な更新のための包括的イベント監視
   let lastValue = ta.value;
 
-  // 基本的なイベント監視
-  ta.addEventListener("input", updateButtonVisibility);
-  ta.addEventListener("paste", () => setTimeout(updateButtonVisibility, 10));
-  ta.addEventListener("cut", updateButtonVisibility);
-  ta.addEventListener("compositionend", updateButtonVisibility);
-  ta.addEventListener("focus", updateButtonVisibility);
-  ta.addEventListener("blur", updateButtonVisibility);
-  ta.addEventListener("keyup", updateButtonVisibility);
-  ta.addEventListener("keydown", updateButtonVisibility);
-  ta.addEventListener("change", updateButtonVisibility);
-  ta.addEventListener("propertychange", updateButtonVisibility);
-
-  // ドラッグ&ドロップ対応
-  ta.addEventListener("drop", () => setTimeout(updateButtonVisibility, 10));
-  ta.addEventListener("dragend", updateButtonVisibility);
+  // textareaのイベント監視
+  ta.addEventListener("input", () => {
+    setTimeout(updateButtonVisibility, 10);
+  });
 
   // 定期的な監視（最強の保険として）
   const charCountInterval = setInterval(() => {
-    if (ta.value !== lastValue) {
-      lastValue = ta.value;
+    const currentValue = ta.value;
+    if (currentValue !== lastValue) {
+      lastValue = currentValue;
       updateButtonVisibility();
-      console.log("文字数カウンター：定期監視で差分検出", ta.value.length);
+      console.log("文字数カウンター：定期監視で差分検出", currentValue.length);
     }
   }, 100); // 100msごとにチェック
 
@@ -919,7 +1140,8 @@ async function renderInputForm(id) {
     const existing = memos.find((m) => m.id === id);
     if (existing) {
       content.querySelector(".title-input").value = existing.title;
-      content.querySelector(".text-input").value = existing.content;
+      // textareaにコンテンツを設定
+      ta.value = existing.content;
       starIcon.classList.toggle("on", existing.starred);
       starIcon.classList.toggle("off", !existing.starred);
       starIcon.dataset.starred = existing.starred;
@@ -999,7 +1221,7 @@ async function renderInputForm(id) {
         onSave: async () => {
           // 保存して戻る
           const titleInput = content.querySelector(".title-input").value.trim();
-          const body = content.querySelector(".text-input").value.trim();
+          const body = ta.value.trim();
           const starred = starIcon.dataset.starred === "true";
 
           // タイトルが空で内容もない場合のみ「無題」とする
@@ -1043,7 +1265,7 @@ async function renderInputForm(id) {
   // save handler
   document.querySelector(".save-btn").addEventListener("click", async () => {
     const titleInput = content.querySelector(".title-input").value.trim();
-    const body = content.querySelector(".text-input").value.trim();
+    const body = ta.value.trim();
     const starred = starIcon.dataset.starred === "true";
 
     // タイトルが空で内容もない場合のみ「無題」とする
@@ -1168,6 +1390,23 @@ function renderArchiveNav(type) {
   // now render the archive list + footer
   renderArchiveList();
   renderArchiveFooter();
+
+  // アーカイブ画面でもヘッダーのMEMOアイコンのクリックイベントを設定
+  setTimeout(() => {
+    const memoBtn = document.getElementById("btn-memo-list");
+    if (memoBtn) {
+      console.log("アーカイブ画面: MEMOヘッダーボタンを発見しました");
+      // 既存のイベントリスナーを削除
+      memoBtn.removeEventListener("click", handleMemoHeaderClick);
+      // 新しいイベントリスナーを追加
+      memoBtn.addEventListener("click", handleMemoHeaderClick);
+      console.log(
+        "アーカイブ画面: MEMOヘッダーボタンにイベントリスナーを設定しました"
+      );
+    } else {
+      console.error("アーカイブ画面: MEMOヘッダーボタンが見つかりません");
+    }
+  }, 100);
 
   console.log("renderArchiveNav: end");
 }
@@ -1439,11 +1678,11 @@ function renderArchiveFooter() {
   const footer = document.querySelector(".memo-footer");
   footer.classList.add("archive");
   footer.innerHTML = `
-    <button class="nav-btn back-btn">
+    <button class="nav-btn back-btn" title="戻る">
       <i class="bi bi-arrow-left-circle"></i>
       <span class="nav-text">戻る</span>
     </button>
-    <button class="nav-btn delete-all-btn">
+    <button class="nav-btn delete-all-btn" title="一括削除">
       <i class="bi bi-trash"></i>
       <span class="nav-text">一括削除</span>
     </button>
@@ -1607,51 +1846,17 @@ window.addEventListener("DOMContentLoaded", async () => {
   console.log("MEMOページ: 起動時に一覧画面を表示");
   await renderListView();
 
-  // Add event listener to MEMO button
+  // ヘッダーのMEMOアイコンのクリックイベント（初期化時）
   const memoButton = document.getElementById("btn-memo-list");
   if (memoButton) {
-    memoButton.addEventListener("click", async (event) => {
-      console.log("MEMO page button clicked");
-
-      // Check for unsaved changes
-      const isNew = !currentEditingMemoId;
-      const originalMemo = memos.find((m) => m.id === currentEditingMemoId);
-      const hasUnsavedChanges = checkForUnsavedMemoChanges(originalMemo, isNew);
-
-      if (hasUnsavedChanges) {
-        // AppUtilsの保存確認ダイアログを使用
-        if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
-          window.AppUtils.showSaveConfirmDialog({
-            title: "変更を保存しますか？",
-            message:
-              "メモ内容に変更があります。<br>保存せずに戻ると変更が失われます。",
-            onSave: async () => {
-              // 保存して戻る
-              console.log("[MEMO] 変更を保存して一覧画面に遷移");
-              await saveAndGoBack();
-            },
-            onDiscard: () => {
-              // 破棄して戻る
-              console.log("[MEMO] 変更を破棄して一覧画面に遷移");
-              discardAndGoBack();
-            },
-          });
-        } else {
-          // AppUtilsが利用できない場合は標準のconfirmを使用
-          const confirmLeave = confirm(
-            "メモ内容に変更があります。保存せずに戻ると変更が失われます。\n\n変更を破棄して戻りますか？"
-          );
-          if (!confirmLeave) {
-            event.preventDefault();
-            return;
-          }
-          await renderListView();
-        }
-      } else {
-        // 未保存の変更がない場合は直接一覧画面に遷移
-        await renderListView();
-      }
-    });
+    console.log("初期化時: MEMOヘッダーボタンを発見しました");
+    // 既存のイベントリスナーを削除
+    memoButton.removeEventListener("click", handleMemoHeaderClick);
+    // 新しいイベントリスナーを追加
+    memoButton.addEventListener("click", handleMemoHeaderClick);
+    console.log("初期化時: MEMOヘッダーボタンにイベントリスナーを設定しました");
+  } else {
+    console.error("初期化時: MEMOヘッダーボタンが見つかりません");
   }
 
   // グローバルに最新のmemosを設定
@@ -1667,21 +1872,49 @@ function checkForUnsavedMemoChanges(originalMemo, isNew) {
   const currentStarred =
     document.querySelector(".star-input")?.dataset.starred === "true";
 
+  console.log("checkForUnsavedMemoChanges デバッグ:", {
+    currentTitle: currentTitle,
+    currentContent: currentContent,
+    currentStarred: currentStarred,
+    isNew: isNew,
+    originalMemo: originalMemo,
+    titleInput: document.querySelector(".title-input"),
+    textInput: document.querySelector(".text-input"),
+    starInput: document.querySelector(".star-input"),
+  });
+
   // 新規作成の場合
   if (isNew) {
     // タイトルまたは内容があれば変更あり
-    return currentTitle !== "" || currentContent !== "";
+    const hasChanges = currentTitle !== "" || currentContent !== "";
+    console.log("新規作成の場合の変更チェック:", hasChanges);
+    return hasChanges;
   }
 
   // 既存編集の場合
-  if (!originalMemo) return false;
+  if (!originalMemo) {
+    console.log("既存メモが見つからない場合");
+    return false;
+  }
 
   // 各項目の変更をチェック
-  return (
-    currentTitle !== (originalMemo.title || "") ||
-    currentContent !== (originalMemo.content || "") ||
-    currentStarred !== (originalMemo.starred || false)
-  );
+  const titleChanged = currentTitle !== (originalMemo.title || "");
+  const contentChanged = currentContent !== (originalMemo.content || "");
+  const starredChanged = currentStarred !== (originalMemo.starred || false);
+
+  const hasChanges = titleChanged || contentChanged || starredChanged;
+
+  console.log("既存編集の場合の変更チェック:", {
+    titleChanged: titleChanged,
+    contentChanged: contentChanged,
+    starredChanged: starredChanged,
+    hasChanges: hasChanges,
+    originalTitle: originalMemo.title,
+    originalContent: originalMemo.content,
+    originalStarred: originalMemo.starred,
+  });
+
+  return hasChanges;
 }
 
 /*━━━━━━━━━━ 空のメモ判定機能 ━━━━━━━━━━*/
@@ -1915,9 +2148,9 @@ function generateFakeHash(data, targetLength) {
     // より自然なランダムハッシュを生成
     const randomBytes = new Uint8Array(targetLength / 2); // 16進数なので半分のバイト数
     crypto.getRandomValues(randomBytes);
-    const randomHash = Array.from(randomBytes)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const randomHash = Array.from(randomBytes).map((b) =>
+      b.toString(16).padStart(2, "0")
+    );
 
     // 元のハッシュとランダムハッシュを組み合わせて自然なハッシュを作成
     const combinedHash = (fakeHash + randomHash).substring(0, targetLength);

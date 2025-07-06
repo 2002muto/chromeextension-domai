@@ -1711,6 +1711,7 @@ function getButtonDisplayName(buttonId) {
     "btn-prompt": "PROMPT",
     "btn-iframe": "IFRAME",
     "btn-ai": "AI",
+    "btn-qrcode": "QR CODE",
     "btn-status": "STATUS",
     "btn-setting": "SETTING",
   };
@@ -2175,7 +2176,7 @@ function applyIconVisibilityToHeader(selectedIcons) {
 
     let shouldHide = false;
 
-    if (iconType === "ai" || iconType === "todolist") {
+    if (iconType === "ai" || iconType === "todolist" || iconType === "qrcode") {
       shouldHide = true;
       console.log(`COMMON: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
     } else if (iconType === "setting" || iconType === "memo") {
@@ -2302,7 +2303,7 @@ function applyIconVisibility(selectedIcons) {
 
     let shouldHide = false;
 
-    if (iconType === "ai" || iconType === "todolist") {
+    if (iconType === "ai" || iconType === "todolist" || iconType === "qrcode") {
       shouldHide = true;
       console.log(
         `${prefix}: ${buttonId} (${iconType}): 非表示 (今後実装予定)`
@@ -2365,6 +2366,15 @@ function hideComingSoonIcons() {
   } else {
     console.log("COMMON: TodoListアイコンが見つかりません");
   }
+
+  // QRコードアイコンを非表示
+  const qrButton = document.getElementById("btn-qrcode");
+  if (qrButton) {
+    qrButton.classList.add("hidden-icon");
+    console.log("COMMON: QRコードアイコンを非表示にしました");
+  } else {
+    console.log("COMMON: QRコードアイコンが見つかりません");
+  }
 }
 
 // ボタンIDからアイコンタイプを取得（common.js版）
@@ -2376,6 +2386,7 @@ function getIconTypeFromId(buttonId) {
     "btn-iframe": "iframe",
     "btn-ai": "ai",
     "btn-todolist": "todolist",
+    "btn-qrcode": "qrcode",
     "btn-status": "status",
     "btn-setting": "setting",
   };

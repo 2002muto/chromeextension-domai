@@ -50,43 +50,13 @@
     </header>
     <!-- メインコンテンツ（MEMO・PROMPTと同じ構造） -->
     <div class="memo-content">
-      <!-- 左ナビメニュー -->
-      <nav class="setting-nav">
-        <button
-          class="setting-btn"
-          id="btn-description"
-          data-target="#description-panel"
-          title="説明"
-        >
-          <span>説明</span>
-        </button>
-        <button
-          class="setting-btn"
-          id="btn-backup-install"
-          data-target="#backup-install-panel"
-          title="バックアップのインストール"
-        >
-          <span>バックアップのインストール</span>
-        </button>
-        <button
-          class="setting-btn"
-          id="btn-api-key"
-          data-target="#api-key-panel"
-          title="APIキーの設定"
-        >
-          <span>APIキーの設定</span>
-        </button>
-        <button
-          class="setting-btn"
-          id="btn-custom"
-          data-target="#custom-panel"
-          title="カスタム"
-        >
-          <span>カスタム</span>
-        </button>
-      </nav>
-      <!-- 詳細パネル -->
-      <section class="setting-detail">
+      <!-- 設定項目リスト -->
+      <div class="setting-list" id="setting-list">
+        <!-- 設定項目はJavaScriptで動的に生成 -->
+      </div>
+
+      <!-- 詳細パネル（初期状態では非表示） -->
+      <section class="setting-detail" id="setting-detail" style="display: none">
         <!-- 説明パネル -->
         <div class="detail-panel show" id="description-panel">
           <h3 class="description-title">
@@ -207,6 +177,41 @@
           </div>
         </div>
 
+        <!-- 全体のバックアップ作成パネル -->
+        <div class="detail-panel" id="backup-create-panel">
+          <div class="coming-soon-content">
+            <div class="coming-soon-icon">
+              <i class="bi bi-download"></i>
+            </div>
+            <h3 class="coming-soon-title">全体のバックアップを作成</h3>
+            <p class="coming-soon-message">
+              現在保存されているすべてのデータ（MEMO、CLIPBOARD、PROMPT）をバックアップファイルとしてエクスポートできます。<br />
+              バックアップファイルは暗号化され、セキュリティハッシュが含まれています。
+            </p>
+            <div class="coming-soon-features">
+              <div class="feature-item">
+                <i class="bi bi-shield-check"></i>
+                <span>セキュリティ保護</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-file-earmark-json"></i>
+                <span>JSON形式</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-clock-history"></i>
+                <span>自動タイムスタンプ</span>
+              </div>
+            </div>
+          </div>
+          <!-- COMING SOON オーバーレイ -->
+          <div class="coming-soon-overlay">
+            <div class="coming-soon-badge">
+              <i class="bi bi-clock-history"></i>
+              <span>COMING SOON</span>
+            </div>
+          </div>
+        </div>
+
         <!-- APIキー設定パネル（Coming Soon） -->
         <div class="detail-panel" id="api-key-panel">
           <div class="coming-soon-content">
@@ -231,6 +236,13 @@
                 <i class="bi bi-lightning"></i>
                 <span>要約機能</span>
               </div>
+            </div>
+          </div>
+          <!-- COMING SOON オーバーレイ -->
+          <div class="coming-soon-overlay">
+            <div class="coming-soon-badge">
+              <i class="bi bi-clock-history"></i>
+              <span>COMING SOON</span>
             </div>
           </div>
         </div>
@@ -347,6 +359,33 @@
                         <div class="dropdown-item">
                           <i class="bi bi-tags"></i>
                           <span>カテゴリ管理</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- QRコードアイコン（今後実装予定） -->
+                    <div
+                      class="icon-option coming-soon dropdown-trigger"
+                      data-icon="qrcode"
+                      data-id="btn-qrcode"
+                    >
+                      <i class="bi bi-qr-code"></i>
+                      <span class="icon-label">QR CODE</span>
+                      <div class="coming-soon-dropdown">
+                        <div class="dropdown-header">
+                          <i class="bi bi-clock-history"></i>
+                          <span>今後実装予定</span>
+                        </div>
+                        <div class="dropdown-item">
+                          <i class="bi bi-camera"></i>
+                          <span>QRコード読み取り</span>
+                        </div>
+                        <div class="dropdown-item">
+                          <i class="bi bi-upc-scan"></i>
+                          <span>QRコード生成</span>
+                        </div>
+                        <div class="dropdown-item">
+                          <i class="bi bi-clock"></i>
+                          <span>履歴表示</span>
                         </div>
                       </div>
                     </div>
