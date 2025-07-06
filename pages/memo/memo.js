@@ -535,7 +535,7 @@ async function renderInputForm(id) {
         <input type="text" class="title-input" placeholder="タイトル" />
       </div>
       <div class="textarea-container">
-        <textarea class="text-input" placeholder="テキストを入力..."></textarea>
+        <div id="quill-editor" class="quill-editor"></div>
         <div class="textarea-buttons">
           <div class="char-counter">0</div>
           <div class="font-size-controls">
@@ -569,27 +569,44 @@ async function renderInputForm(id) {
     </div>
   `;
 
-  // Locate the textarea element for further manipulation
-  const ta = content.querySelector(".text-input");
-  console.log("Initialized MEMO textarea", ta);
+  // Initialize Quill.js editor
+  const quillEditor = content.querySelector("#quill-editor");
+  console.log("Initializing Quill.js editor", quillEditor);
+
+  // Quill.js configuration
+  const quill = new Quill("#quill-editor", {
+    theme: "snow",
+    placeholder: "テキストを入力...",
+    modules: {
+      toolbar: [
+        ["bold", "italic", "underline"],
+        ["link"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["clean"],
+      ],
+    },
+    bounds: "#quill-editor",
+  });
+
+  console.log("Quill.js editor initialized", quill);
 
   function setDynamicPaddingBottom() {
     const btns = content.querySelector(".textarea-buttons");
     if (btns) {
       const btnsHeight = btns.offsetHeight || 0;
       const extra = 12; // 余白
-      ta.style.paddingBottom = btnsHeight + extra + "px";
-      console.log(`Set textarea padding-bottom: ${btnsHeight + extra}px`);
+      quillEditor.style.paddingBottom = btnsHeight + extra + "px";
+      console.log(`Set Quill editor padding-bottom: ${btnsHeight + extra}px`);
     }
   }
 
-  function autoResizeTextarea() {
+  function autoResizeQuillEditor() {
     setDynamicPaddingBottom();
-    ta.style.height = "auto";
     const minHeight = 200;
-    const contentHeight = ta.scrollHeight;
-    const lines = ta.value.split("\n").length;
-    const computedStyle = window.getComputedStyle(ta);
+    const contentHeight = quillEditor.scrollHeight;
+    const text = quill.getText();
+    const lines = text.split("\n").length;
+    const computedStyle = window.getComputedStyle(quillEditor);
     const lineHeight =
       parseInt(computedStyle.lineHeight) ||
       parseInt(computedStyle.fontSize) * 1.2;
@@ -621,46 +638,37 @@ async function renderInputForm(id) {
       maxAvailableHeight
     );
     const newHeight = Math.max(minHeight, calculatedHeight);
-    ta.style.height = newHeight + "px";
+    quillEditor.style.height = newHeight + "px";
     console.log(
-      `MEMO textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, lines: ${lines}, minLinesHeight: ${minLinesHeight}px, maxAvailableHeight: ${maxAvailableHeight}px, viewportHeight: ${viewportHeight}px)`
+      `Quill editor auto-resized: ${newHeight}px (content: ${contentHeight}px, lines: ${lines}, minLinesHeight: ${minLinesHeight}px, maxAvailableHeight: ${maxAvailableHeight}px, viewportHeight: ${viewportHeight}px)`
     );
   }
 
   // 初期化時にもpadding-bottomを設定
   setTimeout(setDynamicPaddingBottom, 30);
 
-  // 自動リサイズのイベントリスナーを追加
-  ta.addEventListener("input", autoResizeTextarea);
-  ta.addEventListener("paste", () => setTimeout(autoResizeTextarea, 10));
-  ta.addEventListener("cut", autoResizeTextarea);
-  ta.addEventListener("compositionend", autoResizeTextarea);
-  ta.addEventListener("focus", autoResizeTextarea);
-  ta.addEventListener("blur", autoResizeTextarea);
-  ta.addEventListener("change", autoResizeTextarea);
-  ta.addEventListener("keydown", (e) => {
-    // エンターキーで改行した時も自動リサイズ
-    if (e.key === "Enter") {
-      setTimeout(autoResizeTextarea, 10);
-    }
+  // Quill.jsのイベントリスナーを追加
+  quill.on("text-change", () => {
+    setTimeout(autoResizeQuillEditor, 10);
   });
 
-  // ドラッグ&ドロップ対応
-  ta.addEventListener("drop", () => setTimeout(autoResizeTextarea, 10));
+  quill.on("paste", () => {
+    setTimeout(autoResizeQuillEditor, 10);
+  });
 
   // 初期化時の高さ設定
-  setTimeout(autoResizeTextarea, 50);
+  setTimeout(autoResizeQuillEditor, 50);
 
   // ウィンドウリサイズ時にも高さを調整
   window.addEventListener("resize", () => {
-    setTimeout(autoResizeTextarea, 100);
+    setTimeout(autoResizeQuillEditor, 100);
   });
 
   // 強制的に最大高さを設定する関数
   function forceMaxHeight() {
     const viewportHeight = window.innerHeight;
     const maxHeight = Math.floor(viewportHeight * 0.7); // ビューポートの70%
-    ta.style.height = maxHeight + "px";
+    quillEditor.style.height = maxHeight + "px";
     console.log(
       `Forced max height: ${maxHeight}px (viewport: ${viewportHeight}px)`
     );
@@ -669,36 +677,44 @@ async function renderInputForm(id) {
   // 初期化時に強制的に最大高さを設定
   setTimeout(forceMaxHeight, 100);
 
-  console.log("MEMO textarea auto-resize enabled");
+  console.log("Quill editor auto-resize enabled");
 
-  // クリックで任意の行に自動入力・カーソル移動
-  ta.addEventListener("mousedown", function (e) {
+  // クリックで任意の行に自動入力・カーソル移動（Quill.js対応）
+  quillEditor.addEventListener("mousedown", function (e) {
+    // Quill.jsの内部要素をクリックした場合は標準動作
+    if (e.target.closest(".ql-editor") || e.target.closest(".ql-toolbar")) {
+      return;
+    }
+
     // クリック座標から行位置を計算
-    const rect = ta.getBoundingClientRect();
+    const rect = quillEditor.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const scrollTop = ta.scrollTop;
+    const scrollTop = quillEditor.scrollTop;
     const adjustedY = y + scrollTop;
-    const computedStyle = window.getComputedStyle(ta);
+    const computedStyle = window.getComputedStyle(quillEditor);
     const lineHeight =
       parseInt(computedStyle.lineHeight) ||
       parseInt(computedStyle.fontSize) * 1.2;
     const paddingTop = parseInt(computedStyle.paddingTop) || 0;
     const clickedLine = Math.floor((adjustedY - paddingTop) / lineHeight);
 
-    const lines = ta.value.split("\n");
+    const text = quill.getText();
+    const lines = text.split("\n");
     if (clickedLine > lines.length - 1) {
       // 不足分の改行を挿入
       const addLines = clickedLine - (lines.length - 1);
-      ta.value += "\n".repeat(addLines);
+      const currentLength = quill.getLength();
+      quill.insertText(currentLength - 1, "\n".repeat(addLines));
+
       // 高さ調整
       setTimeout(() => {
-        autoResizeTextarea();
+        autoResizeQuillEditor();
         // カーソルをクリック行の先頭に移動
         let pos = 0;
         for (let i = 0; i < clickedLine; i++)
           pos += (lines[i] ? lines[i].length : 0) + 1;
-        ta.setSelectionRange(pos, pos);
-        ta.focus();
+        quill.setSelection(pos, 0);
+        quill.focus();
       }, 0);
       e.preventDefault();
       e.stopPropagation();
@@ -707,14 +723,13 @@ async function renderInputForm(id) {
   });
 
   // デバッグ用：クリックイベントの詳細ログ
-  ta.addEventListener("click", function (e) {
-    console.log("Textarea click event:", {
-      value: ta.value,
-      valueLength: ta.value.length,
-      selectionStart: ta.selectionStart,
-      selectionEnd: ta.selectionEnd,
-      scrollTop: ta.scrollTop,
-      scrollLeft: ta.scrollLeft,
+  quillEditor.addEventListener("click", function (e) {
+    console.log("Quill editor click event:", {
+      text: quill.getText(),
+      textLength: quill.getText().length,
+      selection: quill.getSelection(),
+      scrollTop: quillEditor.scrollTop,
+      scrollLeft: quillEditor.scrollLeft,
       clientX: e.clientX,
       clientY: e.clientY,
     });
@@ -751,7 +766,11 @@ async function renderInputForm(id) {
   });
 
   function updateFontSize() {
-    ta.style.fontSize = `${currentFontSize}px`;
+    // Quill.jsエディタのフォントサイズを更新
+    const quillEditorElement = quillEditor.querySelector(".ql-editor");
+    if (quillEditorElement) {
+      quillEditorElement.style.fontSize = `${currentFontSize}px`;
+    }
     fontSizeIndicator.textContent = `${currentFontSize}px`;
     localStorage.setItem("memoFontSize", currentFontSize);
 
@@ -798,16 +817,16 @@ async function renderInputForm(id) {
   // 一番上に戻るボタンの機能を追加
   const scrollToTopBtn = content.querySelector(".scroll-to-top-btn");
   scrollToTopBtn.addEventListener("click", () => {
-    ta.setSelectionRange(0, 0);
-    ta.focus();
-    ta.scrollTop = 0;
-    console.log("Scrolled to top of textarea");
+    quill.setSelection(0, 0);
+    quill.focus();
+    quillEditor.scrollTop = 0;
+    console.log("Scrolled to top of Quill editor");
   });
 
   // コピーボタンの機能を追加
   const copyBtn = content.querySelector(".copy-text-btn");
   copyBtn.addEventListener("click", async () => {
-    const textToCopy = ta.value;
+    const textToCopy = quill.getText();
 
     if (textToCopy.trim() === "") {
       console.log("No text to copy");
@@ -836,7 +855,11 @@ async function renderInputForm(id) {
 
       // 失敗時のフィードバック（古いブラウザ対応）
       try {
-        ta.select();
+        // Quill.jsのテキストを選択してコピー
+        const range = quill.getSelection();
+        if (range) {
+          quill.setSelection(0, quill.getLength());
+        }
         document.execCommand("copy");
         console.log("Text copied using fallback method");
 
@@ -859,12 +882,13 @@ async function renderInputForm(id) {
 
   // テキストの量に応じてボタンの表示/非表示を制御
   function updateButtonVisibility() {
-    const hasText = ta.value.trim().length > 0;
-    const lines = ta.value.split("\n").length;
+    const text = quill.getText();
+    const hasText = text.trim().length > 0;
+    const lines = text.split("\n").length;
     const isLongText = lines > 10; // 10行以上の場合に表示
 
     // 文字数カウント：改行文字を除外した実際の文字数を表示
-    const charCountWithoutNewlines = ta.value.replace(/\n/g, "").length;
+    const charCountWithoutNewlines = text.replace(/\n/g, "").length;
 
     // 文字数カウンターを更新
     const charCounter = content.querySelector(".char-counter");
@@ -881,30 +905,20 @@ async function renderInputForm(id) {
   updateButtonVisibility();
 
   // 文字数カウンターの確実な更新のための包括的イベント監視
-  let lastValue = ta.value;
+  let lastValue = quill.getText();
 
-  // 基本的なイベント監視
-  ta.addEventListener("input", updateButtonVisibility);
-  ta.addEventListener("paste", () => setTimeout(updateButtonVisibility, 10));
-  ta.addEventListener("cut", updateButtonVisibility);
-  ta.addEventListener("compositionend", updateButtonVisibility);
-  ta.addEventListener("focus", updateButtonVisibility);
-  ta.addEventListener("blur", updateButtonVisibility);
-  ta.addEventListener("keyup", updateButtonVisibility);
-  ta.addEventListener("keydown", updateButtonVisibility);
-  ta.addEventListener("change", updateButtonVisibility);
-  ta.addEventListener("propertychange", updateButtonVisibility);
-
-  // ドラッグ&ドロップ対応
-  ta.addEventListener("drop", () => setTimeout(updateButtonVisibility, 10));
-  ta.addEventListener("dragend", updateButtonVisibility);
+  // Quill.jsのイベント監視
+  quill.on("text-change", () => {
+    setTimeout(updateButtonVisibility, 10);
+  });
 
   // 定期的な監視（最強の保険として）
   const charCountInterval = setInterval(() => {
-    if (ta.value !== lastValue) {
-      lastValue = ta.value;
+    const currentValue = quill.getText();
+    if (currentValue !== lastValue) {
+      lastValue = currentValue;
       updateButtonVisibility();
-      console.log("文字数カウンター：定期監視で差分検出", ta.value.length);
+      console.log("文字数カウンター：定期監視で差分検出", currentValue.length);
     }
   }, 100); // 100msごとにチェック
 
@@ -919,7 +933,8 @@ async function renderInputForm(id) {
     const existing = memos.find((m) => m.id === id);
     if (existing) {
       content.querySelector(".title-input").value = existing.title;
-      content.querySelector(".text-input").value = existing.content;
+      // Quill.jsエディタにコンテンツを設定
+      quill.setText(existing.content);
       starIcon.classList.toggle("on", existing.starred);
       starIcon.classList.toggle("off", !existing.starred);
       starIcon.dataset.starred = existing.starred;
@@ -1043,7 +1058,7 @@ async function renderInputForm(id) {
   // save handler
   document.querySelector(".save-btn").addEventListener("click", async () => {
     const titleInput = content.querySelector(".title-input").value.trim();
-    const body = content.querySelector(".text-input").value.trim();
+    const body = quill.getText().trim();
     const starred = starIcon.dataset.starred === "true";
 
     // タイトルが空で内容もない場合のみ「無題」とする
@@ -1662,8 +1677,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 function checkForUnsavedMemoChanges(originalMemo, isNew) {
   const currentTitle =
     document.querySelector(".title-input")?.value.trim() || "";
-  const currentContent =
-    document.querySelector(".text-input")?.value.trim() || "";
+  const currentContent = quill ? quill.getText().trim() : "";
   const currentStarred =
     document.querySelector(".star-input")?.dataset.starred === "true";
 
@@ -1705,7 +1719,7 @@ window.getCurrentEditingMemoId = () => currentEditingMemoId;
 // 保存して戻る関数
 async function saveAndGoBack() {
   const titleInput = document.querySelector(".title-input")?.value.trim() || "";
-  const body = document.querySelector(".text-input")?.value.trim() || "";
+  const body = quill ? quill.getText().trim() : "";
   const starred =
     document.querySelector(".star-input")?.dataset.starred === "true";
 
