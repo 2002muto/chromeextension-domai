@@ -2839,6 +2839,8 @@ function renderArchiveFooter() {
 // エクスポート機能
 // ───────────────────────────────────────
 async function exportAllPrompts() {
+  console.log("[PROMPT] exportAllPrompts開始");
+
   try {
     // アクティブなプロンプト（アーカイブされていないプロンプト）のみをフィルタリング
     const activePrompts = prompts
@@ -2847,8 +2849,14 @@ async function exportAllPrompts() {
         })
       : [];
 
+    console.log("[PROMPT] エクスポート対象:", {
+      totalPrompts: prompts ? prompts.length : 0,
+      activePrompts: activePrompts.length,
+    });
+
     // アクティブなプロンプトが0件の場合は処理を停止
     if (activePrompts.length === 0) {
+      console.log("[PROMPT] エクスポート対象が0件のため処理を停止");
       return;
     }
 
@@ -2861,6 +2869,8 @@ async function exportAllPrompts() {
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
     const fileName = `${year}${month}${day}_${hours}${minutes}${seconds}.json`;
+
+    console.log("[PROMPT] ファイル名生成:", fileName);
 
     // エクスポート用のデータ構造を作成（アクティブなプロンプトのみ）
     const exportData = {
@@ -2876,9 +2886,13 @@ async function exportAllPrompts() {
       prompts: activePrompts,
     };
 
+    console.log("[PROMPT] エクスポートデータ作成完了");
+
     // 正しいハッシュ値を計算（認証用）
     const dataForHash = { ...exportData };
     const hashResult = await generateSecurityHash(dataForHash);
+
+    console.log("[PROMPT] セキュリティハッシュ生成完了");
 
     // エクスポートデータに設定
     exportData.securityHash = hashResult.securityHash; // 実際のハッシュ値（認証用）
@@ -2897,10 +2911,13 @@ async function exportAllPrompts() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
+    console.log("[PROMPT] ファイルダウンロード完了");
+
     // 成功メッセージを表示
+    console.log("[PROMPT] 成功メッセージ表示開始");
     showExportSuccessMessage(fileName);
   } catch (error) {
-    console.error("エクスポートエラー:", error);
+    console.error("[PROMPT] エクスポートエラー:", error);
     showExportErrorMessage();
   }
 }
@@ -3007,15 +3024,32 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
+  console.log("[PROMPT] showExportSuccessMessage呼び出し:", {
+    fileName: fileName,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
+
   if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[PROMPT] エクスポート成功トーストを表示");
     window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  } else {
+    console.error("[PROMPT] AppUtils.showToastが利用できません");
   }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
+  console.log("[PROMPT] showExportErrorMessage呼び出し:", {
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
+
   if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[PROMPT] エクスポートエラートーストを表示");
     window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  } else {
+    console.error("[PROMPT] AppUtils.showToastが利用できません");
   }
 }
 

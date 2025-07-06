@@ -55,7 +55,7 @@ body {
 .memo-content:not(.edit-mode) {
   margin: 32px 16px 16px 16px; /* Match CLIPBOARD margin */
   height: calc(
-    100vh - 168px
+    100vh - 138px
   ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
   background: #2d2d2d;
   border-radius: 12px;
@@ -68,6 +68,7 @@ body {
 .memo-content.show {
   opacity: 1;
   transform: translateY(0);
+  margin: 16px 16px 16px 16px;
 }
 /* アニメーションを発火させるためのクラス */
 .memo-content.animate {
@@ -109,7 +110,7 @@ body {
   left: 0;
   right: 0;
   margin: 0;
-  padding: 16px;
+  padding: 0px 16px 16px 16px;
   display: flex;
   gap: 12px;
   background: rgba(49, 69, 89, 0.95); /* 背景を半透明に */

@@ -6,10 +6,10 @@
 .memo-content.clipboard-mode:not(.edit-mode) {
   background: #2d2d2d;
   border-radius: 12px;
-  margin: 32px 16px 16px 16px;
+  margin: 16px 16px 0px 16px;
   padding: 0; /* パディングを削除してボタンとリストを分離 */
   /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
-  height: calc(100vh - 168px) !important;
+  height: calc(100vh - 138px) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
@@ -82,7 +82,7 @@
   left: 0;
   /* アクセント幅を変数で制御 */
   width: var(--accent-width);
-  background: #00E344;
+  background: #00e344;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
   pointer-events: none; /* クリックイベントを妨げない */
@@ -883,12 +883,11 @@
     transform: translateY(0);
   }
 
-/* モバイル用フッターボタンテキスト */
+  /* モバイル用フッターボタンテキスト */
   .memo-footer .nav-btn .nav-text {
     font-size: 0.7rem;
     padding: 3px 6px;
   }
-
 }
 
 /* アーカイブモード戻るボタンの矢印アイコンを常に白色に */
