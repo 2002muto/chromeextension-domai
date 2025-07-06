@@ -120,6 +120,8 @@ function handlePromptDragStart(e) {
     this.dataset.index
   );
   e.dataTransfer.effectAllowed = "move";
+  // Some browsers require data to be set for drag operation to start
+  e.dataTransfer.setData("text/plain", dragPromptIndex.toString());
   this.classList.add("dragging");
   console.log("[PROMPT DEBUG] dragging クラス追加完了");
 }
@@ -185,6 +187,7 @@ function handlePromptDragLeave() {
   );
 }
 async function handlePromptDrop(e) {
+  e.preventDefault();
   e.stopPropagation();
   const dropIndex = +this.dataset.index;
 
@@ -205,25 +208,25 @@ async function handlePromptDrop(e) {
   const itemCenter = rect.top + rect.height / 2;
   const dropAbove = mouseY < itemCenter;
 
-  let actualToIndex = dropIndex;
+  let actualToIndex;
 
   const [moved] = prompts.splice(dragPromptIndex, 1);
 
-  if (dropAbove) {
-    // 要素の上に挿入
-    prompts.splice(dropIndex, 0, moved);
-    console.log("[PRM DND] 要素の上に挿入:", dragPromptIndex, "→", dropIndex);
-  } else {
-    // 要素の下に挿入
-    actualToIndex = dropIndex + 1;
-    prompts.splice(actualToIndex, 0, moved);
-    console.log(
-      "[PRM DND] 要素の下に挿入:",
-      dragPromptIndex,
-      "→",
-      actualToIndex
-    );
-  }
+  let targetIndex = dropIndex;
+  if (dragPromptIndex < dropIndex) targetIndex -= 1; // adjust index after removal
+  if (!dropAbove) targetIndex += 1; // insert after target when dropping below
+  actualToIndex = targetIndex;
+
+  prompts.splice(targetIndex, 0, moved);
+  console.log(
+    "[PRM DND] moved:",
+    dragPromptIndex,
+    "→",
+    actualToIndex,
+    "(drop",
+    dropAbove ? "above" : "below",
+    ")"
+  );
 
   await save(PROMPT_KEY, prompts);
 
