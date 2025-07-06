@@ -1204,8 +1204,8 @@ function renderEdit(idx, isNew = false) {
         <label class="title-label">タイトル</label>
         <input type="text" class="title-input" placeholder="タイトルを入力" />
       </div>
-    <div id="field-wrap" class="d-flex flex-column gap-3 mb-4"></div>
-    <button class="btn-add-field w-100 mb-4">
+    <div id="field-wrap" class="d-flex flex-column gap-2 mb-3"></div>
+    <button class="btn-add-field w-100 mb-3">
       ＋ プロンプトを追加
       </button>
     </div>`;
@@ -1878,8 +1878,8 @@ function renderRun(idx) {
             return block(i + 1, f, originalIndex); // i + 1 で連番表示
           })
           .join("")}
-      <button class="btn-exec w-100 mt-3">一括入力</button>
-      <div class="form-check form-switch mt-3">
+      <button class="btn-exec w-100 mt-2">一括入力</button>
+      <div class="form-check form-switch mt-2">
           <input id="hist-sw" class="form-check-input" type="checkbox">
         <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
       </div>

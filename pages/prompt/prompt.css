@@ -39,8 +39,8 @@
   margin: 16px;
   padding: 0; /* パディングを削除 */
   height: calc(
-    100vh - 188px
-  ); /* ヘッダー(52px) + サブナビ(72px) + margin(32px) + フッター(68px) - 二重余白を解消 */
+    100vh - 168px
+  ); /* 一覧表示と同じfooter位置: header(52px) + margin(48px) + footer(68px) = 168px */
   padding-bottom: 0; /* フッターは固定なので余白不要 */
   display: flex;
   flex-direction: column;
@@ -51,11 +51,11 @@
 .memo-content.run-mode {
   background: #2d2d2d; /* MEMOページと同じ背景色 */
   border-radius: 12px;
-  margin: 32px 16px 16px 16px; /* MEMOページと完全統一 */
+  margin: 0px 16px 16px 16px; /* MEMOページと完全統一 */
   padding: 0; /* パディングを削除 */
   height: calc(
-    100vh - 216px
-  ) !important; /* .form-header(48px)分を追加で差し引き: 168px + 48px = 216px */
+    100vh - 168px
+  ) !important; /* 一覧表示と同じfooter位置: header(52px) + margin(48px) + footer(68px) = 168px */
   padding-bottom: 24px; /* MEMOページと同じパディング */
   display: flex;
   flex-direction: column;
@@ -327,7 +327,7 @@
   display: flex;
   flex-direction: column;
   background: #2d2d2d; /* より暗いグレー */
-  padding: 16px; /* 実行画面のprompt-run-boxと同じパディング */
+  padding: 12px 16px 16px 16px; /* header・タイトル・プロンプト（メイン）の行間を統一 */
   border-radius: 8px; /* MEMOページと完全統一（12px→8px） */
   min-height: 0;
   box-sizing: border-box;
@@ -375,7 +375,7 @@
 
 /* タイトルセクション - 視覚的に上下の余白を均等に調整 */
 .memo-input-form .title-section {
-  padding: 14px 0 12px 0; /* 上14px、下12px - 行間を狭く調整 */
+  padding: 12px 0 10px 0; /* 上12px、下10px - 行間をさらに狭く調整してUI/UXを改善 */
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* プロンプトフィールドと完全統一 */
 }
 
@@ -433,7 +433,7 @@ textarea.field-text,
 /* ④ プロンプトブロック - 視覚的に上下の余白を均等に調整 */
 .prompt-field {
   position: relative;
-  padding: 14px 0 12px 0; /* 上14px、下12px - 行間を狭く調整 */
+  padding: 12px 0 10px 0; /* 上12px、下10px - 行間をさらに狭く調整してUI/UXを改善 */
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* タイトルセクションと完全統一 */
   cursor: grab; /* 実行画面と統一 */
 }
@@ -576,7 +576,7 @@ textarea.field-text,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 16px 16px 8px;
+  margin: 12px 16px 12px 16px; /* header・タイトル・プロンプト（メイン）の行間を統一 */
   gap: 12px; /* タイトルと編集ボタンの間に適切な間隔を確保 */
 }
 
@@ -1228,10 +1228,10 @@ textarea.field-text,
   プロンプト実行画面のスタイル（画像通りのUI・UX）
 --------------------------------------------------------------*/
 .prompt-run-box {
-  padding: 16px;
+  padding: 12px 16px 16px 16px; /* header・タイトル・プロンプト（メイン）の行間を統一 */
   display: flex;
   flex-direction: column;
-  gap: 16px; /* 24px→16px に変更して行間を狭く */
+  gap: 12px; /* 行間を12pxに調整してUI/UXを改善 */
   flex: 1; /* 親要素の高さを最大活用 */
   overflow-y: auto; /* 縦スクロールを有効化 */
   overflow-x: hidden; /* 横スクロールは無効 */
@@ -1261,7 +1261,7 @@ textarea.field-text,
 
 /* プロンプトブロック（MEMOページのボーダーライン使用） */
 .prompt-block {
-  padding: 12px 0; /* 16px→12px に変更して行間を狭く */
+  padding: 12px 0; /* 行間を12pxに調整してUI/UXを改善 */
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* MEMOページと同じ点線 */
   cursor: grab;
 }
@@ -1307,7 +1307,7 @@ body .prompt-run-box .prompt-block:last-of-type,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px; /* 12px→8px に変更して行間を狭く */
+  margin-bottom: 12px; /* 行間を12pxに調整してUI/UXを改善 */
 }
 
 .prompt-label {
@@ -1319,9 +1319,9 @@ body .prompt-run-box .prompt-block:last-of-type,
 /* プロンプト本文 */
 .prompt-content {
   color: #ffffff;
-  font-size: 0.9rem; /* 0.95rem→0.9rem に統一 */
-  line-height: 1.3; /* 1.5→1.3 に変更して行間を狭く */
-  margin-bottom: 12px; /* 16px→12px に変更して行間を狭く */
+  font-size: 0.9rem; /* 統一されたフォントサイズ */
+  line-height: 1.3; /* 統一された行間 */
+  margin-bottom: 12px; /* 行間を12pxに調整してUI/UXを改善 */
   white-space: pre-line;
 }
 
@@ -1362,7 +1362,7 @@ body .prompt-run-box .prompt-block:last-of-type,
   color: #ffffff;
   transition: filter 0.2s;
   width: 100%;
-  margin-top: 16px;
+  margin-top: 12px; /* 行間を12pxに調整してUI/UXを改善 */
   opacity: 1; /* 初期表示を確保 */
   position: relative; /* レイヤー位置を確保 */
   z-index: 10; /* 背景より前面に表示 */
@@ -1376,7 +1376,7 @@ body .prompt-run-box .prompt-block:last-of-type,
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 12px; /* 行間を12pxに調整してUI/UXを改善 */
   opacity: 1; /* 初期表示を確保 */
   position: relative; /* レイヤー位置を確保 */
   z-index: 10; /* 背景より前面に表示 */

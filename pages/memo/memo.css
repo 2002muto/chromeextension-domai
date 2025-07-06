@@ -74,6 +74,20 @@ body {
 .memo-content.animate {
   animation: slideUpFade 0.4s ease-out both;
 }
+/* 実行画面時のコンテンツ高さ調整 */
+.memo-content.run-mode {
+  display: flex;
+  flex-direction: column;
+  height: calc(-216px + 100vh) !important;
+  background: rgb(45, 45, 45);
+  border-radius: 12px;
+  margin: 32px 16px 16px;
+  padding: 0px 0px 24px;
+  overflow: hidden;
+}
+.memo-content.run-mode.animate.show {
+  margin: 0px 16px 16px 16px;
+}
 /* 編集モード時もフッターは画面下部に固定（共通スタイル適用） */
 .memo-content.edit-mode + .memo-footer {
   /* フッターの固定スタイルは共通なので、特別な処理は不要 */
