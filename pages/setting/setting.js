@@ -1,47 +1,149 @@
 // File: pages/setting/setting.js
 
+// 設定項目の定義
+const SETTING_ITEMS = [
+  {
+    id: "description",
+    title: "説明",
+    description: "domai Extension についての詳細情報を確認できます",
+    icon: "bi-info-circle",
+    panelId: "#description-panel",
+    comingSoon: false,
+  },
+  {
+    id: "backup-install",
+    title: "バックアップのインストール",
+    description:
+      "エクスポートしたバックアップファイルを選択してデータを復元できます",
+    icon: "bi-upload",
+    panelId: "#backup-install-panel",
+    comingSoon: false,
+  },
+  {
+    id: "api-key",
+    title: "APIキーの設定",
+    description: "外部APIとの連携機能（現在開発中）",
+    icon: "bi-key-fill",
+    panelId: "#api-key-panel",
+    comingSoon: true,
+  },
+  {
+    id: "custom",
+    title: "カスタム",
+    description: "アイコン選択・並び替えなどのカスタム設定",
+    icon: "bi-gear-fill",
+    panelId: "#custom-panel",
+    comingSoon: false,
+  },
+];
+
 // 設定ページをデフォルト状態に戻す関数
 function renderSettingMain() {
   console.log("renderSettingMain: 設定ページをデフォルト状態に戻す");
 
   const content = document.querySelector(".memo-content");
+  const settingList = document.querySelector("#setting-list");
+  const settingDetail = document.querySelector("#setting-detail");
 
-  // すべての設定ボタンの active を削除
-  document
-    .querySelectorAll(".setting-btn")
-    .forEach((b) => b.classList.remove("active"));
+  // 設定リストを表示、詳細パネルを非表示
+  if (settingList) {
+    settingList.style.display = "block";
+  }
+  if (settingDetail) {
+    settingDetail.style.display = "none";
+  }
 
-  // 説明パネルを表示
-  const descriptionPanel = document.querySelector("#description-panel");
-  if (descriptionPanel) {
-    // すべてのパネルからshowとanimateを削除
-    document
-      .querySelectorAll(".detail-panel")
-      .forEach((p) => p.classList.remove("show", "animate"));
+  // 設定項目リストをレンダリング
+  renderSettingList();
 
-    // 説明パネルにshowクラスを追加
-    descriptionPanel.classList.add("show");
-    console.log("初期化時に説明パネルを表示しました");
+  // MEMO・PROMPTと同じアニメーション
+  if (content) {
+    content.classList.remove("show", "animate");
+    void content.offsetWidth;
+    content.classList.add("animate", "show");
+  }
+
+  // フッターを設定リストモードに変更
+  setFooter("list");
+}
+
+// 設定項目リストをレンダリング
+function renderSettingList() {
+  const settingList = document.querySelector("#setting-list");
+  if (!settingList) return;
+
+  settingList.innerHTML = SETTING_ITEMS.map(
+    (item) => `
+    <div class="setting-item ${
+      item.comingSoon ? "coming-soon" : ""
+    }" data-item-id="${item.id}">
+      <div class="setting-item-header">
+        <div class="setting-item-icon">
+          <i class="${item.icon}"></i>
+        </div>
+        <div class="setting-item-content">
+          <div class="setting-item-title">${item.title}</div>
+          <div class="setting-item-description">${item.description}</div>
+        </div>
+        <div class="setting-item-arrow">
+          <i class="bi bi-chevron-right"></i>
+        </div>
+      </div>
+    </div>
+  `
+  ).join("");
+
+  // 設定項目のクリックイベントを設定
+  setupSettingItemListeners();
+}
+
+// 設定項目のクリックイベントを設定
+function setupSettingItemListeners() {
+  document.querySelectorAll(".setting-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      const itemId = item.dataset.itemId;
+      const settingItem = SETTING_ITEMS.find((si) => si.id === itemId);
+
+      if (settingItem) {
+        console.log("設定項目がクリックされました:", itemId);
+        showSettingDetail(settingItem);
+      }
+    });
+  });
+}
+
+// 設定詳細を表示
+function showSettingDetail(settingItem) {
+  console.log("設定詳細を表示:", settingItem);
+
+  const content = document.querySelector(".memo-content");
+  const settingList = document.querySelector("#setting-list");
+  const settingDetail = document.querySelector("#setting-detail");
+
+  // 設定リストを非表示、詳細パネルを表示
+  if (settingList) {
+    settingList.style.display = "none";
+  }
+  if (settingDetail) {
+    settingDetail.style.display = "block";
+  }
+
+  // すべてのパネルからshowとanimateを削除
+  document.querySelectorAll(".detail-panel").forEach((p) => {
+    p.classList.remove("show", "animate");
+  });
+
+  // 対象パネルを表示
+  const targetPanel = document.querySelector(settingItem.panelId);
+  if (targetPanel) {
+    targetPanel.classList.add("show");
+    console.log("パネルにshowクラスを追加:", settingItem.panelId);
 
     // アニメーション効果を追加
     requestAnimationFrame(() => {
-      descriptionPanel.classList.add("animate");
-      console.log("初期化時に説明パネルにanimateクラスを追加しました");
+      targetPanel.classList.add("animate");
+      console.log("パネルにanimateクラスを追加:", settingItem.panelId);
     });
-  } else {
-    console.error("内緒だよ");
-  }
-
-  // 「説明」ボタンを active にする（存在する場合）
-  const descriptionBtn = document.querySelector("#btn-description");
-  if (descriptionBtn) {
-    descriptionBtn.classList.add("active");
-  } else {
-    // 説明ボタンが見つからない場合は最初のボタンを active にする
-    const firstBtn = document.querySelector(".setting-btn");
-    if (firstBtn) {
-      firstBtn.classList.add("active");
-    }
   }
 
   // MEMO・PROMPTと同じアニメーション
@@ -49,6 +151,88 @@ function renderSettingMain() {
     content.classList.remove("show", "animate");
     void content.offsetWidth;
     content.classList.add("animate", "show");
+  }
+
+  // フッターを詳細モードに変更
+  setFooter("detail");
+}
+
+// フッターの設定
+function setFooter(mode) {
+  const foot = document.querySelector(".memo-footer");
+  if (!foot) return;
+
+  foot.style.display = "flex";
+
+  if (mode === "list") {
+    foot.innerHTML = `
+      <button class="nav-btn setting-contact-btn">
+        <i class="bi bi-envelope"></i>
+      </button>
+      <button class="nav-btn setting-share-btn">
+        <i class="bi bi-share-fill"></i>
+      </button>
+    `;
+  } else if (mode === "detail") {
+    foot.innerHTML = `
+      <button class="nav-btn back-btn" id="btn-back-to-list">
+        <i class="bi bi-arrow-left-circle"></i>
+        <span class="nav-text">戻る</span>
+      </button>
+    `;
+  }
+
+  // フッターボタンのイベントを設定
+  setupFooterListeners();
+}
+
+// フッターボタンのイベントリスナーを設定
+function setupFooterListeners() {
+  // 戻るボタン
+  const backBtn = document.querySelector("#btn-back-to-list");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      console.log("戻るボタンがクリックされました");
+      renderSettingMain();
+    });
+  }
+
+  // お問合せボタン
+  const contactBtn = document.querySelector(".setting-contact-btn");
+  if (contactBtn) {
+    contactBtn.addEventListener("click", () => {
+      console.log("お問合せボタンがクリックされました");
+      const email = "support@domai-extension.com";
+      const subject = "domai Extension お問合せ";
+      const body = "お問合せ内容をここに記載してください。\n\n---\n\n";
+      const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(body)}`;
+      window.open(mailtoLink);
+    });
+  }
+
+  // 共有ボタン
+  const shareBtn = document.querySelector(".setting-share-btn");
+  if (shareBtn) {
+    shareBtn.addEventListener("click", () => {
+      console.log("共有ボタンがクリックされました");
+      if (navigator.share) {
+        navigator.share({
+          title: "domai Extension",
+          text: "効率的なブラウザ拡張機能です。",
+          url: "https://github.com/your-repo/domai-extension",
+        });
+      } else {
+        const shareText =
+          "domai Extension - 効率的なブラウザ拡張機能\nhttps://github.com/your-repo/domai-extension";
+        navigator.clipboard.writeText(shareText).then(() => {
+          showCustomSettingMessage(
+            "共有リンクをクリップボードにコピーしました"
+          );
+        });
+      }
+    });
   }
 }
 
@@ -107,138 +291,14 @@ window.addEventListener("DOMContentLoaded", () => {
     }, 100);
   }
 
-  // ─── 以下、既存のメニュー切替＋詳細パネル表示 ───
-  document.querySelectorAll(".setting-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      console.log("navボタンがクリックされました:", btn.id, btn.dataset.target);
-      // カスタムモードを解除（カスタムボタン以外の場合）
-      if (!btn.dataset.target || btn.dataset.target !== "#custom-panel") {
-        const content = document.querySelector(".memo-content");
-        if (content) {
-          content.classList.remove("custom-mode");
-        }
-      }
-
-      // ボタンの active 切替
-      document
-        .querySelectorAll(".setting-btn")
-        .forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      // すべてのパネルからshowとanimateを削除
-      document.querySelectorAll(".detail-panel").forEach((p) => {
-        p.classList.remove("show", "animate");
-        console.log(`パネル ${p.id} からshowとanimateを削除`);
-      });
-
-      // クリックしたボタンに対応するパネルを show
-      const targetId = btn.dataset.target;
-      console.log("クリックされたボタンのターゲット:", targetId);
-      const targetPanel = document.querySelector(targetId);
-      console.log("ターゲットパネル:", targetPanel);
-      if (targetPanel) {
-        targetPanel.classList.add("show");
-        console.log("パネルにshowクラスを追加:", targetId);
-        // アニメーション効果を追加
-        requestAnimationFrame(() => {
-          targetPanel.classList.add("animate");
-          console.log("パネルにanimateクラスを追加:", targetId);
-        });
-      } else {
-        console.error("内緒だよ");
-      }
-    });
-  });
-
-  // ─── フッターボタンのイベント処理 ───
-  const contactBtn = document.querySelector(".setting-contact-btn");
-  const shareBtn = document.querySelector(".setting-share-btn");
-
-  if (contactBtn) {
-    contactBtn.addEventListener("click", () => {
-      console.log("お問合せボタンがクリックされました");
-      // お問合せ機能の実装
-      const email = "support@domai-extension.com";
-      const subject = "domai Extension お問合せ";
-      const body = "お問合せ内容をここに記載してください。\n\n---\n\n";
-      const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
-        subject
-      )}&body=${encodeURIComponent(body)}`;
-      window.open(mailtoLink);
-    });
-  }
-
-  if (shareBtn) {
-    shareBtn.addEventListener("click", () => {
-      console.log("共有ボタンがクリックされました");
-      // 共有機能の実装
-      if (navigator.share) {
-        navigator.share({
-          title: "domai Extension",
-          text: "効率的なブラウザ拡張機能です。",
-          url: "https://github.com/your-repo/domai-extension",
-        });
-      } else {
-        // フォールバック: クリップボードにコピー
-        const shareText =
-          "domai Extension - 効率的なブラウザ拡張機能\nhttps://github.com/your-repo/domai-extension";
-        navigator.clipboard.writeText(shareText).then(() => {
-          showCustomSettingMessage(
-            "共有リンクをクリップボードにコピーしました"
-          );
-        });
-      }
-    });
-  }
-
   // ─── カスタム設定機能の初期化 ───
   initializeCustomSettings();
 
-  // 初期化完了後に説明パネルを確実に表示
+  // 初期化完了後にメイン画面を表示
   setTimeout(() => {
-    console.log("初期化完了後の説明パネル表示確認");
-    const descriptionPanel = document.querySelector("#description-panel");
-    const descriptionBtn = document.querySelector("#btn-description");
-
-    if (descriptionPanel && !descriptionPanel.classList.contains("show")) {
-      console.log("説明パネルが表示されていないため、強制的に表示します");
-
-      // すべてのパネルを非表示
-      document.querySelectorAll(".detail-panel").forEach((p) => {
-        p.classList.remove("show", "animate");
-      });
-
-      // 説明パネルを表示
-      descriptionPanel.classList.add("show");
-      requestAnimationFrame(() => {
-        descriptionPanel.classList.add("animate");
-      });
-    }
-
-    if (descriptionBtn && !descriptionBtn.classList.contains("active")) {
-      console.log("説明ボタンがアクティブでないため、アクティブにします");
-      document
-        .querySelectorAll(".setting-btn")
-        .forEach((b) => b.classList.remove("active"));
-      descriptionBtn.classList.add("active");
-    }
-  }, 500);
-
-  // カスタムボタンのクリックでカスタムモードに切り替え
-  const customBtn = document.getElementById("btn-custom");
-  if (customBtn) {
-    customBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      console.log("カスタムボタンがクリックされました");
-
-      // カスタムモードに切り替え
-      const content = document.querySelector(".memo-content");
-      if (content) {
-        content.classList.add("custom-mode");
-        console.log("カスタムモードに切り替えました");
-      }
-    });
-  }
+    console.log("初期化完了後のメイン画面表示");
+    renderSettingMain();
+  }, 200);
 });
 
 // カスタム設定機能の初期化

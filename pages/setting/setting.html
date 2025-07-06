@@ -50,43 +50,13 @@
     </header>
     <!-- メインコンテンツ（MEMO・PROMPTと同じ構造） -->
     <div class="memo-content">
-      <!-- 左ナビメニュー -->
-      <nav class="setting-nav">
-        <button
-          class="setting-btn"
-          id="btn-description"
-          data-target="#description-panel"
-          title="説明"
-        >
-          <span>説明</span>
-        </button>
-        <button
-          class="setting-btn"
-          id="btn-backup-install"
-          data-target="#backup-install-panel"
-          title="バックアップのインストール"
-        >
-          <span>バックアップのインストール</span>
-        </button>
-        <button
-          class="setting-btn"
-          id="btn-api-key"
-          data-target="#api-key-panel"
-          title="APIキーの設定"
-        >
-          <span>APIキーの設定</span>
-        </button>
-        <button
-          class="setting-btn"
-          id="btn-custom"
-          data-target="#custom-panel"
-          title="カスタム"
-        >
-          <span>カスタム</span>
-        </button>
-      </nav>
-      <!-- 詳細パネル -->
-      <section class="setting-detail">
+      <!-- 設定項目リスト -->
+      <div class="setting-list" id="setting-list">
+        <!-- 設定項目はJavaScriptで動的に生成 -->
+      </div>
+
+      <!-- 詳細パネル（初期状態では非表示） -->
+      <section class="setting-detail" id="setting-detail" style="display: none">
         <!-- 説明パネル -->
         <div class="detail-panel show" id="description-panel">
           <h3 class="description-title">
