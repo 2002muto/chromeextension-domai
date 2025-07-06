@@ -3,7 +3,8 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>IFRAME</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iframe検索</title>
     <link
       rel="stylesheet"
       href="../../vendor/bootstrap/css/bootstrap.min.css"
@@ -17,103 +18,42 @@
     />
   </head>
   <body>
-    <!-- 共通ヘッダー -->
-    <header>
-      <a
-        href="../memo/memo.html"
-        class="nav-btn"
-        id="btn-memo-list"
-        title="MEMO"
-      >
-        <i class="bi bi-clipboard2-minus"></i>
-        <span class="nav-text">MEMO</span>
-      </a>
-      <a
-        href="../clipboard/clipboard.html"
-        class="nav-btn"
-        id="btn-clipboard"
-        title="CLIPBOARD"
-      >
-        <i class="bi bi-journal-text"></i>
-        <span class="nav-text">CLIPBOARD</span>
-      </a>
-      <a
-        href="../prompt/prompt.html"
-        class="nav-btn"
-        id="btn-prompt"
-        title="PROMPT"
-      >
-        <i class="bi bi-terminal"></i>
-        <span class="nav-text">PROMPT</span>
-      </a>
-      <a
-        href="iframe.html"
-        class="nav-btn active"
-        id="btn-iframe"
-        title="IFRAME"
-      >
-        <i class="bi bi-layout-split"></i>
-        <span class="nav-text">IFRAME</span>
-      </a>
-      <a
-        href="../status/status.html"
-        class="nav-btn"
-        id="btn-status"
-        title="STATUS"
-      >
-        <i class="bi bi-wifi"></i>
-        <span class="nav-text">STATUS</span>
-      </a>
-      <a
-        href="../setting/setting.html"
-        class="nav-btn"
-        id="btn-setting"
-        title="SETTING"
-      >
-        <i class="bi bi-gear-fill"></i>
-        <span class="nav-text">SETTING</span>
-      </a>
-    </header>
-    <!-- メインコンテンツ -->
-    <div class="memo-content animate show" id="iframe-main-content">
-      <!-- Empty State（URL未入力時に表示） -->
-      <div class="iframe-empty-state" id="iframe-empty-state">
-        <div class="iframe-empty-state-content">
-          <div class="iframe-empty-state-icon">
-            <i class="bi bi-search"></i>
-          </div>
-          <h3 class="iframe-empty-state-title">検索してください</h3>
-          <p class="iframe-empty-state-message">
-            検索したいキーワード<br />またはURLを入力してください。
-          </p>
-          <div class="iframe-url-input-row">
-            <input
-              type="text"
-              class="search-input"
-              placeholder="キーワードまたはhttps://example.com"
-            />
-            <button class="search-submit-btn">
-              <i class="bi bi-search"></i>
-            </button>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="search-container">
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                id="searchInput"
+                placeholder="検索語またはURLを入力..."
+              />
+              <button class="btn btn-primary" type="button" id="searchButton">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      <!-- iframe表示エリア（URL入力時のみ表示） -->
-      <div
-        class="iframe-display-container"
-        id="iframe-display-container"
-        style="display: none"
-      >
-        <div class="iframe-header">
-          <button class="new-search-btn" id="new-search-btn">
-            <i class="bi bi-plus-lg"></i> 新しい検索
-          </button>
+      <div class="row">
+        <div class="col-12">
+          <div class="iframe-container">
+            <iframe
+              id="searchIframe"
+              src="about:blank"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-top-navigation-by-user-activation allow-downloads allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation"
+              allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; document-domain; encrypted-media; execution-while-not-rendered; execution-while-out-of-viewport; fullscreen; geolocation; gyroscope; keyboard-map; magnetometer; microphone; midi; navigation-override; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
+              referrerpolicy="unsafe-url"
+              loading="eager"
+              credentialless
+              csp="default-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; connect-src * data: blob:; media-src * data: blob:; object-src *; child-src *; frame-src *; worker-src *; frame-ancestors *; form-action *; base-uri *; manifest-src *;"
+              importance="high"
+              fetchpriority="high"
+            >
+            </iframe>
+          </div>
         </div>
-        <iframe
-          id="iframe-display"
-          class="iframe-display"
-          frameborder="0"
-        ></iframe>
       </div>
     </div>
     <!-- フッター（IFRAMEページでは非表示） -->
