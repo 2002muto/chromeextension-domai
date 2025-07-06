@@ -152,6 +152,17 @@ function showSettingDetail(settingItem) {
       targetPanel.classList.add("animate");
       console.log("パネルにanimateクラスを追加:", settingItem.panelId);
     });
+
+    // Coming Soon項目の場合、オーバーレイを表示
+    if (settingItem.comingSoon) {
+      setTimeout(() => {
+        const overlay = targetPanel.querySelector(".coming-soon-overlay");
+        if (overlay) {
+          overlay.classList.add("show");
+          console.log("COMING SOON オーバーレイを表示:", settingItem.id);
+        }
+      }, 300); // パネルのアニメーション後に表示
+    }
   }
 
   // MEMO・PROMPTと同じアニメーション

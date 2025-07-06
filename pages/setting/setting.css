@@ -1824,3 +1824,72 @@
     font-size: 0.9rem;
   }
 }
+
+/* COMING SOON オーバーレイ */
+.coming-soon-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.coming-soon-overlay.show {
+  opacity: 1;
+}
+
+.coming-soon-badge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+  animation: comingSoonPulse 2s ease-in-out infinite;
+}
+
+.coming-soon-badge i {
+  font-size: 1.3rem;
+  animation: comingSoonRotate 3s linear infinite;
+}
+
+@keyframes comingSoonPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.6);
+  }
+}
+
+@keyframes comingSoonRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* パネルに相対位置を設定 */
+.detail-panel {
+  position: relative;
+}
