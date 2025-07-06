@@ -159,10 +159,10 @@
     footer.classList.add("archive");
     footer.style.display = "flex";
     footer.innerHTML = `
-      <button class="footer-btn back-btn">
+      <button class="footer-btn back-btn" title="戻る">
         <i class="bi bi-arrow-left-circle"></i> 戻る
       </button>
-      <button class="footer-btn delete-all-btn">
+      <button class="footer-btn delete-all-btn" title="一括削除">
         <i class="bi bi-trash"></i> 一括削除
       </button>`;
 
