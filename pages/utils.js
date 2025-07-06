@@ -1134,9 +1134,12 @@ window.AppUtils = {
 
 /* ━━━━━━━━━━ 共通トースト通知機能 ━━━━━━━━━━ */
 window.AppUtils.showToast = function (message, type = "info") {
+  console.log("[UTILS] showToast呼び出し:", { message, type });
+
   // 既存のトーストがあれば削除
   const existingToast = document.querySelector(".common-toast-message");
   if (existingToast) {
+    console.log("[UTILS] 既存のトーストを削除");
     existingToast.remove();
   }
 
@@ -1167,6 +1170,13 @@ window.AppUtils.showToast = function (message, type = "info") {
     iconColor = "#f59e0b";
   }
 
+  console.log("[UTILS] トースト設定:", {
+    icon,
+    borderColor,
+    bgColor,
+    iconColor,
+  });
+
   // トーストHTML
   const toast = document.createElement("div");
   toast.className = "common-toast-message";
@@ -1175,8 +1185,11 @@ window.AppUtils.showToast = function (message, type = "info") {
     <span class="toast-text">${message}</span>
   `;
 
+  console.log("[UTILS] トースト要素作成:", toast);
+
   // スタイルを動的に追加（初回のみ）
   if (!document.querySelector("#common-toast-styles")) {
+    console.log("[UTILS] トーストスタイルを追加");
     const styles = document.createElement("style");
     styles.id = "common-toast-styles";
     styles.textContent = `
@@ -1218,19 +1231,26 @@ window.AppUtils.showToast = function (message, type = "info") {
       }
     `;
     document.head.appendChild(styles);
+    console.log("[UTILS] トーストスタイル追加完了");
   }
 
   // bodyに追加
   document.body.appendChild(toast);
+  console.log("[UTILS] トースト要素をbodyに追加:", toast);
+
   // アニメーションで表示
   setTimeout(() => {
     toast.classList.add("show");
+    console.log("[UTILS] トースト表示アニメーション開始");
   }, 50);
+
   // 2秒後にフェードアウト
   setTimeout(() => {
     toast.classList.remove("show");
+    console.log("[UTILS] トースト非表示アニメーション開始");
     setTimeout(() => {
       toast.remove();
+      console.log("[UTILS] トースト要素を削除");
     }, 300);
   }, 2000);
 };

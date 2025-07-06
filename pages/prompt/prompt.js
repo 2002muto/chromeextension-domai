@@ -863,6 +863,82 @@ async function renderList() {
         })),
       });
     });
+
+    // トーストメッセージのテスト
+    console.log("[PROMPT DEBUG] トーストメッセージテスト開始");
+    console.log("[PROMPT DEBUG] AppUtils確認:", {
+      AppUtils: !!window.AppUtils,
+      showToast: !!(window.AppUtils && window.AppUtils.showToast),
+    });
+
+    if (window.AppUtils && window.AppUtils.showToast) {
+      console.log("[PROMPT DEBUG] テストトーストを表示");
+      try {
+        window.AppUtils.showToast("PROMPT一覧が読み込まれました", "success");
+        console.log("[PROMPT DEBUG] トースト表示成功");
+      } catch (error) {
+        console.error("[PROMPT DEBUG] トースト表示エラー:", error);
+      }
+    } else {
+      console.error("[PROMPT DEBUG] AppUtils.showToastが利用できません");
+
+      // フォールバック: 直接トースト要素を作成
+      console.log("[PROMPT DEBUG] フォールバックトーストを作成");
+      const fallbackToast = document.createElement("div");
+      fallbackToast.className = "fallback-toast";
+      fallbackToast.innerHTML = `
+        <span class="toast-icon" style="color: #10b981;">
+          <i class="bi bi-check-circle"></i>
+        </span>
+        <span class="toast-text">PROMPT一覧が読み込まれました（フォールバック）</span>
+      `;
+      fallbackToast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(16, 185, 129, 0.1);
+        border-left: 4px solid #10b981;
+        color: #ffffff;
+        padding: 14px 22px;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1rem;
+        font-weight: 500;
+        z-index: 10000;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+        max-width: 340px;
+        min-width: 180px;
+        word-break: break-all;
+      `;
+
+      document.body.appendChild(fallbackToast);
+      console.log(
+        "[PROMPT DEBUG] フォールバックトースト要素を追加:",
+        fallbackToast
+      );
+
+      // アニメーションで表示
+      setTimeout(() => {
+        fallbackToast.style.opacity = "1";
+        fallbackToast.style.transform = "translateX(0)";
+        console.log("[PROMPT DEBUG] フォールバックトーストを表示");
+      }, 50);
+
+      // 2秒後にフェードアウト
+      setTimeout(() => {
+        fallbackToast.style.opacity = "0";
+        fallbackToast.style.transform = "translateX(100%)";
+        setTimeout(() => {
+          fallbackToast.remove();
+          console.log("[PROMPT DEBUG] フォールバックトーストを削除");
+        }, 300);
+      }, 2000);
+    }
   }, 100);
 }
 
