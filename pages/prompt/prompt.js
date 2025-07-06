@@ -91,7 +91,8 @@ async function handleScreenTransition(
 /* ━━━━━━━━━ 1. グローバル状態 ━━━━━━━━━ */
 let prompts = []; // カード一覧
 let runs = []; // 実行履歴
-let dragPromptIndex = null; // ドラッグ元インデックス
+let dragPromptIndex = null; // 一覧上のドラッグ元インデックス
+let dragPromptId = null; // ドラッグ対象のID
 let dragPromptStarred = null; // ドラッグ元の星状態を記録
 let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデックス
 
@@ -107,8 +108,10 @@ function handlePromptDragStart(e) {
     draggable: e.currentTarget.draggable,
   });
 
-  dragPromptIndex = +this.dataset.index;
-  dragPromptStarred = prompts[dragPromptIndex]?.star || false;
+  dragPromptIndex = +this.dataset.index; // 表示上のインデックス
+  dragPromptId = this.dataset.id;
+  const realIdx = prompts.findIndex((p) => p.id === dragPromptId);
+  dragPromptStarred = prompts[realIdx]?.star || false;
   console.log(
     "[PRM] drag start:",
     dragPromptIndex,
@@ -121,7 +124,7 @@ function handlePromptDragStart(e) {
   );
   e.dataTransfer.effectAllowed = "move";
   // Some browsers require data to be set for drag operation to start
-  e.dataTransfer.setData("text/plain", dragPromptIndex.toString());
+  e.dataTransfer.setData("text/plain", dragPromptId);
   this.classList.add("dragging");
   console.log("[PROMPT DEBUG] dragging クラス追加完了");
 }
@@ -130,11 +133,12 @@ function handlePromptDragOver(e) {
   e.preventDefault();
 
   // ドロップ先の星状態をチェック
-  const dropIndex = +this.dataset.index;
-  const dropTargetStarred = prompts[dropIndex]?.star || false;
+  const dropId = this.dataset.id;
+  const dropIdx = prompts.findIndex((p) => p.id === dropId);
+  const dropTargetStarred = prompts[dropIdx]?.star || false;
 
   console.log("[PROMPT DEBUG] dragover 詳細:", {
-    dropIndex: dropIndex,
+    dropIndex: dropIdx,
     dropTargetStarred: dropTargetStarred,
     dragPromptStarred: dragPromptStarred,
     element: this,
@@ -189,7 +193,8 @@ function handlePromptDragLeave() {
 async function handlePromptDrop(e) {
   e.preventDefault();
   e.stopPropagation();
-  const dropIndex = +this.dataset.index;
+  const dropId = this.dataset.id;
+  const dropIndex = prompts.findIndex((p) => p.id === dropId);
 
   // カテゴリ間のドロップを再度チェック
   const dropTargetStarred = prompts[dropIndex]?.star || false;
@@ -199,8 +204,8 @@ async function handlePromptDrop(e) {
     return;
   }
 
-  console.log(`[PRM] drop from ${dragPromptIndex} to ${dropIndex}`);
-  if (dragPromptIndex === null || dragPromptIndex === dropIndex) return;
+  console.log(`[PRM] drop from ${dragPromptId} to ${dropId}`);
+  if (dragPromptId === null || dragPromptId === dropId) return;
 
   // ドロップ位置を判定
   const rect = this.getBoundingClientRect();
@@ -210,10 +215,11 @@ async function handlePromptDrop(e) {
 
   let actualToIndex;
 
-  const [moved] = prompts.splice(dragPromptIndex, 1);
+  const dragIndex = prompts.findIndex((p) => p.id === dragPromptId);
+  const [moved] = prompts.splice(dragIndex, 1);
 
   let targetIndex = dropIndex;
-  if (dragPromptIndex < dropIndex) targetIndex -= 1; // adjust index after removal
+  if (dragIndex < dropIndex) targetIndex -= 1; // adjust index after removal
   if (!dropAbove) targetIndex += 1; // insert after target when dropping below
   actualToIndex = targetIndex;
 
@@ -255,6 +261,7 @@ function handlePromptDragEnd() {
       )
     );
   dragPromptIndex = null;
+  dragPromptId = null;
   dragPromptStarred = null;
 }
 
@@ -583,7 +590,9 @@ async function renderList() {
       const li = document.createElement("li");
       li.className = "prompt-item";
       li.draggable = true;
-      li.dataset.index = originalIndex; // 元の配列でのインデックスを設定
+      // 一覧表示上のインデックスとIDの両方を保持
+      li.dataset.index = i;
+      li.dataset.id = p.id;
 
       console.log("[PROMPT DEBUG] プロンプトアイテム作成:", {
         promptId: p.id,
