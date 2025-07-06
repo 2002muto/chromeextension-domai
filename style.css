@@ -305,6 +305,8 @@ main {
   display: flex;
   flex-direction: column;
   padding: 16px;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .memo-card {
