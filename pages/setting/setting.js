@@ -556,6 +556,7 @@ function setupIconSelectionListeners() {
       }
 
       const iconType = option.dataset.icon;
+      console.log("アイコンがクリックされました:", iconType);
       const isSelected = option.classList.contains("selected");
 
       if (isSelected) {
@@ -629,8 +630,8 @@ function getSelectedIcons() {
   selectedOptions.forEach((option) => {
     const iconType = option.dataset.icon;
 
-    // 今後実装予定のアイコン（AI、TodoList）を除外
-    if (iconType === "ai" || iconType === "todolist") {
+    // 今後実装予定のアイコン（AI、TodoList、QRCode）を除外
+    if (iconType === "ai" || iconType === "todolist" || iconType === "qrcode") {
       return;
     }
 
@@ -710,7 +711,7 @@ function applyIconVisibility(selectedIcons) {
 
     let shouldHide = false;
 
-    if (iconType === "ai" || iconType === "todolist") {
+    if (iconType === "ai" || iconType === "todolist" || iconType === "qrcode") {
       shouldHide = true;
       console.log(`SETTING: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
     } else if (iconType === "setting" || iconType === "memo") {
@@ -794,7 +795,7 @@ function forceApplyIconVisibility(selectedIcons) {
 
     let shouldHide = false;
 
-    if (iconType === "ai" || iconType === "todolist") {
+    if (iconType === "ai" || iconType === "todolist" || iconType === "qrcode") {
       shouldHide = true;
       console.log(`FORCE: ${buttonId} (${iconType}): 非表示 (今後実装予定)`);
     } else if (iconType === "setting" || iconType === "memo") {
@@ -859,6 +860,7 @@ function getIconTypeFromId(buttonId) {
     "btn-iframe": "iframe",
     "btn-ai": "ai",
     "btn-todolist": "todolist",
+    "btn-qrcode": "qrcode",
     "btn-status": "status",
     "btn-setting": "setting",
   };
