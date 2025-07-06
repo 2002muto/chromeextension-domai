@@ -1121,19 +1121,8 @@ async function animateRestoreItem(item, callback) {
   });
 }
 
-console.log("[UTILS] AppUtils loaded successfully");
-
-// グローバルに公開
-window.AppUtils = {
-  showConfirmDialog,
-  showSaveConfirmDialog,
-  showToast,
-  animateArchiveItem,
-  animateRestoreItem,
-};
-
-/* ━━━━━━━━━━ 共通トースト通知機能 ━━━━━━━━━━ */
-window.AppUtils.showToast = function (message, type = "info") {
+// 共通トースト通知機能
+function showToast(message, type = "info") {
   console.log("[UTILS] showToast呼び出し:", { message, type });
 
   // 既存のトーストがあれば削除
@@ -1253,4 +1242,15 @@ window.AppUtils.showToast = function (message, type = "info") {
       console.log("[UTILS] トースト要素を削除");
     }, 300);
   }, 2000);
+}
+
+console.log("[UTILS] AppUtils loaded successfully");
+
+// グローバルに公開
+window.AppUtils = {
+  showConfirmDialog,
+  showSaveConfirmDialog,
+  showToast,
+  animateArchiveItem,
+  animateRestoreItem,
 };

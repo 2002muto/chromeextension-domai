@@ -12,7 +12,7 @@ const PROMPT_KEY = "prompts";
 const RUN_KEY = "promptRuns";
 const $ = (sel, el = document) => el.querySelector(sel);
 const load = (k) =>
-  new Promise((r) => chrome.storage.local.get(k, (v) => r(v[k])));
+  new Promise((r) => chrome.storage.local.get([k], (v) => r(v[k] || [])));
 const save = (k, v) =>
   new Promise((r) => chrome.storage.local.set({ [k]: v }, r));
 const ce = (tag, cls = "", html = "") => {
@@ -225,7 +225,13 @@ async function handlePromptDrop(e) {
     );
   }
 
+  console.log("[PROMPT D&D] 保存前のprompts配列:", prompts);
   await save(PROMPT_KEY, prompts);
+  console.log("[PROMPT D&D] 保存完了");
+
+  // グローバルに最新のpromptsを設定（確実に更新）
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
+  console.log("[PROMPT D&D] window.promptsを更新:", window.prompts);
 
   // ドラッグ＆ドロップ成功メッセージを表示
   console.log("[PROMPT D&D] showDragDropSuccessMessage呼び出し前:", {
@@ -236,7 +242,18 @@ async function handlePromptDrop(e) {
   });
   showDragDropSuccessMessage(dragPromptIndex + 1, actualToIndex + 1);
 
-  renderList();
+  // ドラッグ＆ドロップ後の再初期化処理（MEMO・CLIPBOARDと同様）
+  console.log("[PROMPT D&D] 再初期化処理開始");
+
+  // プロンプトデータを再読み込み
+  prompts = await load(PROMPT_KEY);
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
+  console.log("[PROMPT D&D] データ再読み込み完了:", prompts);
+
+  // 一覧画面を再表示
+  console.log("[PROMPT D&D] renderList()呼び出し前");
+  await renderList();
+  console.log("[PROMPT D&D] 再初期化処理完了");
 }
 function handlePromptDragEnd() {
   document
@@ -281,77 +298,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   prompts = await load(PROMPT_KEY);
 
   // グローバルに最新のpromptsを設定（common.jsで使用される）
-  window.prompts = prompts;
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
   console.log("[PROMPT] window.promptsを設定しました:", window.prompts);
 
   // 起動時は常に一覧画面を表示（ページ状態の復元を無効化）
   console.log("PROMPTページ: 起動時に一覧画面を表示");
   await renderList();
 
-  // Add event listener to PROMPT button
-  const promptButton = document.getElementById("btn-prompt");
-  if (promptButton) {
-    promptButton.addEventListener("click", () => {
-      console.log("PROMPT page button clicked");
-
-      // 編集画面での未保存変更をチェック
-      const isEditing = document.querySelector(".memo-content.edit-mode");
-      if (isEditing) {
-        console.log("[PROMPT] 編集画面での未保存変更をチェック");
-
-        // 現在編集中のプロンプト情報を取得
-        const currentIndex = getCurrentPromptIndex();
-        const originalObj = currentIndex !== -1 ? prompts[currentIndex] : null;
-        const isNew = currentIndex === -1;
-
-        // 未保存変更があるかチェック
-        const hasChanges = checkForUnsavedChanges(originalObj, isNew);
-
-        if (hasChanges) {
-          console.log("[PROMPT] 未保存の変更を検出 - 確認ダイアログを表示");
-
-          // AppUtilsの確認ダイアログが利用可能な場合
-          if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
-            // 保存確認ダイアログを表示
-            window.AppUtils.showSaveConfirmDialog({
-              title: "変更を保存しますか？",
-              message:
-                "プロンプト内容に変更があります。<br>保存せずに戻ると変更が失われます。",
-              onSave: async () => {
-                // 保存して戻る
-                console.log("[PROMPT] 変更を保存して戻ります");
-                await saveAndGoBack();
-              },
-              onDiscard: () => {
-                // 破棄して戻る
-                console.log("[PROMPT] 変更を破棄して戻ります");
-                discardAndGoBack();
-              },
-            });
-          } else {
-            // AppUtilsが利用できない場合は警告を表示してから戻る
-            console.warn(
-              "[PROMPT] AppUtils.showSaveConfirmDialogが利用できません。変更を破棄して戻ります。"
-            );
-            if (
-              confirm(
-                "プロンプト内容に変更があります。保存せずに戻ると変更が失われます。\n\n変更を破棄して戻りますか？"
-              )
-            ) {
-              discardAndGoBack();
-            }
-          }
-        } else {
-          // 変更がない場合は直接戻る
-          console.log("[PROMPT] 変更なしで戻ります");
-          renderList();
-        }
-      } else {
-        // 編集画面でない場合は直接一覧画面を表示
-        renderList();
-      }
-    });
-  }
+  // ヘッダーボタンのクリック時の変更検知は common.js で統一して処理されるため、
+  // ここでは重複するイベントリスナーの追加は行わない
 
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
@@ -374,10 +329,13 @@ async function renderList() {
     window.PageStateManager.setActivePage("prompt");
   }
 
+  console.log("[renderList] データ読み込み前のprompts:", prompts);
   prompts = await load(PROMPT_KEY);
+  console.log("[renderList] データ読み込み後のprompts:", prompts);
 
-  // グローバルに最新のpromptsを設定
-  window.prompts = prompts;
+  // グローバルに最新のpromptsを設定（確実に更新）
+  window.prompts = [...prompts]; // 配列のコピーを作成して確実に更新
+  console.log("[renderList] window.promptsを更新:", window.prompts);
 
   // 既存のアーカイブデータから空のアイテムをクリーンアップ
   const hasEmptyItems = prompts.some((p) => p.archived && isEmptyPrompt(p));
@@ -573,6 +531,7 @@ async function renderList() {
     }
 
     // 通常のプロンプト一覧表示
+    console.log("[renderList] アクティブなプロンプト数:", activePrompts.length);
     activePrompts.forEach((p, i) => {
       // 元の配列でのインデックスを取得
       const originalIndex = prompts.findIndex((prompt) => prompt.id === p.id);
@@ -834,6 +793,12 @@ async function renderList() {
       // click row → run（元の配列でのインデックスを使用）
       li.addEventListener("click", () => renderRun(originalIndex));
 
+      console.log("[PROMPT DEBUG] リストアイテムをDOMに追加:", {
+        promptId: p.id,
+        promptTitle: p.title,
+        originalIndex: originalIndex,
+        element: li,
+      });
       list.appendChild(li);
     });
   }
@@ -896,24 +861,22 @@ async function renderList() {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: rgba(16, 185, 129, 0.1);
-        border-left: 4px solid #10b981;
-        color: #ffffff;
-        padding: 14px 22px;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        background: rgba(16, 185, 129, 0.95);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-size: 1rem;
+        gap: 8px;
+        font-size: 14px;
         font-weight: 500;
-        z-index: 10000;
         opacity: 0;
         transform: translateX(100%);
-        transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
-        max-width: 340px;
-        min-width: 180px;
-        word-break: break-all;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
       `;
 
       document.body.appendChild(fallbackToast);
@@ -921,6 +884,27 @@ async function renderList() {
         "[PROMPT DEBUG] フォールバックトースト要素を追加:",
         fallbackToast
       );
+
+      // アニメーションで表示
+      setTimeout(() => {
+        fallbackToast.style.opacity = "1";
+        fallbackToast.style.transform = "translateX(0)";
+        console.log(
+          "[PROMPT DEBUG] フォールバックトースト表示アニメーション開始"
+        );
+      }, 100);
+
+      // 自動非表示
+      setTimeout(() => {
+        fallbackToast.style.opacity = "0";
+        fallbackToast.style.transform = "translateX(100%)";
+        setTimeout(() => {
+          if (fallbackToast.parentNode) {
+            fallbackToast.remove();
+            console.log("[PROMPT DEBUG] フォールバックトースト削除完了");
+          }
+        }, 300);
+      }, 3000);
 
       // アニメーションで表示
       setTimeout(() => {
@@ -1861,17 +1845,76 @@ function renderEdit(idx, isNew = false) {
       showToast: !!(window.AppUtils && window.AppUtils.showToast),
     });
 
+    const message = `プロンプト ${fromPosition} を ${toPosition} 番目に移動しました`;
+
+    // まずAppUtils.showToastを試行
     if (window.AppUtils && window.AppUtils.showToast) {
-      const message = `プロンプト ${fromPosition} を ${toPosition} 番目に移動しました`;
-      console.log("[PROMPT] showToast呼び出し:", message);
-      window.AppUtils.showToast(message, "success");
-      console.log("[PROMPT] showToast呼び出し完了");
-    } else {
-      console.error("[PROMPT] AppUtils.showToastが利用できません:", {
-        AppUtils: !!window.AppUtils,
-        showToast: !!(window.AppUtils && window.AppUtils.showToast),
-      });
+      try {
+        console.log("[PROMPT] showToast呼び出し:", message);
+        window.AppUtils.showToast(message, "success");
+        console.log("[PROMPT] showToast呼び出し完了");
+        return;
+      } catch (error) {
+        console.error("[PROMPT] showToast呼び出しでエラー:", error);
+      }
     }
+
+    // AppUtilsが利用できない場合のフォールバック
+    console.warn(
+      "[PROMPT] AppUtils.showToastが利用できません。フォールバックを使用します"
+    );
+
+    // フォールバックトーストの作成
+    const fallbackToast = document.createElement("div");
+    fallbackToast.className = "fallback-toast";
+    fallbackToast.innerHTML = `
+      <span class="toast-icon" style="color: #10b981;">
+        <i class="bi bi-check-circle-fill"></i>
+      </span>
+      <span class="toast-text">${message}</span>
+    `;
+
+    // フォールバックトーストのスタイル設定
+    fallbackToast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(16, 185, 129, 0.95);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    `;
+
+    document.body.appendChild(fallbackToast);
+
+    // アニメーション表示
+    setTimeout(() => {
+      fallbackToast.style.opacity = "1";
+      fallbackToast.style.transform = "translateX(0)";
+    }, 100);
+
+    // 自動非表示
+    setTimeout(() => {
+      fallbackToast.style.opacity = "0";
+      fallbackToast.style.transform = "translateX(100%)";
+      setTimeout(() => {
+        if (fallbackToast.parentNode) {
+          fallbackToast.remove();
+        }
+      }, 300);
+    }, 3000);
   }
 }
 
@@ -3102,36 +3145,11 @@ function updateExportButtonState() {
   });
 }
 
-// ───────────────────────────────────────
-// 初期化処理
-// ───────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("PROMPTページ: DOMContentLoaded");
-
-  // フッターボタンのイベントリスナーを設定
-  const archiveToggleBtn = document.getElementById("btn-archive-toggle");
-  if (archiveToggleBtn) {
-    console.log("初期化: アーカイブトグルボタンを発見しました");
-    archiveToggleBtn.addEventListener("click", () =>
-      renderArchiveNav("prompt")
-    );
-  } else {
-    console.error("初期化: アーカイブトグルボタンが見つかりません");
-  }
-
-  const exportBtn = document.querySelector(".encrypt-btn");
-  if (exportBtn) {
-    console.log("初期化: エクスポートボタンを発見しました");
-    exportBtn.addEventListener("click", exportAllPrompts);
-  } else {
-    console.error("初期化: エクスポートボタンが見つかりません");
-  }
-
-  // .memo-content要素の確認
-  const memoContent = document.querySelector(".memo-content");
-  if (memoContent) {
-    console.log("初期化: .memo-content要素を発見しました");
-  } else {
-    console.error("初期化: .memo-content要素が見つかりません");
-  }
-});
+// グローバルに公開してヘッダーナビから呼び出せるようにする
+window.renderList = renderList;
+window.checkForUnsavedChanges = checkForUnsavedChanges;
+window.saveAndGoBack = saveAndGoBack;
+window.discardAndGoBack = discardAndGoBack;
+window.prompts = prompts;
+window.save = save;
+window.getCurrentPromptIndex = getCurrentPromptIndex;

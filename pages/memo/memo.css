@@ -68,7 +68,7 @@ body {
 .memo-content.show {
   opacity: 1;
   transform: translateY(0);
-  margin: 16px 16px 16px 16px;
+  margin: 16px 16px 0px 16px;
 }
 /* アニメーションを発火させるためのクラス */
 .memo-content.animate {

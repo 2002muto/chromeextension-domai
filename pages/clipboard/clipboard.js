@@ -114,7 +114,13 @@ async function handleClipDrop(e) {
     );
   }
 
+  console.log("[CLIPBOARD D&D] 保存前のclips配列:", clips);
   await saveStorage(CLIP_KEY, clips);
+  console.log("[CLIPBOARD D&D] 保存完了");
+
+  // グローバルに最新のclipsを設定
+  window.clips = clips;
+  console.log("[CLIPBOARD D&D] window.clipsを更新:", window.clips);
 
   // ドラッグ＆ドロップ成功メッセージを表示
   console.log("[CLIPBOARD D&D] showDragDropSuccessMessage呼び出し前:", {
@@ -125,7 +131,21 @@ async function handleClipDrop(e) {
   });
   showDragDropSuccessMessage(dragClipIndex + 1, actualToIndex + 1);
 
-  renderClipboardView();
+  console.log("[CLIPBOARD D&D] renderClipboardView()呼び出し前");
+  await renderClipboardView();
+  console.log("[CLIPBOARD D&D] renderClipboardView()完了");
+
+  // ドラッグ＆ドロップ後の再初期化処理
+  console.log("[CLIPBOARD D&D] 再初期化処理開始");
+
+  // クリップデータを再読み込み
+  clips = await loadStorage(CLIP_KEY);
+  window.clips = clips;
+  console.log("[CLIPBOARD D&D] データ再読み込み完了:", clips);
+
+  // 一覧画面を再表示
+  await renderClipboardView();
+  console.log("[CLIPBOARD D&D] 再初期化処理完了");
 }
 function handleClipDragEnd() {
   document
@@ -1030,17 +1050,76 @@ function showDragDropSuccessMessage(fromPosition, toPosition) {
     showToast: !!(window.AppUtils && window.AppUtils.showToast),
   });
 
+  const message = `クリップ ${fromPosition} を ${toPosition} 番目に移動しました`;
+
+  // まずAppUtils.showToastを試行
   if (window.AppUtils && window.AppUtils.showToast) {
-    const message = `クリップ ${fromPosition} を ${toPosition} 番目に移動しました`;
-    console.log("[CLIPBOARD] showToast呼び出し:", message);
-    window.AppUtils.showToast(message, "success");
-    console.log("[CLIPBOARD] showToast呼び出し完了");
-  } else {
-    console.error("[CLIPBOARD] AppUtils.showToastが利用できません:", {
-      AppUtils: !!window.AppUtils,
-      showToast: !!(window.AppUtils && window.AppUtils.showToast),
-    });
+    try {
+      console.log("[CLIPBOARD] showToast呼び出し:", message);
+      window.AppUtils.showToast(message, "success");
+      console.log("[CLIPBOARD] showToast呼び出し完了");
+      return;
+    } catch (error) {
+      console.error("[CLIPBOARD] showToast呼び出しでエラー:", error);
+    }
   }
+
+  // AppUtilsが利用できない場合のフォールバック
+  console.warn(
+    "[CLIPBOARD] AppUtils.showToastが利用できません。フォールバックを使用します"
+  );
+
+  // フォールバックトーストの作成
+  const fallbackToast = document.createElement("div");
+  fallbackToast.className = "fallback-toast";
+  fallbackToast.innerHTML = `
+    <span class="toast-icon" style="color: #10b981;">
+      <i class="bi bi-check-circle-fill"></i>
+    </span>
+    <span class="toast-text">${message}</span>
+  `;
+
+  // フォールバックトーストのスタイル設定
+  fallbackToast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(16, 185, 129, 0.95);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  `;
+
+  document.body.appendChild(fallbackToast);
+
+  // アニメーション表示
+  setTimeout(() => {
+    fallbackToast.style.opacity = "1";
+    fallbackToast.style.transform = "translateX(0)";
+  }, 100);
+
+  // 自動非表示
+  setTimeout(() => {
+    fallbackToast.style.opacity = "0";
+    fallbackToast.style.transform = "translateX(100%)";
+    setTimeout(() => {
+      if (fallbackToast.parentNode) {
+        fallbackToast.remove();
+      }
+    }, 300);
+  }, 3000);
 }
 
 /*━━━━━━━━━━ 空のクリップ判定機能 ━━━━━━━━━━*/
@@ -1222,15 +1301,32 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
+  console.log("[CLIPBOARD] showExportSuccessMessage呼び出し:", {
+    fileName: fileName,
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
+
   if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[CLIPBOARD] エクスポート成功トーストを表示");
     window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  } else {
+    console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
   }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
+  console.log("[CLIPBOARD] showExportErrorMessage呼び出し:", {
+    AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
+  });
+
   if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[CLIPBOARD] エクスポートエラートーストを表示");
     window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  } else {
+    console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
   }
 }
 

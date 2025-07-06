@@ -15,6 +15,11 @@
   overflow: hidden; /* memo-content自体のスクロールを無効 */
 }
 
+/* アニメーションを発火させるためのクラス（MEMO・PROMPTと統一） */
+.memo-content.animate {
+  animation: slideUpFade 0.4s ease-out both;
+}
+
 /* ─── clipboard ─── */
 
 .clipboard-list {
@@ -327,9 +332,48 @@
   visibility: visible;
 }
 
-/* フッターボタンのホバーテキスト表示（MEMOページと統一） */
+/* ─── フッター基本設定（MEMOページと完全統一） ─── */
+.memo-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0px 16px 16px 16px;
+  display: flex;
+  gap: 12px;
+  background: rgba(49, 69, 89, 0.95); /* 背景を半透明に */
+  backdrop-filter: blur(10px); /* ぼかし効果 */
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: flex-start;
+  z-index: 1000; /* 他の要素より前面に */
+}
+
+/* フッターのnav-btnをヘッダーと同じスタイルに */
 .memo-footer .nav-btn {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #fff;
+  border-radius: 50%; /* 円形 */
+  cursor: pointer;
+  background-color: #555555; /* 未選択時 */
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-decoration: none;
+  font-size: 14px;
+  flex: none;
+  overflow: hidden;
+  transform-origin: center center;
+  border: none;
+}
+
+.memo-footer .nav-btn i {
+  font-size: 14px;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .memo-footer .nav-btn .nav-text {
@@ -904,6 +948,18 @@
   to {
     width: 100px;
     border-radius: 18px;
+  }
+}
+
+/* ─── カード背景ふわっアニメ（MEMO・PROMPTと統一） ─── */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
