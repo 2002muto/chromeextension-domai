@@ -2943,15 +2943,74 @@ function generateFakeHash(data, targetLength) {
 
 // エクスポート成功メッセージ
 function showExportSuccessMessage(fileName) {
+  console.log("[EXPORT] showExportSuccessMessage", {
+    fileName,
+    hasAppUtils: !!window.AppUtils,
+    hasShowToast:
+      window.AppUtils && typeof window.AppUtils.showToast === "function",
+  });
   if (window.AppUtils && window.AppUtils.showToast) {
     window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  } else {
+    // Fallback toast if AppUtils is unavailable
+    const toast = document.createElement("div");
+    toast.textContent = `エクスポート完了: ${fileName}`;
+    Object.assign(toast.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      background: "#333",
+      color: "#fff",
+      padding: "8px 12px",
+      borderRadius: "4px",
+      zIndex: 10000,
+      opacity: 0,
+      transition: "opacity 0.3s",
+    });
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+    });
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 300);
+    }, 2000);
   }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
+  console.log("[EXPORT] showExportErrorMessage", {
+    hasAppUtils: !!window.AppUtils,
+    hasShowToast:
+      window.AppUtils && typeof window.AppUtils.showToast === "function",
+  });
   if (window.AppUtils && window.AppUtils.showToast) {
     window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  } else {
+    // Fallback toast if AppUtils is unavailable
+    const toast = document.createElement("div");
+    toast.textContent = "エクスポートに失敗しました";
+    Object.assign(toast.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      background: "#a00",
+      color: "#fff",
+      padding: "8px 12px",
+      borderRadius: "4px",
+      zIndex: 10000,
+      opacity: 0,
+      transition: "opacity 0.3s",
+    });
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+    });
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 300);
+    }, 2000);
   }
 }
 
