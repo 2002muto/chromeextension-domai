@@ -680,9 +680,21 @@ async function renderInputForm(id) {
   console.log("Quill editor auto-resize enabled");
 
   // クリックで任意の行に自動入力・カーソル移動（Quill.js対応）
+  // --------------------------------------------------------------
+  // Quill.js editor: allow clicking anywhere to auto-insert lines
+  // and move the cursor to that position. Additional debug logs are
+  // provided to help trace unexpected behaviors.
+  // --------------------------------------------------------------
   quillEditor.addEventListener("mousedown", function (e) {
-    // Quill.jsの内部要素をクリックした場合は標準動作
+    console.log("[Quill] mousedown", {
+      x: e.clientX,
+      y: e.clientY,
+      target: e.target,
+    });
+
+    // If clicking inside the editor or toolbar, keep default behavior
     if (e.target.closest(".ql-editor") || e.target.closest(".ql-toolbar")) {
+      console.log("[Quill] default behavior - clicked inside editor/toolbar");
       return;
     }
 
@@ -700,24 +712,32 @@ async function renderInputForm(id) {
 
     const text = quill.getText();
     const lines = text.split("\n");
+    console.log("[Quill] calculated line", {
+      clickedLine,
+      totalLines: lines.length,
+    });
     if (clickedLine > lines.length - 1) {
-      // 不足分の改行を挿入
+      // If clicked below the existing text, insert missing newlines
       const addLines = clickedLine - (lines.length - 1);
       const currentLength = quill.getLength();
+      console.log(`[Quill] insert ${addLines} blank lines at`, currentLength - 1);
       quill.insertText(currentLength - 1, "\n".repeat(addLines));
 
-      // 高さ調整
+      // Adjust height and move cursor to the clicked line
       setTimeout(() => {
         autoResizeQuillEditor();
-        // カーソルをクリック行の先頭に移動
         let pos = 0;
-        for (let i = 0; i < clickedLine; i++)
+        for (let i = 0; i < clickedLine; i++) {
           pos += (lines[i] ? lines[i].length : 0) + 1;
+        }
+        console.log(`[Quill] move cursor to line ${clickedLine} (pos=${pos})`);
         quill.setSelection(pos, 0);
         quill.focus();
       }, 0);
       e.preventDefault();
       e.stopPropagation();
+    } else {
+      console.log("[Quill] clicked existing line - no extra lines inserted");
     }
     // 既存行数内なら標準動作
   });
