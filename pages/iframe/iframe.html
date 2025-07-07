@@ -1,21 +1,103 @@
 <!-- File: pages/iframe/iframe.html -->
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google検索</title>
-  <link rel="stylesheet" href="../../vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="iframe.css">
-</head>
-<body>
-  <div class="container mt-2">
-    <div class="input-group mb-2">
-      <input id="q" class="form-control" placeholder="検索語">
-      <button id="go" class="btn btn-primary">検索</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔥 無理矢理 iframe検索・ログイン</title>
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap-icons/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" href="iframe.css" />
+  </head>
+  <body>
+    <div class="container-fluid p-2">
+      <!-- 検索・URL入力エリア -->
+      <div class="input-group mb-2">
+        <input
+          id="urlInput"
+          class="form-control"
+          placeholder="🔍 検索キーワード または 📋 URL（ChatGPT、Figma、Gemini等のログイン済みURL対応）"
+          autocomplete="off"
+        />
+        <button id="goBtn" class="btn btn-primary">
+          <i class="bi bi-search"></i> 実行
+        </button>
+        <button id="clearBtn" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle"></i>
+        </button>
+      </div>
+
+      <!-- ログイン状態維持の説明 -->
+      <div
+        class="alert alert-info alert-sm p-2 mb-2"
+        id="loginInfo"
+        style="display: none"
+      >
+        <i class="bi bi-info-circle"></i>
+        <strong>ログイン状態維持:</strong>
+        ChatGPT、Figma、Gemini等のログイン済みURLを貼り付けると、ブラウザのログイン状態を共有してアクセスできます。
+      </div>
+
+      <!-- 人気サイトのクイックアクセス -->
+      <div class="quick-access mb-2">
+        <div class="btn-group btn-group-sm" role="group">
+          <button
+            type="button"
+            class="btn btn-outline-light quick-btn"
+            data-url="https://chatgpt.com"
+          >
+            <i class="bi bi-chat-dots"></i> ChatGPT
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-light quick-btn"
+            data-url="https://figma.com"
+          >
+            <i class="bi bi-palette"></i> Figma
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-light quick-btn"
+            data-url="https://gemini.google.com"
+          >
+            <i class="bi bi-stars"></i> Gemini
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-light quick-btn"
+            data-url="https://github.com"
+          >
+            <i class="bi bi-github"></i> GitHub
+          </button>
+        </div>
+      </div>
+
+      <!-- iframe表示エリア -->
+      <div class="iframe-container">
+        <iframe
+          id="mainFrame"
+          class="w-100 border-0"
+          style="height: calc(100vh - 140px)"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
+          allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
+          referrerpolicy="no-referrer-when-downgrade"
+          loading="lazy"
+        ></iframe>
+      </div>
+
+      <!-- ステータス表示 -->
+      <div class="status-bar mt-1 p-1 text-muted small" id="statusBar">
+        <i class="bi bi-info-circle"></i> 準備完了 -
+        URL入力またはキーワード検索してください
+      </div>
     </div>
-    <iframe id="view" class="w-100" style="height: calc(100vh - 80px); border: none;"></iframe>
-  </div>
-  <script type="module" src="iframe.js"></script>
-</body>
+
+    <script type="module" src="iframe.js"></script>
+  </body>
 </html>
