@@ -490,6 +490,9 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
     onCancel,
   } = options;
 
+  // 呼び出しオプションをデバッグ出力
+  console.log("[UTILS] showConfirmDialog invoked", options);
+
   // 既存のダイアログがあれば削除
   const existingDialog = document.querySelector(".confirm-dialog");
   if (existingDialog) {
@@ -1234,15 +1237,16 @@ console.log("[UTILS] AppUtils loaded successfully");
 
 // グローバルに公開
 window.AppUtils = {
-  showConfirmDialog,
-  showSaveConfirmDialog,
+  // 既に定義されている場合は上書きしない
+  showConfirmDialog: window.AppUtils.showConfirmDialog || fallbackShowConfirmDialog,
+  showSaveConfirmDialog: window.AppUtils.showSaveConfirmDialog,
   showToast,
   animateArchiveItem,
   animateRestoreItem,
 };
 
 // ダミー実装: showConfirmDialog
-function showConfirmDialog(options = {}) {
+function fallbackShowConfirmDialog(options = {}) {
   // 必要に応じてカスタムダイアログを実装
   alert(options.message || "確認ダイアログ");
   if (typeof options.onConfirm === "function") options.onConfirm();
