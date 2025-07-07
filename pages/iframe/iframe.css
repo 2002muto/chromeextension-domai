@@ -5,27 +5,27 @@
 
 /* ─── ベース設定 ─── */
 body {
+  background-color: #314559;
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  color: #333;
+  color: #e2e8f0;
+  overflow-x: hidden;
 }
 
 /* ─── ヘッダー（非表示） ─── */
 /* .iframe-header { background: #314559 !important; } */
 
-/* ─── メインコンテンツ領域 ─── */
-.memo-content {
+/* ─── メインコンテンツエリア ─── */
+.iframe-content {
+  padding: 16px;
+  padding-bottom: 80px; /* フッター分の余白 */
+  min-height: calc(100vh - 80px); /* ヘッダー分を引く */
   display: flex;
   flex-direction: column;
-  padding: 12px; /* 最小サイズのパディングを適用 */
-  box-sizing: border-box;
-  flex: 1;
-  min-height: 0;
-  position: relative; /* 追加：回転枠線の基準位置 */
+  gap: 12px;
 }
 
 /* ─── 外枠だけのカラフルボーダー ─── */
@@ -87,33 +87,28 @@ body {
 }
 
 /* ─── 検索・URL入力エリア ─── */
-.container-fluid {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  margin: 8px;
-  padding: 16px !important;
-}
-
-/* 入力フォーム */
 .input-group {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #667eea;
   border-radius: 8px;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 #urlInput {
   border: none;
   padding: 12px 16px;
   font-size: 14px;
+  color: #333;
+  outline: none;
   background: #fff;
   transition: all 0.3s ease;
 }
 
 #urlInput:focus {
-  box-shadow: none;
-  background: #f8f9fa;
+  background: #ffffff;
+  border-color: #764ba2;
+  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2);
 }
 
 #urlInput::placeholder {
@@ -122,30 +117,35 @@ body {
 }
 
 #goBtn {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   border: none;
+  border-radius: 8px;
   padding: 12px 20px;
+  color: white;
   font-weight: 600;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 #goBtn:hover {
-  background: linear-gradient(45deg, #5a6fd8, #6a4190);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 #clearBtn {
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
   padding: 12px 16px;
-  background: #f8f9fa;
-  color: #6c757d;
+  color: #e2e8f0;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 #clearBtn:hover {
-  background: #e9ecef;
-  color: #495057;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* ─── ログイン状態維持の説明 ─── */
@@ -168,7 +168,7 @@ body {
 
 /* ─── クイックアクセスボタン ─── */
 .quick-access {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 12px;
   backdrop-filter: blur(5px);
@@ -186,11 +186,16 @@ body {
   transition: all 0.3s ease;
   border-width: 2px;
   font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
 }
 
 .quick-access .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .quick-access .btn-outline-primary {
@@ -201,17 +206,6 @@ body {
 .quick-access .btn-outline-primary:hover {
   background: #667eea;
   border-color: #667eea;
-  color: white;
-}
-
-.quick-access .btn-outline-success {
-  color: #28a745;
-  border-color: #28a745;
-}
-
-.quick-access .btn-outline-success:hover {
-  background: #28a745;
-  border-color: #28a745;
   color: white;
 }
 
@@ -240,25 +234,54 @@ body {
 /* カテゴリラベル */
 .quick-access small {
   font-weight: 600;
-  color: #495057;
+  color: #b0b0b0;
   margin-bottom: 4px;
   display: block;
 }
 
 /* ─── iframe表示エリア ─── */
 .iframe-container {
-  background: #fff;
-  border-radius: 8px;
+  background: #ffffff;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-bottom: 8px;
+  position: relative;
+  flex: 1;
+}
+
+.iframe-container::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+  background-size: 400% 400%;
+  animation: gradientShift 4s ease infinite;
+  border-radius: 14px;
+  z-index: -1;
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .iframe-main {
-  border: none;
   width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+  border-radius: 12px;
+  display: block;
   min-height: 400px;
-  background: #fff;
 }
 
 /* ─── ステータス表示 ─── */
@@ -276,42 +299,28 @@ body {
   margin-right: 6px;
 }
 
-/* ─── レスポンシブ対応 ─── */
-@media (max-width: 768px) {
-  .container-fluid {
-    margin: 4px;
-    padding: 12px !important;
-  }
-
-  .quick-access .btn {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-
-  .quick-access .btn-group {
-    flex-wrap: wrap;
-  }
-
-  .quick-access .btn-group .btn {
-    flex: 1;
-    min-width: 80px;
-  }
+/* ─── 検索履歴（footerと同じ配置） ─── */
+.iframe-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 8px 16px 16px 16px;
+  background: rgba(49, 69, 89, 0.95);
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  z-index: 1000;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* ─── アニメーション ─── */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.container-fluid {
-  animation: fadeIn 0.5s ease-out;
+/* 検索履歴のスタイル */
+.iframe-footer .search-history {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  color: #b0b0b0;
 }
 
 /* ─── ローディング状態 ─── */
@@ -330,7 +339,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.2),
     transparent
   );
   animation: loading 1.5s infinite;
@@ -347,14 +356,14 @@ body {
 
 /* ─── エラー状態 ─── */
 .error {
-  border-color: #dc3545 !important;
-  background-color: #f8d7da !important;
+  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* ─── 成功状態 ─── */
 .success {
-  border-color: #28a745 !important;
-  background-color: #d4edda !important;
+  border: 2px solid #22c55e;
+  background: rgba(34, 197, 94, 0.1);
 }
 
 /* ─── フォーカス状態の強化 ─── */
@@ -377,6 +386,7 @@ body {
   font-size: 13px;
   margin-bottom: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  color: #333;
 }
 
 .favicon-wrapper {
@@ -428,4 +438,46 @@ body {
   height: 24px;
   border-radius: 4px;
   object-fit: cover;
+}
+
+/* ─── レスポンシブ対応 ─── */
+@media (max-width: 768px) {
+  .iframe-content {
+    padding: 12px;
+    padding-bottom: 80px;
+  }
+
+  .quick-access .btn {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .quick-access .btn-group {
+    flex-wrap: wrap;
+  }
+
+  .quick-access .btn-group .btn {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  #urlInput {
+    font-size: 16px; /* iOS Safari対応 */
+  }
+}
+
+/* ─── アニメーション ─── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iframe-content {
+  animation: fadeInUp 0.6s ease-out;
 }

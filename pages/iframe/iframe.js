@@ -99,15 +99,29 @@ let currentUrl = "";
 
 // ステータス更新
 function updateStatus(message, type = "info") {
-  if (!window.statusBar) return; // statusBarがなければ何もしない
   console.log(`[iframe] ステータス更新: ${message}`);
+
+  // ステータス表示用の要素を作成または取得
+  let statusElement = document.getElementById("statusBar");
+  if (!statusElement) {
+    statusElement = document.createElement("div");
+    statusElement.id = "statusBar";
+    statusElement.className = "alert alert-secondary mb-3";
+
+    // iframe-contentの最初に挿入
+    const iframeContent = document.querySelector(".iframe-content");
+    if (iframeContent) {
+      iframeContent.insertBefore(statusElement, iframeContent.firstChild);
+    }
+  }
+
   const icon =
     type === "success"
       ? "bi-check-circle"
       : type === "error"
       ? "bi-exclamation-triangle"
       : "bi-info-circle";
-  statusBar.innerHTML = `<i class="bi ${icon}"></i> ${message}`;
+  statusElement.innerHTML = `<i class="bi ${icon}"></i> ${message}`;
 }
 
 // URLかどうかを判定
