@@ -373,12 +373,26 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("[BG] Extension startup - enabling iframe rules");
   toggleIframeRules(true);
   initializeDynamicRules();
+  // Ensure side panel opens when the action icon is clicked
+  try {
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+    console.log("[BG] Panel behavior set: open on action click");
+  } catch (err) {
+    console.warn("[BG] Failed to set panel behavior", err);
+  }
 });
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("[BG] Extension installed - enabling iframe rules");
   toggleIframeRules(true);
   initializeDynamicRules();
+  // Match startup behavior for the action click to open the side panel
+  try {
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+    console.log("[BG] Panel behavior set on install");
+  } catch (err) {
+    console.warn("[BG] Failed to set panel behavior on install", err);
+  }
 });
 
 // サービスワーカー起動時に既存ルールを確認
@@ -595,6 +609,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // 拡張機能インストール時の処理
 chrome.runtime.onInstalled.addListener(() => {
   console.log("[BG] 🔥 拡張機能インストール完了");
+
+  // Ensure action click opens the side panel
+  try {
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+    console.log("[BG] Panel behavior set on install (force section)");
+  } catch (err) {
+    console.warn("[BG] Failed to set panel behavior in force section", err);
+  }
 
   // 初期化処理
   setTimeout(() => {
