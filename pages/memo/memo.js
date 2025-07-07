@@ -2239,3 +2239,36 @@ function updateExportButtonState() {
     });
   }
 }
+
+// Function to save the current state of the memo page
+function saveMemoState() {
+  const memoContent = document.querySelector(".memo-content");
+  const state = {
+    archiveType: archiveType,
+    currentEditingMemoId: currentEditingMemoId,
+    isEditMode: memoContent && memoContent.classList.contains("edit-mode"),
+  };
+  chrome.storage.local.set({ memoState: state }, () => {
+    console.log("Memo state saved:", state);
+  });
+}
+
+// Function to restore the memo page state
+function restoreMemoState() {
+  chrome.storage.local.get(["memoState"], (result) => {
+    const state = result.memoState || {};
+    archiveType = state.archiveType || null;
+    currentEditingMemoId = state.currentEditingMemoId || null;
+    const memoContent = document.querySelector(".memo-content");
+    if (memoContent && state.isEditMode) {
+      memoContent.classList.add("edit-mode");
+    } else if (memoContent) {
+      memoContent.classList.remove("edit-mode");
+    }
+    console.log("Memo state restored:", state);
+  });
+}
+
+// Add event listeners to save and restore state
+window.addEventListener("beforeunload", saveMemoState);
+document.addEventListener("DOMContentLoaded", restoreMemoState);
