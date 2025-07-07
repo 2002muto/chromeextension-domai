@@ -245,15 +245,19 @@ function createMaximalRule(ruleId, domain) {
 }
 
 // 0) 拡張機能アイコンクリック時のサイドパネル制御
-chrome.action.onClicked.addListener(async (tab) => {
-  console.log(`[BG] 🔥 Extension icon clicked on tab ${tab.id}`);
+chrome.action.onClicked.addListener((tab) => {
+  openSidePanel(tab);
+});
 
+// サイドパネルを開くためのヘルパー関数
+async function openSidePanel(tab) {
+  console.log(`[BG] 🔥 Extension icon clicked on tab ${tab.id}`);
   try {
-    // 現在のサイドパネル状態を確認
+    // 1. 現在のサイドパネル状態を取得
     const sidePanel = await chrome.sidePanel.getOptions({ tabId: tab.id });
     console.log(`[BG] 🔥 現在のサイドパネル状態:`, sidePanel);
 
-    // サイドパネルが開いていない場合は開く
+    // 2. サイドパネルが無効なら有効化
     if (!sidePanel.enabled) {
       console.log(`[BG] 🔥 サイドパネルを有効化して開く`);
       await chrome.sidePanel.setOptions({
@@ -263,13 +267,13 @@ chrome.action.onClicked.addListener(async (tab) => {
       });
     }
 
-    // サイドパネルを開く
+    // 3. サイドパネルを開く
     await chrome.sidePanel.open({ tabId: tab.id });
     console.log(`[BG] 🔥 Side panel opened for tab ${tab.id}`);
   } catch (error) {
     console.error("[BG] 🔥 Failed to open side panel:", error);
 
-    // エラー時は強制的にサイドパネルを開く
+    // 4. エラー時は強制的に開く
     try {
       console.log(`[BG] 🔥 強制サイドパネル開起動`);
       await chrome.sidePanel.setOptions({
@@ -283,7 +287,7 @@ chrome.action.onClicked.addListener(async (tab) => {
       console.error("[BG] 🔥 強制サイドパネル開起動も失敗:", forceError);
     }
   }
-});
+}
 
 // 1) タブ切り替え（アクティブタブ変更）を監視
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
