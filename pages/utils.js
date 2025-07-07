@@ -784,142 +784,49 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
     // 選択されたアニメーションクラスを追加
     element.classList.add(animationClass);
 
-    // アニメーション用スタイルを動的に追加（初回のみ）
-    if (!document.querySelector("#archive-animation-styles")) {
-      const styles = document.createElement("style");
-      styles.id = "archive-animation-styles";
-      styles.textContent = `
-        .archiving-left {
-          animation: archiveSlideOutLeft 0.6s ease-in-out forwards;
-          pointer-events: none; /* クリック無効化 */
+    // アニメーション用スタイルを必ず追加（初回のみ）
+    let styleTag = document.getElementById("archive-animation-styles");
+    if (!styleTag) {
+      styleTag = document.createElement("style");
+      styleTag.id = "archive-animation-styles";
+      styleTag.textContent = `
+        .archive-item.archiving-left {
+          animation: archiveSlideOutLeft 0.6s ease-in-out forwards !important;
+          pointer-events: none !important;
+          transition: none !important;
         }
-
-        .archiving-right {
-          animation: archiveSlideOutRight 0.6s ease-in-out forwards;
-          pointer-events: none; /* クリック無効化 */
+        .archive-item.archiving-right {
+          animation: archiveSlideOutRight 0.6s ease-in-out forwards !important;
+          pointer-events: none !important;
+          transition: none !important;
         }
-
-        .archiving-down {
-          animation: archiveFallDown 0.8s ease-in forwards;
-          pointer-events: none; /* クリック無効化 */
+        .archive-item.archiving-down {
+          animation: archiveFallDown 0.8s ease-in forwards !important;
+          pointer-events: none !important;
+          transition: none !important;
         }
-
         @keyframes archiveSlideOutLeft {
-          0% {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
-          30% {
-            opacity: 0.8;
-            transform: translateX(-10px) scale(0.98);
-          }
-          60% {
-            opacity: 0.4;
-            transform: translateX(-30px) scale(0.95) rotateZ(-2deg);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(-100px) scale(0.8) rotateZ(-5deg);
-            height: 0;
-            margin: 0;
-            padding: 0;
-          }
+          0% { opacity: 1; transform: translateX(0) scale(1); }
+          30% { opacity: 0.8; transform: translateX(-10px) scale(0.98); }
+          60% { opacity: 0.4; transform: translateX(-30px) scale(0.95) rotateZ(-2deg); }
+          100% { opacity: 0; transform: translateX(-100px) scale(0.8) rotateZ(-5deg); height: 0; margin: 0; padding: 0; }
         }
-
         @keyframes archiveSlideOutRight {
-          0% {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
-          30% {
-            opacity: 0.8;
-            transform: translateX(10px) scale(0.98);
-          }
-          60% {
-            opacity: 0.4;
-            transform: translateX(30px) scale(0.95) rotateZ(2deg);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(100px) scale(0.8) rotateZ(5deg);
-            height: 0;
-            margin: 0;
-            padding: 0;
-          }
+          0% { opacity: 1; transform: translateX(0) scale(1); }
+          30% { opacity: 0.8; transform: translateX(10px) scale(0.98); }
+          60% { opacity: 0.4; transform: translateX(30px) scale(0.95) rotateZ(2deg); }
+          100% { opacity: 0; transform: translateX(100px) scale(0.8) rotateZ(5deg); height: 0; margin: 0; padding: 0; }
         }
-
         @keyframes archiveFallDown {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1) rotateZ(0deg);
-          }
-          20% {
-            opacity: 0.9;
-            transform: translateY(10px) scale(0.98) rotateZ(2deg);
-          }
-          40% {
-            opacity: 0.7;
-            transform: translateY(30px) scale(0.95) rotateZ(-3deg);
-          }
-          60% {
-            opacity: 0.5;
-            transform: translateY(60px) scale(0.9) rotateZ(5deg);
-          }
-          80% {
-            opacity: 0.2;
-            transform: translateY(100px) scale(0.8) rotateZ(-8deg);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(150px) scale(0.6) rotateZ(15deg);
-            height: 0;
-            margin: 0;
-            padding: 0;
-          }
-        }
-
-        /* アーカイブ成功トースト */
-        .archive-toast {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #10b981;
-          color: white;
-          padding: 12px 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-          z-index: 10000;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 0.9rem;
-          font-weight: 500;
-          animation: toastSlideIn 0.3s ease-out;
-        }
-
-        .archive-toast.fade-out {
-          animation: toastFadeOut 0.3s ease-in forwards;
-        }
-
-        @keyframes toastSlideIn {
-          from {
-            opacity: 0;
-            transform: translateX(100px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes toastFadeOut {
-          to {
-            opacity: 0;
-            transform: translateX(100px);
-          }
+          0% { opacity: 1; transform: translateY(0) scale(1) rotateZ(0deg); }
+          20% { opacity: 0.9; transform: translateY(10px) scale(0.98) rotateZ(2deg); }
+          40% { opacity: 0.7; transform: translateY(30px) scale(0.95) rotateZ(-3deg); }
+          60% { opacity: 0.5; transform: translateY(60px) scale(0.9) rotateZ(5deg); }
+          80% { opacity: 0.2; transform: translateY(100px) scale(0.8) rotateZ(-8deg); }
+          100% { opacity: 0; transform: translateY(150px) scale(0.6) rotateZ(15deg); height: 0; margin: 0; padding: 0; }
         }
       `;
-      document.head.appendChild(styles);
+      document.head.appendChild(styleTag);
     }
 
     // animationend イベントリスナーを使用してより確実にアニメーション完了を検知

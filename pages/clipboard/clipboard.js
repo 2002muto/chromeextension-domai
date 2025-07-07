@@ -521,15 +521,18 @@ async function renderClipboardView() {
       // 現在のテキストエリアの値を取得
       const currentText = ta.value;
 
-      // 空のクリップでもアーカイブを実行（アーカイブ画面で非表示にする）
-      console.log(
-        "[CLIPBOARD] クリップをアーカイブします:",
-        currentText.substring(0, 50) + "..."
-      );
-
       // アニメーション付きでアーカイブ
       if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+        console.log("✅ [DEBUG] AppUtils.animateArchiveItem が利用可能");
+        console.log("✅ [DEBUG] 対象要素:", li);
+        console.log("✅ [DEBUG] 要素のクラス:", li.className);
+        console.log("✅ [DEBUG] 要素のスタイル:", li.style);
+
+        li.classList.add("archive-item");
+        console.log("✅ [DEBUG] archive-itemクラスを追加:", li.className);
+
         await window.AppUtils.animateArchiveItem(li, async () => {
+          console.log("✅ [DEBUG] アニメーション完了、データ更新開始");
           // アーカイブ処理
           const archivedClips = await loadStorage(CLIP_ARCH_KEY);
           archivedClips.push(currentText);
@@ -541,40 +544,34 @@ async function renderClipboardView() {
 
           // グローバルに最新のclipsを設定
           window.clips = clips;
+
+          // トースト通知
+          if (window.AppUtils && window.AppUtils.showArchiveToast) {
+            window.AppUtils.showArchiveToast();
+          }
+
+          // リスト再描画
+          renderClipboardView();
         });
       } else {
-        // AppUtilsが利用できない場合の代替処理
+        console.log("❌ [DEBUG] AppUtils.animateArchiveItem が利用できません");
+        console.log("❌ [DEBUG] window.AppUtils:", window.AppUtils);
         console.log(
-          "[CLIPBOARD] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
+          "❌ [DEBUG] window.AppUtils?.animateArchiveItem:",
+          window.AppUtils?.animateArchiveItem
         );
-
-        // シンプルなアニメーション
-        li.style.transition = "all 0.5s ease-in-out";
-        li.style.transform = "translateY(-20px) scale(0.95)";
-        li.style.opacity = "0";
-
-        await new Promise((resolve) => {
-          setTimeout(async () => {
-            // アーカイブ処理
-            const archivedClips = await loadStorage(CLIP_ARCH_KEY);
-            archivedClips.push(currentText);
-            await saveStorage(CLIP_ARCH_KEY, archivedClips);
-
-            // アクティブなクリップから削除
-            clips.splice(i, 1);
-            await saveStorage(CLIP_KEY, clips);
-
-            // グローバルに最新のclipsを設定
-            window.clips = clips;
-
-            console.log("[CLIPBOARD] 代替アーカイブアニメーション完了");
-            resolve();
-          }, 500);
-        });
+        // アニメーションなしでアーカイブ
+        const archivedClips = await loadStorage(CLIP_ARCH_KEY);
+        archivedClips.push(currentText);
+        await saveStorage(CLIP_ARCH_KEY, archivedClips);
+        clips.splice(i, 1);
+        await saveStorage(CLIP_KEY, clips);
+        window.clips = clips;
+        if (window.AppUtils && window.AppUtils.showArchiveToast) {
+          window.AppUtils.showArchiveToast();
+        }
+        renderClipboardView();
       }
-
-      // アーカイブ処理後は常に画面を再描画
-      renderClipboardView();
     });
 
     // アクションボタン群を右側に追加
@@ -1340,3 +1337,46 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("初期化: .memo-content要素が見つかりません");
   }
 });
+
+// ───────────────────────────────────────
+// デバッグ・テスト用関数
+// ───────────────────────────────────────
+function testArchiveAnimation() {
+  console.log("=== アーカイブアニメーションテスト ===");
+
+  // 1. AppUtils確認
+  console.log("1. AppUtils確認:");
+  console.log("  - AppUtils存在:", !!window.AppUtils);
+  console.log(
+    "  - animateArchiveItem存在:",
+    !!(window.AppUtils && window.AppUtils.animateArchiveItem)
+  );
+
+  // 2. テスト要素作成
+  const testElement = document.createElement("div");
+  testElement.textContent = "テスト要素";
+  testElement.style.padding = "10px";
+  testElement.style.background = "#f0f0f0";
+  testElement.style.margin = "10px";
+  testElement.style.border = "1px solid #ccc";
+  testElement.classList.add("archive-item");
+  document.body.appendChild(testElement);
+
+  console.log("2. テスト要素作成:", testElement);
+  console.log("  - クラス:", testElement.className);
+
+  // 3. アニメーションテスト
+  if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+    console.log("3. アニメーションテスト開始");
+    window.AppUtils.animateArchiveItem(testElement, async () => {
+      console.log("4. アニメーション完了");
+      testElement.remove();
+      console.log("5. テスト要素削除完了");
+    });
+  } else {
+    console.log("3. AppUtilsが利用できないため、テスト要素を削除");
+    testElement.remove();
+  }
+}
+
+// ブラウザコンソールで実行: testArchiveAnimation()

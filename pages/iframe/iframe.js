@@ -342,7 +342,8 @@ function addHistory(entry) {
   // すでに同じ内容があれば先頭に移動
   history = history.filter((h) => h !== entry);
   history.unshift(entry);
-  if (history.length > 10) history = history.slice(0, 10);
+  // 保存数制限を撤廃（無限保存）
+  // if (history.length > 10) history = history.slice(0, 10);
   saveHistory(history);
   renderHistory();
 }
@@ -376,66 +377,168 @@ function getGoogleSVG() {
 async function renderHistory() {
   const history = loadHistory();
   if (!searchHistoryEl) return;
+
   if (history.length === 0) {
-    searchHistoryEl.innerHTML =
-      '<span class="text-muted">検索履歴はありません</span>';
+    searchHistoryEl.innerHTML = `
+      <div class="history-container">
+        <span class="text-muted">検索履歴はありません</span>
+      </div>
+      <button class="new-search-btn" onclick="focusSearchInput()">
+        <i class="bi bi-plus-circle"></i> 新しい検索
+      </button>
+    `;
     return;
   }
-  searchHistoryEl.innerHTML =
-    '<div class="fw-bold mb-1"><i class="bi bi-clock-history"></i> 検索履歴</div>' +
-    '<div class="d-flex flex-row gap-2" id="favicon-row"></div>';
+
+  // 基本構造を作成
+  searchHistoryEl.innerHTML = `
+    <div class="history-container">
+      <div class="search-history">
+        <div class="history-header">
+          <i class="bi bi-clock-history"></i> 検索履歴
+        </div>
+        <div id="favicon-row"></div>
+      </div>
+    </div>
+    <button class="new-search-btn" onclick="focusSearchInput()">
+      <i class="bi bi-plus-circle"></i> 新しい検索
+    </button>
+  `;
+
   const row = document.getElementById("favicon-row");
-  for (let i = 0; i < history.length; i++) {
-    const h = history[i];
-    const wrapper = document.createElement("span");
-    wrapper.className = "favicon-wrapper";
-    wrapper.style.position = "relative";
-    // 削除ボタン
-    const removeBtn = document.createElement("span");
-    removeBtn.className = "favicon-remove";
-    removeBtn.textContent = "✖";
-    removeBtn.title = "この履歴を削除";
-    removeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      let newHistory = loadHistory();
-      newHistory.splice(i, 1);
-      saveHistory(newHistory);
-      renderHistory();
-    });
-    // ファビコン本体
-    const a = document.createElement("a");
-    a.href = "#";
-    a.className = "history-link";
-    a.setAttribute("data-idx", i);
-    a.style.display = "inline-block";
-    a.style.width = "24px";
-    a.style.height = "24px";
-    a.style.verticalAlign = "middle";
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      urlInput.value = history[i];
-      handleInput(history[i], true);
-    });
-    if (!/^https?:\/\//.test(h) && !h.startsWith("www.")) {
-      a.innerHTML = getGoogleSVG();
-    } else {
-      const domain = getDomain(h);
-      if (domain) {
-        fetchFaviconDataUrl(domain).then((dataUrl) => {
-          if (dataUrl) {
-            a.innerHTML = `<img src="${dataUrl}" alt="favicon" class="favicon-img">`;
-          } else {
-            a.innerHTML = getGoogleSVG();
-          }
-        });
-      } else {
-        a.innerHTML = getGoogleSVG();
-      }
-    }
-    wrapper.appendChild(a);
-    wrapper.appendChild(removeBtn);
+  const maxVisibleItems = 20; // search-history内に最大20件表示
+
+  const visibleHistory = history.slice(0, maxVisibleItems);
+  const overflowHistory = history.slice(maxVisibleItems);
+
+  // 表示されるファビコンを追加
+  for (let i = 0; i < visibleHistory.length; i++) {
+    const h = visibleHistory[i];
+    const wrapper = createFaviconWrapper(h, i);
     row.appendChild(wrapper);
+  }
+
+  // --- 自動スクロール機能 ---
+  if (visibleHistory.length > 0) {
+    const wrappers = row.querySelectorAll(".favicon-wrapper");
+    const lastWrapper = wrappers[wrappers.length - 1];
+    const firstWrapper = wrappers[0];
+    let scrollInterval = null;
+    // 右端：右方向スクロール
+    lastWrapper.addEventListener("mouseenter", () => {
+      scrollInterval = setInterval(() => {
+        row.scrollLeft += 8;
+        if (row.scrollLeft + row.clientWidth >= row.scrollWidth) {
+          clearInterval(scrollInterval);
+        }
+      }, 16);
+    });
+    lastWrapper.addEventListener("mouseleave", () => {
+      clearInterval(scrollInterval);
+    });
+    // 左端：左方向スクロール
+    firstWrapper.addEventListener("mouseenter", () => {
+      scrollInterval = setInterval(() => {
+        row.scrollLeft -= 8;
+        if (row.scrollLeft <= 0) {
+          clearInterval(scrollInterval);
+        }
+      }, 16);
+    });
+    firstWrapper.addEventListener("mouseleave", () => {
+      clearInterval(scrollInterval);
+    });
+  }
+  // --- 自動スクロール機能ここまで ---
+
+  // オーバーフローアイテムがある場合
+  if (overflowHistory.length > 0) {
+    const overflowTrigger = document.createElement("div");
+    overflowTrigger.className = "favicon-overflow-trigger";
+
+    // トリガーボタン（省略インジケーター）
+    const moreIndicator = document.createElement("div");
+    moreIndicator.className = "more-indicator";
+    moreIndicator.innerHTML = `<i class="bi bi-three-dots"></i> +${overflowHistory.length}`;
+
+    // オーバーフローコンテンツ
+    const overflowContent = document.createElement("div");
+    overflowContent.className = "favicon-overflow-content";
+
+    overflowHistory.forEach((h, index) => {
+      const actualIndex = maxVisibleItems + index;
+      const wrapper = createFaviconWrapper(h, actualIndex);
+      overflowContent.appendChild(wrapper);
+    });
+
+    overflowTrigger.appendChild(moreIndicator);
+    overflowTrigger.appendChild(overflowContent);
+    row.appendChild(overflowTrigger);
+  }
+}
+
+// ファビコンwrapperを作成する関数
+function createFaviconWrapper(historyItem, index) {
+  const wrapper = document.createElement("span");
+  wrapper.className = "favicon-wrapper";
+  wrapper.style.position = "relative";
+
+  // 削除ボタン
+  const removeBtn = document.createElement("span");
+  removeBtn.className = "favicon-remove";
+  removeBtn.textContent = "✖";
+  removeBtn.title = "この履歴を削除";
+  removeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    let newHistory = loadHistory();
+    newHistory.splice(index, 1);
+    saveHistory(newHistory);
+    renderHistory();
+  });
+
+  // ファビコン本体
+  const a = document.createElement("a");
+  a.href = "#";
+  a.className = "history-link";
+  a.setAttribute("data-idx", index);
+  a.style.display = "inline-block";
+  a.style.width = "24px";
+  a.style.height = "24px";
+  a.style.verticalAlign = "middle";
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    urlInput.value = historyItem;
+    handleInput(historyItem, true);
+  });
+
+  if (!/^https?:\/\//.test(historyItem) && !historyItem.startsWith("www.")) {
+    a.innerHTML = getGoogleSVG();
+  } else {
+    const domain = getDomain(historyItem);
+    if (domain) {
+      fetchFaviconDataUrl(domain).then((dataUrl) => {
+        if (dataUrl) {
+          a.innerHTML = `<img src="${dataUrl}" alt="favicon" class="favicon-img">`;
+        } else {
+          a.innerHTML = getGoogleSVG();
+        }
+      });
+    } else {
+      a.innerHTML = getGoogleSVG();
+    }
+  }
+
+  wrapper.appendChild(a);
+  wrapper.appendChild(removeBtn);
+  return wrapper;
+}
+
+// 検索入力にフォーカスする関数
+function focusSearchInput() {
+  if (urlInput) {
+    urlInput.focus();
+    urlInput.select();
   }
 }
 

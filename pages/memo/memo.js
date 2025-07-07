@@ -567,6 +567,7 @@ async function renderListView() {
 
           // アニメーション付きで削除（アーカイブには保存しない）
           if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+            li.classList.add("archive-item"); // ←追加
             await window.AppUtils.animateArchiveItem(li, async () => {
               // メモを完全に削除（アーカイブではない）
               const memoIndex = memos.findIndex((memo) => memo.id === m.id);
@@ -621,6 +622,7 @@ async function renderListView() {
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+          li.classList.add("archive-item"); // ←追加
           await window.AppUtils.animateArchiveItem(li, async () => {
             m.archived = true;
             await saveStorage(MEMO_KEY, memos);
