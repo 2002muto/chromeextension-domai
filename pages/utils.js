@@ -365,7 +365,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
   if (dialogContent) {
     dialogContent.style.cssText = `
       position: relative !important;
-      background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%) !important;
+      background: #2D2D2D !important;
       border-radius: 20px !important;
       min-width: 340px !important;
       max-width: 420px !important;
@@ -378,6 +378,16 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       z-index: 999999 !important;
       margin: 20px auto !important;
     `;
+    const dialogTitle = dialogContent.querySelector(".dialog-title");
+    if (dialogTitle) {
+      dialogTitle.style.color = "#FFFFFF";
+    }
+    const dialogMessage = dialogContent.querySelector(".dialog-message");
+    if (dialogMessage) {
+      dialogMessage.style.color = "#BEC3C9";
+      dialogMessage.style.lineHeight = "1.8";
+      dialogMessage.style.margin = "0 0 8px 0";
+    }
   }
 
   if (header) {
@@ -399,8 +409,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       width: 48px !important;
       height: 48px !important;
       border-radius: 50% !important;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
       flex-shrink: 0 !important;
     `;
   }
@@ -408,8 +419,8 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
   if (icon) {
     icon.style.cssText = `
       font-size: 24px !important;
-      color: #ffffff !important;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+      color: #376DC7 !important;
+      filter: none !important;
     `;
   }
 
@@ -432,6 +443,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
       transition: all 0.25s ease !important;
     `;
+    dialogDiscardBtn.style.cssText += "color: #ffffff !important;";
 
     // ホバー効果を追加
     dialogDiscardBtn.addEventListener("mouseenter", () => {
@@ -466,6 +478,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
       transition: all 0.25s ease !important;
     `;
+    dialogCancelBtn.style.cssText += "color: #ffffff !important;";
 
     // ホバー効果を追加
     dialogCancelBtn.addEventListener("mouseenter", () => {
@@ -494,23 +507,22 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       font-weight: 600 !important;
       cursor: pointer !important;
       min-width: 100px !important;
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+      background: linear-gradient(135deg, #00A31E 0%, #16a34a 100%) !important;
       color: #ffffff !important;
-      border: 1px solid rgba(34, 197, 94, 0.3) !important;
+      border: 1px solid rgba(0, 163, 30, 0.3) !important;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
       transition: all 0.25s ease !important;
     `;
-
-    // ホバー効果を追加
+    dialogSaveBtn.style.cssText += "color: #ffffff !important;";
     dialogSaveBtn.addEventListener("mouseenter", () => {
       dialogSaveBtn.style.background =
-        "linear-gradient(135deg, #16a34a 0%, #15803d 100%)";
+        "linear-gradient(135deg, #16a34a 0%, #00A31E 100%)";
       dialogSaveBtn.style.transform = "translateY(-2px)";
-      dialogSaveBtn.style.boxShadow = "0 6px 20px rgba(34, 197, 94, 0.4)";
+      dialogSaveBtn.style.boxShadow = "0 6px 20px rgba(0, 163, 30, 0.28)";
     });
     dialogSaveBtn.addEventListener("mouseleave", () => {
       dialogSaveBtn.style.background =
-        "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)";
+        "linear-gradient(135deg, #00A31E 0%, #16a34a 100%)";
       dialogSaveBtn.style.transform = "translateY(0)";
       dialogSaveBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
     });
@@ -615,6 +627,27 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       }
     }
   });
+
+  // ボタンラッパーの横並びを強制
+  let saveButtonsWrapper = dialog.querySelector(".dialog-buttons-wrapper");
+  if (saveButtonsWrapper) {
+    saveButtonsWrapper.style.display = "flex";
+    saveButtonsWrapper.style.flexDirection = "row";
+    saveButtonsWrapper.style.gap = "20px";
+    saveButtonsWrapper.style.justifyContent = "flex-end";
+    saveButtonsWrapper.style.flexWrap = "nowrap";
+    // モバイルのみ縦並び
+    const styleTag = document.createElement("style");
+    styleTag.textContent = `
+      @media (max-width: 480px) {
+        .dialog-buttons-wrapper {
+          flex-direction: column !important;
+          gap: 10px !important;
+        }
+      }
+    `;
+    document.head.appendChild(styleTag);
+  }
 };
 
 /* ━━━━━━━━━━ 汎用削除確認ダイアログ ━━━━━━━━━━ */
@@ -944,7 +977,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   if (deleteContent) {
     deleteContent.style.cssText = `
       position: relative !important;
-      background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%) !important;
+      background: #2D2D2D !important;
       border-radius: 20px !important;
       min-width: 340px !important;
       max-width: 420px !important;
@@ -958,6 +991,14 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
       margin: 20px auto !important;
       animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     `;
+    const dialogTitle = deleteContent.querySelector(".dialog-title");
+    if (dialogTitle) {
+      dialogTitle.style.color = "#FFFFFF";
+    }
+    const dialogMessage = deleteContent.querySelector(".dialog-message");
+    if (dialogMessage) {
+      dialogMessage.style.color = "#BEC3C9";
+    }
   }
 
   if (deleteHeader) {
@@ -979,8 +1020,9 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
       width: 48px !important;
       height: 48px !important;
       border-radius: 50% !important;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
       flex-shrink: 0 !important;
     `;
   }
@@ -988,8 +1030,8 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   if (deleteIcon) {
     deleteIcon.style.cssText = `
       font-size: 24px !important;
-      color: #ffffff !important;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+      color: #376DC7 !important;
+      filter: none !important;
     `;
   }
 
@@ -1012,6 +1054,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
       transition: all 0.25s ease !important;
     `;
+    deleteCancelBtn.style.cssText += "color: #ffffff !important;";
 
     // ホバー効果を追加
     deleteCancelBtn.addEventListener("mouseenter", () => {
@@ -1046,6 +1089,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
       transition: all 0.25s ease !important;
     `;
+    deleteConfirmBtn.style.cssText += "color: #ffffff !important;";
 
     // ホバー効果を追加
     deleteConfirmBtn.addEventListener("mouseenter", () => {
@@ -1151,6 +1195,27 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
       }
     }
   });
+
+  // ボタンラッパーの横並びを強制
+  let deleteButtonsWrapper = dialog.querySelector(".dialog-buttons-wrapper");
+  if (deleteButtonsWrapper) {
+    deleteButtonsWrapper.style.display = "flex";
+    deleteButtonsWrapper.style.flexDirection = "row";
+    deleteButtonsWrapper.style.gap = "16px";
+    deleteButtonsWrapper.style.justifyContent = "flex-end";
+    deleteButtonsWrapper.style.flexWrap = "nowrap";
+    // モバイルのみ縦並び
+    const styleTag = document.createElement("style");
+    styleTag.textContent = `
+      @media (max-width: 480px) {
+        .dialog-buttons-wrapper {
+          flex-direction: column !important;
+          gap: 8px !important;
+        }
+      }
+    `;
+    document.head.appendChild(styleTag);
+  }
 };
 
 /* ━━━━━━━━━━ 汎用確認ダイアログ ━━━━━━━━━━ */
@@ -1479,7 +1544,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
   if (confirmContent) {
     confirmContent.style.cssText = `
       position: relative !important;
-      background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%) !important;
+      background: #2D2D2D !important;
       border-radius: 20px !important;
       min-width: 340px !important;
       max-width: 420px !important;
@@ -1493,6 +1558,14 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
       margin: 20px auto !important;
       animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     `;
+    const dialogTitle = confirmContent.querySelector(".dialog-title");
+    if (dialogTitle) {
+      dialogTitle.style.color = "#FFFFFF";
+    }
+    const dialogMessage = confirmContent.querySelector(".dialog-message");
+    if (dialogMessage) {
+      dialogMessage.style.color = "#BEC3C9";
+    }
   }
 
   if (confirmHeader) {
@@ -1514,8 +1587,9 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
       width: 48px !important;
       height: 48px !important;
       border-radius: 50% !important;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
       flex-shrink: 0 !important;
     `;
   }
@@ -1523,8 +1597,8 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
   if (confirmIcon) {
     confirmIcon.style.cssText = `
       font-size: 24px !important;
-      color: #ffffff !important;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+      color: #376DC7 !important;
+      filter: none !important;
     `;
   }
 
@@ -1620,6 +1694,9 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
       discardBtn.style.boxShadow = "0 2px 8px rgba(220,53,69,0.18)";
     });
   }
+  if (discardBtn) {
+    discardBtn.style.color = "#ffffff";
+  }
   // キャンセルボタン
   const confirmCancelBtn2 = dialog.querySelector(".cancel-btn");
   if (confirmCancelBtn2) {
@@ -1641,26 +1718,32 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
       confirmCancelBtn2.style.boxShadow = "0 2px 8px rgba(74,85,104,0.18)";
     });
   }
+  if (confirmCancelBtn2) {
+    confirmCancelBtn2.style.color = "#ffffff";
+  }
   // 保存ボタン
   const saveBtn = dialog.querySelector(".save-btn");
   if (saveBtn) {
     saveBtn.style.background =
-      "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)";
+      "linear-gradient(135deg, #00A31E 0%, #16a34a 100%)";
     saveBtn.style.color = "#fff";
     saveBtn.style.border = "none";
-    saveBtn.style.boxShadow = "0 2px 8px rgba(34,197,94,0.18)";
+    saveBtn.style.boxShadow = "0 2px 8px rgba(0, 163, 30, 0.18)";
     saveBtn.addEventListener("mouseenter", () => {
       saveBtn.style.background =
-        "linear-gradient(135deg, #16a34a 0%, #15803d 100%)";
+        "linear-gradient(135deg, #16a34a 0%, #00A31E 100%)";
       saveBtn.style.transform = "translateY(-2px)";
-      saveBtn.style.boxShadow = "0 6px 20px rgba(34,197,94,0.28)";
+      saveBtn.style.boxShadow = "0 6px 20px rgba(0, 163, 30, 0.28)";
     });
     saveBtn.addEventListener("mouseleave", () => {
       saveBtn.style.background =
-        "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)";
+        "linear-gradient(135deg, #00A31E 0%, #16a34a 100%)";
       saveBtn.style.transform = "translateY(0)";
-      saveBtn.style.boxShadow = "0 2px 8px rgba(34,197,94,0.18)";
+      saveBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
     });
+  }
+  if (saveBtn) {
+    saveBtn.style.color = "#ffffff";
   }
   // アイコンとテキストの間隔
   const btnIcons = dialog.querySelectorAll(".dialog-btn i");
@@ -1773,6 +1856,27 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
       }
     }
   });
+
+  // ボタンラッパーの横並びを強制
+  let confirmButtonsWrapper = dialog.querySelector(".dialog-buttons-wrapper");
+  if (confirmButtonsWrapper) {
+    confirmButtonsWrapper.style.display = "flex";
+    confirmButtonsWrapper.style.flexDirection = "row";
+    confirmButtonsWrapper.style.gap = "16px";
+    confirmButtonsWrapper.style.justifyContent = "flex-end";
+    confirmButtonsWrapper.style.flexWrap = "nowrap";
+    // モバイルのみ縦並び
+    const styleTag = document.createElement("style");
+    styleTag.textContent = `
+      @media (max-width: 480px) {
+        .dialog-buttons-wrapper {
+          flex-direction: column !important;
+          gap: 8px !important;
+        }
+      }
+    `;
+    document.head.appendChild(styleTag);
+  }
 };
 
 /* ━━━━━━━━━━ アーカイブアニメーション機能 ━━━━━━━━━━ */
