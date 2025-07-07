@@ -400,35 +400,45 @@ async function renderHistory() {
         <div id="favicon-row"></div>
       </div>
     </div>
-    <button class="new-search-btn" onclick="focusSearchInput()">
-      <i class="bi bi-plus-circle"></i> 新しい検索
-    </button>
+    <div class="search-btns-wrapper">
+      <button class="new-search-btn" onclick="focusSearchInput()">
+        <i class="bi bi-plus-circle"></i> 新しい検索
+      </button>
+      <button class="clear-history-btn" id="clearHistoryBtn" title="検索履歴を全削除">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
   `;
 
   const row = document.getElementById("favicon-row");
-  const maxVisibleItems = 20; // search-history内に最大20件表示
 
-  const visibleHistory = history.slice(0, maxVisibleItems);
-  const overflowHistory = history.slice(maxVisibleItems);
-
-  // 表示されるファビコンを追加
-  for (let i = 0; i < visibleHistory.length; i++) {
-    const h = visibleHistory[i];
+  // 全履歴を横スクロールで無制限に表示
+  for (let i = 0; i < history.length; i++) {
+    const h = history[i];
     const wrapper = createFaviconWrapper(h, i);
     row.appendChild(wrapper);
   }
 
   // --- 自動スクロール機能 ---
-  if (visibleHistory.length > 0) {
+  if (history.length > 0) {
     const wrappers = row.querySelectorAll(".favicon-wrapper");
     const lastWrapper = wrappers[wrappers.length - 1];
     const firstWrapper = wrappers[0];
     let scrollInterval = null;
+
+    // IntersectionObserverで可視範囲を判定
+    function isFullyVisible(element, container) {
+      const elRect = element.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      return elRect.left >= contRect.left && elRect.right <= contRect.right;
+    }
+
     // 右端：右方向スクロール
     lastWrapper.addEventListener("mouseenter", () => {
       scrollInterval = setInterval(() => {
-        row.scrollLeft += 8;
-        if (row.scrollLeft + row.clientWidth >= row.scrollWidth) {
+        if (!isFullyVisible(lastWrapper, row)) {
+          row.scrollLeft += 8;
+        } else {
           clearInterval(scrollInterval);
         }
       }, 16);
@@ -439,8 +449,9 @@ async function renderHistory() {
     // 左端：左方向スクロール
     firstWrapper.addEventListener("mouseenter", () => {
       scrollInterval = setInterval(() => {
-        row.scrollLeft -= 8;
-        if (row.scrollLeft <= 0) {
+        if (!isFullyVisible(firstWrapper, row)) {
+          row.scrollLeft -= 8;
+        } else {
           clearInterval(scrollInterval);
         }
       }, 16);
@@ -451,29 +462,15 @@ async function renderHistory() {
   }
   // --- 自動スクロール機能ここまで ---
 
-  // オーバーフローアイテムがある場合
-  if (overflowHistory.length > 0) {
-    const overflowTrigger = document.createElement("div");
-    overflowTrigger.className = "favicon-overflow-trigger";
-
-    // トリガーボタン（省略インジケーター）
-    const moreIndicator = document.createElement("div");
-    moreIndicator.className = "more-indicator";
-    moreIndicator.innerHTML = `<i class="bi bi-three-dots"></i> +${overflowHistory.length}`;
-
-    // オーバーフローコンテンツ
-    const overflowContent = document.createElement("div");
-    overflowContent.className = "favicon-overflow-content";
-
-    overflowHistory.forEach((h, index) => {
-      const actualIndex = maxVisibleItems + index;
-      const wrapper = createFaviconWrapper(h, actualIndex);
-      overflowContent.appendChild(wrapper);
+  // 検索履歴全削除ボタンのイベント
+  const clearBtn = document.getElementById("clearHistoryBtn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      if (confirm("検索履歴をすべて削除しますか？")) {
+        saveHistory([]);
+        renderHistory();
+      }
     });
-
-    overflowTrigger.appendChild(moreIndicator);
-    overflowTrigger.appendChild(overflowContent);
-    row.appendChild(overflowTrigger);
   }
 }
 
