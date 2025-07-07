@@ -38,7 +38,13 @@
     "offscreen",
     "sidePanel"
   ],
-  "host_permissions": ["*://*/*", "http://*/*", "https://*/*", "file://*/*"],
+  "host_permissions": [
+    "*://*/*",
+    "http://*/*",
+    "https://*/*",
+    "file://*/*",
+    "https://icons.duckduckgo.com/*"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"

@@ -354,6 +354,40 @@ let nextDynamicRuleId = 10000;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("[BG] 🔥 メッセージ受信:", request);
 
+  if (request.action === "fetchFavicon") {
+    const url = `https://icons.duckduckgo.com/ip3/${request.domain}.ico`;
+    console.log("[BG] favicon fetch start:", url);
+    fetch(url)
+      .then((res) => {
+        console.log(
+          "[BG] favicon fetch response:",
+          res.status,
+          res.ok,
+          res.headers.get("content-type")
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        console.log("[BG] favicon blob: size=", blob.size, "type=", blob.type);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          console.log("[BG] favicon dataUrl length:", reader.result?.length);
+          sendResponse({ dataUrl: reader.result });
+        };
+        reader.onerror = (e) => {
+          console.error("[BG] FileReader error:", e);
+          sendResponse({ dataUrl: null });
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch((err) => {
+        console.error("[BG] favicon fetch error:", err);
+        sendResponse({ dataUrl: null });
+      });
+    return true; // async
+  }
+
   // 非同期処理を無理矢理同期的に扱う
   (async () => {
     try {

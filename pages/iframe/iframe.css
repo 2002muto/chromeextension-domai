@@ -362,3 +362,39 @@ body {
 #loginInfo {
   display: none;
 }
+
+.favicon-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.favicon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.favicon-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #222;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 2;
+  border: 1px solid #888;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+}
+.favicon-wrapper:hover .favicon-remove {
+  opacity: 1;
+}

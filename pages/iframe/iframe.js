@@ -260,24 +260,33 @@ function addHistory(entry) {
   renderHistory();
 }
 
-function getFaviconUrl(entry) {
-  // URLならそのドメインのファビコン、検索ワードならGoogle
+async function fetchFaviconDataUrl(domain) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage(
+      { action: "fetchFavicon", domain },
+      (response) => {
+        resolve(response?.dataUrl || null);
+      }
+    );
+  });
+}
+
+function getDomain(entry) {
   let url = entry;
-  if (!/^https?:\/\//.test(url) && !url.startsWith("www.")) {
-    // 検索ワード
-    return "https://www.google.com/s2/favicons?sz=32&domain_url=www.google.com";
-  }
-  // URLからドメイン部分を抽出
+  if (!/^https?:\/\//.test(url)) url = "https://" + url;
   try {
-    if (!/^https?:\/\//.test(url)) url = "https://" + url;
     const u = new URL(url);
-    return `https://www.google.com/s2/favicons?sz=32&domain_url=${u.origin}`;
+    return u.hostname;
   } catch {
-    return "https://www.google.com/s2/favicons?sz=32&domain_url=www.google.com";
+    return null;
   }
 }
 
-function renderHistory() {
+function getGoogleSVG() {
+  return `<svg width="24" height="24" viewBox="0 0 48 48"><g><circle fill="#fff" cx="24" cy="24" r="24"/><path fill="#4285F4" d="M34.6 24.2c0-.7-.1-1.4-.2-2H24v4.1h6c-.3 1.5-1.3 2.7-2.7 3.5v2.9h4.4c2.6-2.4 4.1-5.9 4.1-10.5z"/><path fill="#34A853" d="M24 36c3.6 0 6.6-1.2 8.8-3.2l-4.4-2.9c-1.2.8-2.7 1.3-4.4 1.3-3.4 0-6.2-2.3-7.2-5.4h-4.5v3.1C15.2 33.8 19.3 36 24 36z"/><path fill="#FBBC05" d="M16.8 25.8c-.3-.8-.5-1.7-.5-2.8s.2-2 .5-2.8v-3.1h-4.5C11.5 19.2 11 21.5 11 24s.5 4.8 1.3 6.9l4.5-3.1z"/><path fill="#EA4335" d="M24 17.7c2 0 3.7.7 5.1 2.1l3.8-3.8C30.6 13.9 27.6 12.5 24 12.5c-4.7 0-8.8 2.2-11.2 5.6l4.5 3.1c1-3.1 3.8-5.4 7.2-5.4z"/></g></svg>`;
+}
+
+async function renderHistory() {
   const history = loadHistory();
   if (!searchHistoryEl) return;
   if (history.length === 0) {
@@ -287,30 +296,60 @@ function renderHistory() {
   }
   searchHistoryEl.innerHTML =
     '<div class="fw-bold mb-1"><i class="bi bi-clock-history"></i> 検索履歴</div>' +
-    '<ul class="list-unstyled mb-0">' +
-    history
-      .map(
-        (h) =>
-          `<li class="mb-1 d-flex align-items-center">
-            <img src="${getFaviconUrl(
-              h
-            )}" alt="favicon" class="me-2" style="width:18px;height:18px;border-radius:3px;">
-            <a href="#" class="history-link text-decoration-none flex-grow-1">${
-              h.length > 60 ? h.slice(0, 60) + "..." : h
-            }</a>
-          </li>`
-      )
-      .join("") +
-    "</ul>";
-  // 履歴クリックで再検索＋iframe表示
-  searchHistoryEl.querySelectorAll(".history-link").forEach((a, i) => {
+    '<div class="d-flex flex-row gap-2" id="favicon-row"></div>';
+  const row = document.getElementById("favicon-row");
+  for (let i = 0; i < history.length; i++) {
+    const h = history[i];
+    const wrapper = document.createElement("span");
+    wrapper.className = "favicon-wrapper";
+    wrapper.style.position = "relative";
+    // 削除ボタン
+    const removeBtn = document.createElement("span");
+    removeBtn.className = "favicon-remove";
+    removeBtn.textContent = "✖";
+    removeBtn.title = "この履歴を削除";
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      let newHistory = loadHistory();
+      newHistory.splice(i, 1);
+      saveHistory(newHistory);
+      renderHistory();
+    });
+    // ファビコン本体
+    const a = document.createElement("a");
+    a.href = "#";
+    a.className = "history-link";
+    a.setAttribute("data-idx", i);
+    a.style.display = "inline-block";
+    a.style.width = "24px";
+    a.style.height = "24px";
+    a.style.verticalAlign = "middle";
     a.addEventListener("click", (e) => {
       e.preventDefault();
       urlInput.value = history[i];
-      // 検索内容をiframeで必ず表示
       handleInput(history[i], true);
     });
-  });
+    if (!/^https?:\/\//.test(h) && !h.startsWith("www.")) {
+      a.innerHTML = getGoogleSVG();
+    } else {
+      const domain = getDomain(h);
+      if (domain) {
+        fetchFaviconDataUrl(domain).then((dataUrl) => {
+          if (dataUrl) {
+            a.innerHTML = `<img src="${dataUrl}" alt="favicon" class="favicon-img">`;
+          } else {
+            a.innerHTML = getGoogleSVG();
+          }
+        });
+      } else {
+        a.innerHTML = getGoogleSVG();
+      }
+    }
+    wrapper.appendChild(a);
+    wrapper.appendChild(removeBtn);
+    row.appendChild(wrapper);
+  }
 }
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う
@@ -391,10 +430,10 @@ quickBtns.forEach((btn) => {
 });
 
 // URLパラメータ処理
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
   console.log("[iframe] 🔥 DOM読み込み完了");
 
-  renderHistory();
+  await renderHistory();
 
   const urlParams = new URLSearchParams(window.location.search);
   const qParam = urlParams.get("q") || urlParams.get("url");
