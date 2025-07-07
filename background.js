@@ -16,7 +16,7 @@ const INITIAL_DYNAMIC_RULE_ID = 1000;
 // DNR APIが許容する最大ID値
 const MAX_DYNAMIC_RULE_ID = 1000000;
 // 次に利用する動的ルールID（確実に整数として初期化）
-let nextDynamicRuleId = Math.floor(INITIAL_DYNAMIC_RULE_ID);
+// let nextDynamicRuleId = Math.floor(INITIAL_DYNAMIC_RULE_ID);
 // Track domains that already have a dynamic rule so we don't add duplicates.
 const dynamicRuleIds = new Map();
 
