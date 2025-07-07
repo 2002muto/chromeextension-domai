@@ -246,13 +246,42 @@ function createMaximalRule(ruleId, domain) {
 
 // 0) 拡張機能アイコンクリック時のサイドパネル制御
 chrome.action.onClicked.addListener(async (tab) => {
-  console.log(`[BG] Extension icon clicked on tab ${tab.id}`);
+  console.log(`[BG] 🔥 Extension icon clicked on tab ${tab.id}`);
+
   try {
+    // 現在のサイドパネル状態を確認
+    const sidePanel = await chrome.sidePanel.getOptions({ tabId: tab.id });
+    console.log(`[BG] 🔥 現在のサイドパネル状態:`, sidePanel);
+
+    // サイドパネルが開いていない場合は開く
+    if (!sidePanel.enabled) {
+      console.log(`[BG] 🔥 サイドパネルを有効化して開く`);
+      await chrome.sidePanel.setOptions({
+        tabId: tab.id,
+        enabled: true,
+        path: "pages/memo/memo.html",
+      });
+    }
+
     // サイドパネルを開く
     await chrome.sidePanel.open({ tabId: tab.id });
-    console.log(`[BG] Side panel opened for tab ${tab.id}`);
+    console.log(`[BG] 🔥 Side panel opened for tab ${tab.id}`);
   } catch (error) {
-    console.error("[BG] Failed to open side panel:", error);
+    console.error("[BG] 🔥 Failed to open side panel:", error);
+
+    // エラー時は強制的にサイドパネルを開く
+    try {
+      console.log(`[BG] 🔥 強制サイドパネル開起動`);
+      await chrome.sidePanel.setOptions({
+        tabId: tab.id,
+        enabled: true,
+        path: "pages/memo/memo.html",
+      });
+      await chrome.sidePanel.open({ tabId: tab.id });
+      console.log(`[BG] 🔥 強制サイドパネル開起動成功`);
+    } catch (forceError) {
+      console.error("[BG] 🔥 強制サイドパネル開起動も失敗:", forceError);
+    }
   }
 });
 

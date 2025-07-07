@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "🔥 無理矢理 Chrome Extension",
+  "name": "🔥 SideEffect",
   "version": "1.0.0",
-  "description": "無理矢理でも成功させる最強のChrome拡張機能",
+  "description": "SideEffect - サイドパネルでログイン状態維持・iframe検索・メモ機能を提供するChrome拡張機能",
   "permissions": [
     "storage",
     "activeTab",
@@ -72,7 +72,7 @@
     }
   ],
   "action": {
-    "default_title": "🔥 無理矢理拡張機能",
+    "default_title": "🔥 SideEffect",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
