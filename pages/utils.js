@@ -54,12 +54,12 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
             <i class="${iconClass} dialog-icon"></i>
           </div>
           <div class="dialog-title-wrapper">
-            <h3 class="dialog-title">${title}</h3>
+          <h3 class="dialog-title">${title}</h3>
           </div>
         </div>
         <div class="dialog-body">
           <div class="dialog-message-wrapper">
-            <p class="dialog-message">${message}</p>
+          <p class="dialog-message">${message}</p>
           </div>
         </div>
         <div class="dialog-footer">
@@ -181,7 +181,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
         flex-shrink: 0;
       }
-      
+
       .save-confirm-dialog .dialog-icon {
         font-size: 24px;
         color: #ffffff;
@@ -192,7 +192,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         flex: 1;
         min-width: 0;
       }
-      
+
       .save-confirm-dialog .dialog-title {
         color: #ffffff;
         font-size: 1.25rem;
@@ -201,7 +201,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         line-height: 1.3;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
-      
+
       /* ダイアログボディ */
       .save-confirm-dialog .dialog-body {
         padding: 24px 28px;
@@ -211,7 +211,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       .save-confirm-dialog .dialog-message-wrapper {
         width: 100%;
       }
-      
+
       .save-confirm-dialog .dialog-message {
         color: #e2e8f0;
         font-size: 1.05rem;
@@ -219,7 +219,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         margin: 0;
         text-align: left;
       }
-      
+
       /* ダイアログフッター */
       .save-confirm-dialog .dialog-footer {
         padding: 20px 28px 28px;
@@ -233,7 +233,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         justify-content: flex-end;
         flex-wrap: wrap;
       }
-      
+
       /* キーフレームアニメーション */
       @keyframes dialogFadeIn {
         from { opacity: 0; }
@@ -649,12 +649,12 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
             <i class="${iconClass} dialog-icon"></i>
           </div>
           <div class="dialog-title-wrapper">
-            <h3 class="dialog-title">${title}</h3>
+          <h3 class="dialog-title">${title}</h3>
           </div>
         </div>
         <div class="dialog-body">
           <div class="dialog-message-wrapper">
-            <p class="dialog-message">${message}</p>
+          <p class="dialog-message">${message}</p>
           </div>
         </div>
         <div class="dialog-footer">
@@ -760,7 +760,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
         flex-shrink: 0;
       }
-      
+
       .delete-confirm-dialog .dialog-icon {
         font-size: 24px;
         color: #ffffff;
@@ -771,7 +771,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         flex: 1;
         min-width: 0;
       }
-      
+
       .delete-confirm-dialog .dialog-title {
         color: #ffffff;
         font-size: 1.25rem;
@@ -780,7 +780,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         line-height: 1.3;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
-      
+
       /* ダイアログボディ */
       .delete-confirm-dialog .dialog-body {
         padding: 24px 28px;
@@ -790,7 +790,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
       .delete-confirm-dialog .dialog-message-wrapper {
         width: 100%;
       }
-      
+
       .delete-confirm-dialog .dialog-message {
         color: #e2e8f0;
         font-size: 1.05rem;
@@ -798,7 +798,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         margin: 0;
         text-align: left;
       }
-      
+
       /* ダイアログフッター */
       .delete-confirm-dialog .dialog-footer {
         padding: 20px 28px 28px;
@@ -812,7 +812,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         justify-content: flex-end;
         flex-wrap: wrap;
       }
-      
+
       /* キーフレームアニメーション */
       @keyframes dialogFadeIn {
         from { opacity: 0; }
@@ -1184,12 +1184,12 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
             <i class="${iconClass} dialog-icon"></i>
           </div>
           <div class="dialog-title-wrapper">
-            <h3 class="dialog-title">${title}</h3>
+          <h3 class="dialog-title">${title}</h3>
           </div>
         </div>
         <div class="dialog-body">
           <div class="dialog-message-wrapper">
-            <p class="dialog-message">${message}</p>
+          <p class="dialog-message">${message}</p>
           </div>
         </div>
         <div class="dialog-footer">
@@ -1295,7 +1295,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
         flex-shrink: 0;
       }
-      
+
       .confirm-dialog .dialog-icon {
         font-size: 24px;
         color: #ffffff;
@@ -1306,7 +1306,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         flex: 1;
         min-width: 0;
       }
-      
+
       .confirm-dialog .dialog-title {
         color: #ffffff;
         font-size: 1.25rem;
@@ -1315,7 +1315,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         line-height: 1.3;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
-      
+
       /* ダイアログボディ */
       .confirm-dialog .dialog-body {
         padding: 24px 28px;
@@ -1325,7 +1325,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
       .confirm-dialog .dialog-message-wrapper {
         width: 100%;
       }
-      
+
       .confirm-dialog .dialog-message {
         color: #e2e8f0;
         font-size: 1.05rem;
@@ -1333,7 +1333,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         margin: 0;
         text-align: left;
       }
-      
+
       /* ダイアログフッター */
       .confirm-dialog .dialog-footer {
         padding: 20px 28px 28px;
@@ -1347,36 +1347,36 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         justify-content: flex-end;
         flex-wrap: wrap;
       }
-      
+
       /* キーフレームアニメーション */
       @keyframes dialogFadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
       }
-      
+
       @keyframes dialogFadeOut {
         from { opacity: 1; }
         to { opacity: 0; }
       }
-      
+
       @keyframes dialogSlideIn {
-        from { 
-          opacity: 0; 
+        from {
+          opacity: 0;
           transform: translateY(-40px) scale(0.95);
         }
-        to { 
-          opacity: 1; 
+        to {
+          opacity: 1;
           transform: translateY(0) scale(1);
         }
       }
-      
+
       @keyframes dialogSlideOut {
-        from { 
-          opacity: 1; 
+        from {
+          opacity: 1;
           transform: translateY(0) scale(1);
         }
-        to { 
-          opacity: 0; 
+        to {
+          opacity: 0;
           transform: translateY(-20px) scale(0.98);
         }
       }
@@ -1537,47 +1537,151 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
 
   if (confirmTitle) {
     confirmTitle.style.cssText = `
-      color: #ffffff !important;
+      color: #fff !important;
       font-size: 1.25rem !important;
       font-weight: 700 !important;
-      margin: 0 !important;
+      margin: 0 0 4px 0 !important;
       line-height: 1.3 !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.18) !important;
+      letter-spacing: 0.01em !important;
     `;
   }
-
   if (confirmMessage) {
     confirmMessage.style.cssText = `
       color: #e2e8f0 !important;
       font-size: 1.05rem !important;
-      line-height: 1.6 !important;
+      line-height: 1.7 !important;
       margin: 0 !important;
       text-align: left !important;
+      font-weight: 400 !important;
+      opacity: 1 !important;
     `;
   }
-
   if (body) {
     body.style.cssText = `
-      padding: 24px 28px !important;
+      padding: 18px 24px 10px 24px !important;
       flex: 1 !important;
+      background: none !important;
     `;
   }
-
   if (footer) {
     footer.style.cssText = `
-      padding: 20px 28px 28px !important;
-      background: rgba(0, 0, 0, 0.1) !important;
-      border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+      padding: 12px 24px 20px 24px !important;
+      background: none !important;
+      border-top: 1px solid rgba(255,255,255,0.10) !important;
     `;
   }
-
   if (buttonsWrapper) {
     buttonsWrapper.style.cssText = `
       display: flex !important;
-      gap: 12px !important;
-      justify-content: flex-end !important;
-      flex-wrap: wrap !important;
+      flex-direction: row !important;
+      gap: 16px !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      margin-top: 0 !important;
+      width: 100% !important;
     `;
+  }
+  // ボタン共通
+  const allBtns = dialog.querySelectorAll(".dialog-btn");
+  allBtns.forEach((btn) => {
+    btn.style.minWidth = "96px";
+    btn.style.height = "44px";
+    btn.style.fontSize = "1rem";
+    btn.style.fontWeight = "600";
+    btn.style.borderRadius = "10px";
+    btn.style.display = "flex";
+    btn.style.alignItems = "center";
+    btn.style.justifyContent = "center";
+    btn.style.gap = "8px";
+    btn.style.boxShadow = "0 2px 8px rgba(0,0,0,0.10)";
+    btn.style.padding = "0 18px";
+    btn.style.border = "none";
+    btn.style.transition = "all 0.18s cubic-bezier(.4,1.2,.6,1)";
+  });
+  // 破棄ボタン
+  const discardBtn = dialog.querySelector(".discard-btn");
+  if (discardBtn) {
+    discardBtn.style.background =
+      "linear-gradient(135deg, #dc3545 0%, #b91c1c 100%)";
+    discardBtn.style.color = "#fff";
+    discardBtn.style.border = "none";
+    discardBtn.style.boxShadow = "0 2px 8px rgba(220,53,69,0.18)";
+    discardBtn.addEventListener("mouseenter", () => {
+      discardBtn.style.background =
+        "linear-gradient(135deg, #b91c1c 0%, #991b1b 100%)";
+      discardBtn.style.transform = "translateY(-2px)";
+      discardBtn.style.boxShadow = "0 6px 20px rgba(220,53,69,0.28)";
+    });
+    discardBtn.addEventListener("mouseleave", () => {
+      discardBtn.style.background =
+        "linear-gradient(135deg, #dc3545 0%, #b91c1c 100%)";
+      discardBtn.style.transform = "translateY(0)";
+      discardBtn.style.boxShadow = "0 2px 8px rgba(220,53,69,0.18)";
+    });
+  }
+  // キャンセルボタン
+  const confirmCancelBtn2 = dialog.querySelector(".cancel-btn");
+  if (confirmCancelBtn2) {
+    confirmCancelBtn2.style.background =
+      "linear-gradient(135deg, #4a5568 0%, #374151 100%)";
+    confirmCancelBtn2.style.color = "#fff";
+    confirmCancelBtn2.style.border = "none";
+    confirmCancelBtn2.style.boxShadow = "0 2px 8px rgba(74,85,104,0.18)";
+    confirmCancelBtn2.addEventListener("mouseenter", () => {
+      confirmCancelBtn2.style.background =
+        "linear-gradient(135deg, #374151 0%, #2d3748 100%)";
+      confirmCancelBtn2.style.transform = "translateY(-2px)";
+      confirmCancelBtn2.style.boxShadow = "0 6px 20px rgba(74,85,104,0.28)";
+    });
+    confirmCancelBtn2.addEventListener("mouseleave", () => {
+      confirmCancelBtn2.style.background =
+        "linear-gradient(135deg, #4a5568 0%, #374151 100%)";
+      confirmCancelBtn2.style.transform = "translateY(0)";
+      confirmCancelBtn2.style.boxShadow = "0 2px 8px rgba(74,85,104,0.18)";
+    });
+  }
+  // 保存ボタン
+  const saveBtn = dialog.querySelector(".save-btn");
+  if (saveBtn) {
+    saveBtn.style.background =
+      "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)";
+    saveBtn.style.color = "#fff";
+    saveBtn.style.border = "none";
+    saveBtn.style.boxShadow = "0 2px 8px rgba(34,197,94,0.18)";
+    saveBtn.addEventListener("mouseenter", () => {
+      saveBtn.style.background =
+        "linear-gradient(135deg, #16a34a 0%, #15803d 100%)";
+      saveBtn.style.transform = "translateY(-2px)";
+      saveBtn.style.boxShadow = "0 6px 20px rgba(34,197,94,0.28)";
+    });
+    saveBtn.addEventListener("mouseleave", () => {
+      saveBtn.style.background =
+        "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)";
+      saveBtn.style.transform = "translateY(0)";
+      saveBtn.style.boxShadow = "0 2px 8px rgba(34,197,94,0.18)";
+    });
+  }
+  // アイコンとテキストの間隔
+  const btnIcons = dialog.querySelectorAll(".dialog-btn i");
+  btnIcons.forEach((icon) => {
+    icon.style.fontSize = "18px";
+    icon.style.marginRight = "4px";
+  });
+  // ダイアログ本体
+  const dialogContent = dialog.querySelector(".dialog-content");
+  if (dialogContent) {
+    dialogContent.style.background =
+      "linear-gradient(135deg, #23272f 0%, #2a2f3a 100%)";
+    dialogContent.style.borderRadius = "14px";
+    dialogContent.style.boxShadow =
+      "0 8px 32px rgba(0,0,0,0.28), 0 1.5px 4px rgba(0,0,0,0.10)";
+    dialogContent.style.border = "1px solid rgba(255,255,255,0.10)";
+    dialogContent.style.padding = "0";
+    dialogContent.style.minWidth = "320px";
+    dialogContent.style.maxWidth = "400px";
+    dialogContent.style.width = "100%";
+    dialogContent.style.margin = "0 auto";
   }
 
   // イベントリスナー設定
