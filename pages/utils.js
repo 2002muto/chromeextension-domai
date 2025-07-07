@@ -19,6 +19,7 @@ window.AppUtils.saveStorage = function (key, arr) {
 
 /* ━━━━━━━━━━ 汎用保存確認ダイアログ ━━━━━━━━━━ */
 window.AppUtils.showSaveConfirmDialog = function (options = {}) {
+  console.log("[UTILS] showSaveConfirmDialog invoked", options);
   const {
     title = "変更を保存しますか？",
     message = "編集内容に変更があります。<br>保存せずに戻ると変更が失われます。",
@@ -1235,18 +1236,19 @@ function showToast(message, type = "info") {
 
 console.log("[UTILS] AppUtils loaded successfully");
 
-// グローバルに公開
-window.AppUtils = {
+// グローバルに公開。既存のAppUtilsを保持したまま必要な機能を追加
+Object.assign(window.AppUtils, {
   // 既に定義されている場合は上書きしない
   showConfirmDialog: window.AppUtils.showConfirmDialog || fallbackShowConfirmDialog,
   showSaveConfirmDialog: window.AppUtils.showSaveConfirmDialog,
   showToast,
   animateArchiveItem,
   animateRestoreItem,
-};
+});
 
 // ダミー実装: showConfirmDialog
 function fallbackShowConfirmDialog(options = {}) {
+  console.log("[UTILS] fallback showConfirmDialog", options);
   // 必要に応じてカスタムダイアログを実装
   alert(options.message || "確認ダイアログ");
   if (typeof options.onConfirm === "function") options.onConfirm();
