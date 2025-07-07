@@ -20,6 +20,16 @@ const MAX_DYNAMIC_RULE_ID = 1000000;
 // Track domains that already have a dynamic rule so we don't add duplicates.
 const dynamicRuleIds = new Map();
 
+// 拡張機能アイコンをクリックしたら自動でサイドパネルを開く設定
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .then(() =>
+    console.log("[BG] Global: side panel will open when action icon is clicked")
+  )
+  .catch((err) =>
+    console.error("[BG] Global: failed to set panel behavior", err)
+  );
+
 // ───────────────────────────────────────
 // Existing dynamic rule initialization
 // ───────────────────────────────────────
@@ -246,6 +256,7 @@ function createMaximalRule(ruleId, domain) {
 
 // 0) 拡張機能アイコンクリック時のサイドパネル制御
 chrome.action.onClicked.addListener((tab) => {
+  console.log("[BG] onClicked event triggered");
   openSidePanel(tab);
 });
 
@@ -368,12 +379,26 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("[BG] Extension startup - enabling iframe rules");
   toggleIframeRules(true);
   initializeDynamicRules();
+  // サイドパネルをワンクリックで開く設定
+  chrome.sidePanel
+    .setPanelBehavior({ openPanelOnActionClick: true })
+    .then(() => console.log("[BG] Side panel will open on action click"))
+    .catch((err) => console.error("[BG] Failed to set panel behavior", err));
 });
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("[BG] Extension installed - enabling iframe rules");
   toggleIframeRules(true);
   initializeDynamicRules();
+  // 拡張機能アイコンクリックでサイドパネルを自動表示する
+  chrome.sidePanel
+    .setPanelBehavior({ openPanelOnActionClick: true })
+    .then(() =>
+      console.log("[BG] Install: side panel will open on action click")
+    )
+    .catch((err) =>
+      console.error("[BG] Install: failed to set panel behavior", err)
+    );
 });
 
 // サービスワーカー起動時に既存ルールを確認
@@ -623,3 +648,4 @@ setInterval(() => {
 }, 60000); // 1分間隔
 
 console.log("[BG] 🔥 無理矢理background.js読み込み完了");
+
