@@ -374,6 +374,7 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // サービスワーカー起動時に既存ルールを確認
 initializeDynamicRules();
+console.log("[BG] Static rules initialized from rules.json");
 
 console.log("[BG] 🔥 無理矢理background.js開始");
 

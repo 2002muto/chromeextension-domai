@@ -52,10 +52,6 @@
         {
           "header": "Cross-Origin-Resource-Policy",
           "operation": "remove"
-        },
-        {
-          "header": "Set-Cookie",
-          "operation": "remove"
         }
       ]
     },
