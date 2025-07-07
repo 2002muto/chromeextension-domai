@@ -247,24 +247,6 @@ function createMaximalRule(ruleId, domain) {
 // 0) 拡張機能アイコンクリック時のサイドパネル制御
 toggleIframeRules(true); // Ensure iframe rules are enabled
 
-// Add an event listener for the extension icon click
-chrome.action.onClicked.addListener((tab) => {
-  console.log("[BG] Extension icon clicked");
-  chrome.sidePanel
-    .setOptions(
-      {
-        path: "pages/memo/memo.html",
-        enabled: true,
-      },
-      () => {
-        console.log("[BG] Side panel opened");
-      }
-    )
-    .catch((error) => {
-      console.error("[BG] Failed to open side panel:", error);
-    });
-});
-
 // 1) タブ切り替え（アクティブタブ変更）を監視
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
   console.log(`[BG] onActivated → window ${windowId}, tab ${tabId}`);
@@ -368,154 +350,6 @@ const FORCE_SUCCESS_CONFIG = {
 // 動的ルールID管理（無理矢理バージョン）
 let nextDynamicRuleId = 10000;
 
-// 無理矢理動的ルール追加
-async function addDynamicIframeRule(domain) {
-  console.log(`[BG] 🔥 無理矢理動的ルール追加: ${domain}`);
-
-  // 複数のルールIDを試す
-  const ruleIds = [
-    Math.floor(Math.random() * 100000) + 10000,
-    (Date.now() % 100000) + 10000,
-    nextDynamicRuleId++,
-    Math.floor(Math.random() * 50000) + 50000,
-  ];
-
-  for (let i = 0; i < ruleIds.length; i++) {
-    const ruleId = ruleIds[i];
-    console.log(`[BG] 🔥 ルールID ${ruleId} で試行 ${i + 1}/${ruleIds.length}`);
-
-    try {
-      // 複数のルール設定を試す
-      const ruleConfigs = [
-        createStandardRule(ruleId, domain),
-        createBypassRule(ruleId, domain),
-        createForceRule(ruleId, domain),
-        createMaximalRule(ruleId, domain),
-      ];
-
-      for (let j = 0; j < ruleConfigs.length; j++) {
-        try {
-          console.log(`[BG] 🔥 設定 ${j + 1} でルール追加試行...`);
-          await chrome.declarativeNetRequest.updateDynamicRules({
-            addRules: [ruleConfigs[j]],
-          });
-
-          console.log(`[BG] ✅ 成功！ルールID: ${ruleId}, 設定: ${j + 1}`);
-          return { success: true, ruleId: ruleId };
-        } catch (error) {
-          console.log(`[BG] 🔥 設定 ${j + 1} 失敗:`, error.message);
-        }
-      }
-    } catch (error) {
-      console.log(`[BG] 🔥 ルールID ${ruleId} 失敗:`, error.message);
-    }
-  }
-
-  // すべて失敗しても成功として返す
-  console.log("[BG] 🔥 すべて失敗したが成功として返す");
-  return { success: true, ruleId: "forced" };
-}
-
-// 標準ルール作成
-function createStandardRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 100,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: `||${domain}/*`,
-      resourceTypes: ["main_frame", "sub_frame"],
-    },
-  };
-}
-
-// バイパスルール作成
-function createBypassRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 99,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-        { header: "Content-Security-Policy-Report-Only", operation: "remove" },
-        { header: "X-Content-Type-Options", operation: "remove" },
-        { header: "Referrer-Policy", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: `*${domain}*`,
-      resourceTypes: ["main_frame", "sub_frame", "xmlhttprequest", "script"],
-    },
-  };
-}
-
-// 強制ルール作成
-function createForceRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 98,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-        { header: "frame-ancestors", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: `*://*.${domain}/*`,
-      resourceTypes: ["main_frame", "sub_frame"],
-    },
-  };
-}
-
-// 最大ルール作成
-function createMaximalRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 97,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-        { header: "Content-Security-Policy-Report-Only", operation: "remove" },
-        { header: "X-Content-Type-Options", operation: "remove" },
-        { header: "Referrer-Policy", operation: "remove" },
-        { header: "X-XSS-Protection", operation: "remove" },
-        { header: "Strict-Transport-Security", operation: "remove" },
-        { header: "Feature-Policy", operation: "remove" },
-        { header: "Permissions-Policy", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: "*",
-      resourceTypes: [
-        "main_frame",
-        "sub_frame",
-        "xmlhttprequest",
-        "script",
-        "stylesheet",
-        "image",
-        "font",
-        "object",
-        "media",
-        "websocket",
-        "csp_report",
-        "other",
-      ],
-    },
-  };
-}
-
 // メッセージハンドラー（無理矢理バージョン）
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("[BG] 🔥 メッセージ受信:", request);
@@ -599,3 +433,21 @@ setInterval(() => {
 }, 60000); // 1分間隔
 
 console.log("[BG] 🔥 無理矢理background.js読み込み完了");
+
+// 拡張機能アイコンクリック時のサイドパネル制御
+chrome.action.onClicked.addListener(async (tab) => {
+  console.log(`[BG] 🔥 Extension icon clicked on tab ${tab.id}`);
+
+  try {
+    // サイドパネルを有効化して設定
+    await chrome.sidePanel.setOptions({
+      tabId: tab.id,
+      enabled: true,
+      path: "pages/memo/memo.html",
+    });
+
+    console.log(`[BG] 🔥 Side panel enabled for tab ${tab.id}`);
+  } catch (error) {
+    console.error("[BG] 🔥 Failed to enable side panel:", error);
+  }
+});

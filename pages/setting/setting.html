@@ -56,7 +56,7 @@
       </div>
 
       <!-- 詳細パネル（初期状態では非表示） -->
-      <section class="setting-detail" id="setting-detail" style="display: none">
+      <section class="setting-detail" id="setting-detail">
         <!-- 説明パネル -->
         <div class="detail-panel show" id="description-panel">
           <h3 class="description-title">
@@ -106,12 +106,7 @@
                   >または、ここにファイルをドラッグ&ドロップ</span
                 >
               </div>
-              <input
-                type="file"
-                id="backup-file-input"
-                accept=".json"
-                style="display: none"
-              />
+              <input type="file" id="backup-file-input" accept=".json" />
               <button class="btn-select-file" id="btn-select-file">
                 <i class="bi bi-folder2-open"></i>
                 ファイルを選択
@@ -119,7 +114,7 @@
             </div>
 
             <!-- ファイル情報表示エリア -->
-            <div class="file-info" id="file-info" style="display: none">
+            <div class="file-info" id="file-info">
               <div class="file-info-header">
                 <i class="bi bi-file-earmark-text"></i>
                 <span class="file-name" id="file-name"></span>
@@ -133,11 +128,7 @@
             </div>
 
             <!-- インポートオプション -->
-            <div
-              class="import-options"
-              id="import-options"
-              style="display: none"
-            >
+            <div class="import-options" id="import-options">
               <h4 class="options-title">
                 <i class="bi bi-gear"></i>
                 インポートオプション
@@ -164,11 +155,7 @@
             </div>
 
             <!-- インポート実行ボタン -->
-            <div
-              class="import-actions"
-              id="import-actions"
-              style="display: none"
-            >
+            <div class="import-actions" id="import-actions">
               <button class="btn-import" id="btn-import">
                 <i class="bi bi-download"></i>
                 インポートを実行

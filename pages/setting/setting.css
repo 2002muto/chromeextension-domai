@@ -108,6 +108,26 @@
   z-index: 1;
 }
 
+#setting-detail {
+  display: none;
+}
+
+#backup-file-input {
+  display: none;
+}
+
+#file-info {
+  display: none;
+}
+
+#import-options {
+  display: none;
+}
+
+#import-actions {
+  display: none;
+}
+
 /* パネル専用のパディング調整 */
 #custom-panel {
   padding: 24px;

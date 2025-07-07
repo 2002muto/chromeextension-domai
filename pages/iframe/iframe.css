@@ -354,3 +354,11 @@ body {
 }
 
 /* 🔥 無理矢理 iframe.css 読み込み完了 */
+
+.iframe-main {
+  height: calc(100vh - 140px);
+}
+
+#loginInfo {
+  display: none;
+}
