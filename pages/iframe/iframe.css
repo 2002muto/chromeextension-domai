@@ -366,6 +366,8 @@ body {
   position: relative;
   min-width: 0;
   flex-grow: 1;
+  flex-basis: 0;
+  width: 100%;
 }
 
 .history-header {
@@ -648,6 +650,7 @@ body {
   align-items: center;
   gap: 0;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .search-btns-wrapper .new-search-btn {

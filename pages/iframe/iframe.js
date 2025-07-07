@@ -670,4 +670,21 @@ window.debugIframe = () => {
   console.log("ログイン対応サイト:", LOGIN_SITES);
 };
 
+// 新しい検索ボタンのイベント
+const newSearchBtn = document.querySelector(".new-search-btn");
+if (newSearchBtn) {
+  newSearchBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (urlInput && urlInput.value.trim()) {
+      const query = urlInput.value.trim();
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+        query
+      )}`;
+      window.open(searchUrl, "_blank");
+    } else {
+      urlInput.focus();
+    }
+  });
+}
+
 console.log("[iframe] 🔥 無理矢理 iframe.js 初期化完了");

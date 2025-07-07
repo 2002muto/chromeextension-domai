@@ -93,10 +93,13 @@ body {
   /* フッターの固定スタイルは共通なので、特別な処理は不要 */
 }
 
-/* 編集モード時のコンテンツ高さ調整 */
+/* 編集モード時のコンテンツ高さ調整 - MEMO一覧と統一 */
 .memo-content.edit-mode {
-  height: calc(100vh - 172px); /* 共通の高さ設定を適用 */
-  padding-bottom: 24px; /* フッターは固定なので通常のパディング */
+  background: #2d2d2d;
+  border-radius: 12px;
+  margin: 32px 16px 16px 16px; /* MEMO一覧と完全統一 */
+  height: calc(100vh - 138px) !important; /* MEMO一覧と完全統一 */
+  padding-bottom: 0; /* フッターは固定なので余白不要 */
 }
 /* ─── スクロールバーのスタイル ─── */
 .memo-content::-webkit-scrollbar {

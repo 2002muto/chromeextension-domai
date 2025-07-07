@@ -43,161 +43,272 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
     existingDialog.remove();
   }
 
-  // ダイアログHTML作成
+  // ダイアログHTML作成 - 図に基づいた階層構造
   const dialog = document.createElement("div");
   dialog.className = "save-confirm-dialog";
   dialog.innerHTML = `
     <div class="dialog-overlay">
       <div class="dialog-content">
         <div class="dialog-header">
-          <i class="${iconClass} dialog-icon"></i>
-          <h3 class="dialog-title">${title}</h3>
+          <div class="dialog-icon-wrapper">
+            <i class="${iconClass} dialog-icon"></i>
+          </div>
+          <div class="dialog-title-wrapper">
+            <h3 class="dialog-title">${title}</h3>
+          </div>
         </div>
         <div class="dialog-body">
-          <p class="dialog-message">${message}</p>
+          <div class="dialog-message-wrapper">
+            <p class="dialog-message">${message}</p>
+          </div>
         </div>
         <div class="dialog-footer">
-          ${
-            showDiscard
-              ? `<button class="dialog-btn discard-btn">${discardLabel}</button>`
-              : ""
-          }
-          ${
-            showCancel
-              ? `<button class="dialog-btn cancel-btn">${cancelLabel}</button>`
-              : ""
-          }
-          ${
-            showSave
-              ? `<button class="dialog-btn save-btn">${saveLabel}</button>`
-              : ""
-          }
+          <div class="dialog-buttons-wrapper">
+            ${
+              showDiscard
+                ? `<button class="dialog-btn discard-btn" data-action="discard">
+                     <i class="bi bi-trash3"></i>
+                     <span>${discardLabel}</span>
+                   </button>`
+                : ""
+            }
+            ${
+              showCancel
+                ? `<button class="dialog-btn cancel-btn" data-action="cancel">
+                     <i class="bi bi-x-circle"></i>
+                     <span>${cancelLabel}</span>
+                   </button>`
+                : ""
+            }
+            ${
+              showSave
+                ? `<button class="dialog-btn save-btn" data-action="save">
+                     <i class="bi bi-check-circle"></i>
+                     <span>${saveLabel}</span>
+                   </button>`
+                : ""
+            }
+          </div>
         </div>
       </div>
     </div>
   `;
 
-  // スタイルを動的に追加
+  // 改善されたスタイル - 図に基づいた階層構造とモダンデザイン
   if (!document.querySelector("#save-confirm-styles")) {
     const styles = document.createElement("style");
     styles.id = "save-confirm-styles";
     styles.textContent = `
+      /* ダイアログオーバーレイ - 最上位層 */
       .save-confirm-dialog {
         position: fixed !important;
-        top: 0; left: 0; right: 0; bottom: 0;
-        z-index: 99999 !important;
+        top: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        bottom: 0 !important;
+        z-index: 999999 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        pointer-events: auto;
+        pointer-events: auto !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        box-sizing: border-box !important;
       }
+      
+      /* ダイアログオーバーレイ背景 */
       .save-confirm-dialog .dialog-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.6) !important;
-        backdrop-filter: blur(6px) !important;
-        animation: fadeIn 0.2s ease-out;
+        position: absolute !important;
+        top: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.75) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        animation: dialogFadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 999998 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
       }
+      
+      /* ダイアログコンテンツ - メインコンテナ */
       .save-confirm-dialog .dialog-content {
-        position: relative;
-        background: #23272f;
-        border-radius: 16px;
-        min-width: 320px;
+        position: relative !important;
+        background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%);
+        border-radius: 20px;
+        min-width: 340px;
         max-width: 90vw;
         width: 100%;
-        max-width: 400px;
-        margin: 0;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.45);
-        animation: slideDownPop 0.3s cubic-bezier(.23,1.01,.32,1) both;
-        border: 1px solid rgba(255,255,255,0.08);
+        max-width: 420px;
+        margin: 20px auto !important;
+        box-shadow: 
+          0 20px 60px rgba(0, 0, 0, 0.6),
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        z-index: 999999 !important;
+        transform: translate(0, 0) !important;
       }
+      
+      /* ダイアログヘッダー */
       .save-confirm-dialog .dialog-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 24px 24px 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        gap: 16px;
+        padding: 28px 28px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
       }
+      
+      .save-confirm-dialog .dialog-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+        flex-shrink: 0;
+      }
+      
       .save-confirm-dialog .dialog-icon {
-        font-size: 28px;
-        color: #3b82f6;
+        font-size: 24px;
+        color: #ffffff;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
       }
+      
+      .save-confirm-dialog .dialog-title-wrapper {
+        flex: 1;
+        min-width: 0;
+      }
+      
       .save-confirm-dialog .dialog-title {
-        color: #fff;
-        font-size: 1.15rem;
+        color: #ffffff;
+        font-size: 1.25rem;
         font-weight: 700;
         margin: 0;
+        line-height: 1.3;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
+      
+      /* ダイアログボディ */
       .save-confirm-dialog .dialog-body {
-        padding: 16px 24px;
+        padding: 24px 28px;
+        flex: 1;
       }
+      
+      .save-confirm-dialog .dialog-message-wrapper {
+        width: 100%;
+      }
+      
       .save-confirm-dialog .dialog-message {
         color: #e2e8f0;
-        font-size: 1rem;
-        line-height: 1.5;
+        font-size: 1.05rem;
+        line-height: 1.6;
         margin: 0;
+        text-align: left;
       }
+      
+      /* ダイアログフッター */
       .save-confirm-dialog .dialog-footer {
+        padding: 20px 28px 28px;
+        background: rgba(0, 0, 0, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      
+      .save-confirm-dialog .dialog-buttons-wrapper {
         display: flex;
         gap: 12px;
-        padding: 18px 24px 24px;
         justify-content: flex-end;
-        background: transparent;
+        flex-wrap: wrap;
       }
-      .save-confirm-dialog .dialog-btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        min-width: 90px;
-        transition: all 0.2s;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      }
-      .save-confirm-dialog .discard-btn {
-        background: #dc3545 !important;
-        color: #fff !important;
-      }
-      .save-confirm-dialog .discard-btn:hover {
-        background: #b91c1c !important;
-      }
-      .save-confirm-dialog .cancel-btn {
-        background: #4a5568 !important;
-        color: #fff !important;
-      }
-      .save-confirm-dialog .cancel-btn:hover {
-        background: #374151 !important;
-      }
-      .save-confirm-dialog .save-btn {
-        background: #22c55e !important;
-        color: #fff !important;
-      }
-      .save-confirm-dialog .save-btn:hover {
-        background: #16a34a !important;
-      }
-      .save-confirm-dialog .dialog-content.closing {
-        animation: slideUpFade 0.2s ease-in forwards;
-      }
-      .save-confirm-dialog .dialog-overlay.closing {
-        animation: fadeOut 0.2s ease-in forwards;
-      }
-      @keyframes fadeIn {
+      
+      /* キーフレームアニメーション */
+      @keyframes dialogFadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
       }
-      @keyframes slideDownPop {
-        from { opacity: 0; transform: translateY(-48px) scale(0.98);}
-        to { opacity: 1; transform: translateY(0) scale(1);}
-      }
-      @keyframes slideUpFade {
-        to { opacity: 0; transform: translateY(-24px) scale(0.98);}
-      }
-      @keyframes fadeOut {
+      
+      @keyframes dialogFadeOut {
+        from { opacity: 1; }
         to { opacity: 0; }
+      }
+      
+      @keyframes dialogSlideIn {
+        from { 
+          opacity: 0; 
+          transform: translateY(-40px) scale(0.95);
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+      }
+      
+      @keyframes dialogSlideOut {
+        from { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+        to { 
+          opacity: 0; 
+          transform: translateY(-20px) scale(0.98);
+        }
+      }
+      
+      /* レスポンシブデザイン */
+      @media (max-width: 480px) {
+        .save-confirm-dialog .dialog-content {
+          min-width: 300px;
+          margin: 16px;
+          border-radius: 16px;
+        }
+        
+        .save-confirm-dialog .dialog-header {
+          padding: 24px 24px 16px;
+          gap: 12px;
+        }
+        
+        .save-confirm-dialog .dialog-icon-wrapper {
+          width: 40px;
+          height: 40px;
+        }
+        
+        .save-confirm-dialog .dialog-icon {
+          font-size: 20px;
+        }
+        
+        .save-confirm-dialog .dialog-title {
+          font-size: 1.1rem;
+        }
+        
+        .save-confirm-dialog .dialog-body {
+          padding: 20px 24px;
+        }
+        
+        .save-confirm-dialog .dialog-message {
+          font-size: 1rem;
+        }
+        
+        .save-confirm-dialog .dialog-footer {
+          padding: 16px 24px 24px;
+        }
+        
+        .save-confirm-dialog .dialog-buttons-wrapper {
+          flex-direction: column;
+          gap: 8px;
+        }
       }
     `;
     document.head.appendChild(styles);
@@ -206,12 +317,211 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
   // body に追加
   document.body.appendChild(dialog);
 
+  // スタイル強制適用（他のCSSの干渉を防ぐ）
+  dialog.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    box-sizing: border-box !important;
+  `;
+
+  // ダイアログ要素のスタイルを確実に適用
+  const dialogContent = dialog.querySelector(".dialog-content");
+  const dialogOverlay = dialog.querySelector(".dialog-overlay");
+  const dialogDiscardBtn = dialog.querySelector(".discard-btn");
+  const dialogCancelBtn = dialog.querySelector(".cancel-btn");
+  const dialogSaveBtn = dialog.querySelector(".save-btn");
+  const header = dialog.querySelector(".dialog-header");
+  const iconWrapper = dialog.querySelector(".dialog-icon-wrapper");
+  const icon = dialog.querySelector(".dialog-icon");
+
+  // 各要素に確実にスタイルを適用
+  if (dialogOverlay) {
+    dialogOverlay.style.cssText = `
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(0, 0, 0, 0.75) !important;
+      backdrop-filter: blur(8px) !important;
+      z-index: 999998 !important;
+      width: 100% !important;
+      height: 100% !important;
+    `;
+  }
+
+  if (dialogContent) {
+    dialogContent.style.cssText = `
+      position: relative !important;
+      background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%) !important;
+      border-radius: 20px !important;
+      min-width: 340px !important;
+      max-width: 420px !important;
+      width: 100% !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      z-index: 999999 !important;
+      margin: 20px auto !important;
+    `;
+  }
+
+  if (header) {
+    header.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      padding: 28px 28px 20px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+    `;
+  }
+
+  if (iconWrapper) {
+    iconWrapper.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+      flex-shrink: 0 !important;
+    `;
+  }
+
+  if (icon) {
+    icon.style.cssText = `
+      font-size: 24px !important;
+      color: #ffffff !important;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+    `;
+  }
+
+  // ボタンスタイルを確実に適用
+  if (dialogDiscardBtn) {
+    dialogDiscardBtn.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 24px !important;
+      border: none !important;
+      border-radius: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      min-width: 100px !important;
+      background: linear-gradient(135deg, #dc3545 0%, #b91c1c 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(220, 53, 69, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+      transition: all 0.25s ease !important;
+    `;
+
+    // ホバー効果を追加
+    dialogDiscardBtn.addEventListener("mouseenter", () => {
+      dialogDiscardBtn.style.background =
+        "linear-gradient(135deg, #b91c1c 0%, #991b1b 100%)";
+      dialogDiscardBtn.style.transform = "translateY(-2px)";
+      dialogDiscardBtn.style.boxShadow = "0 6px 20px rgba(220, 53, 69, 0.4)";
+    });
+    dialogDiscardBtn.addEventListener("mouseleave", () => {
+      dialogDiscardBtn.style.background =
+        "linear-gradient(135deg, #dc3545 0%, #b91c1c 100%)";
+      dialogDiscardBtn.style.transform = "translateY(0)";
+      dialogDiscardBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
+  if (dialogCancelBtn) {
+    dialogCancelBtn.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 24px !important;
+      border: none !important;
+      border-radius: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      min-width: 100px !important;
+      background: linear-gradient(135deg, #4a5568 0%, #374151 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(74, 85, 104, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+      transition: all 0.25s ease !important;
+    `;
+
+    // ホバー効果を追加
+    dialogCancelBtn.addEventListener("mouseenter", () => {
+      dialogCancelBtn.style.background =
+        "linear-gradient(135deg, #374151 0%, #2d3748 100%)";
+      dialogCancelBtn.style.transform = "translateY(-2px)";
+      dialogCancelBtn.style.boxShadow = "0 6px 20px rgba(74, 85, 104, 0.4)";
+    });
+    dialogCancelBtn.addEventListener("mouseleave", () => {
+      dialogCancelBtn.style.background =
+        "linear-gradient(135deg, #4a5568 0%, #374151 100%)";
+      dialogCancelBtn.style.transform = "translateY(0)";
+      dialogCancelBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
+  if (dialogSaveBtn) {
+    dialogSaveBtn.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 24px !important;
+      border: none !important;
+      border-radius: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      min-width: 100px !important;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(34, 197, 94, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+      transition: all 0.25s ease !important;
+    `;
+
+    // ホバー効果を追加
+    dialogSaveBtn.addEventListener("mouseenter", () => {
+      dialogSaveBtn.style.background =
+        "linear-gradient(135deg, #16a34a 0%, #15803d 100%)";
+      dialogSaveBtn.style.transform = "translateY(-2px)";
+      dialogSaveBtn.style.boxShadow = "0 6px 20px rgba(34, 197, 94, 0.4)";
+    });
+    dialogSaveBtn.addEventListener("mouseleave", () => {
+      dialogSaveBtn.style.background =
+        "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)";
+      dialogSaveBtn.style.transform = "translateY(0)";
+      dialogSaveBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
   // イベントリスナー設定
-  const overlay = dialog.querySelector(".dialog-overlay");
-  const content = dialog.querySelector(".dialog-content");
-  const discardBtn = dialog.querySelector(".discard-btn");
-  const cancelBtn = dialog.querySelector(".cancel-btn");
-  const saveBtn = dialog.querySelector(".save-btn");
+  const overlay = dialogOverlay;
+  const content = dialogContent;
+  const discardBtn = dialogDiscardBtn;
+  const cancelBtn = dialogCancelBtn;
+  const saveBtn = dialogSaveBtn;
 
   // 閉じる処理
   function closeDialog() {
@@ -219,59 +529,107 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
     overlay.classList.add("closing");
     setTimeout(() => {
       dialog.remove();
-    }, 200);
+    }, 250);
   }
 
+  // ボタンイベント
   if (discardBtn) {
-    discardBtn.addEventListener("click", () => {
+    discardBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       closeDialog();
       if (onDiscard) onDiscard();
     });
   }
   if (cancelBtn) {
-    cancelBtn.addEventListener("click", () => {
+    cancelBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       closeDialog();
       if (onCancel) onCancel();
     });
   }
   if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
+    saveBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       closeDialog();
       if (onSave) onSave();
     });
   }
 
-  // オーバーレイクリックで閉じる
+  // オーバーレイクリックで閉じる（キャンセル扱い）
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
       closeDialog();
+      if (onCancel) onCancel();
     }
   });
 
-  // ESCキーで閉じる
+  // ESCキーで閉じる（キャンセル扱い）
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
+      e.preventDefault();
       closeDialog();
+      if (onCancel) onCancel();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+    // Enterキーで保存
+    if (e.key === "Enter" && saveBtn) {
+      e.preventDefault();
+      closeDialog();
+      if (onSave) onSave();
       document.removeEventListener("keydown", handleKeyDown);
     }
   };
   document.addEventListener("keydown", handleKeyDown);
 
-  // フォーカス管理
+  // フォーカス管理とアクセシビリティ
   setTimeout(() => {
-    if (saveBtn) saveBtn.focus();
-    else if (cancelBtn) cancelBtn.focus();
-    else if (discardBtn) discardBtn.focus();
+    // 最初は保存ボタンにフォーカス
+    if (saveBtn) {
+      saveBtn.focus();
+    } else if (cancelBtn) {
+      cancelBtn.focus();
+    } else if (discardBtn) {
+      discardBtn.focus();
+    }
   }, 100);
+
+  // フォーカストラップ（ダイアログ内でのタブ移動制限）
+  const focusableElements = dialog.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  const firstFocusableElement = focusableElements[0];
+  const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+  dialog.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusableElement) {
+          lastFocusableElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastFocusableElement) {
+          firstFocusableElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  });
 };
 
 /* ━━━━━━━━━━ 汎用削除確認ダイアログ ━━━━━━━━━━ */
 window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   const {
-    title = "削除しますか？",
-    message = "この操作は元に戻すことができません。",
+    title: deleteTitle = "削除の確認",
+    message:
+      deleteMessage = "選択された1件のメモを完全に削除しますか？<br><span style='color: #dc3545; font-weight: bold;'>この操作は取り消せません。</span>",
     onConfirm,
     onCancel,
+    confirmLabel = "確認",
+    cancelLabel = "キャンセル",
+    confirmColor = "#3b82f6",
+    cancelColor = "#4a5568",
+    iconClass = "bi bi-question-circle",
   } = options;
 
   // 既存のダイアログがあれば削除
@@ -280,150 +638,256 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
     existingDialog.remove();
   }
 
-  // ダイアログHTML作成
+  // ダイアログHTML作成 - 保存確認ダイアログと同じ構造
   const dialog = document.createElement("div");
   dialog.className = "delete-confirm-dialog";
   dialog.innerHTML = `
     <div class="dialog-overlay">
       <div class="dialog-content">
         <div class="dialog-header">
-          <i class="bi bi-exclamation-triangle dialog-icon"></i>
-          <h3 class="dialog-title">${title}</h3>
+          <div class="dialog-icon-wrapper">
+            <i class="${iconClass} dialog-icon"></i>
+          </div>
+          <div class="dialog-title-wrapper">
+            <h3 class="dialog-title">${title}</h3>
+          </div>
         </div>
         <div class="dialog-body">
-          <p class="dialog-message">${message}</p>
+          <div class="dialog-message-wrapper">
+            <p class="dialog-message">${message}</p>
+          </div>
         </div>
         <div class="dialog-footer">
-          <button class="dialog-btn cancel-btn">キャンセル</button>
-          <button class="dialog-btn delete-btn">削除</button>
+          <div class="dialog-buttons-wrapper">
+            <button class="dialog-btn cancel-btn" data-action="cancel">
+              <i class="bi bi-x-circle"></i>
+              <span>${cancelLabel}</span>
+            </button>
+            <button class="dialog-btn confirm-btn" data-action="confirm">
+              <i class="bi bi-check-circle"></i>
+              <span>${confirmLabel}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   `;
 
-  // スタイルを動的に追加
+  // 改善されたスタイル - 保存確認ダイアログと統一
   if (!document.querySelector("#delete-confirm-styles")) {
     const styles = document.createElement("style");
     styles.id = "delete-confirm-styles";
     styles.textContent = `
+      /* ダイアログオーバーレイ - 最上位層 */
       .delete-confirm-dialog {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        position: fixed !important;
+        top: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        bottom: 0 !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        pointer-events: auto !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        box-sizing: border-box !important;
       }
-
+      
+      /* ダイアログオーバーレイ背景 */
       .delete-confirm-dialog .dialog-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        animation: fadeIn 0.2s ease-out;
+        position: absolute !important;
+        top: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.75) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        animation: dialogFadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 999998 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
       }
-
+      
+      /* ダイアログコンテンツ - メインコンテナ */
       .delete-confirm-dialog .dialog-content {
-        position: relative;
-        background: #2d2d2d;
-        border-radius: 12px;
-        min-width: 280px;
-        max-width: calc(100vw - 40px);
-        width: 90%;
-        margin: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        animation: slideUp 0.3s ease-out;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative !important;
+        background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%);
+        border-radius: 20px;
+        min-width: 340px;
+        max-width: 90vw;
+        width: 100%;
+        max-width: 420px;
+        margin: 20px auto !important;
+        box-shadow: 
+          0 20px 60px rgba(0, 0, 0, 0.6),
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        z-index: 999999 !important;
+        transform: translate(0, 0) !important;
       }
-
+      
+      /* ダイアログヘッダー */
       .delete-confirm-dialog .dialog-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 20px 20px 16px;
+        gap: 16px;
+        padding: 28px 28px 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
       }
-
+      
+      .delete-confirm-dialog .dialog-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+        flex-shrink: 0;
+      }
+      
       .delete-confirm-dialog .dialog-icon {
         font-size: 24px;
-        color: #f59e0b;
+        color: #ffffff;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
       }
-
+      
+      .delete-confirm-dialog .dialog-title-wrapper {
+        flex: 1;
+        min-width: 0;
+      }
+      
       .delete-confirm-dialog .dialog-title {
         color: #ffffff;
-        font-size: 1.1rem;
-        font-weight: 600;
+        font-size: 1.25rem;
+        font-weight: 700;
         margin: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
+        line-height: 1.3;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
-
+      
+      /* ダイアログボディ */
       .delete-confirm-dialog .dialog-body {
-        padding: 16px 20px;
+        padding: 24px 28px;
+        flex: 1;
       }
-
+      
+      .delete-confirm-dialog .dialog-message-wrapper {
+        width: 100%;
+      }
+      
       .delete-confirm-dialog .dialog-message {
         color: #e2e8f0;
-        font-size: 0.95rem;
-        line-height: 1.4;
+        font-size: 1.05rem;
+        line-height: 1.6;
         margin: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
+        text-align: left;
       }
-
+      
+      /* ダイアログフッター */
       .delete-confirm-dialog .dialog-footer {
+        padding: 20px 28px 28px;
+        background: rgba(0, 0, 0, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      
+      .delete-confirm-dialog .dialog-buttons-wrapper {
         display: flex;
-        gap: 8px;
-        padding: 16px 20px 20px;
+        gap: 12px;
         justify-content: flex-end;
         flex-wrap: wrap;
       }
-
-      .delete-confirm-dialog .dialog-btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        min-width: 70px;
+      
+      /* キーフレームアニメーション */
+      @keyframes dialogFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
-
-      .delete-confirm-dialog .cancel-btn {
-        background: #4a5568;
-        color: #ffffff;
+      
+      @keyframes dialogFadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
       }
-
-      .delete-confirm-dialog .cancel-btn:hover {
-        background: #5a6578;
-        transform: translateY(-1px);
+      
+      @keyframes dialogSlideIn {
+        from { 
+          opacity: 0; 
+          transform: translateY(-40px) scale(0.95);
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
       }
-
-      .delete-confirm-dialog .delete-btn {
-        background: #dc3545;
-        color: #ffffff;
+      
+      @keyframes dialogSlideOut {
+        from { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+        to { 
+          opacity: 0; 
+          transform: translateY(-20px) scale(0.98);
+        }
       }
-
-      .delete-confirm-dialog .delete-btn:hover {
-        background: #c82333;
-        transform: translateY(-1px);
-      }
-
-      .delete-confirm-dialog .dialog-content.closing {
-        animation: slideDown 0.2s ease-in forwards;
-      }
-
-      .delete-confirm-dialog .dialog-overlay.closing {
-        animation: fadeOut 0.2s ease-in forwards;
+      
+      /* レスポンシブデザイン */
+      @media (max-width: 480px) {
+        .delete-confirm-dialog .dialog-content {
+          min-width: 300px;
+          margin: 16px;
+          border-radius: 16px;
+        }
+        
+        .delete-confirm-dialog .dialog-header {
+          padding: 24px 24px 16px;
+          gap: 12px;
+        }
+        
+        .delete-confirm-dialog .dialog-icon-wrapper {
+          width: 40px;
+          height: 40px;
+        }
+        
+        .delete-confirm-dialog .dialog-icon {
+          font-size: 20px;
+        }
+        
+        .delete-confirm-dialog .dialog-title {
+          font-size: 1.1rem;
+        }
+        
+        .delete-confirm-dialog .dialog-body {
+          padding: 20px 24px;
+        }
+        
+        .delete-confirm-dialog .dialog-message {
+          font-size: 1rem;
+        }
+        
+        .delete-confirm-dialog .dialog-footer {
+          padding: 16px 24px 24px;
+        }
+        
+        .delete-confirm-dialog .dialog-buttons-wrapper {
+          flex-direction: column;
+          gap: 8px;
+        }
       }
     `;
     document.head.appendChild(styles);
@@ -432,11 +896,177 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   // body に追加
   document.body.appendChild(dialog);
 
+  // スタイル強制適用（他のCSSの干渉を防ぐ）
+  dialog.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    box-sizing: border-box !important;
+  `;
+
+  // ダイアログ要素のスタイルを確実に適用
+  const deleteContent = dialog.querySelector(".dialog-content");
+  const deleteOverlay = dialog.querySelector(".dialog-overlay");
+  const deleteCancelBtn = dialog.querySelector(".cancel-btn");
+  const deleteConfirmBtn = dialog.querySelector(".confirm-btn");
+  const deleteHeader = dialog.querySelector(".dialog-header");
+  const deleteIconWrapper = dialog.querySelector(".dialog-icon-wrapper");
+  const deleteIcon = dialog.querySelector(".dialog-icon");
+
+  // 各要素に確実にスタイルを適用
+  if (deleteOverlay) {
+    deleteOverlay.style.cssText = `
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(0, 0, 0, 0.75) !important;
+      backdrop-filter: blur(8px) !important;
+      z-index: 999998 !important;
+      width: 100% !important;
+      height: 100% !important;
+      animation: dialogFadeIn 0.25s ease-out !important;
+    `;
+  }
+
+  if (deleteContent) {
+    deleteContent.style.cssText = `
+      position: relative !important;
+      background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%) !important;
+      border-radius: 20px !important;
+      min-width: 340px !important;
+      max-width: 420px !important;
+      width: 100% !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      z-index: 999999 !important;
+      margin: 20px auto !important;
+      animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    `;
+  }
+
+  if (deleteHeader) {
+    deleteHeader.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      padding: 28px 28px 20px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+    `;
+  }
+
+  if (deleteIconWrapper) {
+    deleteIconWrapper.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+      flex-shrink: 0 !important;
+    `;
+  }
+
+  if (deleteIcon) {
+    deleteIcon.style.cssText = `
+      font-size: 24px !important;
+      color: #ffffff !important;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+    `;
+  }
+
+  // ボタンスタイルを確実に適用
+  if (deleteCancelBtn) {
+    deleteCancelBtn.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 24px !important;
+      border: none !important;
+      border-radius: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      min-width: 100px !important;
+      background: linear-gradient(135deg, #4a5568 0%, #374151 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(74, 85, 104, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+      transition: all 0.25s ease !important;
+    `;
+
+    // ホバー効果を追加
+    deleteCancelBtn.addEventListener("mouseenter", () => {
+      deleteCancelBtn.style.background =
+        "linear-gradient(135deg, #374151 0%, #2d3748 100%)";
+      deleteCancelBtn.style.transform = "translateY(-2px)";
+      deleteCancelBtn.style.boxShadow = "0 6px 20px rgba(74, 85, 104, 0.4)";
+    });
+    deleteCancelBtn.addEventListener("mouseleave", () => {
+      deleteCancelBtn.style.background =
+        "linear-gradient(135deg, #4a5568 0%, #374151 100%)";
+      deleteCancelBtn.style.transform = "translateY(0)";
+      deleteCancelBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
+  if (deleteConfirmBtn) {
+    deleteConfirmBtn.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 24px !important;
+      border: none !important;
+      border-radius: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      min-width: 100px !important;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(59, 130, 246, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+      transition: all 0.25s ease !important;
+    `;
+
+    // ホバー効果を追加
+    deleteConfirmBtn.addEventListener("mouseenter", () => {
+      deleteConfirmBtn.style.background =
+        "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)";
+      deleteConfirmBtn.style.transform = "translateY(-2px)";
+      deleteConfirmBtn.style.boxShadow = "0 6px 20px rgba(59, 130, 246, 0.4)";
+    });
+    deleteConfirmBtn.addEventListener("mouseleave", () => {
+      deleteConfirmBtn.style.background =
+        "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
+      deleteConfirmBtn.style.transform = "translateY(0)";
+      deleteConfirmBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
   // イベントリスナー設定
-  const overlay = dialog.querySelector(".dialog-overlay");
-  const content = dialog.querySelector(".dialog-content");
-  const cancelBtn = dialog.querySelector(".cancel-btn");
-  const deleteBtn = dialog.querySelector(".delete-btn");
+  const overlay = deleteOverlay;
+  const content = deleteContent;
+  const cancelBtn = deleteCancelBtn;
+  const confirmBtn = deleteConfirmBtn;
 
   // 閉じる処理
   function closeDialog() {
@@ -444,41 +1074,83 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
     overlay.classList.add("closing");
     setTimeout(() => {
       dialog.remove();
-    }, 200);
+    }, 250);
   }
 
-  // キャンセルボタン
-  cancelBtn.addEventListener("click", () => {
-    closeDialog();
-    if (onCancel) onCancel();
-  });
+  // ボタンイベント
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDialog();
+      if (onCancel) onCancel();
+    });
+  }
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDialog();
+      if (onConfirm) onConfirm();
+    });
+  }
 
-  // 削除ボタン
-  deleteBtn.addEventListener("click", () => {
-    closeDialog();
-    if (onConfirm) onConfirm();
-  });
-
-  // オーバーレイクリックで閉じる
+  // オーバーレイクリックで閉じる（キャンセル扱い）
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
       closeDialog();
+      if (onCancel) onCancel();
     }
   });
 
-  // ESCキーで閉じる
+  // ESCキーで閉じる（キャンセル扱い）
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
+      e.preventDefault();
       closeDialog();
+      if (onCancel) onCancel();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+    // Enterキーで確認
+    if (e.key === "Enter" && confirmBtn) {
+      e.preventDefault();
+      closeDialog();
+      if (onConfirm) onConfirm();
       document.removeEventListener("keydown", handleKeyDown);
     }
   };
   document.addEventListener("keydown", handleKeyDown);
 
-  // フォーカス管理
+  // フォーカス管理とアクセシビリティ
   setTimeout(() => {
-    cancelBtn.focus();
+    // 最初は確認ボタンにフォーカス
+    if (confirmBtn) {
+      confirmBtn.focus();
+    } else if (cancelBtn) {
+      cancelBtn.focus();
+    }
   }, 100);
+
+  // フォーカストラップ（ダイアログ内でのタブ移動制限）
+  const focusableElements = dialog.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  const firstFocusableElement = focusableElements[0];
+  const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+  dialog.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusableElement) {
+          lastFocusableElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastFocusableElement) {
+          firstFocusableElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  });
 };
 
 /* ━━━━━━━━━━ 汎用確認ダイアログ ━━━━━━━━━━ */
@@ -488,6 +1160,11 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
     message = "この操作を実行しますか？",
     onConfirm,
     onCancel,
+    confirmLabel = "確認",
+    cancelLabel = "キャンセル",
+    confirmColor = "#3b82f6",
+    cancelColor = "#4a5568",
+    iconClass = "bi bi-question-circle",
   } = options;
 
   // 既存のダイアログがあれば削除
@@ -496,181 +1173,255 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
     existingDialog.remove();
   }
 
-  // ダイアログHTML作成
+  // ダイアログHTML作成 - 保存確認ダイアログと同じ構造
   const dialog = document.createElement("div");
   dialog.className = "confirm-dialog";
   dialog.innerHTML = `
     <div class="dialog-overlay">
       <div class="dialog-content">
         <div class="dialog-header">
-          <i class="bi bi-question-circle dialog-icon"></i>
-          <h3 class="dialog-title">${title}</h3>
+          <div class="dialog-icon-wrapper">
+            <i class="${iconClass} dialog-icon"></i>
+          </div>
+          <div class="dialog-title-wrapper">
+            <h3 class="dialog-title">${title}</h3>
+          </div>
         </div>
         <div class="dialog-body">
-          <p class="dialog-message">${message}</p>
+          <div class="dialog-message-wrapper">
+            <p class="dialog-message">${message}</p>
+          </div>
         </div>
         <div class="dialog-footer">
-          <button class="dialog-btn cancel-btn">キャンセル</button>
-          <button class="dialog-btn confirm-btn">確認</button>
+          <div class="dialog-buttons-wrapper">
+            <button class="dialog-btn cancel-btn" data-action="cancel">
+              <i class="bi bi-x-circle"></i>
+              <span>${cancelLabel}</span>
+            </button>
+            <button class="dialog-btn confirm-btn" data-action="confirm">
+              <i class="bi bi-check-circle"></i>
+              <span>${confirmLabel}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   `;
 
-  // スタイルを動的に追加
+  // 改善されたスタイル - 保存確認ダイアログと統一
   if (!document.querySelector("#confirm-dialog-styles")) {
     const styles = document.createElement("style");
     styles.id = "confirm-dialog-styles";
     styles.textContent = `
+      /* ダイアログオーバーレイ - 最上位層 */
       .confirm-dialog {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        position: fixed !important;
+        top: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        bottom: 0 !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        pointer-events: auto !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        box-sizing: border-box !important;
       }
-
+      
+      /* ダイアログオーバーレイ背景 */
       .confirm-dialog .dialog-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        animation: fadeIn 0.2s ease-out;
+        position: absolute !important;
+        top: 0 !important; 
+        left: 0 !important; 
+        right: 0 !important; 
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.75) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        animation: dialogFadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 999998 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
       }
-
+      
+      /* ダイアログコンテンツ - メインコンテナ */
       .confirm-dialog .dialog-content {
-        position: relative;
-        background: #2d2d2d;
-        border-radius: 12px;
-        min-width: 280px;
-        max-width: calc(100vw - 40px);
-        width: 90%;
-        margin: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        animation: slideUp 0.3s ease-out;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative !important;
+        background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%);
+        border-radius: 20px;
+        min-width: 340px;
+        max-width: 90vw;
+        width: 100%;
+        max-width: 420px;
+        margin: 20px auto !important;
+        box-shadow: 
+          0 20px 60px rgba(0, 0, 0, 0.6),
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        z-index: 999999 !important;
+        transform: translate(0, 0) !important;
       }
-
+      
+      /* ダイアログヘッダー */
       .confirm-dialog .dialog-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 20px 20px 16px;
+        gap: 16px;
+        padding: 28px 28px 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
       }
-
+      
+      .confirm-dialog .dialog-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+        flex-shrink: 0;
+      }
+      
       .confirm-dialog .dialog-icon {
         font-size: 24px;
-        color: #3b82f6;
+        color: #ffffff;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
       }
-
+      
+      .confirm-dialog .dialog-title-wrapper {
+        flex: 1;
+        min-width: 0;
+      }
+      
       .confirm-dialog .dialog-title {
         color: #ffffff;
-        font-size: 1.1rem;
-        font-weight: 600;
+        font-size: 1.25rem;
+        font-weight: 700;
         margin: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
+        line-height: 1.3;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
-
+      
+      /* ダイアログボディ */
       .confirm-dialog .dialog-body {
-        padding: 16px 20px;
+        padding: 24px 28px;
+        flex: 1;
       }
-
+      
+      .confirm-dialog .dialog-message-wrapper {
+        width: 100%;
+      }
+      
       .confirm-dialog .dialog-message {
         color: #e2e8f0;
-        font-size: 0.95rem;
-        line-height: 1.4;
+        font-size: 1.05rem;
+        line-height: 1.6;
         margin: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
+        text-align: left;
       }
-
+      
+      /* ダイアログフッター */
       .confirm-dialog .dialog-footer {
+        padding: 20px 28px 28px;
+        background: rgba(0, 0, 0, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      
+      .confirm-dialog .dialog-buttons-wrapper {
         display: flex;
-        gap: 8px;
-        padding: 16px 20px 20px;
+        gap: 12px;
         justify-content: flex-end;
         flex-wrap: wrap;
       }
-
-      .confirm-dialog .dialog-btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        min-width: 70px;
-      }
-
-      .confirm-dialog .cancel-btn {
-        background: #4a5568;
-        color: #ffffff;
-      }
-
-      .confirm-dialog .cancel-btn:hover {
-        background: #5a6578;
-        transform: translateY(-1px);
-      }
-
-      .confirm-dialog .confirm-btn {
-        background: #3b82f6;
-        color: #ffffff;
-      }
-
-      .confirm-dialog .confirm-btn:hover {
-        background: #2563eb;
-        transform: translateY(-1px);
-      }
-
-      .confirm-dialog .dialog-content.closing {
-        animation: slideDown 0.2s ease-in forwards;
-      }
-
-      .confirm-dialog .dialog-overlay.closing {
-        animation: fadeOut 0.2s ease-in forwards;
-      }
-
-      @keyframes fadeIn {
+      
+      /* キーフレームアニメーション */
+      @keyframes dialogFadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
       }
-
-      @keyframes fadeOut {
+      
+      @keyframes dialogFadeOut {
         from { opacity: 1; }
         to { opacity: 0; }
       }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px) scale(0.95);
+      
+      @keyframes dialogSlideIn {
+        from { 
+          opacity: 0; 
+          transform: translateY(-40px) scale(0.95);
         }
-        to {
-          opacity: 1;
+        to { 
+          opacity: 1; 
           transform: translateY(0) scale(1);
         }
       }
-
-      @keyframes slideDown {
-        from {
-          opacity: 1;
+      
+      @keyframes dialogSlideOut {
+        from { 
+          opacity: 1; 
           transform: translateY(0) scale(1);
         }
-        to {
-          opacity: 0;
-          transform: translateY(20px) scale(0.95);
+        to { 
+          opacity: 0; 
+          transform: translateY(-20px) scale(0.98);
+        }
+      }
+      
+      /* レスポンシブデザイン */
+      @media (max-width: 480px) {
+        .confirm-dialog .dialog-content {
+          min-width: 300px;
+          margin: 16px;
+          border-radius: 16px;
+        }
+        
+        .confirm-dialog .dialog-header {
+          padding: 24px 24px 16px;
+          gap: 12px;
+        }
+        
+        .confirm-dialog .dialog-icon-wrapper {
+          width: 40px;
+          height: 40px;
+        }
+        
+        .confirm-dialog .dialog-icon {
+          font-size: 20px;
+        }
+        
+        .confirm-dialog .dialog-title {
+          font-size: 1.1rem;
+        }
+        
+        .confirm-dialog .dialog-body {
+          padding: 20px 24px;
+        }
+        
+        .confirm-dialog .dialog-message {
+          font-size: 1rem;
+        }
+        
+        .confirm-dialog .dialog-footer {
+          padding: 16px 24px 24px;
+        }
+        
+        .confirm-dialog .dialog-buttons-wrapper {
+          flex-direction: column;
+          gap: 8px;
         }
       }
     `;
@@ -680,11 +1431,160 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
   // DOMに追加
   document.body.appendChild(dialog);
 
-  // 要素取得
-  const overlay = dialog.querySelector(".dialog-overlay");
-  const content = dialog.querySelector(".dialog-content");
-  const cancelBtn = dialog.querySelector(".cancel-btn");
-  const confirmBtn = dialog.querySelector(".confirm-btn");
+  // スタイル強制適用（他のCSSの干渉を防ぐ）
+  dialog.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    box-sizing: border-box !important;
+  `;
+
+  // ダイアログ要素のスタイルを確実に適用
+  const confirmContent = dialog.querySelector(".dialog-content");
+  const confirmOverlay = dialog.querySelector(".dialog-overlay");
+  const confirmCancelBtn = dialog.querySelector(".cancel-btn");
+  const confirmConfirmBtn = dialog.querySelector(".confirm-btn");
+  const confirmHeader = dialog.querySelector(".dialog-header");
+  const confirmIconWrapper = dialog.querySelector(".dialog-icon-wrapper");
+  const confirmIcon = dialog.querySelector(".dialog-icon");
+
+  // 各要素に確実にスタイルを適用
+  if (confirmOverlay) {
+    confirmOverlay.style.cssText = `
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(0, 0, 0, 0.75) !important;
+      backdrop-filter: blur(8px) !important;
+      z-index: 999998 !important;
+      width: 100% !important;
+      height: 100% !important;
+      animation: dialogFadeIn 0.25s ease-out !important;
+    `;
+  }
+
+  if (confirmContent) {
+    confirmContent.style.cssText = `
+      position: relative !important;
+      background: linear-gradient(135deg, #2a2f3a 0%, #23272f 100%) !important;
+      border-radius: 20px !important;
+      min-width: 340px !important;
+      max-width: 420px !important;
+      width: 100% !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      z-index: 999999 !important;
+      margin: 20px auto !important;
+      animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    `;
+  }
+
+  if (confirmHeader) {
+    confirmHeader.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      padding: 28px 28px 20px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+    `;
+  }
+
+  if (confirmIconWrapper) {
+    confirmIconWrapper.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+      flex-shrink: 0 !important;
+    `;
+  }
+
+  if (confirmIcon) {
+    confirmIcon.style.cssText = `
+      font-size: 24px !important;
+      color: #ffffff !important;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+    `;
+  }
+
+  // タイトルとメッセージのスタイルも確実に適用
+  const confirmTitle = dialog.querySelector(".dialog-title");
+  const confirmMessage = dialog.querySelector(".dialog-message");
+  const body = dialog.querySelector(".dialog-body");
+  const footer = dialog.querySelector(".dialog-footer");
+  const buttonsWrapper = dialog.querySelector(".dialog-buttons-wrapper");
+
+  if (confirmTitle) {
+    confirmTitle.style.cssText = `
+      color: #ffffff !important;
+      font-size: 1.25rem !important;
+      font-weight: 700 !important;
+      margin: 0 !important;
+      line-height: 1.3 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    `;
+  }
+
+  if (confirmMessage) {
+    confirmMessage.style.cssText = `
+      color: #e2e8f0 !important;
+      font-size: 1.05rem !important;
+      line-height: 1.6 !important;
+      margin: 0 !important;
+      text-align: left !important;
+    `;
+  }
+
+  if (body) {
+    body.style.cssText = `
+      padding: 24px 28px !important;
+      flex: 1 !important;
+    `;
+  }
+
+  if (footer) {
+    footer.style.cssText = `
+      padding: 20px 28px 28px !important;
+      background: rgba(0, 0, 0, 0.1) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    `;
+  }
+
+  if (buttonsWrapper) {
+    buttonsWrapper.style.cssText = `
+      display: flex !important;
+      gap: 12px !important;
+      justify-content: flex-end !important;
+      flex-wrap: wrap !important;
+    `;
+  }
+
+  // イベントリスナー設定
+  const overlay = confirmOverlay;
+  const content = confirmContent;
+  const cancelBtn = confirmCancelBtn;
+  const confirmBtn = confirmConfirmBtn;
 
   // 閉じる処理
   function closeDialog() {
@@ -692,41 +1592,83 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
     overlay.classList.add("closing");
     setTimeout(() => {
       dialog.remove();
-    }, 200);
+    }, 250);
   }
 
-  // キャンセルボタン
-  cancelBtn.addEventListener("click", () => {
-    closeDialog();
-    if (onCancel) onCancel();
-  });
+  // ボタンイベント
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDialog();
+      if (onCancel) onCancel();
+    });
+  }
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDialog();
+      if (onConfirm) onConfirm();
+    });
+  }
 
-  // 確認ボタン
-  confirmBtn.addEventListener("click", () => {
-    closeDialog();
-    if (onConfirm) onConfirm();
-  });
-
-  // オーバーレイクリックで閉じる
+  // オーバーレイクリックで閉じる（キャンセル扱い）
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
       closeDialog();
+      if (onCancel) onCancel();
     }
   });
 
-  // ESCキーで閉じる
+  // ESCキーで閉じる（キャンセル扱い）
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
+      e.preventDefault();
       closeDialog();
+      if (onCancel) onCancel();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+    // Enterキーで確認
+    if (e.key === "Enter" && confirmBtn) {
+      e.preventDefault();
+      closeDialog();
+      if (onConfirm) onConfirm();
       document.removeEventListener("keydown", handleKeyDown);
     }
   };
   document.addEventListener("keydown", handleKeyDown);
 
-  // フォーカス管理
+  // フォーカス管理とアクセシビリティ
   setTimeout(() => {
-    confirmBtn.focus();
+    // 最初は確認ボタンにフォーカス
+    if (confirmBtn) {
+      confirmBtn.focus();
+    } else if (cancelBtn) {
+      cancelBtn.focus();
+    }
   }, 100);
+
+  // フォーカストラップ（ダイアログ内でのタブ移動制限）
+  const focusableElements = dialog.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  const firstFocusableElement = focusableElements[0];
+  const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+  dialog.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusableElement) {
+          lastFocusableElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastFocusableElement) {
+          firstFocusableElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  });
 };
 
 /* ━━━━━━━━━━ アーカイブアニメーション機能 ━━━━━━━━━━ */
