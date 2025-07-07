@@ -692,8 +692,14 @@ async function renderList() {
 
           // アニメーション付きで削除（アーカイブには保存しない）
           if (window.AppUtils && window.AppUtils.animateArchiveItem) {
-            li.classList.add("archive-item"); // Add class for animation
-            console.log("[PROMPT] archive-item class added for animation");
+            console.log("✅ [PROMPT DEBUG] AppUtils.animateArchiveItem 利用可能");
+            console.log("✅ [PROMPT DEBUG] 対象要素:", li);
+            console.log("✅ [PROMPT DEBUG] 要素のクラス:", li.className);
+            console.log("✅ [PROMPT DEBUG] 要素のスタイル:", li.style);
+
+            li.classList.add("archive-item");
+            console.log("✅ [PROMPT DEBUG] archive-itemクラスを追加:", li.className);
+
             await window.AppUtils.animateArchiveItem(li, async () => {
               // プロンプトを完全に削除（アーカイブではない）
               const promptIndex = prompts.findIndex(
@@ -710,6 +716,8 @@ async function renderList() {
                   renderList();
                 }
               }
+
+              console.log("✅ [PROMPT DEBUG] 削除アニメーション完了");
             });
           } else {
             // AppUtilsが利用できない場合の代替処理
@@ -750,8 +758,14 @@ async function renderList() {
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
-          li.classList.add("archive-item"); // Add class for animation
-          console.log("[PROMPT] archive-item class added for animation");
+          console.log("✅ [PROMPT DEBUG] AppUtils.animateArchiveItem 利用可能");
+          console.log("✅ [PROMPT DEBUG] 対象要素:", li);
+          console.log("✅ [PROMPT DEBUG] 要素のクラス:", li.className);
+          console.log("✅ [PROMPT DEBUG] 要素のスタイル:", li.style);
+
+          li.classList.add("archive-item");
+          console.log("✅ [PROMPT DEBUG] archive-itemクラスを追加:", li.className);
+
           await window.AppUtils.animateArchiveItem(li, async () => {
             p.archived = true;
             await save(PROMPT_KEY, prompts);
@@ -763,6 +777,8 @@ async function renderList() {
             if (activePrompts.length === 0) {
               renderList();
             }
+
+            console.log("✅ [PROMPT DEBUG] アーカイブアニメーション完了");
           });
         } else {
           // AppUtilsが利用できない場合の代替処理

@@ -2020,7 +2020,8 @@ window.AppUtils.showArchiveToast = function () {
 
 /* ━━━━━━━━━━ 復元アニメーション機能 ━━━━━━━━━━ */
 // アーカイブアニメーション
-async function animateArchiveItem(item, callback) {
+// 旧バージョンのアーカイブアニメーション（後方互換用）
+async function animateArchiveItemLegacy(item, callback) {
   return new Promise((resolve) => {
     // アニメーション開始
     item.style.transition = "all 0.5s ease-in-out";
@@ -2185,12 +2186,15 @@ function showToast(message, type = "info") {
 
 console.log("[UTILS] AppUtils loaded successfully");
 
-// グローバルに公開
+// グローバルに公開（既存のAppUtilsを保持しつつ拡張）
 window.AppUtils = {
+  ...window.AppUtils,
   showConfirmDialog,
   showSaveConfirmDialog,
   showToast,
-  animateArchiveItem,
+  // 既に定義済みの新しいanimateArchiveItemを優先し、無ければ旧版を使用
+  animateArchiveItem:
+    window.AppUtils.animateArchiveItem || animateArchiveItemLegacy,
   animateRestoreItem,
 };
 
