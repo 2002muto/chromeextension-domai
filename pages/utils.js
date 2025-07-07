@@ -4,6 +4,17 @@
 /* ━━━━━━━━━━ Chrome Storage API Wrapper ━━━━━━━━━━ */
 window.AppUtils = window.AppUtils || {};
 
+// Utility: injects a <style> tag if one doesn't already exist
+function injectStyles(id, cssText) {
+  if (!document.querySelector(`#${id}`)) {
+    const styleEl = document.createElement("style");
+    styleEl.id = id;
+    styleEl.textContent = cssText;
+    document.head.appendChild(styleEl);
+    console.log(`[UTILS] styles injected: ${id}`);
+  }
+}
+
 // Promise-wrapped Chrome Storage API
 window.AppUtils.loadStorage = function (key) {
   return new Promise((resolve) => {
@@ -79,10 +90,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
   `;
 
   // スタイルを動的に追加
-  if (!document.querySelector("#save-confirm-styles")) {
-    const styles = document.createElement("style");
-    styles.id = "save-confirm-styles";
-    styles.textContent = `
+  injectStyles(
+    "save-confirm-styles",
+    `
       .save-confirm-dialog {
         position: fixed !important;
         top: 0; left: 0; right: 0; bottom: 0;
@@ -200,12 +210,12 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       @keyframes fadeOut {
         to { opacity: 0; }
       }
-    `;
-    document.head.appendChild(styles);
-  }
+    `
+  );
 
   // body に追加
   document.body.appendChild(dialog);
+  console.log("[UTILS] save-confirm dialog appended to body", dialog);
 
   // イベントリスナー設定
   const overlay = dialog.querySelector(".dialog-overlay");
@@ -432,6 +442,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
 
   // body に追加
   document.body.appendChild(dialog);
+  console.log("[UTILS] delete-confirm dialog appended to body", dialog);
 
   // イベントリスナー設定
   const overlay = dialog.querySelector(".dialog-overlay");
@@ -522,10 +533,9 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
   `;
 
   // スタイルを動的に追加
-  if (!document.querySelector("#confirm-dialog-styles")) {
-    const styles = document.createElement("style");
-    styles.id = "confirm-dialog-styles";
-    styles.textContent = `
+  injectStyles(
+    "confirm-dialog-styles",
+    `
       .confirm-dialog {
         position: fixed;
         top: 0;
@@ -677,12 +687,12 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
           transform: translateY(20px) scale(0.95);
         }
       }
-    `;
-    document.head.appendChild(styles);
-  }
+    `
+  );
 
   // DOMに追加
   document.body.appendChild(dialog);
+  console.log("[UTILS] confirm dialog appended to body", dialog);
 
   // 要素取得
   const overlay = dialog.querySelector(".dialog-overlay");
