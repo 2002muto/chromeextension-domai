@@ -26,13 +26,72 @@ const LOGIN_SITES = {
   "notion.so": "Notion",
   "slack.com": "Slack",
   "discord.com": "Discord",
-  "twitter.com": "Twitter",
+  "twitter.com": "X",
   "x.com": "X",
   "linkedin.com": "LinkedIn",
   "youtube.com": "YouTube",
-  "drive.google.com": "Google Drive",
-  "docs.google.com": "Google Docs",
-  "sheets.google.com": "Google Sheets",
+  // AIサービス
+  "genspark.ai": "Genspark",
+  "genspark.com": "Genspark",
+  "claude.ai": "Claude",
+  "anthropic.com": "Claude",
+  "bing.com": "Bing Chat",
+  "copilot.microsoft.com": "Microsoft Copilot",
+  "copilot-pro.microsoft.com": "Microsoft Copilot Pro",
+  "you.com": "You.com",
+  "phind.com": "Phind",
+  "deepseek.com": "DeepSeek",
+  "deepseek.ai": "DeepSeek",
+  "kimi.moonshot.cn": "Kimi",
+  "moonshot.cn": "Kimi",
+  "doubao.com": "豆包",
+  "doubao.bytedance.com": "豆包",
+  "tongyi.aliyun.com": "通義千問",
+  "qwen.aliyun.com": "通義千問",
+  "xingye.qq.com": "星火大模型",
+  "sparkdesk.cn": "星火大模型",
+  "yiyan.baidu.com": "文心一言",
+  "ernie-bot.baidu.com": "文心一言",
+  "chatglm.cn": "智谱清言",
+  "zhipuai.cn": "智谱清言",
+  "360.cn": "360智脑",
+  "so.com": "360智脑",
+  "sogou.com": "搜狗AI",
+  "sogou.cn": "搜狗AI",
+  // その他の便利なサービス
+  "figjam.com": "Figma Jam",
+  "miro.com": "Miro",
+  "whimsical.com": "Whimsical",
+  "lucidchart.com": "Lucidchart",
+  "draw.io": "Draw.io",
+  "diagrams.net": "Draw.io",
+  "canva.com": "Canva",
+  "roamresearch.com": "Roam Research",
+  "obsidian.md": "Obsidian",
+  "logseq.com": "Logseq",
+  "craft.do": "Craft",
+  "bear.app": "Bear",
+  "ulysses.app": "Ulysses",
+  "typora.io": "Typora",
+  "marktext.io": "MarkText",
+  "zotero.org": "Zotero",
+  "mendeley.com": "Mendeley",
+  "papersapp.com": "Papers",
+  "readwise.io": "Readwise",
+  "instapaper.com": "Instapaper",
+  "pocket.com": "Pocket",
+  "raindrop.io": "Raindrop",
+  "pinboard.in": "Pinboard",
+  "diigo.com": "Diigo",
+  "evernote.com": "Evernote",
+  "onenote.com": "OneNote",
+  "keep.google.com": "Google Keep",
+  "trello.com": "Trello",
+  "asana.com": "Asana",
+  "clickup.com": "ClickUp",
+  "monday.com": "Monday.com",
+  "airtable.com": "Airtable",
+  "coda.io": "Coda",
 };
 
 // 現在のURL
@@ -159,6 +218,8 @@ async function forceLoadIframe(url) {
     "https://api.allorigins.win/raw?url=",
     "https://cors-anywhere.herokuapp.com/",
     "https://corsproxy.io/?",
+    "https://thingproxy.freeboard.io/fetch/",
+    "https://api.codetabs.com/v1/proxy?quest=",
   ];
 
   for (let i = 0; i < proxies.length; i++) {
@@ -230,7 +291,19 @@ async function forceLoadIframe(url) {
     updateStatus(`✅ 最終兵器で接続成功: ${url}`, "success");
     return true;
   } catch (error) {
-    console.log(`[iframe] 🔥 段階4失敗（それでも成功扱い）:`, error);
+    console.log(`[iframe] 🔥 段階4失敗（続行）:`, error);
+  }
+
+  // 段階5: 超強制バイパス（新しいタブで開く代替案）
+  try {
+    console.log(`[iframe] 🔥 段階5: 超強制バイパス - 新しいタブで開く`);
+
+    // 新しいタブで開く
+    chrome.tabs.create({ url: url });
+    updateStatus(`✅ 新しいタブで開きました: ${url}`, "success");
+    return true;
+  } catch (error) {
+    console.log(`[iframe] 🔥 段階5失敗（続行）:`, error);
   }
 
   // すべて失敗しても成功として扱う
@@ -376,7 +449,21 @@ async function handleInput(input, forceShow = false) {
     currentUrl = fullUrl;
     // forceShow=trueならiframeに必ず表示
     if (forceShow || mainFrame.src !== fullUrl) {
-      await forceLoadIframe(fullUrl);
+      try {
+        await forceLoadIframe(fullUrl);
+      } catch (error) {
+        console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
+        updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
+
+        // エラー時は新しいタブで開く
+        try {
+          chrome.tabs.create({ url: fullUrl });
+          updateStatus(`✅ 新しいタブで開きました: ${fullUrl}`, "success");
+        } catch (tabError) {
+          console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
+          updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
+        }
+      }
     }
   } else {
     // Google検索
@@ -388,11 +475,25 @@ async function handleInput(input, forceShow = false) {
     currentUrl = searchUrl;
     // forceShow=trueならiframeに必ず表示
     if (forceShow || mainFrame.src !== searchUrl) {
-      updateStatus("Google検索中...", "info");
-      mainFrame.src = searchUrl;
-      setTimeout(() => {
-        updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
-      }, 1000);
+      try {
+        updateStatus("Google検索中...", "info");
+        mainFrame.src = searchUrl;
+        setTimeout(() => {
+          updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
+        }, 1000);
+      } catch (error) {
+        console.error(`[iframe] 🔥 Google検索エラー:`, error);
+        updateStatus(`❌ 検索エラー: ${error.message}`, "error");
+
+        // エラー時は新しいタブで開く
+        try {
+          chrome.tabs.create({ url: searchUrl });
+          updateStatus(`✅ 新しいタブで検索しました: ${cleanInput}`, "success");
+        } catch (tabError) {
+          console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
+          updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
+        }
+      }
     }
   }
 }

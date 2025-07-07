@@ -5,13 +5,13 @@
 
 /* ─── ベース設定 ─── */
 body {
-  background: #314559;
   margin: 0;
   padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #e2e8f0;
-  overflow-x: hidden;
+  color: #333;
 }
 
 /* ─── ヘッダー（非表示） ─── */
@@ -87,21 +87,33 @@ body {
 }
 
 /* ─── 検索・URL入力エリア ─── */
-#urlInput {
+.container-fluid {
   background: rgba(255, 255, 255, 0.95);
-  border: 2px solid #667eea;
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin: 8px;
+  padding: 16px !important;
+}
+
+/* 入力フォーム */
+.input-group {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  overflow: hidden;
+}
+
+#urlInput {
+  border: none;
   padding: 12px 16px;
   font-size: 14px;
-  color: #333;
-  outline: none;
+  background: #fff;
   transition: all 0.3s ease;
 }
 
 #urlInput:focus {
-  background: #ffffff;
-  border-color: #764ba2;
-  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2);
+  box-shadow: none;
+  background: #f8f9fa;
 }
 
 #urlInput::placeholder {
@@ -110,35 +122,30 @@ body {
 }
 
 #goBtn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(45deg, #667eea, #764ba2);
   border: none;
-  border-radius: 8px;
   padding: 12px 20px;
-  color: white;
   font-weight: 600;
   transition: all 0.3s ease;
-  cursor: pointer;
 }
 
 #goBtn:hover {
-  background: linear-gradient(135deg, #764ba2, #667eea);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  background: linear-gradient(45deg, #5a6fd8, #6a4190);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 #clearBtn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
+  border: none;
   padding: 12px 16px;
-  color: #e2e8f0;
+  background: #f8f9fa;
+  color: #6c757d;
   transition: all 0.3s ease;
-  cursor: pointer;
 }
 
 #clearBtn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #e9ecef;
+  color: #495057;
 }
 
 /* ─── ログイン状態維持の説明 ─── */
@@ -161,134 +168,141 @@ body {
 
 /* ─── クイックアクセスボタン ─── */
 .quick-access {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 12px;
+  backdrop-filter: blur(5px);
 }
 
-.quick-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.quick-access .btn-group {
+  margin-bottom: 8px;
+}
+
+.quick-access .btn {
   border-radius: 6px;
-  padding: 8px 12px;
-  color: #e2e8f0;
   font-size: 12px;
-  font-weight: 500;
+  padding: 6px 12px;
+  margin: 2px;
   transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  border-width: 2px;
+  font-weight: 500;
 }
 
-.quick-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.quick-access .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.quick-btn i {
-  font-size: 14px;
+.quick-access .btn-outline-primary {
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.quick-access .btn-outline-primary:hover {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.quick-access .btn-outline-success {
+  color: #28a745;
+  border-color: #28a745;
+}
+
+.quick-access .btn-outline-success:hover {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.quick-access .btn-outline-dark {
+  color: #343a40;
+  border-color: #343a40;
+}
+
+.quick-access .btn-outline-dark:hover {
+  background: #343a40;
+  border-color: #343a40;
+  color: white;
+}
+
+.quick-access .btn-outline-info {
+  color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.quick-access .btn-outline-info:hover {
+  background: #17a2b8;
+  border-color: #17a2b8;
+  color: white;
+}
+
+/* カテゴリラベル */
+.quick-access small {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px;
+  display: block;
 }
 
 /* ─── iframe表示エリア ─── */
 .iframe-container {
-  background: #ffffff;
-  border-radius: 12px;
+  background: #fff;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  margin-bottom: 8px;
-  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 12px;
 }
 
-.iframe-container::before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
-  background-size: 400% 400%;
-  animation: gradientShift 4s ease infinite;
-  border-radius: 14px;
-  z-index: -1;
-}
-
-@keyframes gradientShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-#mainFrame {
-  width: 100%;
-  height: calc(100vh - 140px);
+.iframe-main {
   border: none;
-  background: #ffffff;
-  border-radius: 12px;
-  display: block;
+  width: 100%;
+  min-height: 400px;
+  background: #fff;
 }
 
 /* ─── ステータス表示 ─── */
-.status-bar {
-  background: rgba(0, 0, 0, 0.3);
+#statusBar {
+  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+  border: none;
   border-radius: 6px;
   padding: 8px 12px;
-  font-size: 12px;
-  color: #b0b0b0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  backdrop-filter: blur(10px);
+  font-size: 13px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.status-bar i {
-  font-size: 14px;
-}
-
-.status-bar .bi-check-circle {
-  color: #4ade80;
-}
-
-.status-bar .bi-exclamation-triangle {
-  color: #f59e0b;
-}
-
-.status-bar .bi-info-circle {
-  color: #3b82f6;
+#statusBar i {
+  margin-right: 6px;
 }
 
 /* ─── レスポンシブ対応 ─── */
 @media (max-width: 768px) {
-  .quick-access {
-    flex-direction: column;
-    align-items: center;
+  .container-fluid {
+    margin: 4px;
+    padding: 12px !important;
   }
 
-  .quick-btn {
-    width: 100%;
-    max-width: 200px;
-    justify-content: center;
+  .quick-access .btn {
+    font-size: 11px;
+    padding: 4px 8px;
   }
 
-  #urlInput {
-    font-size: 16px; /* iOS Safari対応 */
+  .quick-access .btn-group {
+    flex-wrap: wrap;
+  }
+
+  .quick-access .btn-group .btn {
+    flex: 1;
+    min-width: 80px;
   }
 }
 
 /* ─── アニメーション ─── */
-@keyframes fadeInUp {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -297,7 +311,7 @@ body {
 }
 
 .container-fluid {
-  animation: fadeInUp 0.6s ease-out;
+  animation: fadeIn 0.5s ease-out;
 }
 
 /* ─── ローディング状態 ─── */
@@ -316,7 +330,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.4),
     transparent
   );
   animation: loading 1.5s infinite;
@@ -333,14 +347,14 @@ body {
 
 /* ─── エラー状態 ─── */
 .error {
-  border: 2px solid #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  border-color: #dc3545 !important;
+  background-color: #f8d7da !important;
 }
 
 /* ─── 成功状態 ─── */
 .success {
-  border: 2px solid #22c55e;
-  background: rgba(34, 197, 94, 0.1);
+  border-color: #28a745 !important;
+  background-color: #d4edda !important;
 }
 
 /* ─── フォーカス状態の強化 ─── */
@@ -355,12 +369,58 @@ body {
 
 /* 🔥 無理矢理 iframe.css 読み込み完了 */
 
-.iframe-main {
-  height: calc(100vh - 140px);
+#loginInfo {
+  background: linear-gradient(45deg, #d1ecf1, #bee5eb);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-#loginInfo {
-  display: none;
+.favicon-wrapper {
+  position: relative;
+  display: inline-block;
+  margin: 2px;
+}
+
+.favicon-wrapper:hover .favicon-remove {
+  opacity: 1;
+}
+
+.favicon-remove {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.favicon-remove:hover {
+  background: #c82333;
+}
+
+.history-link {
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.history-link:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .favicon-img {
@@ -368,33 +428,4 @@ body {
   height: 24px;
   border-radius: 4px;
   object-fit: cover;
-  vertical-align: middle;
-}
-
-.favicon-wrapper {
-  position: relative;
-  display: inline-block;
-}
-.favicon-remove {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #222;
-  color: #fff;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  font-size: 12px;
-  line-height: 16px;
-  text-align: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 2;
-  border: 1px solid #888;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-  pointer-events: auto;
-}
-.favicon-wrapper:hover .favicon-remove {
-  opacity: 1;
 }
