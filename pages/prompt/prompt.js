@@ -692,6 +692,8 @@ async function renderList() {
 
           // アニメーション付きで削除（アーカイブには保存しない）
           if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+            li.classList.add("archive-item"); // Add class for animation
+            console.log("[PROMPT] archive-item class added for animation");
             await window.AppUtils.animateArchiveItem(li, async () => {
               // プロンプトを完全に削除（アーカイブではない）
               const promptIndex = prompts.findIndex(
@@ -748,6 +750,8 @@ async function renderList() {
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+          li.classList.add("archive-item"); // Add class for animation
+          console.log("[PROMPT] archive-item class added for animation");
           await window.AppUtils.animateArchiveItem(li, async () => {
             p.archived = true;
             await save(PROMPT_KEY, prompts);
