@@ -235,18 +235,21 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
 
   if (discardBtn) {
     discardBtn.addEventListener("click", () => {
+      console.log("[UTILS] save-confirm discard clicked");
       closeDialog();
       if (onDiscard) onDiscard();
     });
   }
   if (cancelBtn) {
     cancelBtn.addEventListener("click", () => {
+      console.log("[UTILS] save-confirm cancel clicked");
       closeDialog();
       if (onCancel) onCancel();
     });
   }
   if (saveBtn) {
     saveBtn.addEventListener("click", () => {
+      console.log("[UTILS] save-confirm save clicked");
       closeDialog();
       if (onSave) onSave();
     });
@@ -711,12 +714,14 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
 
   // キャンセルボタン
   cancelBtn.addEventListener("click", () => {
+    console.log("[UTILS] confirm-dialog cancel clicked");
     closeDialog();
     if (onCancel) onCancel();
   });
 
   // 確認ボタン
   confirmBtn.addEventListener("click", () => {
+    console.log("[UTILS] confirm-dialog confirm clicked");
     closeDialog();
     if (onConfirm) onConfirm();
   });
@@ -724,6 +729,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
   // オーバーレイクリックで閉じる
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
+      console.log("[UTILS] confirm-dialog overlay clicked");
       closeDialog();
     }
   });
@@ -731,6 +737,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
   // ESCキーで閉じる
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
+      console.log("[UTILS] confirm-dialog escape pressed");
       closeDialog();
       document.removeEventListener("keydown", handleKeyDown);
     }
