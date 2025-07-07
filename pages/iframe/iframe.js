@@ -11,6 +11,8 @@ const mainFrame = document.getElementById("mainFrame");
 const statusBar = document.getElementById("statusBar");
 const loginInfo = document.getElementById("loginInfo");
 const quickBtns = document.querySelectorAll(".quick-btn");
+const searchHistoryEl = document.getElementById("searchHistory");
+const HISTORY_KEY = "iframeSearchHistory";
 
 // ログイン状態維持対応サイト
 const LOGIN_SITES = {
@@ -38,6 +40,7 @@ let currentUrl = "";
 
 // ステータス更新
 function updateStatus(message, type = "info") {
+  if (!window.statusBar) return; // statusBarがなければ何もしない
   console.log(`[iframe] ステータス更新: ${message}`);
   const icon =
     type === "success"
@@ -235,14 +238,91 @@ async function forceLoadIframe(url) {
   return true;
 }
 
-// 検索・URL処理
-async function handleInput(input) {
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(history) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+function addHistory(entry) {
+  let history = loadHistory();
+  // すでに同じ内容があれば先頭に移動
+  history = history.filter((h) => h !== entry);
+  history.unshift(entry);
+  if (history.length > 10) history = history.slice(0, 10);
+  saveHistory(history);
+  renderHistory();
+}
+
+function getFaviconUrl(entry) {
+  // URLならそのドメインのファビコン、検索ワードならGoogle
+  let url = entry;
+  if (!/^https?:\/\//.test(url) && !url.startsWith("www.")) {
+    // 検索ワード
+    return "https://www.google.com/s2/favicons?sz=32&domain_url=www.google.com";
+  }
+  // URLからドメイン部分を抽出
+  try {
+    if (!/^https?:\/\//.test(url)) url = "https://" + url;
+    const u = new URL(url);
+    return `https://www.google.com/s2/favicons?sz=32&domain_url=${u.origin}`;
+  } catch {
+    return "https://www.google.com/s2/favicons?sz=32&domain_url=www.google.com";
+  }
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  if (!searchHistoryEl) return;
+  if (history.length === 0) {
+    searchHistoryEl.innerHTML =
+      '<span class="text-muted">検索履歴はありません</span>';
+    return;
+  }
+  searchHistoryEl.innerHTML =
+    '<div class="fw-bold mb-1"><i class="bi bi-clock-history"></i> 検索履歴</div>' +
+    '<ul class="list-unstyled mb-0">' +
+    history
+      .map(
+        (h) =>
+          `<li class="mb-1 d-flex align-items-center">
+            <img src="${getFaviconUrl(
+              h
+            )}" alt="favicon" class="me-2" style="width:18px;height:18px;border-radius:3px;">
+            <a href="#" class="history-link text-decoration-none flex-grow-1">${
+              h.length > 60 ? h.slice(0, 60) + "..." : h
+            }</a>
+          </li>`
+      )
+      .join("") +
+    "</ul>";
+  // 履歴クリックで再検索＋iframe表示
+  searchHistoryEl.querySelectorAll(".history-link").forEach((a, i) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      urlInput.value = history[i];
+      // 検索内容をiframeで必ず表示
+      handleInput(history[i], true);
+    });
+  });
+}
+
+// handleInputを修正: forceShow引数追加でiframe表示を必ず行う
+async function handleInput(input, forceShow = false) {
   console.log(`[iframe] 🔥 入力処理: ${input}`);
 
   if (!input.trim()) {
-    updateStatus("入力が空です", "error");
+    // updateStatus("入力が空です", "error");
     return;
   }
+
+  addHistory(input.trim());
 
   // @記号を除去
   const cleanInput = input.replace(/^@+/, "").trim();
@@ -255,7 +335,10 @@ async function handleInput(input) {
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
 
     currentUrl = fullUrl;
-    await forceLoadIframe(fullUrl);
+    // forceShow=trueならiframeに必ず表示
+    if (forceShow || mainFrame.src !== fullUrl) {
+      await forceLoadIframe(fullUrl);
+    }
   } else {
     // Google検索
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
@@ -264,12 +347,14 @@ async function handleInput(input) {
     console.log(`[iframe] 🔥 Google検索: ${searchUrl}`);
 
     currentUrl = searchUrl;
-    updateStatus("Google検索中...", "info");
-    mainFrame.src = searchUrl;
-
-    setTimeout(() => {
-      updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
-    }, 1000);
+    // forceShow=trueならiframeに必ず表示
+    if (forceShow || mainFrame.src !== searchUrl) {
+      updateStatus("Google検索中...", "info");
+      mainFrame.src = searchUrl;
+      setTimeout(() => {
+        updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
+      }, 1000);
+    }
   }
 }
 
@@ -309,6 +394,8 @@ quickBtns.forEach((btn) => {
 window.addEventListener("DOMContentLoaded", () => {
   console.log("[iframe] 🔥 DOM読み込み完了");
 
+  renderHistory();
+
   const urlParams = new URLSearchParams(window.location.search);
   const qParam = urlParams.get("q") || urlParams.get("url");
 
@@ -317,7 +404,7 @@ window.addEventListener("DOMContentLoaded", () => {
     urlInput.value = qParam;
     handleInput(qParam);
   } else {
-    updateStatus("準備完了 - URL入力またはキーワード検索してください", "info");
+    // updateStatus("準備完了 - URL入力またはキーワード検索してください", "info");
   }
 });
 

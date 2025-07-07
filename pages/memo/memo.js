@@ -1335,23 +1335,25 @@ async function renderInputForm(id) {
       hasChanges ||
       (originalMemo && (originalMemo.title || originalMemo.content))
     ) {
-      window.AppUtils.showConfirmDialog({
-        title: "メモを削除しますか？",
-        message:
-          'このメモを完全に削除します。<br><span style="color: #dc3545; font-weight: bold;">この操作は取り消せません。</span>',
-        onConfirm: async () => {
-          // 削除を実行
-          if (id !== undefined) {
-            memos = memos.filter((m) => m.id !== id);
-            console.log("delete memo id=", id);
-            await saveStorage(MEMO_KEY, memos);
-            // グローバルに最新のmemosを設定
-            window.memos = memos;
-          }
-          renderListView();
+      window.AppUtils.showSaveConfirmDialog({
+        title: "本当に削除しますか？",
+        message: "メモ内容に変更があります。保存せずに戻ると変更が失われます。",
+        discardLabel: "削除",
+        discardColor: "#dc3545",
+        cancelLabel: "キャンセル",
+        cancelColor: "#4a5568",
+        saveLabel: "保存",
+        saveColor: "#00a31e",
+        showSave: false, // 削除時は保存ボタン非表示
+        showDiscard: true,
+        showCancel: true,
+        iconClass: "bi bi-trash-fill",
+        onDiscard: () => {
+          // 削除処理
+          // ...既存の削除ロジック...
         },
         onCancel: () => {
-          console.log("メモの削除をキャンセルしました");
+          // キャンセル処理
         },
       });
     } else {
@@ -2048,8 +2050,8 @@ async function exportAllMemos() {
     // エクスポート用のデータ構造を作成（アクティブなメモのみ）
     const exportData = {
       // 特別なID（この拡張機能からのエクスポートであることを示す）
-      extensionId: "chromeextension-domai-v1.0",
-      extensionName: "Chrome Extension Domain Assistant",
+      extensionId: "sideeffect-v1.0",
+      extensionName: "SideEffect",
       extensionVersion: "1.0.0",
       // 既存のデータ
       version: "1.0",

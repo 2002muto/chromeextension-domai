@@ -2772,8 +2772,8 @@ async function exportAllPrompts() {
     // エクスポート用のデータ構造を作成（アクティブなプロンプトのみ）
     const exportData = {
       // 特別なID（この拡張機能からのエクスポートであることを示す）
-      extensionId: "chromeextension-domai-v1.0",
-      extensionName: "Chrome Extension Domain Assistant",
+      extensionId: "sideeffect-v1.0",
+      extensionName: "SideEffect",
       extensionVersion: "1.0.0",
       // 既存のデータ
       version: "1.0",

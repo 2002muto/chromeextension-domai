@@ -25,6 +25,16 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
     onSave,
     onDiscard,
     onCancel,
+    discardLabel = "破棄",
+    cancelLabel = "キャンセル",
+    saveLabel = "保存",
+    discardColor = "#dc3545",
+    cancelColor = "#4a5568",
+    saveColor = "#00a31e",
+    iconClass = "bi bi-exclamation-circle",
+    showSave = true,
+    showDiscard = true,
+    showCancel = true,
   } = options;
 
   // 既存のダイアログがあれば削除
@@ -40,16 +50,28 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
     <div class="dialog-overlay">
       <div class="dialog-content">
         <div class="dialog-header">
-          <i class="bi bi-exclamation-circle dialog-icon"></i>
+          <i class="${iconClass} dialog-icon"></i>
           <h3 class="dialog-title">${title}</h3>
         </div>
         <div class="dialog-body">
           <p class="dialog-message">${message}</p>
         </div>
         <div class="dialog-footer">
-          <button class="dialog-btn discard-btn">破棄</button>
-          <button class="dialog-btn cancel-btn">キャンセル</button>
-          <button class="dialog-btn save-btn">保存</button>
+          ${
+            showDiscard
+              ? `<button class="dialog-btn discard-btn">${discardLabel}</button>`
+              : ""
+          }
+          ${
+            showCancel
+              ? `<button class="dialog-btn cancel-btn">${cancelLabel}</button>`
+              : ""
+          }
+          ${
+            showSave
+              ? `<button class="dialog-btn save-btn">${saveLabel}</button>`
+              : ""
+          }
         </div>
       </div>
     </div>
@@ -61,158 +83,119 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
     styles.id = "save-confirm-styles";
     styles.textContent = `
       .save-confirm-dialog {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        position: fixed !important;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 99999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        pointer-events: auto;
       }
-
       .save-confirm-dialog .dialog-overlay {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6) !important;
+        backdrop-filter: blur(6px) !important;
         animation: fadeIn 0.2s ease-out;
       }
-
       .save-confirm-dialog .dialog-content {
         position: relative;
-        background: #2d2d2d;
-        border-radius: 12px;
-        min-width: 280px;
-        max-width: calc(100vw - 40px);
-        width: 90%;
-        margin: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        animation: slideUp 0.3s ease-out;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #23272f;
+        border-radius: 16px;
+        min-width: 320px;
+        max-width: 90vw;
+        width: 100%;
+        max-width: 400px;
+        margin: 0;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+        animation: slideDownPop 0.3s cubic-bezier(.23,1.01,.32,1) both;
+        border: 1px solid rgba(255,255,255,0.08);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
-
       .save-confirm-dialog .dialog-header {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 20px 20px 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 24px 24px 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
       }
-
       .save-confirm-dialog .dialog-icon {
-        font-size: 24px;
+        font-size: 28px;
         color: #3b82f6;
       }
-
       .save-confirm-dialog .dialog-title {
-        color: #ffffff;
-        font-size: 1.1rem;
-        font-weight: 600;
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 700;
         margin: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
       }
-
       .save-confirm-dialog .dialog-body {
-        padding: 16px 20px;
+        padding: 16px 24px;
       }
-
       .save-confirm-dialog .dialog-message {
         color: #e2e8f0;
-        font-size: 0.95rem;
-        line-height: 1.4;
+        font-size: 1rem;
+        line-height: 1.5;
         margin: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
       }
-
       .save-confirm-dialog .dialog-footer {
         display: flex;
-        gap: 8px;
-        padding: 16px 20px 20px;
+        gap: 12px;
+        padding: 18px 24px 24px;
         justify-content: flex-end;
-        flex-wrap: wrap;
+        background: transparent;
       }
-
       .save-confirm-dialog .dialog-btn {
-        padding: 8px 16px;
+        padding: 10px 20px;
         border: none;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        font-weight: 500;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
-        min-width: 70px;
+        min-width: 90px;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       }
-
       .save-confirm-dialog .discard-btn {
-        background: #dc3545;
-        color: #ffffff;
+        background: #dc3545 !important;
+        color: #fff !important;
       }
-
       .save-confirm-dialog .discard-btn:hover {
-        background: #c82333;
-        transform: translateY(-1px);
+        background: #b91c1c !important;
       }
-
       .save-confirm-dialog .cancel-btn {
-        background: #4a5568;
-        color: #ffffff;
+        background: #4a5568 !important;
+        color: #fff !important;
       }
-
       .save-confirm-dialog .cancel-btn:hover {
-        background: #5a6578;
-        transform: translateY(-1px);
+        background: #374151 !important;
       }
-
       .save-confirm-dialog .save-btn {
-        background: #00a31e;
-        color: #ffffff;
+        background: #22c55e !important;
+        color: #fff !important;
       }
-
       .save-confirm-dialog .save-btn:hover {
-        background: #008a1a;
-        transform: translateY(-1px);
+        background: #16a34a !important;
       }
-
       .save-confirm-dialog .dialog-content.closing {
-        animation: slideDown 0.2s ease-in forwards;
+        animation: slideUpFade 0.2s ease-in forwards;
       }
-
       .save-confirm-dialog .dialog-overlay.closing {
         animation: fadeOut 0.2s ease-in forwards;
       }
-
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
       }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px) scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
+      @keyframes slideDownPop {
+        from { opacity: 0; transform: translateY(-48px) scale(0.98);}
+        to { opacity: 1; transform: translateY(0) scale(1);}
       }
-
-      @keyframes slideDown {
-        to {
-          opacity: 0;
-          transform: translateY(10px) scale(0.98);
-        }
+      @keyframes slideUpFade {
+        to { opacity: 0; transform: translateY(-24px) scale(0.98);}
       }
-
       @keyframes fadeOut {
         to { opacity: 0; }
       }
@@ -239,23 +222,24 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
     }, 200);
   }
 
-  // 破棄ボタン
-  discardBtn.addEventListener("click", () => {
-    closeDialog();
-    if (onDiscard) onDiscard();
-  });
-
-  // キャンセルボタン
-  cancelBtn.addEventListener("click", () => {
-    closeDialog();
-    if (onCancel) onCancel();
-  });
-
-  // 保存ボタン
-  saveBtn.addEventListener("click", () => {
-    closeDialog();
-    if (onSave) onSave();
-  });
+  if (discardBtn) {
+    discardBtn.addEventListener("click", () => {
+      closeDialog();
+      if (onDiscard) onDiscard();
+    });
+  }
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      closeDialog();
+      if (onCancel) onCancel();
+    });
+  }
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      closeDialog();
+      if (onSave) onSave();
+    });
+  }
 
   // オーバーレイクリックで閉じる
   overlay.addEventListener("click", (e) => {
@@ -275,7 +259,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
 
   // フォーカス管理
   setTimeout(() => {
-    saveBtn.focus();
+    if (saveBtn) saveBtn.focus();
+    else if (cancelBtn) cancelBtn.focus();
+    else if (discardBtn) discardBtn.focus();
   }, 100);
 };
 
