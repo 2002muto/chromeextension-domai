@@ -1,73 +1,21 @@
 <!-- File: pages/iframe/iframe.html -->
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>iframe検索</title>
-    <link
-      rel="stylesheet"
-      href="../../vendor/bootstrap/css/bootstrap.min.css"
-    />
-    <link rel="stylesheet" href="../../style.css" />
-    <link rel="stylesheet" href="../memo/memo.css" />
-    <link rel="stylesheet" href="iframe.css" />
-    <link
-      rel="stylesheet"
-      href="../../vendor/bootstrap-icons/bootstrap-icons.css"
-    />
-  </head>
-  <body>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-12">
-          <div class="search-container">
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control"
-                id="searchInput"
-                placeholder="検索語またはURLを入力..."
-              />
-              <button class="btn btn-primary" type="button" id="searchButton">
-                <i class="bi bi-search"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-12">
-          <div class="iframe-container">
-            <iframe
-              id="searchIframe"
-              src="about:blank"
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-top-navigation-by-user-activation allow-downloads allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation"
-              allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; document-domain; encrypted-media; execution-while-not-rendered; execution-while-out-of-viewport; fullscreen; geolocation; gyroscope; keyboard-map; magnetometer; microphone; midi; navigation-override; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
-              referrerpolicy="unsafe-url"
-              loading="eager"
-              credentialless
-              csp="default-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; connect-src * data: blob:; media-src * data: blob:; object-src *; child-src *; frame-src *; worker-src *; frame-ancestors *; form-action *; base-uri *; manifest-src *;"
-              importance="high"
-              fetchpriority="high"
-            >
-            </iframe>
-          </div>
-        </div>
-      </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google検索</title>
+  <link rel="stylesheet" href="../../vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="iframe.css">
+</head>
+<body>
+  <div class="container mt-2">
+    <div class="input-group mb-2">
+      <input id="q" class="form-control" placeholder="検索語">
+      <button id="go" class="btn btn-primary">検索</button>
     </div>
-    <!-- フッター（IFRAMEページでは非表示） -->
-    <footer class="memo-footer iframe-footer" style="display: none">
-      <button class="nav-btn">
-        <i class="bi bi-plus-lg"></i>
-      </button>
-      <button class="nav-btn">
-        <i class="bi bi-gear"></i>
-      </button>
-    </footer>
-    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../utils.js"></script>
-    <script src="../common.js"></script>
-    <script src="iframe.js"></script>
-  </body>
+    <iframe id="view" class="w-100" style="height: calc(100vh - 80px); border: none;"></iframe>
+  </div>
+  <script type="module" src="iframe.js"></script>
+</body>
 </html>
