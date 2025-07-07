@@ -99,6 +99,15 @@ async function toggleIframeRules(enable) {
 // 特定のドメインのルールを動的に追加
 async function addDynamicIframeRule(domain) {
   console.log(`[BG] 🔥 無理矢理動的ルール追加: ${domain}`);
+  // Google系ドメインは変更しない
+  if (
+    domain.includes("google.com") ||
+    domain.includes("gstatic.com") ||
+    domain.includes("googleusercontent.com")
+  ) {
+    console.log(`[BG] Skipping Google domain: ${domain}`);
+    return { success: true, ruleId: null };
+  }
 
   // 複数のルールIDを試す
   const ruleIds = [
@@ -392,6 +401,15 @@ let nextDynamicRuleId = 10000;
 // 無理矢理動的ルール追加
 async function addDynamicIframeRule(domain) {
   console.log(`[BG] 🔥 無理矢理動的ルール追加: ${domain}`);
+  // Google系ドメインは変更しない
+  if (
+    domain.includes("google.com") ||
+    domain.includes("gstatic.com") ||
+    domain.includes("googleusercontent.com")
+  ) {
+    console.log(`[BG] Skipping Google domain: ${domain}`);
+    return { success: true, ruleId: null };
+  }
 
   // 複数のルールIDを試す
   const ruleIds = [
@@ -587,7 +605,6 @@ chrome.runtime.onInstalled.addListener(() => {
       "chatgpt.com",
       "chat.openai.com",
       "figma.com",
-      "google.com",
       "youtube.com",
       "github.com",
     ];

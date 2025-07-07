@@ -70,7 +70,8 @@
         "websocket",
         "csp_report",
         "other"
-      ]
+      ],
+      "excludedDomains": ["google.com", "gstatic.com", "googleusercontent.com"]
     }
   },
   {
