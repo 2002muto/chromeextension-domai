@@ -91,7 +91,7 @@
     "rule_resources": [
       {
         "id": "ruleset1",
-        "enabled": true,
+        "enabled": false,
         "path": "rules.json"
       }
     ]
