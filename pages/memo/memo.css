@@ -97,7 +97,7 @@ body {
 .memo-content.edit-mode {
   background: #2d2d2d;
   border-radius: 12px;
-  margin: 32px 16px 16px 16px; /* MEMO一覧と完全統一 */
+  margin: 16px 16px 0px 16px; /* MEMO一覧と完全統一 */
   height: calc(100vh - 138px) !important; /* MEMO一覧と完全統一 */
   padding-bottom: 0; /* フッターは固定なので余白不要 */
 }
