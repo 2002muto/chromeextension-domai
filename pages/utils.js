@@ -1254,3 +1254,10 @@ window.AppUtils = {
   animateArchiveItem,
   animateRestoreItem,
 };
+
+// ダミー実装: showConfirmDialog
+function showConfirmDialog(options = {}) {
+  // 必要に応じてカスタムダイアログを実装
+  alert(options.message || "確認ダイアログ");
+  if (typeof options.onConfirm === "function") options.onConfirm();
+}

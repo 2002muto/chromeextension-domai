@@ -2272,3 +2272,33 @@ function restoreMemoState() {
 // Add event listeners to save and restore state
 window.addEventListener("beforeunload", saveMemoState);
 document.addEventListener("DOMContentLoaded", restoreMemoState);
+
+// サイドパネルを開く機能
+document.addEventListener("DOMContentLoaded", () => {
+  const openSidePanelBtn = document.getElementById("open-side-panel");
+  if (openSidePanelBtn) {
+    openSidePanelBtn.addEventListener("click", async () => {
+      try {
+        // 現在のタブを取得
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+
+        // サイドパネルを有効化して設定
+        await chrome.sidePanel.setOptions({
+          tabId: tab.id,
+          enabled: true,
+          path: "pages/memo/memo.html",
+        });
+
+        // サイドパネルを開く
+        await chrome.sidePanel.open({ tabId: tab.id });
+
+        console.log("サイドパネルを開きました");
+      } catch (error) {
+        console.error("サイドパネルを開くのに失敗しました:", error);
+      }
+    });
+  }
+});

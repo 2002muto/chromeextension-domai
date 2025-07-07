@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "🔥 SideEffect",
+  "name": "SideEffect",
   "version": "1.0.0",
   "description": "SideEffect - サイドパネルでログイン状態維持・iframe検索・メモ機能を提供するChrome拡張機能",
   "permissions": [

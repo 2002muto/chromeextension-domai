@@ -434,20 +434,11 @@ setInterval(() => {
 
 console.log("[BG] 🔥 無理矢理background.js読み込み完了");
 
-// 拡張機能アイコンクリック時のサイドパネル制御
 chrome.action.onClicked.addListener(async (tab) => {
-  console.log(`[BG] 🔥 Extension icon clicked on tab ${tab.id}`);
-
   try {
-    // サイドパネルを有効化して設定
-    await chrome.sidePanel.setOptions({
-      tabId: tab.id,
-      enabled: true,
-      path: "pages/memo/memo.html",
-    });
-
-    console.log(`[BG] 🔥 Side panel enabled for tab ${tab.id}`);
+    await chrome.sidePanel.open({ tabId: tab.id });
+    console.log("サイドパネルを開きました");
   } catch (error) {
-    console.error("[BG] 🔥 Failed to enable side panel:", error);
+    console.error("サイドパネルを開くのに失敗:", error);
   }
 });

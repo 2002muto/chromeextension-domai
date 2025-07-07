@@ -64,13 +64,6 @@ function renderSettingMain() {
   // 設定項目リストをレンダリング
   renderSettingList();
 
-  // MEMO・PROMPTと同じアニメーション
-  if (content) {
-    content.classList.remove("show", "animate");
-    void content.offsetWidth;
-    content.classList.add("animate", "show");
-  }
-
   // フッターを設定リストモードに変更
   setFooter("list");
 }
@@ -300,11 +293,8 @@ window.addEventListener("DOMContentLoaded", () => {
   // ─── 初回ロード時にMEMO・PROMPTと同じアニメーション ───
   if (content) {
     content.classList.remove("show", "animate");
-    // 強制リフロー
     void content.offsetWidth;
     content.classList.add("animate");
-
-    // 少し遅延してからshowクラスを追加（フェードイン効果）
     setTimeout(() => {
       content.classList.add("show");
     }, 100);
