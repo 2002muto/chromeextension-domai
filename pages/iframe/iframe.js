@@ -4,15 +4,44 @@
 console.log("[iframe] 🔥 無理矢理 iframe.js 開始");
 
 // 要素取得
-const urlInput = document.getElementById("urlInput");
-const goBtn = document.getElementById("goBtn");
-const clearBtn = document.getElementById("clearBtn");
-const mainFrame = document.getElementById("mainFrame");
-const statusBar = document.getElementById("statusBar");
-const loginInfo = document.getElementById("loginInfo");
-const quickBtns = document.querySelectorAll(".quick-btn");
-const searchHistoryEl = document.getElementById("searchHistory");
+let urlInput,
+  goBtn,
+  clearBtn,
+  mainFrame,
+  statusBar,
+  loginInfo,
+  quickBtns,
+  searchHistoryEl;
 const HISTORY_KEY = "iframeSearchHistory";
+
+// 要素を確実に取得する関数
+function initializeElements() {
+  console.log("[iframe] 要素の初期化を開始");
+
+  urlInput = document.getElementById("urlInput");
+  goBtn = document.getElementById("goBtn");
+  clearBtn = document.getElementById("clearBtn");
+  mainFrame = document.getElementById("mainFrame");
+  statusBar = document.getElementById("statusBar");
+  loginInfo = document.getElementById("loginInfo");
+  quickBtns = document.querySelectorAll(".quick-btn");
+  searchHistoryEl = document.getElementById("searchHistory");
+
+  console.log("[iframe] 要素取得結果:", {
+    urlInput: !!urlInput,
+    goBtn: !!goBtn,
+    clearBtn: !!clearBtn,
+    mainFrame: !!mainFrame,
+    statusBar: !!statusBar,
+    loginInfo: !!loginInfo,
+    quickBtns: quickBtns.length,
+    searchHistoryEl: !!searchHistoryEl,
+  });
+
+  if (!searchHistoryEl) {
+    console.error("[iframe] searchHistoryElが見つかりません！");
+  }
+}
 
 // ログイン状態維持対応サイト
 const LOGIN_SITES = {
@@ -352,43 +381,37 @@ function saveHistory(history) {
 }
 
 // 履歴データ構造を拡張（ファビコンURLも保存）
-function addHistory(entry) {
+async function addHistory(entry) {
+  console.log(`[iframe] addHistory呼び出し: ${entry}`);
   let history = loadHistory();
 
   // 既存のエントリを削除（重複防止）
   history = history.filter((h) => h.url !== entry);
 
+  // ファビコンURLを事前に取得
+  const faviconUrl = await getFaviconUrl(entry);
+  console.log(
+    `[iframe] ファビコンURL取得結果: ${entry} -> ${
+      faviconUrl ? "成功" : "失敗"
+    }`
+  );
+
   // 新しいエントリを作成
   const newEntry = {
     url: entry,
     title: getPageTitle(entry),
-    faviconUrl: null,
+    faviconUrl: faviconUrl,
     timestamp: Date.now(),
   };
 
-  // ファビコンURLを取得
-  getFaviconUrl(entry).then((faviconUrl) => {
-    newEntry.faviconUrl = faviconUrl;
-    // 履歴を更新
-    let updatedHistory = loadHistory();
-    const existingIndex = updatedHistory.findIndex((h) => h.url === entry);
-    if (existingIndex !== -1) {
-      updatedHistory[existingIndex] = newEntry;
-    } else {
-      updatedHistory.unshift(newEntry);
-    }
-    saveHistory(updatedHistory);
-    renderHistory();
-  });
-
-  // 即座に履歴に追加（ファビコンは後で更新）
+  // 履歴に追加
   history.unshift(newEntry);
 
   // 履歴数を制限（必要に応じて）
   // if (history.length > 10) history = history.slice(0, 10);
 
   saveHistory(history);
-  renderHistory();
+  await renderHistory();
 }
 
 // ページタイトルを取得する関数
@@ -407,14 +430,22 @@ function getPageTitle(url) {
 
 // ファビコンURLを取得する関数（Google Favicon API + Chrome拡張API）
 async function getFaviconUrl(url) {
+  console.log(`[iframe] getFaviconUrl呼び出し: ${url}`);
+
   // 検索キーワードの場合はGoogleアイコン
   if (!/^https?:\/\//.test(url) && !url.startsWith("www.")) {
+    console.log(`[iframe] 検索キーワードのためGoogleアイコンを使用: ${url}`);
     return "data:image/svg+xml;base64," + btoa(getGoogleSVG());
   }
 
   try {
     const domain = getDomain(url);
-    if (!domain) return null;
+    if (!domain) {
+      console.log(`[iframe] ドメイン取得失敗: ${url}`);
+      return null;
+    }
+
+    console.log(`[iframe] ドメイン取得成功: ${domain}`);
 
     // 1. まずChrome拡張APIでファビコンを取得
     try {
@@ -432,6 +463,7 @@ async function getFaviconUrl(url) {
 
     // 2. Chrome拡張APIが失敗した場合はGoogle Favicon APIを使用
     const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    console.log(`[iframe] Google Favicon APIを試行: ${googleFaviconUrl}`);
 
     // ファビコンの存在確認
     try {
@@ -441,6 +473,10 @@ async function getFaviconUrl(url) {
         const objectUrl = URL.createObjectURL(blob);
         console.log(`[iframe] ファビコン取得成功 (Google API): ${domain}`);
         return objectUrl;
+      } else {
+        console.log(
+          `[iframe] Google Favicon API レスポンスエラー: ${response.status}`
+        );
       }
     } catch (error) {
       console.log(
@@ -449,7 +485,23 @@ async function getFaviconUrl(url) {
       );
     }
 
-    // 3. どちらも失敗した場合はデフォルトアイコン
+    // 3. 直接ファビコンURLを試行
+    try {
+      const directFaviconUrl = `https://${domain}/favicon.ico`;
+      console.log(`[iframe] 直接ファビコンURLを試行: ${directFaviconUrl}`);
+
+      const response = await fetch(directFaviconUrl);
+      if (response.ok) {
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        console.log(`[iframe] ファビコン取得成功 (直接URL): ${domain}`);
+        return objectUrl;
+      }
+    } catch (error) {
+      console.log(`[iframe] 直接ファビコンURL取得失敗: ${domain}`, error);
+    }
+
+    // 4. どちらも失敗した場合はデフォルトアイコン
     console.log(
       `[iframe] ファビコン取得失敗、デフォルトアイコンを使用: ${domain}`
     );
@@ -488,9 +540,24 @@ function getGoogleSVG() {
 
 async function renderHistory() {
   const history = loadHistory();
-  if (!searchHistoryEl) return;
+  console.log(`[iframe] renderHistory呼び出し時の履歴数: ${history.length}`);
+  console.log(
+    `[iframe] renderHistory履歴内容:`,
+    history.map((h) => h.url)
+  );
+  console.log(`[iframe] searchHistoryEl要素:`, searchHistoryEl);
+
+  if (!searchHistoryEl) {
+    console.log(`[iframe] searchHistoryElが見つかりません - 再取得を試行`);
+    searchHistoryEl = document.getElementById("searchHistory");
+    if (!searchHistoryEl) {
+      console.error(`[iframe] searchHistoryElの再取得も失敗`);
+      return;
+    }
+  }
 
   if (history.length === 0) {
+    console.log(`[iframe] 履歴が空のため、空の状態を表示`);
     searchHistoryEl.innerHTML = `
       <div class="history-container">
         <span class="text-muted">検索履歴はありません</span>
@@ -503,6 +570,7 @@ async function renderHistory() {
   }
 
   // 基本構造を作成
+  console.log(`[iframe] 履歴表示の基本構造を作成`);
   searchHistoryEl.innerHTML = `
     <div class="history-container">
       <div class="search-history">
@@ -523,10 +591,12 @@ async function renderHistory() {
   `;
 
   const row = document.getElementById("favicon-row");
+  console.log(`[iframe] favicon-row要素:`, row);
 
   // 全履歴を横スクロールで無制限に表示
   for (let i = 0; i < history.length; i++) {
     const h = history[i];
+    console.log(`[iframe] 履歴アイコン${i}を作成:`, h);
     const wrapper = createFaviconWrapper(h, i);
     row.appendChild(wrapper);
   }
@@ -588,6 +658,7 @@ async function renderHistory() {
 
 // ファビコンwrapperを作成する関数（新しいデータ構造対応）
 function createFaviconWrapper(historyItem, index) {
+  console.log(`[iframe] createFaviconWrapper呼び出し:`, { historyItem, index });
   const wrapper = document.createElement("span");
   wrapper.className = "favicon-wrapper";
   wrapper.style.position = "relative";
@@ -616,10 +687,69 @@ function createFaviconWrapper(historyItem, index) {
   a.style.height = "24px";
   a.style.verticalAlign = "middle";
   a.title = historyItem.title || historyItem.url; // ツールチップにタイトルを表示
-  a.addEventListener("click", (e) => {
+  a.addEventListener("click", async (e) => {
     e.preventDefault();
     urlInput.value = historyItem.url;
-    handleInput(historyItem.url, true);
+
+    // 既存アイコンクリック時は新しいエントリを先頭に追加（重複表示）
+    let history = loadHistory();
+    console.log(`[iframe] 既存アイコンクリック前の履歴数: ${history.length}`);
+
+    // 新しいエントリを作成（既存のエントリをコピー）
+    const newEntry = {
+      url: historyItem.url,
+      title: historyItem.title || getPageTitle(historyItem.url),
+      faviconUrl: historyItem.faviconUrl,
+      timestamp: Date.now(),
+    };
+
+    // 先頭に新しいエントリを追加
+    history.unshift(newEntry);
+    console.log(`[iframe] 新しいエントリ追加後の履歴数: ${history.length}`);
+    console.log(
+      `[iframe] 履歴内容:`,
+      history.map((h) => h.url)
+    );
+
+    saveHistory(history);
+    await renderHistory();
+
+    // 既存アイコンクリック時は直接URL処理（addHistoryを呼ばない）
+    const cleanInput = historyItem.url.replace(/^@+/, "").trim();
+
+    if (isValidUrl(cleanInput)) {
+      // URL直接アクセス
+      const fullUrl = cleanInput.startsWith("http")
+        ? cleanInput
+        : "https://" + cleanInput;
+      console.log(`[iframe] 🔥 既存アイコンURL直接アクセス: ${fullUrl}`);
+
+      currentUrl = fullUrl;
+      try {
+        forceLoadIframe(fullUrl);
+      } catch (error) {
+        console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
+        updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
+      }
+    } else {
+      // Google検索
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+        cleanInput
+      )}`;
+      console.log(`[iframe] 🔥 既存アイコンGoogle検索: ${searchUrl}`);
+
+      currentUrl = searchUrl;
+      try {
+        updateStatus("Google検索中...", "info");
+        mainFrame.src = searchUrl;
+        setTimeout(() => {
+          updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
+        }, 1000);
+      } catch (error) {
+        console.error(`[iframe] 🔥 Google検索エラー:`, error);
+        updateStatus(`❌ 検索エラー: ${error.message}`, "error");
+      }
+    }
   });
 
   // 新しいデータ構造に対応
@@ -643,18 +773,55 @@ function createFaviconWrapper(historyItem, index) {
     }
   } else {
     // 新しいデータ構造（オブジェクト）の場合
+    console.log(`[iframe] 新しいデータ構造でファビコン作成:`, historyItem);
     if (historyItem.faviconUrl) {
       if (historyItem.faviconUrl.startsWith("data:image/svg+xml")) {
         // SVGデータURLの場合
+        console.log(`[iframe] SVGデータURLを使用`);
         a.innerHTML = getGoogleSVG();
+      } else if (historyItem.faviconUrl.startsWith("blob:")) {
+        // Blob URLの場合
+        console.log(`[iframe] Blob URLを使用:`, historyItem.faviconUrl);
+        const img = document.createElement("img");
+        img.src = historyItem.faviconUrl;
+        img.alt = "favicon";
+        img.className = "favicon-img";
+        img.onerror = function () {
+          console.log(
+            `[iframe] Blob URL読み込みエラー:`,
+            historyItem.faviconUrl
+          );
+          this.parentElement.innerHTML = getGoogleSVG();
+        };
+        img.onload = function () {
+          console.log(`[iframe] Blob URL読み込み成功:`, historyItem.faviconUrl);
+        };
+        a.appendChild(img);
       } else {
-        // 画像URLの場合
-        a.innerHTML = `<img src="${
-          historyItem.faviconUrl
-        }" alt="favicon" class="favicon-img" onerror="this.parentElement.innerHTML='${getGoogleSVG()}'">`;
+        // 通常の画像URLの場合
+        console.log(`[iframe] 画像URLを使用:`, historyItem.faviconUrl);
+        const img = document.createElement("img");
+        img.src = historyItem.faviconUrl;
+        img.alt = "favicon";
+        img.className = "favicon-img";
+        img.onerror = function () {
+          console.log(
+            `[iframe] ファビコン画像読み込みエラー:`,
+            historyItem.faviconUrl
+          );
+          this.parentElement.innerHTML = getGoogleSVG();
+        };
+        img.onload = function () {
+          console.log(
+            `[iframe] ファビコン画像読み込み成功:`,
+            historyItem.faviconUrl
+          );
+        };
+        a.appendChild(img);
       }
     } else {
       // ファビコンURLがない場合はGoogleアイコン
+      console.log(`[iframe] デフォルトGoogleアイコンを使用`);
       a.innerHTML = getGoogleSVG();
     }
   }
@@ -681,7 +848,10 @@ async function handleInput(input, forceShow = false) {
     return;
   }
 
-  addHistory(input.trim());
+  // forceShow=trueの場合は履歴追加をスキップ（既に履歴順序更新済み）
+  if (!forceShow) {
+    await addHistory(input.trim());
+  }
 
   // @記号を除去
   const cleanInput = input.replace(/^@+/, "").trim();
@@ -745,53 +915,120 @@ async function handleInput(input, forceShow = false) {
   }
 }
 
-// イベントリスナー設定
-goBtn.addEventListener("click", () => {
-  console.log("[iframe] 🔥 実行ボタンクリック");
-  handleInput(urlInput.value);
-});
+// イベントリスナー設定関数
+function setupEventListeners() {
+  console.log("[iframe] イベントリスナー設定開始");
 
-clearBtn.addEventListener("click", () => {
-  console.log("[iframe] 🔥 クリアボタンクリック");
-  urlInput.value = "";
-  mainFrame.src = "";
-  currentUrl = "";
-  loginInfo.style.display = "none";
-  updateStatus("クリアしました", "info");
-});
-
-urlInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    console.log("[iframe] 🔥 Enterキー押下");
-    handleInput(urlInput.value);
+  if (goBtn) {
+    goBtn.addEventListener("click", () => {
+      console.log("[iframe] 🔥 実行ボタンクリック");
+      handleInput(urlInput.value);
+    });
   }
-});
 
-// クイックアクセスボタン
-quickBtns.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const url = btn.dataset.url;
-    console.log(`[iframe] 🔥 クイックアクセス: ${url}`);
-    urlInput.value = url;
-    handleInput(url);
-  });
-});
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      console.log("[iframe] 🔥 クリアボタンクリック");
+      urlInput.value = "";
+      mainFrame.src = "";
+      currentUrl = "";
+      if (loginInfo) loginInfo.style.display = "none";
+      updateStatus("クリアしました", "info");
+    });
+  }
 
-// URLパラメータ処理
-window.addEventListener("DOMContentLoaded", async () => {
-  console.log("[iframe] 🔥 DOM読み込み完了");
+  if (urlInput) {
+    urlInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        console.log("[iframe] 🔥 Enterキー押下");
+        handleInput(urlInput.value);
+      }
+    });
+  }
+
+  // クイックアクセスボタン
+  if (quickBtns && quickBtns.length > 0) {
+    quickBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const url = btn.dataset.url;
+        console.log(`[iframe] 🔥 クイックアクセス: ${url}`);
+        if (urlInput) urlInput.value = url;
+        handleInput(url);
+      });
+    });
+  }
+
+  console.log("[iframe] イベントリスナー設定完了");
+}
+
+// ページ読み込み時の初期化
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("[iframe] DOMContentLoaded - 初期化開始");
+
+  // 要素を初期化
+  initializeElements();
+
+  // 履歴を読み込んで表示
+  const history = loadHistory();
+  console.log("[iframe] 初期履歴データ:", history);
+  console.log("[iframe] 履歴データ数:", history.length);
+  console.log("[iframe] searchHistoryEl要素:", searchHistoryEl);
+
+  // テスト用の履歴データを追加（履歴が空の場合）
+  if (history.length === 0) {
+    console.log("[iframe] テスト用履歴データを追加");
+    const testHistory = [
+      {
+        url: "https://www.google.com",
+        title: "Google",
+        faviconUrl: "data:image/svg+xml;base64," + btoa(getGoogleSVG()),
+        timestamp: Date.now() - 300000,
+      },
+      {
+        url: "https://www.github.com",
+        title: "GitHub",
+        faviconUrl: "https://github.com/favicon.ico",
+        timestamp: Date.now() - 200000,
+      },
+      {
+        url: "test search",
+        title: "Google検索: test search",
+        faviconUrl: "data:image/svg+xml;base64," + btoa(getGoogleSVG()),
+        timestamp: Date.now() - 100000,
+      },
+    ];
+    saveHistory(testHistory);
+    console.log("[iframe] テスト履歴データを保存:", testHistory);
+  }
 
   await renderHistory();
 
+  // イベントリスナーを設定
+  setupEventListeners();
+
+  // URLパラメータ処理
   const urlParams = new URLSearchParams(window.location.search);
   const qParam = urlParams.get("q") || urlParams.get("url");
 
   if (qParam) {
-    console.log(`[iframe] 🔥 URLパラメータ検出: ${qParam}`);
-    urlInput.value = qParam;
+    console.log(`[iframe] URLパラメータ検出: ${qParam}`);
+    if (urlInput) urlInput.value = qParam;
     handleInput(qParam);
-  } else {
-    // updateStatus("準備完了 - URL入力またはキーワード検索してください", "info");
+  }
+
+  console.log("[iframe] 初期化完了");
+});
+
+// ページ読み込み完了後にも実行（フォールバック）
+window.addEventListener("load", async () => {
+  console.log("[iframe] window.load - フォールバック初期化");
+
+  // まだ要素が取得できていない場合
+  if (!searchHistoryEl) {
+    console.log("[iframe] 要素が未取得のため再初期化");
+    initializeElements();
+    const history = loadHistory();
+    await renderHistory();
   }
 });
 
@@ -803,21 +1040,6 @@ window.debugIframe = () => {
   console.log("ログイン対応サイト:", LOGIN_SITES);
 };
 
-// 新しい検索ボタンのイベント
-const newSearchBtn = document.querySelector(".new-search-btn");
-if (newSearchBtn) {
-  newSearchBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (urlInput && urlInput.value.trim()) {
-      const query = urlInput.value.trim();
-      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
-        query
-      )}`;
-      window.open(searchUrl, "_blank");
-    } else {
-      urlInput.focus();
-    }
-  });
-}
+// 新しい検索ボタンのイベント（setupEventListeners関数内で設定されるため削除）
 
 console.log("[iframe] 🔥 無理矢理 iframe.js 初期化完了");

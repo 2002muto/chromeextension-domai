@@ -1490,8 +1490,9 @@
 /* ─── 設定項目リスト ─── */
 .setting-list {
   padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
 .setting-item {
@@ -1505,6 +1506,8 @@
   backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .setting-item:hover {
@@ -1555,6 +1558,7 @@
 
 .setting-item-content {
   flex: 1;
+  min-width: 0; /* flexアイテムが縮まるようにする */
 }
 
 .setting-item-title {
@@ -1563,6 +1567,9 @@
   color: #e2e8f0;
   margin-bottom: 4px;
   transition: color 0.3s ease;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .setting-item:hover .setting-item-title {
@@ -1683,6 +1690,71 @@
 
   .setting-item-description {
     font-size: 0.8rem;
+  }
+}
+
+/* 大きな画面サイズでの横幅伸縮対応 */
+@media (min-width: 1200px) {
+  .setting-list {
+    padding: 24px;
+  }
+
+  .setting-item {
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .setting-item-header {
+    gap: 20px;
+  }
+
+  .setting-item-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .setting-item-icon i {
+    font-size: 1.8rem;
+  }
+
+  .setting-item-title {
+    font-size: 1.3rem;
+  }
+
+  .setting-item-description {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .setting-list {
+    padding: 32px;
+  }
+
+  .setting-item {
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .setting-item-header {
+    gap: 24px;
+  }
+
+  .setting-item-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .setting-item-icon i {
+    font-size: 2rem;
+  }
+
+  .setting-item-title {
+    font-size: 1.4rem;
+  }
+
+  .setting-item-description {
+    font-size: 1.1rem;
   }
 }
 
