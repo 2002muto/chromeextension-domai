@@ -5,7 +5,7 @@ const SETTING_ITEMS = [
   {
     id: "description",
     title: "説明",
-    description: "domai Extension についての詳細情報を確認できます",
+    description: "SideEffect についての詳細情報を確認できます",
     icon: "bi-info-circle",
     panelId: "#description-panel",
     comingSoon: false,
@@ -63,13 +63,6 @@ function renderSettingMain() {
 
   // 設定項目リストをレンダリング
   renderSettingList();
-
-  // MEMO・PROMPTと同じアニメーション
-  if (content) {
-    content.classList.remove("show", "animate");
-    void content.offsetWidth;
-    content.classList.add("animate", "show");
-  }
 
   // フッターを設定リストモードに変更
   setFooter("list");
@@ -221,8 +214,8 @@ function setupFooterListeners() {
   if (contactBtn) {
     contactBtn.addEventListener("click", () => {
       console.log("お問合せボタンがクリックされました");
-      const email = "support@domai-extension.com";
-      const subject = "domai Extension お問合せ";
+      const email = "support@sideeffect-extension.com";
+      const subject = "SideEffect お問合せ";
       const body = "お問合せ内容をここに記載してください。\n\n---\n\n";
       const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
         subject
@@ -238,13 +231,13 @@ function setupFooterListeners() {
       console.log("共有ボタンがクリックされました");
       if (navigator.share) {
         navigator.share({
-          title: "domai Extension",
+          title: "SideEffect",
           text: "効率的なブラウザ拡張機能です。",
-          url: "https://github.com/your-repo/domai-extension",
+          url: "https://github.com/your-repo/sideeffect-extension",
         });
       } else {
         const shareText =
-          "domai Extension - 効率的なブラウザ拡張機能\nhttps://github.com/your-repo/domai-extension";
+          "SideEffect - 効率的なブラウザ拡張機能\nhttps://github.com/your-repo/sideeffect-extension";
         navigator.clipboard.writeText(shareText).then(() => {
           showCustomSettingMessage(
             "共有リンクをクリップボードにコピーしました"
@@ -300,11 +293,8 @@ window.addEventListener("DOMContentLoaded", () => {
   // ─── 初回ロード時にMEMO・PROMPTと同じアニメーション ───
   if (content) {
     content.classList.remove("show", "animate");
-    // 強制リフロー
     void content.offsetWidth;
     content.classList.add("animate");
-
-    // 少し遅延してからshowクラスを追加（フェードイン効果）
     setTimeout(() => {
       content.classList.add("show");
     }, 100);

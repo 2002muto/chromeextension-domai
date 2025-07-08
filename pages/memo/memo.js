@@ -344,7 +344,7 @@ function setFooter(mode) {
   foot.style.display = "flex";
   if (mode === "list") {
     foot.innerHTML = `
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブ">
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブへ移動">
         <i class="bi bi-archive"></i>
         <span class="nav-text">アーカイブ</span>
       </button>
@@ -567,6 +567,7 @@ async function renderListView() {
 
           // アニメーション付きで削除（アーカイブには保存しない）
           if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+            li.classList.add("archive-item"); // ←追加
             await window.AppUtils.animateArchiveItem(li, async () => {
               // メモを完全に削除（アーカイブではない）
               const memoIndex = memos.findIndex((memo) => memo.id === m.id);
@@ -621,6 +622,7 @@ async function renderListView() {
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+          li.classList.add("archive-item"); // ←追加
           await window.AppUtils.animateArchiveItem(li, async () => {
             m.archived = true;
             await saveStorage(MEMO_KEY, memos);
@@ -639,10 +641,23 @@ async function renderListView() {
             "[MEMO] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
           );
 
-          // シンプルなアニメーション
-          li.style.transition = "all 0.5s ease-in-out";
-          li.style.transform = "translateY(-20px) scale(0.95)";
-          li.style.opacity = "0";
+          // シンプルなアニメーション（CSP準拠）
+          li.classList.add("archive-item", "archive-fallback-animating");
+
+          // フォールバックアニメーション用のスタイルを動的に追加
+          if (!document.querySelector("#archive-fallback-styles")) {
+            const fallbackStyles = document.createElement("style");
+            fallbackStyles.id = "archive-fallback-styles";
+            fallbackStyles.textContent = `
+              .archive-fallback-animating {
+                transition: all 0.5s ease-in-out !important;
+                transform: translateY(-20px) scale(0.95) !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+              }
+            `;
+            document.head.appendChild(fallbackStyles);
+          }
 
           await new Promise((resolve) => {
             setTimeout(async () => {
@@ -1335,12 +1350,19 @@ async function renderInputForm(id) {
       hasChanges ||
       (originalMemo && (originalMemo.title || originalMemo.content))
     ) {
-      window.AppUtils.showConfirmDialog({
-        title: "メモを削除しますか？",
-        message:
-          'このメモを完全に削除します。<br><span style="color: #dc3545; font-weight: bold;">この操作は取り消せません。</span>',
-        onConfirm: async () => {
-          // 削除を実行
+      window.AppUtils.showSaveConfirmDialog({
+        title: "本当に削除しますか？",
+        message: "メモ内容に変更があります。保存せずに戻ると変更が失われます。",
+        discardLabel: "削除",
+        cancelLabel: "キャンセル",
+        discardColor: "#D93544",
+        cancelColor: "#4A5568",
+        showSave: false,
+        showDiscard: true,
+        showCancel: true,
+        iconClass: "bi bi-trash-fill",
+        onDiscard: async () => {
+          // 削除処理
           if (id !== undefined) {
             memos = memos.filter((m) => m.id !== id);
             console.log("delete memo id=", id);
@@ -1351,7 +1373,7 @@ async function renderInputForm(id) {
           renderListView();
         },
         onCancel: () => {
-          console.log("メモの削除をキャンセルしました");
+          // キャンセル処理
         },
       });
     } else {
@@ -1776,11 +1798,19 @@ function renderArchiveFooter() {
       }
 
       // 確認ダイアログを表示
-      window.AppUtils.showConfirmDialog({
+      window.AppUtils.showSaveConfirmDialog({
         title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #dc3545; font-weight: bold;">この操作は取り消せません。</span>`,
-        onConfirm: async () => {
-          // 削除処理を実行
+        message: `${confirmMessage}<br><span style="color: #D93544; font-weight: bold;">この操作は取り消せません。</span>`,
+        discardLabel: "削除",
+        cancelLabel: "キャンセル",
+        discardColor: "#D93544",
+        cancelColor: "#4A5568",
+        showSave: false,
+        showDiscard: true,
+        showCancel: true,
+        iconClass: "bi bi-trash-fill",
+        onDiscard: async () => {
+          // 削除処理
           if (selectedChecks.length === 0) {
             // 何も選択されていない場合は全削除
             if (archiveType === "memo") {
@@ -2048,8 +2078,8 @@ async function exportAllMemos() {
     // エクスポート用のデータ構造を作成（アクティブなメモのみ）
     const exportData = {
       // 特別なID（この拡張機能からのエクスポートであることを示す）
-      extensionId: "chromeextension-domai-v1.0",
-      extensionName: "Chrome Extension Domain Assistant",
+      extensionId: "sideeffect-v1.0",
+      extensionName: "SideEffect",
       extensionVersion: "1.0.0",
       // 既存のデータ
       version: "1.0",
@@ -2239,3 +2269,66 @@ function updateExportButtonState() {
     });
   }
 }
+
+// Function to save the current state of the memo page
+function saveMemoState() {
+  const memoContent = document.querySelector(".memo-content");
+  const state = {
+    archiveType: archiveType,
+    currentEditingMemoId: currentEditingMemoId,
+    isEditMode: memoContent && memoContent.classList.contains("edit-mode"),
+  };
+  chrome.storage.local.set({ memoState: state }, () => {
+    console.log("Memo state saved:", state);
+  });
+}
+
+// Function to restore the memo page state
+function restoreMemoState() {
+  chrome.storage.local.get(["memoState"], (result) => {
+    const state = result.memoState || {};
+    archiveType = state.archiveType || null;
+    currentEditingMemoId = state.currentEditingMemoId || null;
+    const memoContent = document.querySelector(".memo-content");
+    if (memoContent && state.isEditMode) {
+      memoContent.classList.add("edit-mode");
+    } else if (memoContent) {
+      memoContent.classList.remove("edit-mode");
+    }
+    console.log("Memo state restored:", state);
+  });
+}
+
+// Add event listeners to save and restore state
+window.addEventListener("beforeunload", saveMemoState);
+document.addEventListener("DOMContentLoaded", restoreMemoState);
+
+// サイドパネルを開く機能
+document.addEventListener("DOMContentLoaded", () => {
+  const openSidePanelBtn = document.getElementById("open-side-panel");
+  if (openSidePanelBtn) {
+    openSidePanelBtn.addEventListener("click", async () => {
+      try {
+        // 現在のタブを取得
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+
+        // サイドパネルを有効化して設定
+        await chrome.sidePanel.setOptions({
+          tabId: tab.id,
+          enabled: true,
+          path: "pages/memo/memo.html",
+        });
+
+        // サイドパネルを開く
+        await chrome.sidePanel.open({ tabId: tab.id });
+
+        console.log("サイドパネルを開きました");
+      } catch (error) {
+        console.error("サイドパネルを開くのに失敗しました:", error);
+      }
+    });
+  }
+});

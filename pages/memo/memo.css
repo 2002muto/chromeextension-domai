@@ -93,10 +93,13 @@ body {
   /* フッターの固定スタイルは共通なので、特別な処理は不要 */
 }
 
-/* 編集モード時のコンテンツ高さ調整 */
+/* 編集モード時のコンテンツ高さ調整 - MEMO一覧と統一 */
 .memo-content.edit-mode {
-  height: calc(100vh - 172px); /* 共通の高さ設定を適用 */
-  padding-bottom: 24px; /* フッターは固定なので通常のパディング */
+  background: #2d2d2d;
+  border-radius: 12px;
+  margin: 16px 16px 0px 16px; /* MEMO一覧と完全統一 */
+  height: calc(100vh - 138px) !important; /* MEMO一覧と完全統一 */
+  padding-bottom: 0; /* フッターは固定なので余白不要 */
 }
 /* ─── スクロールバーのスタイル ─── */
 .memo-content::-webkit-scrollbar {
@@ -1004,4 +1007,39 @@ body {
 
 .drag-drop-toast {
   animation: slideInRight 0.3s ease-out;
+}
+
+/* サイドパネルを開くボタン */
+.open-side-panel-btn {
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  z-index: 1001;
+}
+
+.btn-open-side-panel {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-open-side-panel:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-open-side-panel i {
+  font-size: 16px;
 }

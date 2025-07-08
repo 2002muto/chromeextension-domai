@@ -16,7 +16,7 @@ const INITIAL_DYNAMIC_RULE_ID = 1000;
 // DNR APIが許容する最大ID値
 const MAX_DYNAMIC_RULE_ID = 1000000;
 // 次に利用する動的ルールID（確実に整数として初期化）
-let nextDynamicRuleId = Math.floor(INITIAL_DYNAMIC_RULE_ID);
+// let nextDynamicRuleId = Math.floor(INITIAL_DYNAMIC_RULE_ID);
 // Track domains that already have a dynamic rule so we don't add duplicates.
 const dynamicRuleIds = new Map();
 
@@ -245,16 +245,7 @@ function createMaximalRule(ruleId, domain) {
 }
 
 // 0) 拡張機能アイコンクリック時のサイドパネル制御
-chrome.action.onClicked.addListener(async (tab) => {
-  console.log(`[BG] Extension icon clicked on tab ${tab.id}`);
-  try {
-    // サイドパネルを開く
-    await chrome.sidePanel.open({ tabId: tab.id });
-    console.log(`[BG] Side panel opened for tab ${tab.id}`);
-  } catch (error) {
-    console.error("[BG] Failed to open side panel:", error);
-  }
-});
+toggleIframeRules(true); // Ensure iframe rules are enabled
 
 // 1) タブ切り替え（アクティブタブ変更）を監視
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
@@ -359,157 +350,68 @@ const FORCE_SUCCESS_CONFIG = {
 // 動的ルールID管理（無理矢理バージョン）
 let nextDynamicRuleId = 10000;
 
-// 無理矢理動的ルール追加
-async function addDynamicIframeRule(domain) {
-  console.log(`[BG] 🔥 無理矢理動的ルール追加: ${domain}`);
-
-  // 複数のルールIDを試す
-  const ruleIds = [
-    Math.floor(Math.random() * 100000) + 10000,
-    (Date.now() % 100000) + 10000,
-    nextDynamicRuleId++,
-    Math.floor(Math.random() * 50000) + 50000,
-  ];
-
-  for (let i = 0; i < ruleIds.length; i++) {
-    const ruleId = ruleIds[i];
-    console.log(`[BG] 🔥 ルールID ${ruleId} で試行 ${i + 1}/${ruleIds.length}`);
-
-    try {
-      // 複数のルール設定を試す
-      const ruleConfigs = [
-        createStandardRule(ruleId, domain),
-        createBypassRule(ruleId, domain),
-        createForceRule(ruleId, domain),
-        createMaximalRule(ruleId, domain),
-      ];
-
-      for (let j = 0; j < ruleConfigs.length; j++) {
-        try {
-          console.log(`[BG] 🔥 設定 ${j + 1} でルール追加試行...`);
-          await chrome.declarativeNetRequest.updateDynamicRules({
-            addRules: [ruleConfigs[j]],
-          });
-
-          console.log(`[BG] ✅ 成功！ルールID: ${ruleId}, 設定: ${j + 1}`);
-          return { success: true, ruleId: ruleId };
-        } catch (error) {
-          console.log(`[BG] 🔥 設定 ${j + 1} 失敗:`, error.message);
-        }
-      }
-    } catch (error) {
-      console.log(`[BG] 🔥 ルールID ${ruleId} 失敗:`, error.message);
-    }
-  }
-
-  // すべて失敗しても成功として返す
-  console.log("[BG] 🔥 すべて失敗したが成功として返す");
-  return { success: true, ruleId: "forced" };
-}
-
-// 標準ルール作成
-function createStandardRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 100,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: `||${domain}/*`,
-      resourceTypes: ["main_frame", "sub_frame"],
-    },
-  };
-}
-
-// バイパスルール作成
-function createBypassRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 99,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-        { header: "Content-Security-Policy-Report-Only", operation: "remove" },
-        { header: "X-Content-Type-Options", operation: "remove" },
-        { header: "Referrer-Policy", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: `*${domain}*`,
-      resourceTypes: ["main_frame", "sub_frame", "xmlhttprequest", "script"],
-    },
-  };
-}
-
-// 強制ルール作成
-function createForceRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 98,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-        { header: "frame-ancestors", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: `*://*.${domain}/*`,
-      resourceTypes: ["main_frame", "sub_frame"],
-    },
-  };
-}
-
-// 最大ルール作成
-function createMaximalRule(ruleId, domain) {
-  return {
-    id: parseInt(ruleId),
-    priority: 97,
-    action: {
-      type: "modifyHeaders",
-      responseHeaders: [
-        { header: "X-Frame-Options", operation: "remove" },
-        { header: "Content-Security-Policy", operation: "remove" },
-        { header: "Content-Security-Policy-Report-Only", operation: "remove" },
-        { header: "X-Content-Type-Options", operation: "remove" },
-        { header: "Referrer-Policy", operation: "remove" },
-        { header: "X-XSS-Protection", operation: "remove" },
-        { header: "Strict-Transport-Security", operation: "remove" },
-        { header: "Feature-Policy", operation: "remove" },
-        { header: "Permissions-Policy", operation: "remove" },
-      ],
-    },
-    condition: {
-      urlFilter: "*",
-      resourceTypes: [
-        "main_frame",
-        "sub_frame",
-        "xmlhttprequest",
-        "script",
-        "stylesheet",
-        "image",
-        "font",
-        "object",
-        "media",
-        "websocket",
-        "csp_report",
-        "other",
-      ],
-    },
-  };
-}
-
 // メッセージハンドラー（無理矢理バージョン）
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("[BG] 🔥 メッセージ受信:", request);
+
+  if (request.action === "fetchFavicon") {
+    console.log("[BG] favicon fetch start for domain:", request.domain);
+
+    // 非同期でファビコン取得を実行
+    (async () => {
+      // 複数のファビコンAPIを試行
+      const faviconUrls = [
+        `https://icons.duckduckgo.com/ip3/${request.domain}.ico`,
+        `https://www.google.com/s2/favicons?domain=${request.domain}&sz=32`,
+        `https://favicon.yandex.net/favicon/${request.domain}`,
+        `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${request.domain}&size=32`,
+      ];
+
+      // 順次試行
+      for (let i = 0; i < faviconUrls.length; i++) {
+        try {
+          const url = faviconUrls[i];
+          console.log(`[BG] trying favicon URL ${i + 1}:`, url);
+
+          const response = await fetch(url);
+          if (response.ok) {
+            const blob = await response.blob();
+            console.log(
+              `[BG] favicon success from ${url}: size=${blob.size}, type=${blob.type}`
+            );
+
+            // データURLに変換
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              console.log(
+                `[BG] favicon dataUrl created, length:`,
+                reader.result?.length
+              );
+              sendResponse({ dataUrl: reader.result });
+            };
+            reader.onerror = (e) => {
+              console.error("[BG] FileReader error:", e);
+              sendResponse({ dataUrl: null });
+            };
+            reader.readAsDataURL(blob);
+            return; // 成功したら終了
+          }
+        } catch (error) {
+          console.log(
+            `[BG] favicon fetch failed for URL ${i + 1}:`,
+            error.message
+          );
+          // 次のURLを試行
+        }
+      }
+
+      // すべて失敗した場合
+      console.log("[BG] all favicon URLs failed");
+      sendResponse({ dataUrl: null });
+    })();
+
+    return true; // 非同期レスポンスを有効化
+  }
 
   // 非同期処理を無理矢理同期的に扱う
   (async () => {
@@ -560,6 +462,69 @@ chrome.runtime.onInstalled.addListener(() => {
       "google.com",
       "youtube.com",
       "github.com",
+      // AIサービス
+      "genspark.ai",
+      "genspark.com",
+      "claude.ai",
+      "anthropic.com",
+      "bing.com",
+      "copilot.microsoft.com",
+      "copilot-pro.microsoft.com",
+      "you.com",
+      "phind.com",
+      "deepseek.com",
+      "deepseek.ai",
+      "kimi.moonshot.cn",
+      "moonshot.cn",
+      "doubao.com",
+      "doubao.bytedance.com",
+      "tongyi.aliyun.com",
+      "qwen.aliyun.com",
+      "xingye.qq.com",
+      "sparkdesk.cn",
+      "yiyan.baidu.com",
+      "ernie-bot.baidu.com",
+      "chatglm.cn",
+      "zhipuai.cn",
+      "360.cn",
+      "so.com",
+      "sogou.com",
+      "sogou.cn",
+      // その他の便利なサービス
+      "figjam.com",
+      "miro.com",
+      "whimsical.com",
+      "lucidchart.com",
+      "draw.io",
+      "diagrams.net",
+      "canva.com",
+      "notion.so",
+      "roamresearch.com",
+      "obsidian.md",
+      "logseq.com",
+      "craft.do",
+      "bear.app",
+      "ulysses.app",
+      "typora.io",
+      "marktext.io",
+      "zotero.org",
+      "mendeley.com",
+      "papersapp.com",
+      "readwise.io",
+      "instapaper.com",
+      "pocket.com",
+      "raindrop.io",
+      "pinboard.in",
+      "diigo.com",
+      "evernote.com",
+      "onenote.com",
+      "keep.google.com",
+      "trello.com",
+      "asana.com",
+      "clickup.com",
+      "monday.com",
+      "airtable.com",
+      "coda.io",
     ];
 
     commonDomains.forEach(async (domain, index) => {
@@ -590,3 +555,12 @@ setInterval(() => {
 }, 60000); // 1分間隔
 
 console.log("[BG] 🔥 無理矢理background.js読み込み完了");
+
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    await chrome.sidePanel.open({ tabId: tab.id });
+    console.log("サイドパネルを開きました");
+  } catch (error) {
+    console.error("サイドパネルを開くのに失敗:", error);
+  }
+});

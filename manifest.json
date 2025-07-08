@@ -1,9 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "🔥 無理矢理 Chrome Extension",
+  "name": "SideEffect",
   "version": "1.0.0",
-  "description": "無理矢理でも成功させる最強のChrome拡張機能",
+  "description": "SideEffect - サイドパネルでログイン状態維持・iframe検索・メモ機能を提供するChrome拡張機能",
   "permissions": [
+    "sidePanel",
+    "storage",
+    "scripting",
+    "activeTab",
+    "tabs",
+    "declarativeNetRequest",
     "storage",
     "activeTab",
     "scripting",
@@ -13,14 +19,12 @@
     "tabs",
     "webNavigation",
     "webRequest",
-    "webRequestBlocking",
     "cookies",
     "background",
     "contentSettings",
     "proxy",
     "privacy",
     "management",
-    "system.network",
     "unlimitedStorage",
     "clipboardRead",
     "clipboardWrite",
@@ -37,24 +41,15 @@
     "power",
     "sessions",
     "alarms",
-    "offscreen"
+    "offscreen",
+    "sidePanel"
   ],
   "host_permissions": [
     "*://*/*",
     "http://*/*",
     "https://*/*",
     "file://*/*",
-    "chrome://*/*",
-    "chrome-extension://*/*",
-    "moz-extension://*/*",
-    "edge://*/*",
-    "brave://*/*",
-    "opera://*/*",
-    "vivaldi://*/*",
-    "ftp://*/*",
-    "data:*",
-    "blob:*",
-    "filesystem:*"
+    "https://icons.duckduckgo.com/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -71,13 +66,15 @@
     }
   ],
   "action": {
-    "default_popup": "pages/memo/memo.html",
-    "default_title": "🔥 無理矢理拡張機能",
+    "default_title": "🔥 SideEffect",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
+  },
+  "side_panel": {
+    "default_path": "pages/memo/memo.html"
   },
   "icons": {
     "16": "icons/icon16.png",
@@ -88,7 +85,7 @@
     "rule_resources": [
       {
         "id": "ruleset1",
-        "enabled": true,
+        "enabled": false,
         "path": "rules.json"
       }
     ]
@@ -113,7 +110,7 @@
     "ids": ["*"]
   },
   "content_security_policy": {
-    "extension_pages": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: filesystem: *; script-src 'self' 'unsafe-inline' 'unsafe-eval' *; object-src 'self' *; style-src 'self' 'unsafe-inline' *; img-src 'self' data: blob: *; media-src 'self' data: blob: *; font-src 'self' data: *; connect-src 'self' *; frame-src 'self' *; child-src 'self' *; worker-src 'self' blob: *; manifest-src 'self' *;"
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-hashes' data:; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' *; frame-src 'self' *; child-src 'self' *; worker-src 'self'; manifest-src 'self';"
   },
   "minimum_chrome_version": "88",
   "offline_enabled": true,

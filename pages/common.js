@@ -435,6 +435,49 @@ document.addEventListener("DOMContentLoaded", function () {
   navButtons.forEach((button) => {
     // クリック時のイベントリスナーを追加
     button.addEventListener("click", function (e) {
+      // すでにアクティブなページなら何もしない
+      if (button.classList.contains("active")) return;
+
+      // PROMPT編集中の未保存チェック
+      const isPromptEdit =
+        document
+          .querySelector(".memo-content")
+          ?.classList.contains("edit-mode") &&
+        window.location.pathname.includes("/prompt/");
+      if (isPromptEdit && typeof window.checkForUnsavedChanges === "function") {
+        const idx = window.getCurrentPromptIndex
+          ? window.getCurrentPromptIndex()
+          : null;
+        const isNew = idx === -1;
+        const obj = idx !== -1 && window.prompts ? window.prompts[idx] : null;
+        const hasChanges = window.checkForUnsavedChanges(obj, isNew);
+
+        if (
+          hasChanges &&
+          window.AppUtils &&
+          window.AppUtils.showSaveConfirmDialog
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.AppUtils.showSaveConfirmDialog({
+            title: "変更を保存しますか？",
+            message:
+              "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+            onSave: () => {
+              window.saveAndGoBack && window.saveAndGoBack();
+              // ページ遷移
+              window.location.href = button.getAttribute("href");
+            },
+            onDiscard: () => {
+              window.discardAndGoBack && window.discardAndGoBack();
+              // ページ遷移
+              window.location.href = button.getAttribute("href");
+            },
+          });
+          return false;
+        }
+      }
+
       // ドラッグ中の場合はクリックイベントを無効化
       if (window.isDraggingNavigation) {
         console.log("[Navigation] ドラッグ中のためクリックイベントを無効化");

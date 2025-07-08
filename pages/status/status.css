@@ -265,3 +265,7 @@
   justify-content: flex-start;
   z-index: 1000; /* 他の要素より前面に */
 }
+
+.status-footer {
+  display: none;
+}

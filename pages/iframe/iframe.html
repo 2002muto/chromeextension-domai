@@ -1,21 +1,226 @@
 <!-- File: pages/iframe/iframe.html -->
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google検索</title>
-  <link rel="stylesheet" href="../../vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="iframe.css">
-</head>
-<body>
-  <div class="container mt-2">
-    <div class="input-group mb-2">
-      <input id="q" class="form-control" placeholder="検索語">
-      <button id="go" class="btn btn-primary">検索</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔥 無理矢理 iframe検索・ログイン</title>
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../vendor/bootstrap-icons/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="iframe.css" />
+  </head>
+  <body>
+    <!-- 共通ヘッダー -->
+    <header>
+      <a href="../memo/memo.html" class="nav-btn" id="btn-memo-list">
+        <i class="bi bi-clipboard2-minus"></i>
+        <span class="nav-text">MEMO</span>
+      </a>
+      <a href="../clipboard/clipboard.html" class="nav-btn" id="btn-clipboard">
+        <i class="bi bi-journal-text"></i>
+        <span class="nav-text">CLIPBOARD</span>
+      </a>
+      <a href="../prompt/prompt.html" class="nav-btn" id="btn-prompt">
+        <i class="bi bi-terminal"></i>
+        <span class="nav-text">PROMPT</span>
+      </a>
+      <a href="iframe.html" class="nav-btn active" id="btn-iframe">
+        <i class="bi bi-layout-split"></i>
+        <span class="nav-text">IFRAME</span>
+      </a>
+      <a href="../status/status.html" class="nav-btn" id="btn-status">
+        <i class="bi bi-wifi"></i>
+        <span class="nav-text">STATUS</span>
+      </a>
+      <a href="../setting/setting.html" class="nav-btn" id="btn-setting">
+        <i class="bi bi-gear-fill"></i>
+        <span class="nav-text">SETTING</span>
+      </a>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <div class="iframe-content">
+      <!-- 検索・URL入力エリア -->
+      <div class="input-group mb-2">
+        <input
+          id="urlInput"
+          class="form-control"
+          placeholder="🔍 検索キーワード または 📋 URL（ChatGPT、Figma、Gemini等のログイン済みURL対応）"
+          autocomplete="off"
+        />
+        <button id="goBtn" class="btn btn-primary">
+          <i class="bi bi-search"></i> 実行
+        </button>
+        <button id="clearBtn" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle"></i>
+        </button>
+      </div>
+
+      <!-- ログイン状態維持の説明 -->
+      <div class="alert alert-info alert-sm p-2 mb-2" id="loginInfo">
+        <i class="bi bi-info-circle"></i>
+        <strong>ログイン状態維持:</strong>
+        ChatGPT、Figma、Gemini等のログイン済みURLを貼り付けると、ブラウザのログイン状態を共有してアクセスできます。
+      </div>
+
+      <!-- 人気サイトのクイックアクセス -->
+      <div class="quick-access mb-2">
+        <!-- AIサービス -->
+        <div class="mb-2">
+          <small class="text-muted">🤖 AIサービス</small>
+          <div class="btn-group btn-group-sm" role="group">
+            <button
+              type="button"
+              class="btn btn-outline-primary quick-btn"
+              data-url="https://chatgpt.com"
+            >
+              <i class="bi bi-robot"></i> ChatGPT
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary quick-btn"
+              data-url="https://claude.ai"
+            >
+              <i class="bi bi-robot"></i> Claude
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary quick-btn"
+              data-url="https://gemini.google.com"
+            >
+              <i class="bi bi-robot"></i> Gemini
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary quick-btn"
+              data-url="https://copilot.microsoft.com"
+            >
+              <i class="bi bi-robot"></i> Copilot
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary quick-btn"
+              data-url="https://you.com"
+            >
+              <i class="bi bi-robot"></i> You.com
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary quick-btn"
+              data-url="https://phind.com"
+            >
+              <i class="bi bi-robot"></i> Phind
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary quick-btn"
+              data-url="https://genspark.ai"
+            >
+              <i class="bi bi-robot"></i> Genspark
+            </button>
+          </div>
+        </div>
+
+        <!-- 開発ツール -->
+        <div class="mb-2">
+          <small class="text-muted">💻 開発ツール</small>
+          <div class="btn-group btn-group-sm" role="group">
+            <button
+              type="button"
+              class="btn btn-outline-dark quick-btn"
+              data-url="https://figma.com"
+            >
+              <i class="bi bi-palette"></i> Figma
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-dark quick-btn"
+              data-url="https://github.com"
+            >
+              <i class="bi bi-github"></i> GitHub
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-dark quick-btn"
+              data-url="https://gitlab.com"
+            >
+              <i class="bi bi-git"></i> GitLab
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-dark quick-btn"
+              data-url="https://notion.so"
+            >
+              <i class="bi bi-journal-text"></i> Notion
+            </button>
+          </div>
+        </div>
+
+        <!-- コミュニケーション -->
+        <div class="mb-2">
+          <small class="text-muted">💬 コミュニケーション</small>
+          <div class="btn-group btn-group-sm" role="group">
+            <button
+              type="button"
+              class="btn btn-outline-info quick-btn"
+              data-url="https://slack.com"
+            >
+              <i class="bi bi-slack"></i> Slack
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-info quick-btn"
+              data-url="https://discord.com"
+            >
+              <i class="bi bi-discord"></i> Discord
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-info quick-btn"
+              data-url="https://x.com"
+            >
+              <i class="bi bi-twitter"></i> X
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-info quick-btn"
+              data-url="https://linkedin.com"
+            >
+              <i class="bi bi-linkedin"></i> LinkedIn
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- iframe表示エリア -->
+      <div class="iframe-container">
+        <iframe
+          id="mainFrame"
+          class="w-100 border-0 iframe-main"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
+          allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
+          referrerpolicy="no-referrer-when-downgrade"
+          loading="lazy"
+        ></iframe>
+      </div>
     </div>
-    <iframe id="view" class="w-100" style="height: calc(100vh - 80px); border: none;"></iframe>
-  </div>
-  <script type="module" src="iframe.js"></script>
-</body>
+
+    <!-- 検索履歴（footerと同じ配置） -->
+    <div class="iframe-footer" id="searchHistory">
+      <!-- 検索履歴がここに表示されます -->
+    </div>
+
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../utils.js"></script>
+    <script src="../common.js"></script>
+    <script type="module" src="iframe.js"></script>
+  </body>
 </html>
