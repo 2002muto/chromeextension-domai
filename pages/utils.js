@@ -2107,7 +2107,7 @@ window.AppUtils.showArchiveToast = function () {
   toast.className = "archive-toast";
   toast.innerHTML = `
     <i class="bi bi-check-circle-fill"></i>
-    アーカイブに移動しました
+    アーカイブへ移動しました
   `;
 
   // bodyに追加

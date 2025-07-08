@@ -514,7 +514,7 @@ async function renderClipboardView() {
     const archiveBtn = document.createElement("button");
     archiveBtn.className = "clipboard-archive";
     archiveBtn.innerHTML = '<i class="bi bi-archive-fill"></i>';
-    archiveBtn.title = "アーカイブ";
+    archiveBtn.title = "アーカイブへ移動";
     archiveBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
 
@@ -1281,12 +1281,12 @@ function updateExportButtonState() {
   // アーカイブボタンの状態更新（MEMOページと同様に常に有効）
   if (archiveBtn) {
     archiveBtn.disabled = false; // 常に有効（MEMOページと同様）
-    archiveBtn.title = "アーカイブ";
+    archiveBtn.title = "アーカイブへ移動";
 
     // ホバーテキストも更新
     const archiveText = archiveBtn.querySelector(".nav-text");
     if (archiveText) {
-      archiveText.textContent = "アーカイブ";
+      archiveText.textContent = "アーカイブへ移動";
     }
   }
 

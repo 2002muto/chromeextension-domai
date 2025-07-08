@@ -388,7 +388,7 @@ async function renderList() {
     <button
       id="btn-archive-toggle"
       class="nav-btn archive-toggle"
-      title="アーカイブ"
+      title="アーカイブへ移動"
     >
       <i class="bi bi-archive"></i>
       <span class="nav-text">アーカイブ</span>
@@ -2713,10 +2713,10 @@ function renderArchiveFooter() {
 
   if (archiveBtn) {
     archiveBtn.disabled = false; // 常に有効
-    archiveBtn.title = "アーカイブ";
+    archiveBtn.title = "アーカイブへ移動";
     const archiveText = archiveBtn.querySelector(".nav-text");
     if (archiveText) {
-      archiveText.textContent = "アーカイブ";
+      archiveText.textContent = "アーカイブへ移動";
     }
   }
 
@@ -2980,12 +2980,12 @@ function updateExportButtonState() {
   // アーカイブボタンの状態更新（MEMOページと同様に常に有効）
   if (archiveBtn) {
     archiveBtn.disabled = false; // 常に有効（MEMOページと同様）
-    archiveBtn.title = "アーカイブ";
+    archiveBtn.title = "アーカイブへ移動";
 
     // ホバーテキストも更新
     const archiveText = archiveBtn.querySelector(".nav-text");
     if (archiveText) {
-      archiveText.textContent = "アーカイブ";
+      archiveText.textContent = "アーカイブへ移動";
     }
   }
 

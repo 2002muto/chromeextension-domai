@@ -344,7 +344,7 @@ function setFooter(mode) {
   foot.style.display = "flex";
   if (mode === "list") {
     foot.innerHTML = `
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブ">
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブへ移動">
         <i class="bi bi-archive"></i>
         <span class="nav-text">アーカイブ</span>
       </button>
