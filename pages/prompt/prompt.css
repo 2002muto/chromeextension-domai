@@ -270,20 +270,17 @@
 }
 .prompt-archive {
   background: transparent;
-  color: #ffffff;
   border: none;
-  padding: 0;
-  font-size: 1.2rem;
+  padding: 8px;
+  border-radius: 4px;
+  color: #ffffff;
   cursor: pointer;
-  height: 36px; /* Match clipboard icon size */
-  width: 36px; /* Match clipboard icon size */
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
-  transition: transform 0.2s ease; /* Match clipboard transition */
-  place-self: center; /* Center in grid */
-  border-radius: 4px; /* Match clipboard border radius */
   user-select: none; /* テキスト選択を無効化 */
   -webkit-user-drag: none; /* Webkitでのドラッグを無効化 */
   -khtml-user-drag: none; /* KHTMLでのドラッグを無効化 */
@@ -291,12 +288,14 @@
   -o-user-drag: none; /* Operaでのドラッグを無効化 */
   user-drag: none; /* 標準でのドラッグを無効化 */
 }
-.prompt-action:hover {
-  filter: brightness(1.15);
+
+.prompt-archive i {
+  font-size: 1.2rem;
 }
+
 .prompt-archive:hover {
-  transform: scale(1.1); /* Match clipboard hover effect */
-  background: rgba(255, 255, 255, 0.1); /* Match clipboard hover background */
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
 }
 
 /*--------------------------------------------------------------
@@ -1694,4 +1693,9 @@ body .prompt-run-box .prompt-block:last-of-type,
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* アーカイブモード時の一括削除ボタンの色設定（MEMOと統一） */
+.memo-footer .nav-btn.delete-all-btn {
+  background-color: #910002;
 }

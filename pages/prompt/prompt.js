@@ -2512,16 +2512,20 @@ async function renderArchiveList() {
   void content.offsetWidth;
   content.classList.add("show");
 
-  // ストレージからアーカイブデータを読み込み
-  const rawItems = (await load(PROMPT_ARCH_KEY)) || [];
+  // ストレージからプロンプトデータを読み込み（PROMPT_KEYから）
+  const rawItems = (await load(PROMPT_KEY)) || [];
+
+  // アーカイブされたプロンプトのみをフィルタリング
+  const archivedItems = rawItems.filter((item) => item.archived === true);
 
   // 空のプロンプトは表示しないが、ストレージからは削除しない
-  const listData = rawItems.filter((item) => !isEmptyPrompt(item));
+  const listData = archivedItems.filter((item) => !isEmptyPrompt(item));
 
-  console.log("[ARCH] 空のプロンプトを除外して表示:", {
+  console.log("[ARCH] アーカイブプロンプトを表示:", {
     totalItems: rawItems.length,
+    archivedItems: archivedItems.length,
     displayItems: listData.length,
-    hiddenEmptyItems: rawItems.length - listData.length,
+    hiddenEmptyItems: archivedItems.length - listData.length,
   });
 
   // HTML骨格
@@ -2570,7 +2574,7 @@ async function renderArchiveList() {
     // 通常のアーカイブアイテム表示
     listData.forEach((it, displayIdx) => {
       // 元の配列での実際のインデックスを取得
-      const actualIdx = rawItems.findIndex((item) => item === it);
+      const actualIdx = rawItems.findIndex((item) => item.id === it.id);
 
       const li = document.createElement("li");
       li.className = "archive-item";
@@ -2643,17 +2647,29 @@ async function renderArchiveList() {
         try {
           console.log("[ARCH] 復元処理を開始します...");
 
-          // プロンプト: アーカイブ → アクティブへ移動
-          const act = (await load(PROMPT_KEY)) || [];
-          const arch = (await load(PROMPT_ARCH_KEY)) || [];
-          const restoredItem = arch.splice(actualIdx, 1)[0];
-          act.push(restoredItem);
-          await save(PROMPT_KEY, act);
-          await save(PROMPT_ARCH_KEY, arch);
-          console.log(
-            "[ARCH] プロンプトを復元しました:",
-            restoredItem.title || "無題"
-          );
+          // プロンプト: archived → false に変更
+          const prompts = await load(PROMPT_KEY);
+          const target = prompts.find((prompt) => prompt.id === it.id);
+          if (target) {
+            target.archived = false;
+            await save(PROMPT_KEY, prompts);
+            // グローバルに最新のpromptsを設定
+            window.prompts = prompts;
+            console.log(
+              "[ARCH] プロンプトを復元しました:",
+              target.title || "無題"
+            );
+          } else {
+            console.error(
+              "[ARCH] 復元対象のプロンプトが見つかりません:",
+              it.id
+            );
+            // ボタンを再度有効化
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+            return;
+          }
 
           // 復元アニメーションを実行
           if (window.AppUtils && window.AppUtils.animateRestoreItem) {
@@ -2695,6 +2711,9 @@ async function renderArchiveList() {
       ul.appendChild(li);
     });
   }
+
+  // アーカイブフッターを描画
+  renderArchiveFooter();
 }
 
 // アーカイブフッターの描画
@@ -2707,27 +2726,96 @@ function renderArchiveFooter() {
     return;
   }
 
-  // フッターボタンの状態を更新
-  const archiveBtn = footer.querySelector("#btn-archive-toggle");
-  const exportBtn = footer.querySelector(".encrypt-btn");
+  // アーカイブモード用のフッターに変更
+  footer.innerHTML = `
+    <button class="nav-btn back-btn" title="戻る">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span class="nav-text">戻る</span>
+    </button>
+    <button class="nav-btn delete-all-btn" title="一括削除">
+      <i class="bi bi-trash"></i>
+      <span class="nav-text">一括削除</span>
+    </button>
+  `;
 
-  if (archiveBtn) {
-    archiveBtn.disabled = false; // 常に有効
-    archiveBtn.title = "アーカイブへ移動";
-    const archiveText = archiveBtn.querySelector(".nav-text");
-    if (archiveText) {
-      archiveText.textContent = "アーカイブへ移動";
-    }
-  }
+  // 戻るボタンのイベントリスナー
+  footer.querySelector(".back-btn").addEventListener("click", () => {
+    // アーカイブ表示を解除
+    document.querySelector(".memo-content").classList.remove("archive");
+    document.querySelector(".sub-archive-nav")?.remove();
+    footer.classList.remove("archive");
 
-  if (exportBtn) {
-    exportBtn.disabled = false; // 常に有効
-    exportBtn.title = "バックアップ";
-    const exportText = exportBtn.querySelector(".nav-text");
-    if (exportText) {
-      exportText.textContent = "バックアップ";
-    }
-  }
+    // 一覧画面に戻る
+    renderList();
+  });
+
+  // 一括削除ボタンのイベントリスナー
+  footer
+    .querySelector(".delete-all-btn")
+    .addEventListener("click", async () => {
+      const checkedItems = document.querySelectorAll(".arch-check:checked");
+
+      // 削除対象の数を確認
+      let deleteCount = 0;
+      let confirmMessage = "";
+
+      if (checkedItems.length === 0) {
+        // 全削除の場合
+        const prompts = await load(PROMPT_KEY);
+        const archivedPrompts = prompts.filter((p) => p.archived);
+        deleteCount = archivedPrompts.length;
+
+        if (deleteCount === 0) {
+          console.log("削除対象のアーカイブプロンプトがありません");
+          return;
+        }
+
+        confirmMessage = `アーカイブされた全てのプロンプト（${deleteCount}件）を完全に削除しますか？`;
+      } else {
+        // 選択削除の場合
+        deleteCount = checkedItems.length;
+        confirmMessage = `選択された${deleteCount}件のプロンプトを完全に削除しますか？`;
+      }
+
+      // 確認ダイアログを表示
+      window.AppUtils.showConfirmDialog({
+        title: "削除の確認",
+        message: `${confirmMessage}<br><span style="color: #dc3545; font-weight: bold;">この操作は取り消せません。</span>`,
+        onConfirm: async () => {
+          // 削除処理を実行
+          const prompts = await load(PROMPT_KEY);
+
+          if (checkedItems.length === 0) {
+            // 全削除の場合
+            const filteredPrompts = prompts.filter((p) => !p.archived);
+            await save(PROMPT_KEY, filteredPrompts);
+            window.prompts = filteredPrompts;
+          } else {
+            // 選択されたアイテムのみ削除
+            const selectedIndices = Array.from(checkedItems).map((cb) =>
+              parseInt(cb.dataset.index)
+            );
+
+            // 選択されたアーカイブプロンプトを削除
+            selectedIndices.sort((a, b) => b - a); // 逆順でソート（インデックスずれを防ぐ）
+            selectedIndices.forEach((idx) => {
+              if (idx < prompts.length) {
+                prompts.splice(idx, 1);
+              }
+            });
+
+            await save(PROMPT_KEY, prompts);
+            window.prompts = prompts;
+          }
+
+          console.log(`[ARCHIVE] ${deleteCount}件のプロンプトを削除しました`);
+          renderArchiveList(); // アーカイブ画面を再描画
+        },
+        onCancel: () => {
+          console.log("[ARCHIVE] 削除をキャンセルしました");
+        },
+      });
+    });
 
   console.log("renderArchiveFooter: end");
 }
