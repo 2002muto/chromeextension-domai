@@ -327,8 +327,22 @@ async function forceLoadIframe(url) {
 
 function loadHistory() {
   try {
-    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-  } catch {
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+
+    // 旧データ構造（文字列配列）を新データ構造（オブジェクト配列）に変換
+    return history.map((item) => {
+      if (typeof item === "string") {
+        return {
+          url: item,
+          title: getPageTitle(item),
+          faviconUrl: null,
+          timestamp: Date.now(),
+        };
+      }
+      return item;
+    });
+  } catch (error) {
+    console.error("[iframe] 履歴読み込みエラー:", error);
     return [];
   }
 }
@@ -337,15 +351,113 @@ function saveHistory(history) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
+// 履歴データ構造を拡張（ファビコンURLも保存）
 function addHistory(entry) {
   let history = loadHistory();
-  // すでに同じ内容があれば先頭に移動
-  history = history.filter((h) => h !== entry);
-  history.unshift(entry);
-  // 保存数制限を撤廃（無限保存）
+
+  // 既存のエントリを削除（重複防止）
+  history = history.filter((h) => h.url !== entry);
+
+  // 新しいエントリを作成
+  const newEntry = {
+    url: entry,
+    title: getPageTitle(entry),
+    faviconUrl: null,
+    timestamp: Date.now(),
+  };
+
+  // ファビコンURLを取得
+  getFaviconUrl(entry).then((faviconUrl) => {
+    newEntry.faviconUrl = faviconUrl;
+    // 履歴を更新
+    let updatedHistory = loadHistory();
+    const existingIndex = updatedHistory.findIndex((h) => h.url === entry);
+    if (existingIndex !== -1) {
+      updatedHistory[existingIndex] = newEntry;
+    } else {
+      updatedHistory.unshift(newEntry);
+    }
+    saveHistory(updatedHistory);
+    renderHistory();
+  });
+
+  // 即座に履歴に追加（ファビコンは後で更新）
+  history.unshift(newEntry);
+
+  // 履歴数を制限（必要に応じて）
   // if (history.length > 10) history = history.slice(0, 10);
+
   saveHistory(history);
   renderHistory();
+}
+
+// ページタイトルを取得する関数
+function getPageTitle(url) {
+  if (!/^https?:\/\//.test(url) && !url.startsWith("www.")) {
+    return `Google検索: ${url}`;
+  }
+
+  try {
+    const domain = getDomain(url);
+    return domain || url;
+  } catch {
+    return url;
+  }
+}
+
+// ファビコンURLを取得する関数（Google Favicon API + Chrome拡張API）
+async function getFaviconUrl(url) {
+  // 検索キーワードの場合はGoogleアイコン
+  if (!/^https?:\/\//.test(url) && !url.startsWith("www.")) {
+    return "data:image/svg+xml;base64," + btoa(getGoogleSVG());
+  }
+
+  try {
+    const domain = getDomain(url);
+    if (!domain) return null;
+
+    // 1. まずChrome拡張APIでファビコンを取得
+    try {
+      const dataUrl = await fetchFaviconDataUrl(domain);
+      if (dataUrl) {
+        console.log(`[iframe] ファビコン取得成功 (Chrome拡張API): ${domain}`);
+        return dataUrl;
+      }
+    } catch (error) {
+      console.log(
+        `[iframe] Chrome拡張APIでファビコン取得失敗: ${domain}`,
+        error
+      );
+    }
+
+    // 2. Chrome拡張APIが失敗した場合はGoogle Favicon APIを使用
+    const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+
+    // ファビコンの存在確認
+    try {
+      const response = await fetch(googleFaviconUrl);
+      if (response.ok) {
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        console.log(`[iframe] ファビコン取得成功 (Google API): ${domain}`);
+        return objectUrl;
+      }
+    } catch (error) {
+      console.log(
+        `[iframe] Google Favicon APIでファビコン取得失敗: ${domain}`,
+        error
+      );
+    }
+
+    // 3. どちらも失敗した場合はデフォルトアイコン
+    console.log(
+      `[iframe] ファビコン取得失敗、デフォルトアイコンを使用: ${domain}`
+    );
+    return null;
+  } catch (error) {
+    console.error(`[iframe] ファビコン取得エラー: ${url}`, error);
+    return null;
+  }
 }
 
 async function fetchFaviconDataUrl(domain) {
@@ -474,7 +586,7 @@ async function renderHistory() {
   }
 }
 
-// ファビコンwrapperを作成する関数
+// ファビコンwrapperを作成する関数（新しいデータ構造対応）
 function createFaviconWrapper(historyItem, index) {
   const wrapper = document.createElement("span");
   wrapper.className = "favicon-wrapper";
@@ -503,25 +615,46 @@ function createFaviconWrapper(historyItem, index) {
   a.style.width = "24px";
   a.style.height = "24px";
   a.style.verticalAlign = "middle";
+  a.title = historyItem.title || historyItem.url; // ツールチップにタイトルを表示
   a.addEventListener("click", (e) => {
     e.preventDefault();
-    urlInput.value = historyItem;
-    handleInput(historyItem, true);
+    urlInput.value = historyItem.url;
+    handleInput(historyItem.url, true);
   });
 
-  if (!/^https?:\/\//.test(historyItem) && !historyItem.startsWith("www.")) {
-    a.innerHTML = getGoogleSVG();
-  } else {
-    const domain = getDomain(historyItem);
-    if (domain) {
-      fetchFaviconDataUrl(domain).then((dataUrl) => {
-        if (dataUrl) {
-          a.innerHTML = `<img src="${dataUrl}" alt="favicon" class="favicon-img">`;
-        } else {
-          a.innerHTML = getGoogleSVG();
-        }
-      });
+  // 新しいデータ構造に対応
+  if (typeof historyItem === "string") {
+    // 旧データ構造（文字列）の場合の後方互換性
+    if (!/^https?:\/\//.test(historyItem) && !historyItem.startsWith("www.")) {
+      a.innerHTML = getGoogleSVG();
     } else {
+      const domain = getDomain(historyItem);
+      if (domain) {
+        fetchFaviconDataUrl(domain).then((dataUrl) => {
+          if (dataUrl) {
+            a.innerHTML = `<img src="${dataUrl}" alt="favicon" class="favicon-img">`;
+          } else {
+            a.innerHTML = getGoogleSVG();
+          }
+        });
+      } else {
+        a.innerHTML = getGoogleSVG();
+      }
+    }
+  } else {
+    // 新しいデータ構造（オブジェクト）の場合
+    if (historyItem.faviconUrl) {
+      if (historyItem.faviconUrl.startsWith("data:image/svg+xml")) {
+        // SVGデータURLの場合
+        a.innerHTML = getGoogleSVG();
+      } else {
+        // 画像URLの場合
+        a.innerHTML = `<img src="${
+          historyItem.faviconUrl
+        }" alt="favicon" class="favicon-img" onerror="this.parentElement.innerHTML='${getGoogleSVG()}'">`;
+      }
+    } else {
+      // ファビコンURLがない場合はGoogleアイコン
       a.innerHTML = getGoogleSVG();
     }
   }

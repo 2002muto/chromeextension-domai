@@ -355,37 +355,62 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("[BG] 🔥 メッセージ受信:", request);
 
   if (request.action === "fetchFavicon") {
-    const url = `https://icons.duckduckgo.com/ip3/${request.domain}.ico`;
-    console.log("[BG] favicon fetch start:", url);
-    fetch(url)
-      .then((res) => {
-        console.log(
-          "[BG] favicon fetch response:",
-          res.status,
-          res.ok,
-          res.headers.get("content-type")
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.blob();
-      })
-      .then((blob) => {
-        console.log("[BG] favicon blob: size=", blob.size, "type=", blob.type);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          console.log("[BG] favicon dataUrl length:", reader.result?.length);
-          sendResponse({ dataUrl: reader.result });
-        };
-        reader.onerror = (e) => {
-          console.error("[BG] FileReader error:", e);
-          sendResponse({ dataUrl: null });
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch((err) => {
-        console.error("[BG] favicon fetch error:", err);
-        sendResponse({ dataUrl: null });
-      });
-    return true; // async
+    console.log("[BG] favicon fetch start for domain:", request.domain);
+
+    // 非同期でファビコン取得を実行
+    (async () => {
+      // 複数のファビコンAPIを試行
+      const faviconUrls = [
+        `https://icons.duckduckgo.com/ip3/${request.domain}.ico`,
+        `https://www.google.com/s2/favicons?domain=${request.domain}&sz=32`,
+        `https://favicon.yandex.net/favicon/${request.domain}`,
+        `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${request.domain}&size=32`,
+      ];
+
+      // 順次試行
+      for (let i = 0; i < faviconUrls.length; i++) {
+        try {
+          const url = faviconUrls[i];
+          console.log(`[BG] trying favicon URL ${i + 1}:`, url);
+
+          const response = await fetch(url);
+          if (response.ok) {
+            const blob = await response.blob();
+            console.log(
+              `[BG] favicon success from ${url}: size=${blob.size}, type=${blob.type}`
+            );
+
+            // データURLに変換
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              console.log(
+                `[BG] favicon dataUrl created, length:`,
+                reader.result?.length
+              );
+              sendResponse({ dataUrl: reader.result });
+            };
+            reader.onerror = (e) => {
+              console.error("[BG] FileReader error:", e);
+              sendResponse({ dataUrl: null });
+            };
+            reader.readAsDataURL(blob);
+            return; // 成功したら終了
+          }
+        } catch (error) {
+          console.log(
+            `[BG] favicon fetch failed for URL ${i + 1}:`,
+            error.message
+          );
+          // 次のURLを試行
+        }
+      }
+
+      // すべて失敗した場合
+      console.log("[BG] all favicon URLs failed");
+      sendResponse({ dataUrl: null });
+    })();
+
+    return true; // 非同期レスポンスを有効化
   }
 
   // 非同期処理を無理矢理同期的に扱う
