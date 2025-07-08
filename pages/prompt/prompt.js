@@ -1583,10 +1583,19 @@ function renderEdit(idx, isNew = false) {
       console.log("削除ボタンがクリックされました");
 
       // おしゃれな削除確認ポップアップを表示
-      window.AppUtils.showDeleteConfirmDialog({
+      window.AppUtils.showSaveConfirmDialog({
         title: "プロンプトフィールドを削除しますか？",
-        message: "この操作は元に戻すことができません。",
-        onConfirm: async () => {
+        message:
+          "この操作は元に戻すことができません。<br><span style='color: #D93544; font-weight: bold;'>この操作は取り消せません。</span>",
+        discardLabel: "削除",
+        cancelLabel: "キャンセル",
+        discardColor: "#D93544",
+        cancelColor: "#4A5568",
+        showSave: false,
+        showDiscard: true,
+        showCancel: true,
+        iconClass: "bi bi-trash-fill",
+        onDiscard: async () => {
           console.log("削除確認ダイアログで「削除」が選択されました");
 
           // 削除前の状態をログ出力

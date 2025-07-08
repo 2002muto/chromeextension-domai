@@ -682,12 +682,12 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
             <i class="${iconClass} dialog-icon"></i>
           </div>
           <div class="dialog-title-wrapper">
-          <h3 class="dialog-title">${title}</h3>
+          <h3 class="dialog-title">${deleteTitle}</h3>
           </div>
         </div>
         <div class="dialog-body">
           <div class="dialog-message-wrapper">
-          <p class="dialog-message">${message}</p>
+          <p class="dialog-message">${deleteMessage}</p>
           </div>
         </div>
         <div class="dialog-footer">
