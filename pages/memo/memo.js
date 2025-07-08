@@ -641,10 +641,23 @@ async function renderListView() {
             "[MEMO] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
           );
 
-          // シンプルなアニメーション
-          li.style.transition = "all 0.5s ease-in-out";
-          li.style.transform = "translateY(-20px) scale(0.95)";
-          li.style.opacity = "0";
+          // シンプルなアニメーション（CSP準拠）
+          li.classList.add("archive-item", "archive-fallback-animating");
+
+          // フォールバックアニメーション用のスタイルを動的に追加
+          if (!document.querySelector("#archive-fallback-styles")) {
+            const fallbackStyles = document.createElement("style");
+            fallbackStyles.id = "archive-fallback-styles";
+            fallbackStyles.textContent = `
+              .archive-fallback-animating {
+                transition: all 0.5s ease-in-out !important;
+                transform: translateY(-20px) scale(0.95) !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+              }
+            `;
+            document.head.appendChild(fallbackStyles);
+          }
 
           await new Promise((resolve) => {
             setTimeout(async () => {

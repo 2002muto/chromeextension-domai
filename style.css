@@ -950,3 +950,126 @@ header.updating .nav-btn {
   /* opacity: 1; */
   /* transform: scaleX(1); */
 }
+
+/* --- アーカイブアニメーション --- */
+.archive-item.archiving-left {
+  animation: archiveSlideOutLeft 0.6s ease-in-out forwards;
+  pointer-events: none;
+  transition: none;
+  will-change: transform, opacity;
+}
+.archive-item.archiving-right {
+  animation: archiveSlideOutRight 0.6s ease-in-out forwards;
+  pointer-events: none;
+  transition: none;
+  will-change: transform, opacity;
+}
+.archive-item.archiving-down {
+  animation: archiveFallDown 0.8s ease-in forwards;
+  pointer-events: none;
+  transition: none;
+  will-change: transform, opacity;
+}
+@keyframes archiveSlideOutLeft {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  30% {
+    opacity: 0.8;
+    transform: translateX(-10px) scale(0.98);
+  }
+  60% {
+    opacity: 0.4;
+    transform: translateX(-30px) scale(0.95) rotateZ(-2deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.8) rotateZ(-5deg);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+@keyframes archiveSlideOutRight {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  30% {
+    opacity: 0.8;
+    transform: translateX(10px) scale(0.98);
+  }
+  60% {
+    opacity: 0.4;
+    transform: translateX(30px) scale(0.95) rotateZ(2deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.8) rotateZ(5deg);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+@keyframes archiveFallDown {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateZ(0deg);
+  }
+  20% {
+    opacity: 0.9;
+    transform: translateY(10px) scale(0.98) rotateZ(2deg);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateY(30px) scale(0.95) rotateZ(-3deg);
+  }
+  60% {
+    opacity: 0.5;
+    transform: translateY(60px) scale(0.9) rotateZ(5deg);
+  }
+  80% {
+    opacity: 0.2;
+    transform: translateY(100px) scale(0.8) rotateZ(-8deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(150px) scale(0.6) rotateZ(15deg);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* --- アイコンハイライト --- */
+.archive-icon-highlight {
+  color: #f59e0b !important;
+  transform: scale(1.2) !important;
+  transition: all 0.2s ease !important;
+  will-change: transform, color;
+}
+
+/* --- スライドアップアニメーション --- */
+.slide-up-animating {
+  animation: slideUp 0.3s ease-out both;
+  will-change: transform, opacity;
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* --- フォールバックアニメーション --- */
+.archive-fallback-animating {
+  transition: all 0.6s ease-in-out;
+  transform: translateY(-50px) scale(0.8);
+  opacity: 0;
+  pointer-events: none;
+}

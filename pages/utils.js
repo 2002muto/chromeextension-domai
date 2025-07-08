@@ -1908,18 +1908,34 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
     );
 
     // アニメーション開始前にアーカイブアイコンを光らせる
-    // CLIPBOARDページではアイコンが<button>内にあるため、.clipboard-archive iも対象
-    const archiveIcon = element.querySelector(
-      ".actions, .prompt-archive, .clipboard-archive i"
-    );
+    // メモページ: .actions (bi bi-archive-fill actions)
+    // プロンプトページ: .prompt-archive
+    // クリップボードページ: .clipboard-archive i
+    const archiveIcon =
+      element.querySelector(".actions") ||
+      element.querySelector(".prompt-archive") ||
+      element.querySelector(".clipboard-archive i");
+
+    console.log("[ARCHIVE] アーカイブアイコン検索:", {
+      element: element,
+      actionsIcon: element.querySelector(".actions"),
+      promptIcon: element.querySelector(".prompt-archive"),
+      clipboardIcon: element.querySelector(".clipboard-archive i"),
+      foundIcon: archiveIcon,
+    });
+
     if (archiveIcon) {
       console.log("[AppUtils] Highlight archive icon", archiveIcon);
-      archiveIcon.style.color = "#f59e0b";
-      archiveIcon.style.transform = "scale(1.2)";
-      archiveIcon.style.transition = "all 0.2s ease";
+      archiveIcon.classList.add("archive-icon-highlight");
     } else {
       console.warn("[AppUtils] Archive icon not found for highlight");
     }
+
+    console.log("[ARCHIVE] アニメーション開始前の要素状態:", {
+      element: element,
+      className: element.className,
+      computedStyle: window.getComputedStyle(element),
+    });
 
     // 既存のアニメーションクラスを削除（もしあれば）
     element.classList.remove(
@@ -1928,11 +1944,60 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
       "archiving-down"
     );
 
-    // 強制的にリフローを発生させてクラス削除を確定
-    void element.offsetWidth;
+    // archive-itemクラスを追加（CSSセレクタのため）
+    element.classList.add("archive-item");
+
+    // 強制的にリフローを発生させてクラス削除を確定（CSP準拠）
+    element.getBoundingClientRect();
 
     // 選択されたアニメーションクラスを追加
     element.classList.add(animationClass);
+
+    console.log("[ARCHIVE] アニメーションクラスを追加:", {
+      element: element,
+      classes: element.className,
+      animationClass: animationClass,
+    });
+
+    // アニメーション開始を確実にするための強制リフロー
+    element.getBoundingClientRect();
+
+    // アニメーション開始直後の状態を確認
+    setTimeout(() => {
+      const computedStyle = window.getComputedStyle(element);
+      console.log("[ARCHIVE] アニメーション開始後の状態:", {
+        element: element,
+        animation: computedStyle.animation,
+        transform: computedStyle.transform,
+        opacity: computedStyle.opacity,
+        pointerEvents: computedStyle.pointerEvents,
+        hasAnimation: computedStyle.animation !== "none",
+      });
+
+      // アニメーションが開始されていない場合のフォールバック
+      if (computedStyle.animation === "none") {
+        console.warn(
+          "[ARCHIVE] アニメーションが開始されていません。フォールバック処理を実行します。"
+        );
+        // フォールバック用のクラスを追加
+        element.classList.add("archive-fallback-animating");
+
+        // フォールバックアニメーション用のスタイルを動的に追加
+        if (!document.querySelector("#archive-fallback-styles")) {
+          const fallbackStyles = document.createElement("style");
+          fallbackStyles.id = "archive-fallback-styles";
+          fallbackStyles.textContent = `
+            .archive-fallback-animating {
+              transition: all 0.6s ease-in-out !important;
+              transform: translateY(-50px) scale(0.8) !important;
+              opacity: 0 !important;
+              pointer-events: none !important;
+            }
+          `;
+          document.head.appendChild(fallbackStyles);
+        }
+      }
+    }, 50);
 
     // アニメーション用スタイルを必ず追加（初回のみ）
     let styleTag = document.getElementById("archive-animation-styles");
@@ -1944,16 +2009,19 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
           animation: archiveSlideOutLeft 0.6s ease-in-out forwards !important;
           pointer-events: none !important;
           transition: none !important;
+          will-change: transform, opacity !important;
         }
         .archive-item.archiving-right {
           animation: archiveSlideOutRight 0.6s ease-in-out forwards !important;
           pointer-events: none !important;
           transition: none !important;
+          will-change: transform, opacity !important;
         }
         .archive-item.archiving-down {
           animation: archiveFallDown 0.8s ease-in forwards !important;
           pointer-events: none !important;
           transition: none !important;
+          will-change: transform, opacity !important;
         }
         @keyframes archiveSlideOutLeft {
           0% { opacity: 1; transform: translateX(0) scale(1); }
@@ -1975,12 +2043,31 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
           80% { opacity: 0.2; transform: translateY(100px) scale(0.8) rotateZ(-8deg); }
           100% { opacity: 0; transform: translateY(150px) scale(0.6) rotateZ(15deg); height: 0; margin: 0; padding: 0; }
         }
+        .archive-icon-highlight {
+          color: #f59e0b !important;
+          transform: scale(1.2) !important;
+          transition: all 0.2s ease !important;
+          will-change: transform, color !important;
+        }
+        .slide-up-animating {
+          animation: slideUp 0.3s ease-out both !important;
+          will-change: transform, opacity !important;
+        }
       `;
       document.head.appendChild(styleTag);
+      console.log("[ARCHIVE] アニメーションスタイルを追加しました");
+    } else {
+      console.log("[ARCHIVE] アニメーションスタイルは既に存在します");
     }
 
     // animationend イベントリスナーを使用してより確実にアニメーション完了を検知
     const handleAnimationEnd = async (event) => {
+      console.log("[ARCHIVE] アニメーションイベント発生:", {
+        animationName: event.animationName,
+        target: event.target,
+        type: event.type,
+      });
+
       // 3つのアニメーション完了を対象にする
       if (
         event.animationName === "archiveSlideOutLeft" ||
@@ -2003,24 +2090,23 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
           ".memo-item, .clipboard-item, .prompt-item"
         );
         remainingItems.forEach((item, index) => {
-          // 既存のアニメーションとトランジションを完全にクリア
-          item.style.animation = "";
-          item.style.transition = "";
-          item.style.transform = "";
-          item.style.opacity = "";
+          // 既存のアニメーションクラスをクリア
+          item.classList.remove(
+            "archive-item-animating",
+            "restore-item-animating",
+            "slide-up-animating"
+          );
 
-          // 強制的にリフローを発生させて状態をリセット
-          void item.offsetHeight;
+          // 強制的にリフローを発生させて状態をリセット（CSP準拠）
+          item.getBoundingClientRect();
 
           // 少し遅延してから新しいアニメーションを適用
           setTimeout(() => {
-            item.style.animation = `slideUp 0.3s ease-out both`;
+            item.classList.add("slide-up-animating");
 
-            // アニメーション完了後にスタイルをクリーンアップ
+            // アニメーション完了後にクラスをクリーンアップ
             setTimeout(() => {
-              item.style.animation = "";
-              item.style.transform = "";
-              item.style.opacity = "";
+              item.classList.remove("slide-up-animating");
             }, 300); // slideUpアニメーションの時間(0.3s)と同期
           }, index * 50);
         });
@@ -2050,6 +2136,10 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
 
     // アニメーション完了イベントを監視
     element.addEventListener("animationend", handleAnimationEnd);
+    console.log("[ARCHIVE] アニメーションイベントリスナーを設定:", {
+      element: element,
+      hasAnimationEndListener: true,
+    });
 
     // フォールバック: 1000ms後に強制的に完了処理を実行（下落ちアニメーションが長いため）
     setTimeout(async () => {
@@ -2066,24 +2156,23 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
           ".memo-item, .clipboard-item, .prompt-item"
         );
         remainingItems.forEach((item, index) => {
-          // 既存のアニメーションとトランジションを完全にクリア
-          item.style.animation = "";
-          item.style.transition = "";
-          item.style.transform = "";
-          item.style.opacity = "";
+          // 既存のアニメーションクラスをクリア
+          item.classList.remove(
+            "archive-item-animating",
+            "restore-item-animating",
+            "slide-up-animating"
+          );
 
-          // 強制的にリフローを発生させて状態をリセット
-          void item.offsetHeight;
+          // 強制的にリフローを発生させて状態をリセット（CSP準拠）
+          item.getBoundingClientRect();
 
           // 少し遅延してから新しいアニメーションを適用
           setTimeout(() => {
-            item.style.animation = `slideUp 0.3s ease-out both`;
+            item.classList.add("slide-up-animating");
 
-            // アニメーション完了後にスタイルをクリーンアップ
+            // アニメーション完了後にクラスをクリーンアップ
             setTimeout(() => {
-              item.style.animation = "";
-              item.style.transform = "";
-              item.style.opacity = "";
+              item.classList.remove("slide-up-animating");
             }, 300); // slideUpアニメーションの時間(0.3s)と同期
           }, index * 50);
         });
@@ -2123,34 +2212,28 @@ window.AppUtils.showArchiveToast = function () {
 };
 
 /* ━━━━━━━━━━ 復元アニメーション機能 ━━━━━━━━━━ */
-// アーカイブアニメーション
-async function animateArchiveItem(item, callback) {
-  return new Promise((resolve) => {
-    // アニメーション開始
-    item.style.transition = "all 0.5s ease-in-out";
-    item.style.transform = "translateY(-20px) scale(0.95)";
-    item.style.opacity = "0";
-
-    setTimeout(async () => {
-      // コールバック実行（データ更新）
-      await callback();
-
-      // アニメーション完了
-      setTimeout(() => {
-        resolve();
-      }, 100);
-    }, 500);
-  });
-}
 
 // 復元アニメーション（上にアニメーションして消える）
 async function animateRestoreItem(item, callback) {
   return new Promise((resolve) => {
+    // アニメーション用スタイルを動的に追加（初回のみ）
+    if (!document.querySelector("#restore-animation-styles")) {
+      const styles = document.createElement("style");
+      styles.id = "restore-animation-styles";
+      styles.textContent = `
+        .restore-item-animating {
+          transition: all 0.5s ease-in-out !important;
+          transform: translateY(-50px) scale(0.9) !important;
+          opacity: 0 !important;
+          filter: blur(2px) !important;
+          pointer-events: none !important;
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+
     // アニメーション開始
-    item.style.transition = "all 0.5s ease-in-out";
-    item.style.transform = "translateY(-50px) scale(0.9)";
-    item.style.opacity = "0";
-    item.style.filter = "blur(2px)";
+    item.classList.add("restore-item-animating");
 
     setTimeout(async () => {
       // コールバック実行（データ更新）
@@ -2294,6 +2377,7 @@ window.AppUtils = {
   showConfirmDialog,
   showSaveConfirmDialog,
   showToast,
+  showArchiveToast,
   animateArchiveItem,
   animateRestoreItem,
 };
