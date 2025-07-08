@@ -1363,9 +1363,16 @@ async function renderInputForm(id) {
         showDiscard: true,
         showCancel: true,
         iconClass: "bi bi-trash-fill",
-        onDiscard: () => {
+        onDiscard: async () => {
           // 削除処理
-          // ...既存の削除ロジック...
+          if (id !== undefined) {
+            memos = memos.filter((m) => m.id !== id);
+            console.log("delete memo id=", id);
+            await saveStorage(MEMO_KEY, memos);
+            // グローバルに最新のmemosを設定
+            window.memos = memos;
+          }
+          renderListView();
         },
         onCancel: () => {
           // キャンセル処理

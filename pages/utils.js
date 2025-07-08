@@ -2193,22 +2193,24 @@ window.AppUtils.showArchiveToast = function () {
 
   // 新しいトーストを作成
   const toast = document.createElement("div");
-  toast.className = "archive-toast";
+  toast.className = "drag-drop-toast";
   toast.innerHTML = `
     <i class="bi bi-check-circle-fill"></i>
-    アーカイブへ移動しました
+    <span>アーカイブへ移動しました</span>
   `;
 
   // bodyに追加
   document.body.appendChild(toast);
-
-  // 2秒後にフェードアウト
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  }, 10);
   setTimeout(() => {
     toast.classList.add("fade-out");
     setTimeout(() => {
-      toast.remove();
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
     }, 300);
-  }, 2000);
+  }, 3000);
 };
 
 /* ━━━━━━━━━━ 復元アニメーション機能 ━━━━━━━━━━ */
