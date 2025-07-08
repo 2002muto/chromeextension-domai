@@ -1354,12 +1354,10 @@ async function renderInputForm(id) {
         title: "本当に削除しますか？",
         message: "メモ内容に変更があります。保存せずに戻ると変更が失われます。",
         discardLabel: "削除",
-        discardColor: "#dc3545",
         cancelLabel: "キャンセル",
-        cancelColor: "#4a5568",
-        saveLabel: "保存",
-        saveColor: "#00a31e",
-        showSave: false, // 削除時は保存ボタン非表示
+        discardColor: "#D93544",
+        cancelColor: "#4A5568",
+        showSave: false,
         showDiscard: true,
         showCancel: true,
         iconClass: "bi bi-trash-fill",
@@ -1800,11 +1798,19 @@ function renderArchiveFooter() {
       }
 
       // 確認ダイアログを表示
-      window.AppUtils.showConfirmDialog({
+      window.AppUtils.showSaveConfirmDialog({
         title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #dc3545; font-weight: bold;">この操作は取り消せません。</span>`,
-        onConfirm: async () => {
-          // 削除処理を実行
+        message: `${confirmMessage}<br><span style="color: #D93544; font-weight: bold;">この操作は取り消せません。</span>`,
+        discardLabel: "削除",
+        cancelLabel: "キャンセル",
+        discardColor: "#D93544",
+        cancelColor: "#4A5568",
+        showSave: false,
+        showDiscard: true,
+        showCancel: true,
+        iconClass: "bi bi-trash-fill",
+        onDiscard: async () => {
+          // 削除処理
           if (selectedChecks.length === 0) {
             // 何も選択されていない場合は全削除
             if (archiveType === "memo") {

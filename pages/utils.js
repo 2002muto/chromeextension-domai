@@ -655,13 +655,13 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   const {
     title: deleteTitle = "削除の確認",
     message:
-      deleteMessage = "選択された1件のメモを完全に削除しますか？<br><span style='color: #dc3545; font-weight: bold;'>この操作は取り消せません。</span>",
+      deleteMessage = "選択された1件のメモを完全に削除しますか？<br><span style='color: #D93544; font-weight: bold;'>この操作は取り消せません。</span>",
     onConfirm,
     onCancel,
     confirmLabel = "確認",
     cancelLabel = "キャンセル",
-    confirmColor = "#3b82f6",
-    cancelColor = "#4a5568",
+    confirmColor = "#3B82F6",
+    cancelColor = "#4A5568",
     iconClass = "bi bi-question-circle",
   } = options;
 
@@ -1061,7 +1061,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
       deleteCancelBtn.style.background =
         "linear-gradient(135deg, #374151 0%, #2d3748 100%)";
       deleteCancelBtn.style.transform = "translateY(-2px)";
-      deleteCancelBtn.style.boxShadow = "0 6px 20px rgba(74, 85, 104, 0.4)";
+      deleteCancelBtn.style.boxShadow = "0 6px 20px rgba(74,85,104,0.4)";
     });
     deleteCancelBtn.addEventListener("mouseleave", () => {
       deleteCancelBtn.style.background =
