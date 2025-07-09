@@ -436,14 +436,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function confirmPromptNavigation(e, button) {
     const editContent = document.querySelector(".memo-content.edit-mode");
     const promptHeader = document.querySelector(".form-header");
-    const inPromptEdit =
-      !!(editContent || promptHeader) &&
-      window.location.pathname.includes("/prompt/");
+    const inPromptEdit = !!(editContent || promptHeader);
 
-    console.log("[NAV DEBUG] confirmPromptNavigation", {
-      editContentExists: !!editContent,
-      promptHeaderExists: !!promptHeader,
-      path: window.location.pathname,
+    console.log("[NAV DEBUG] confirmPromptNavigation start", {
+      editContent: !!editContent,
+      promptHeader: !!promptHeader,
       inPromptEdit,
     });
 
@@ -451,55 +448,48 @@ document.addEventListener("DOMContentLoaded", function () {
       return false; // 編集画面でなければ処理しない
     }
 
-    const idx = window.getCurrentPromptIndex
-      ? window.getCurrentPromptIndex()
-      : -1;
+    const idx = window.getCurrentPromptIndex ? window.getCurrentPromptIndex() : -1;
     const total = Array.isArray(window.prompts) ? window.prompts.length : 0;
-    const isNew = idx === -1 || idx >= total || window.editingOriginalPrompt === null;
-    const obj = isNew
-      ? null
-      : window.editingOriginalPrompt || (window.prompts ? window.prompts[idx] : null);
 
-    console.log("[NAV DEBUG] state", {
+    const isNew = !window.editingOriginalPrompt && (idx === -1 || idx >= total);
+    const base = window.editingOriginalPrompt || (window.prompts ? window.prompts[idx] : null);
+    const hasChanges = window.checkForUnsavedChanges(base, isNew);
+
+    console.log("[NAV DEBUG] unsaved check", {
       idx,
       total,
       isNew,
-      objExists: !!obj,
-      hasSnapshot: !!window.editingOriginalPrompt,
+      baseExists: !!base,
+      hasChanges,
     });
-
-    const hasChanges = window.checkForUnsavedChanges(obj, isNew);
-    console.log("[NAV DEBUG] hasChanges", hasChanges);
 
     if (!hasChanges) return false; // 変更がなければ処理しない
 
     e.preventDefault();
     e.stopPropagation();
 
+    const dest = button.getAttribute("href");
+
     if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
       window.AppUtils.showSaveConfirmDialog({
         title: "変更を保存しますか？",
-        message:
-          "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+        message: "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
         onSave: async () => {
-          // 保存が完了してから遷移する
           if (window.saveAndGoBack) {
             await window.saveAndGoBack();
           }
-          window.location.href = button.getAttribute("href");
+          window.location.href = dest;
         },
         onDiscard: () => {
           window.discardAndGoBack && window.discardAndGoBack();
-          window.location.href = button.getAttribute("href");
+          window.location.href = dest;
         },
       });
     } else {
-      const ok = confirm(
-        "編集内容に変更があります。保存せずに移動しますか？"
-      );
+      const ok = confirm("編集内容に変更があります。保存せずに移動しますか？");
       if (ok) {
         window.discardAndGoBack && window.discardAndGoBack();
-        window.location.href = button.getAttribute("href");
+        window.location.href = dest;
       }
     }
 
@@ -509,6 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
   navButtons.forEach((button) => {
     // クリック時のイベントリスナーを追加
     button.addEventListener("click", function (e) {
+      console.log("[NAV CLICK]", button.id, "clicked");
       // PROMPT編集中の場合は未保存チェック
       if (confirmPromptNavigation(e, button)) return;
 

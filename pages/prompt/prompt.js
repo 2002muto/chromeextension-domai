@@ -1209,19 +1209,31 @@ function renderEdit(idx, isNew = false) {
   root.querySelector(".form-header")?.remove();
 
   /*━━━━━━━━━━ 2. ヘッダーを "カードの外" に生成 ━━━━━*/
-  const head = ce(
-    "div",
-    "form-header d-flex justify-content-between align-items-center mb-2 px-2",
-    `
-      <span class="text-success fw-bold">プロンプト編集中</span>
-      <button class="btn-dup">
-        <i class="bi bi-copy me-1"></i> 複製する
-      </button>`
-  );
-  head.querySelector(".btn-dup").onclick = () => {
+  const head = document.createElement("div");
+  head.className =
+    "form-header d-flex justify-content-between align-items-center mb-2 px-2";
+
+  const status = document.createElement("span");
+  status.className = "text-success fw-bold";
+  status.textContent = "プロンプト編集中";
+
+  const dupBtn = document.createElement("button");
+  dupBtn.className = "btn-dup";
+
+  const dupIcon = document.createElement("i");
+  dupIcon.className = "bi bi-copy me-1";
+  dupBtn.appendChild(dupIcon);
+  dupBtn.appendChild(document.createTextNode(" 複製する"));
+
+  dupBtn.addEventListener("click", () => {
     console.log("[DUP] 複製ボタンがクリックされました, idx:", idx);
     duplicate(idx);
-  };
+  });
+
+  head.appendChild(status);
+  head.appendChild(dupBtn);
+
+  console.log("[renderEdit] ヘッダーDOM生成完了");
 
   /* ★★★ ここが重要 ★★★
      MEMO 入力画面と同じく "カードの手前" に挿入する */
