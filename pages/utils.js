@@ -690,7 +690,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   const {
     title: deleteTitle = "削除の確認",
     message:
-      deleteMessage = "選択された1件のメモを完全に削除しますか？<br><span style='color: #FF0000; font-weight: bold;'>この操作は取り消せません。</span>",
+      deleteMessage = "選択された1件のメモを完全に削除しますか？<br><span class=\"delete-warning\">この操作は取り消せません。</span>",
     onConfirm,
     onCancel,
     confirmLabel = "確認",
@@ -867,6 +867,11 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         line-height: 1.6;
         margin: 0;
         text-align: left;
+      }
+
+      .delete-confirm-dialog .delete-warning {
+        color: #ff0000;
+        font-weight: bold;
       }
 
       /* ダイアログフッター */

@@ -1073,3 +1073,9 @@ header.updating .nav-btn {
   opacity: 0;
   pointer-events: none;
 }
+
+/* 削除ダイアログの警告文字列 */
+.delete-warning {
+  color: #ff0000;
+  font-weight: bold;
+}

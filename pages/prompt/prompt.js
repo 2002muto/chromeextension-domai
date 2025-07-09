@@ -1102,7 +1102,7 @@ async function renderArchiveView() {
       // 確認ダイアログを表示
       window.AppUtils.showSaveConfirmDialog({
         title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #FF0000; font-weight: bold;">この操作は取り消せません。</span>`,
+        message: `${confirmMessage}<br><span class="delete-warning">この操作は取り消せません。</span>`,
         discardLabel: "削除",
         cancelLabel: "キャンセル",
         discardColor: "#D93544",
@@ -1639,7 +1639,7 @@ function renderEdit(idx, isNew = false) {
       window.AppUtils.showSaveConfirmDialog({
         title: removeTitle,
         message:
-          "この操作は元に戻すことができません。<br><span style='color: #FF0000; font-weight: bold;'>この操作は取り消せません。</span>",
+          "この操作は元に戻すことができません。<br><span class='delete-warning'>この操作は取り消せません。</span>",
         discardLabel: "削除",
         cancelLabel: "キャンセル",
         discardColor: "#D93544",
@@ -2869,7 +2869,7 @@ function renderArchiveFooter() {
       // 確認ダイアログを表示
       window.AppUtils.showSaveConfirmDialog({
         title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #FF0000; font-weight: bold;">この操作は取り消せません。</span>`,
+        message: `${confirmMessage}<br><span class="delete-warning">この操作は取り消せません。</span>`,
         discardLabel: "削除",
         cancelLabel: "キャンセル",
         discardColor: "#D93544",

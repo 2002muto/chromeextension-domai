@@ -909,7 +909,7 @@ function renderArchiveFooter() {
       if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
         window.AppUtils.showSaveConfirmDialog({
           title: "削除の確認",
-          message: `${confirmMessage}<br><span style="color: #FF0000; font-weight: bold;">この操作は取り消せません。</span>`,
+          message: `${confirmMessage}<br><span class="delete-warning">この操作は取り消せません。</span>`,
           discardLabel: "削除",
           cancelLabel: "キャンセル",
           discardColor: "#D93544",
