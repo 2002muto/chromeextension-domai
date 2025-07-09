@@ -449,17 +449,27 @@ document.addEventListener("DOMContentLoaded", function () {
       return false;
     }
 
-    // グローバルヘルパーから未保存状態を取得
+    // 直接現在の編集内容を比較して未保存かどうか判定
     let hasChanges = false;
     try {
-      if (typeof window.hasUnsavedPromptChanges === "function") {
-        hasChanges = window.hasUnsavedPromptChanges();
+      const idx =
+        typeof window.getCurrentPromptIndex === "function"
+          ? window.getCurrentPromptIndex()
+          : -1;
+      const prompts = window.prompts || [];
+      const base = window.editingOriginalPrompt || prompts[idx] || null;
+      const isNew = !window.editingOriginalPrompt && (idx === -1 || idx >= prompts.length);
+      if (typeof window.checkForUnsavedChanges === "function") {
+        hasChanges = window.checkForUnsavedChanges(base, isNew);
       }
+      console.log("[NAV DEBUG] unsaved check", {
+        idx,
+        isNew,
+        hasChanges,
+      });
     } catch (err) {
       console.error("[NAV DEBUG] failed to check unsaved", err);
     }
-
-    console.log("[NAV DEBUG] unsaved result", { hasChanges });
 
     if (!hasChanges) return false; // 変更がなければ処理しない
 
