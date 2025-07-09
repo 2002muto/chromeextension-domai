@@ -359,6 +359,9 @@ async function renderList() {
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
 
+  // 実行モードで付与されたクラスが残っている場合は除去する
+  body.classList.remove("run-mode");
+
   // 実行画面から戻る場合の自動保存処理
   const runBox = body.querySelector(".prompt-run-box");
   if (runBox) {
@@ -1155,6 +1158,7 @@ function renderEdit(idx, isNew = false) {
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
+  body.classList.remove("run-mode"); // remove run-mode when editing
 
   // 新規作成時は仮のオブジェクトを作成
   let obj;

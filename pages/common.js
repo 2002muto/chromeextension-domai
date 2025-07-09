@@ -434,9 +434,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // PROMPT編集画面から他ページへ遷移する際の未保存チェック
   function confirmPromptNavigation(e, button) {
+    const editContent = document.querySelector(".memo-content.edit-mode");
     const promptHeader = document.querySelector(".form-header");
     const inPromptEdit =
-      !!promptHeader && window.location.pathname.includes("/prompt/");
+      !!(editContent || promptHeader) &&
+      window.location.pathname.includes("/prompt/");
+
+    console.log("[NAV DEBUG] confirmPromptNavigation", {
+      editContentExists: !!editContent,
+      promptHeaderExists: !!promptHeader,
+      path: window.location.pathname,
+      inPromptEdit,
+    });
 
     if (!inPromptEdit || typeof window.checkForUnsavedChanges !== "function") {
       return false; // 編集画面でなければ処理しない
