@@ -23,6 +23,27 @@ const ce = (tag, cls = "", html = "") => {
 };
 const draftKey = (promptId, fieldIdx) => `draft_${promptId}_${fieldIdx}`;
 
+/* ───────────────────────────────────────
+  textarea自動リサイズ
+  編集画面だけでなく他の箇所でも利用できるよう
+  ここで定義してwindowに公開しておく
+─────────────────────────────────────── */
+function autoResize(textarea) {
+  // 高さをリセットしてscrollHeightを取得
+  textarea.style.height = "auto";
+
+  const minHeight = 80;
+  const contentHeight = textarea.scrollHeight;
+  const newHeight = Math.max(minHeight, contentHeight);
+
+  textarea.style.height = `${newHeight}px`;
+
+  console.log(
+    `[AUTO RESIZE] height=${newHeight} content=${contentHeight} min=${minHeight}`
+  );
+}
+window.autoResize = autoResize;
+
 /* ━━━━━━━━━ ヘルパー関数 ━━━━━━━━━ */
 const getCurrentPromptIndex = () => currentPromptIndex;
 
@@ -1259,8 +1280,9 @@ function renderEdit(idx, isNew = false) {
   };
 
   $(".back-btn").onclick = async () => {
-    // 変更があるかチェック
-    const hasChanges = checkForUnsavedChanges(obj, isNew);
+    // 編集開始時のスナップショットと比較
+    const base = editingOriginalPrompt || obj;
+    const hasChanges = checkForUnsavedChanges(base, isNew);
 
     if (hasChanges) {
       // 変更がある場合は保存確認ダイアログを表示
@@ -2061,22 +2083,6 @@ function renderRun(idx) {
     }
   });
 
-  /* ── 自動リサイズ関数（改行・エンターで無限に広がる） ── */
-  function autoResize(textarea) {
-    // 一時的に高さをリセットして正確なscrollHeightを取得
-    textarea.style.height = "auto";
-
-    // 最小高さ（80px）と内容に応じた高さの大きい方を設定（最大高さ制限なし）
-    const minHeight = 80;
-    const contentHeight = textarea.scrollHeight;
-    const newHeight = Math.max(minHeight, contentHeight);
-
-    textarea.style.height = newHeight + "px";
-
-    console.log(
-      `PROMPT textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px)`
-    );
-  }
 
   /* ── 内部 send() ── */
   async function send(index) {
@@ -3148,3 +3154,4 @@ window.prompts = prompts;
 window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
 window.editingOriginalPrompt = editingOriginalPrompt;
+window.autoResize = autoResize;
