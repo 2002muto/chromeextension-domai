@@ -1630,12 +1630,17 @@ function renderEdit(idx, isNew = false) {
       console.log("削除ボタンがクリックされました");
 
       // おしゃれな削除確認ポップアップを表示
-      const slider = document.querySelector('.size-slider') || document.querySelector('#sizeSlider');
-      const removeTitle =
-        slider && parseInt(slider.value) === parseInt(slider.min)
-          ? "プロンプトフィールドを<br>削除しますか？"
-          : "プロンプトフィールドを削除しますか？";
-      console.log('削除ダイアログタイトル:', removeTitle, 'slider', slider?.value);
+      // ダイアログタイトルは常に2行表示にする
+      const removeTitle = "プロンプトフィールドを<br>削除しますか？";
+      const slider =
+        document.querySelector(".size-slider") ||
+        document.querySelector("#sizeSlider");
+      console.log(
+        "削除ダイアログタイトルを設定:",
+        removeTitle,
+        "slider value:",
+        slider ? slider.value : "N/A"
+      );
 
       window.AppUtils.showSaveConfirmDialog({
         title: removeTitle,
