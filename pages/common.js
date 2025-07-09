@@ -478,6 +478,57 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
+      // PROMPT実行画面での未保存入力チェック
+      const isPromptRun =
+        document.querySelector(".prompt-run-box") &&
+        window.location.pathname.includes("/prompt/");
+      if (isPromptRun) {
+        const runBox = document.querySelector(".prompt-run-box");
+        const extras = Array.from(runBox.querySelectorAll(".extra")).map((t) =>
+          t.value
+        );
+        const hasExtras = extras.some((v) => v.trim() !== "");
+        const histChecked = document.querySelector("#hist-sw")?.checked;
+
+        console.log("[NAV] 実行画面入力チェック:", { hasExtras, histChecked });
+
+        if (
+          hasExtras &&
+          window.AppUtils &&
+          window.AppUtils.showSaveConfirmDialog
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.AppUtils.showSaveConfirmDialog({
+            title: "入力を保存しますか？",
+            message:
+              "実行画面の入力内容が保存されていません。保存せずに移動すると内容が失われます。",
+            onSave: async () => {
+              if (window.handleScreenTransition && window.prompts) {
+                const idx = window.getCurrentPromptIndex
+                  ? window.getCurrentPromptIndex()
+                  : -1;
+                const obj = idx !== -1 ? window.prompts[idx] : null;
+                if (obj) {
+                  await window.handleScreenTransition(
+                    obj,
+                    extras,
+                    "ナビゲーション遷移",
+                    histChecked
+                  );
+                }
+              }
+              window.location.href = button.getAttribute("href");
+            },
+            onDiscard: () => {
+              window.location.href = button.getAttribute("href");
+            },
+            showSave: true,
+          });
+          return false;
+        }
+      }
+
       // ドラッグ中の場合はクリックイベントを無効化
       if (window.isDraggingNavigation) {
         console.log("[Navigation] ドラッグ中のためクリックイベントを無効化");

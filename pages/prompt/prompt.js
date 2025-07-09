@@ -3118,3 +3118,5 @@ window.discardAndGoBack = discardAndGoBack;
 window.prompts = prompts;
 window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
+// handleScreenTransition を他のスクリプトから利用できるように公開
+window.handleScreenTransition = handleScreenTransition;
