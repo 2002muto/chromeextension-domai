@@ -608,38 +608,50 @@ async function renderHistory() {
     const firstWrapper = wrappers[0];
     let scrollInterval = null;
 
-    // IntersectionObserverで可視範囲を判定
-    function isFullyVisible(element, container) {
-      const elRect = element.getBoundingClientRect();
-      const contRect = container.getBoundingClientRect();
-      return elRect.left >= contRect.left && elRect.right <= contRect.right;
+    function stopAutoScroll() {
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+      }
     }
 
-    // 右端：右方向スクロール
-    lastWrapper.addEventListener("mouseenter", () => {
+    function startAutoScroll(direction) {
+      stopAutoScroll();
       scrollInterval = setInterval(() => {
-        if (!isFullyVisible(lastWrapper, row)) {
-          row.scrollLeft += 8;
+        if (direction === "right") {
+          if (row.scrollLeft < row.scrollWidth - row.clientWidth) {
+            row.scrollLeft += 8;
+          } else {
+            stopAutoScroll();
+          }
         } else {
-          clearInterval(scrollInterval);
+          if (row.scrollLeft > 0) {
+            row.scrollLeft -= 8;
+          } else {
+            stopAutoScroll();
+          }
         }
       }, 16);
+    }
+
+    // 右端: 右方向スクロール
+    lastWrapper.addEventListener("mouseenter", () => {
+      console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
+      startAutoScroll("right");
     });
     lastWrapper.addEventListener("mouseleave", () => {
-      clearInterval(scrollInterval);
+      console.log("[iframe] 最後のアイコンleave - スクロール停止");
+      stopAutoScroll();
     });
-    // 左端：左方向スクロール
+
+    // 左端: 左方向スクロール
     firstWrapper.addEventListener("mouseenter", () => {
-      scrollInterval = setInterval(() => {
-        if (!isFullyVisible(firstWrapper, row)) {
-          row.scrollLeft -= 8;
-        } else {
-          clearInterval(scrollInterval);
-        }
-      }, 16);
+      console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
+      startAutoScroll("left");
     });
     firstWrapper.addEventListener("mouseleave", () => {
-      clearInterval(scrollInterval);
+      console.log("[iframe] 最初のアイコンleave - スクロール停止");
+      stopAutoScroll();
     });
   }
   // --- 自動スクロール機能ここまで ---
