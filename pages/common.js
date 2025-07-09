@@ -447,11 +447,19 @@ document.addEventListener("DOMContentLoaded", function () {
       : null;
     const total = window.prompts ? window.prompts.length : 0;
     const isNew = idx === -1 || idx === null || idx >= total;
-    const obj = !isNew && idx !== null && window.prompts
-      ? window.prompts[idx]
+    const obj = !isNew
+      ? window.editingOriginalPrompt || (idx !== null && window.prompts
+          ? window.prompts[idx]
+          : null)
       : null;
 
-    console.log("[NAV DEBUG]", { idx, total, isNew, objExists: !!obj });
+    console.log("[NAV DEBUG]", {
+      idx,
+      total,
+      isNew,
+      objExists: !!obj,
+      hasSnapshot: !!window.editingOriginalPrompt,
+    });
 
     const hasChanges = window.checkForUnsavedChanges(obj, isNew);
 
