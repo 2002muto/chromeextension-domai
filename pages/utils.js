@@ -35,6 +35,7 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
     showSave = true,
     showDiscard = true,
     showCancel = true,
+    centerHeader = false,
   } = options;
 
   // 既存のダイアログがあれば削除
@@ -215,6 +216,11 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         line-height: 1.6;
         margin: 0;
         text-align: left;
+      }
+
+      .save-confirm-dialog .delete-warning {
+        color: #ff0000;
+        font-weight: bold;
       }
 
       /* ダイアログフッター */
@@ -419,6 +425,13 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
       background: rgba(255, 255, 255, 0.02) !important;
     `;
+    if (centerHeader) {
+      header.style.justifyContent = "center";
+      const titleWrapper = header.querySelector(".dialog-title-wrapper");
+      if (titleWrapper) {
+        titleWrapper.style.textAlign = "center";
+      }
+    }
   }
 
   if (iconWrapper) {
