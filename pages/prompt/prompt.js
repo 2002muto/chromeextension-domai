@@ -2368,6 +2368,12 @@ function toast(msg) {
 
 /*━━━━━━━━━━ 変更検知機能 ━━━━━━━━━━*/
 function checkForUnsavedChanges(originalObj, isNew) {
+  if (!originalObj && !isNew) {
+    console.warn(
+      "[checkForUnsavedChanges] originalObj is null. Treating as new."
+    );
+    isNew = true;
+  }
   const currentTitle = $(".title-input")?.value.trim() || "";
   const wrap = $("#field-wrap");
 
@@ -2442,8 +2448,10 @@ window.getCurrentPromptIndex = getCurrentPromptIndex;
 window.saveAndGoBack = async function () {
   // 現在編集中のプロンプト情報を取得
   const currentIndex = getCurrentPromptIndex();
-  const originalObj = currentIndex !== -1 ? prompts[currentIndex] : null;
-  const isNew = currentIndex === -1;
+  const originalObj =
+    currentIndex !== -1 && prompts ? prompts[currentIndex] : null;
+  const isNew =
+    window.originalPromptData === null || !originalObj || currentIndex === -1;
 
   // 現在の入力内容を取得
   const currentTitle = $(".title-input")?.value.trim() || "";

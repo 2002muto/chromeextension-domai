@@ -448,14 +448,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const idx = window.getCurrentPromptIndex
           ? window.getCurrentPromptIndex()
           : null;
-        const isNew = idx === -1;
-        const obj = idx !== -1 && window.prompts ? window.prompts[idx] : null;
-        const original = window.originalPromptData || obj;
-        const hasChanges = window.checkForUnsavedChanges(original, isNew);
+        const obj =
+          idx !== null && window.prompts ? window.prompts[idx] : null;
+        const isNewPrompt =
+          window.originalPromptData === null || !obj || idx === -1;
+        const original =
+          window.originalPromptData && !isNewPrompt
+            ? window.originalPromptData
+            : obj;
+        const hasChanges = window.checkForUnsavedChanges(original, isNewPrompt);
 
         console.log("[NAV] PROMPT編集中", {
           idx,
-          isNew,
+          isNew: isNewPrompt,
           hasChanges,
           obj,
           original,
