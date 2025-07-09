@@ -2498,8 +2498,9 @@ window.editingOriginalPrompt = editingOriginalPrompt;
 window.saveAndGoBack = async function () {
   // 現在編集中のプロンプト情報を取得
   const currentIndex = getCurrentPromptIndex();
-  const originalObj = currentIndex !== -1 ? prompts[currentIndex] : null;
-  const isNew = currentIndex === -1;
+  const totalCount = Array.isArray(prompts) ? prompts.length : 0;
+  const isNew = currentIndex === -1 || currentIndex >= totalCount;
+  const originalObj = !isNew && prompts[currentIndex] ? prompts[currentIndex] : null;
 
   // 現在の入力内容を取得
   const currentTitle = $(".title-input")?.value.trim() || "";
@@ -3178,8 +3179,6 @@ function updateExportButtonState() {
 window.renderList = renderList;
 window.checkForUnsavedChanges = checkForUnsavedChanges;
 window.hasUnsavedPromptChanges = hasUnsavedPromptChanges;
-window.saveAndGoBack = saveAndGoBack;
-window.discardAndGoBack = discardAndGoBack;
 window.prompts = prompts;
 window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
