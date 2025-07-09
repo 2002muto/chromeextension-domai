@@ -1098,3 +1098,35 @@
   background: rgba(255, 0, 0, 0.1);
   cursor: not-allowed;
 }
+
+/* アーカイブ画面のfooterボタンの色分け */
+.memo-footer.archive .back-btn {
+  color: #9ca3af; /* グレー */
+}
+
+.memo-footer.archive .back-btn:hover {
+  color: #d1d5db;
+}
+
+.memo-footer.archive .delete-all-btn {
+  color: #ef4444; /* 赤色 */
+}
+
+.memo-footer.archive .delete-all-btn:hover {
+  color: #fca5a5;
+}
+
+/* アーカイブ画面のfooterボタンのホバーテキスト表示 */
+.memo-footer.archive .nav-btn:hover .nav-text {
+  opacity: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
+}
+
+.memo-footer.archive .nav-btn:hover i {
+  display: none;
+}
+
+/* ドラッグオーバー時のハイライト（旧スタイル - 削除予定） */

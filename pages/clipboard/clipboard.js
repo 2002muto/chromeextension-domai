@@ -861,11 +861,11 @@ function renderArchiveFooter() {
   const footer = document.querySelector(".memo-footer");
   footer.classList.add("archive");
   footer.innerHTML = `
-    <button class="nav-btn back-btn">
+    <button class="nav-btn back-btn" title="戻る">
       <i class="bi bi-arrow-left-circle"></i>
       <span class="nav-text">戻る</span>
     </button>
-    <button class="nav-btn delete-all-btn">
+    <button class="nav-btn delete-all-btn" title="一括削除">
       <i class="bi bi-trash"></i>
       <span class="nav-text">一括削除</span>
     </button>
@@ -1350,6 +1350,9 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     console.error("初期化: .memo-content要素が見つかりません");
   }
+
+  // 初期表示を実行
+  renderClipboardView();
 });
 
 // ───────────────────────────────────────
@@ -1409,11 +1412,11 @@ function renderMainFooter() {
 
   // メイン画面用のfooterを設定
   footer.innerHTML = `
-    <button class="nav-btn archive-toggle" id="btn-archive-toggle">
+    <button class="nav-btn archive-toggle" id="btn-archive-toggle" title="アーカイブ">
       <i class="bi bi-archive"></i>
       <span class="nav-text">アーカイブ</span>
     </button>
-    <button class="nav-btn encrypt-btn">
+    <button class="nav-btn encrypt-btn" title="エクスポート">
       <i class="bi bi-download"></i>
       <span class="nav-text">エクスポート</span>
     </button>
@@ -1438,6 +1441,9 @@ function renderMainFooter() {
       "メイン画面: エクスポートボタンにイベントリスナーを設定しました"
     );
   }
+
+  // ボタンの状態を更新
+  updateExportButtonState();
 
   console.log("renderMainFooter: end");
 }
