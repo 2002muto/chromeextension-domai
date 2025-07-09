@@ -444,25 +444,16 @@ document.addEventListener("DOMContentLoaded", function () {
       inPromptEdit,
     });
 
+    // 編集画面でなければ何もしない
     if (!inPromptEdit) {
-      return false; // 編集画面でなければ処理しない
+      return false;
     }
 
-    // 状態のスナップショットと現在の入力内容を比較して未保存変更を確認
+    // グローバルヘルパーから未保存状態を取得
     let hasChanges = false;
     try {
-      const idx = window.getCurrentPromptIndex
-        ? window.getCurrentPromptIndex()
-        : -1;
-      const total = Array.isArray(window.prompts) ? window.prompts.length : 0;
-      const isNew =
-        !window.editingOriginalPrompt && (idx === -1 || idx >= total);
-      const base =
-        window.editingOriginalPrompt ||
-        (window.prompts && window.prompts[idx] ? window.prompts[idx] : null);
-
-      if (typeof window.checkForUnsavedChanges === "function") {
-        hasChanges = window.checkForUnsavedChanges(base, isNew);
+      if (typeof window.hasUnsavedPromptChanges === "function") {
+        hasChanges = window.hasUnsavedPromptChanges();
       }
     } catch (err) {
       console.error("[NAV DEBUG] failed to check unsaved", err);
