@@ -1073,11 +1073,11 @@ async function renderArchiveView() {
     renderList();
   });
 
-  // 一括削除ボタンの機能（確認ダイアログ付き）
+  // 一括削除ボタンのイベントリスナー
   footer
     .querySelector(".delete-all-btn")
     .addEventListener("click", async () => {
-      const checkedItems = body.querySelectorAll(".arch-check:checked");
+      const checkedItems = document.querySelectorAll(".arch-check:checked");
 
       // 削除対象の数を確認
       let deleteCount = 0;
@@ -1085,6 +1085,8 @@ async function renderArchiveView() {
 
       if (checkedItems.length === 0) {
         // 全削除の場合
+        const prompts = await load(PROMPT_KEY);
+        const archivedPrompts = prompts.filter((p) => p.archived);
         deleteCount = archivedPrompts.length;
 
         if (deleteCount === 0) {
@@ -1100,51 +1102,142 @@ async function renderArchiveView() {
       }
 
       // 確認ダイアログを表示
-      window.AppUtils.showSaveConfirmDialog({
-        title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #D93544; font-weight: bold;">この操作は取り消せません。</span>`,
-        discardLabel: "削除",
-        cancelLabel: "キャンセル",
-        discardColor: "#D93544",
-        cancelColor: "#4A5568",
-        showSave: false,
-        showDiscard: true,
-        showCancel: true,
-        iconClass: "bi bi-trash-fill",
-        onDiscard: async () => {
-          // 削除処理を実行
+      if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+        window.AppUtils.showSaveConfirmDialog({
+          title: "削除の確認",
+          message: `${confirmMessage}<br><span class="delete-warning">この操作は取り消せません。</span>`,
+          centerHeader: true,
+          discardLabel: "削除",
+          cancelLabel: "キャンセル",
+          discardColor: "#D93544",
+          cancelColor: "#4A5568",
+          showSave: false,
+          showDiscard: true,
+          showCancel: true,
+          iconClass: "bi bi-trash-fill",
+          onDiscard: async () => {
+            console.log("[ARCHIVE] 削除処理を開始します");
+
+            // 現在のプロンプトデータを取得
+            let prompts = await load(PROMPT_KEY);
+
+            if (checkedItems.length === 0) {
+              // 全削除の場合：アーカイブされたプロンプトを全て削除
+              const originalLength = prompts.length;
+              prompts = prompts.filter((p) => !p.archived);
+              console.log(
+                `[ARCHIVE] 全削除: ${originalLength} → ${prompts.length}件`
+              );
+            } else {
+              // 選択されたアイテムのみ削除
+              const selectedIndices = Array.from(checkedItems).map((cb) =>
+                parseInt(cb.dataset.index)
+              );
+              console.log(
+                `[ARCHIVE] 選択削除対象: ${selectedIndices.length}件`,
+                selectedIndices
+              );
+
+              // アーカイブされたプロンプトの配列を取得
+              const archivedPrompts = prompts.filter((p) => p.archived);
+
+              // 選択されたアーカイブプロンプトのIDを取得
+              const selectedIds = selectedIndices
+                .map((idx) => {
+                  if (idx >= 0 && idx < archivedPrompts.length) {
+                    return archivedPrompts[idx].id;
+                  }
+                  return null;
+                })
+                .filter((id) => id !== null);
+
+              console.log(`[ARCHIVE] 削除対象ID:`, selectedIds);
+
+              // 元の配列から選択されたIDのプロンプトを削除
+              const originalLength = prompts.length;
+              prompts = prompts.filter((p) => !selectedIds.includes(p.id));
+              console.log(
+                `[ARCHIVE] 選択削除: ${originalLength} → ${prompts.length}件`
+              );
+            }
+
+            // ストレージに保存
+            await save(PROMPT_KEY, prompts);
+
+            // グローバル変数を更新
+            window.prompts = prompts;
+
+            console.log(`[ARCHIVE] ${deleteCount}件のプロンプトを削除しました`);
+
+            // アーカイブ画面を再描画
+            renderArchiveList();
+          },
+          onCancel: () => {
+            console.log("[ARCHIVE] 削除をキャンセルしました");
+          },
+        });
+      } else {
+        // AppUtilsが利用できない場合は標準のconfirmを使用
+        if (confirm(`${confirmMessage}\n\nこの操作は取り消せません。`)) {
+          console.log("[ARCHIVE] 削除処理を開始します（標準confirm）");
+
+          // 現在のプロンプトデータを取得
+          let prompts = await load(PROMPT_KEY);
+
           if (checkedItems.length === 0) {
-            // 全削除の場合
+            // 全削除の場合：アーカイブされたプロンプトを全て削除
+            const originalLength = prompts.length;
             prompts = prompts.filter((p) => !p.archived);
+            console.log(
+              `[ARCHIVE] 全削除: ${originalLength} → ${prompts.length}件`
+            );
           } else {
             // 選択されたアイテムのみ削除
             const selectedIndices = Array.from(checkedItems).map((cb) =>
               parseInt(cb.dataset.index)
             );
-            console.log(`[ARCHIVE] 一括削除対象: ${selectedIndices.length}件`);
+            console.log(
+              `[ARCHIVE] 選択削除対象: ${selectedIndices.length}件`,
+              selectedIndices
+            );
 
-            // 選択されたアーカイブプロンプトを削除
-            selectedIndices.sort((a, b) => b - a); // 逆順でソート（インデックスずれを防ぐ）
-            selectedIndices.forEach((idx) => {
-              const archivedPrompt = archivedPrompts[idx];
-              const originalIndex = prompts.findIndex(
-                (p) => p.id === archivedPrompt.id
-              );
-              if (originalIndex !== -1) {
-                prompts.splice(originalIndex, 1);
-              }
-            });
+            // アーカイブされたプロンプトの配列を取得
+            const archivedPrompts = prompts.filter((p) => p.archived);
+
+            // 選択されたアーカイブプロンプトのIDを取得
+            const selectedIds = selectedIndices
+              .map((idx) => {
+                if (idx >= 0 && idx < archivedPrompts.length) {
+                  return archivedPrompts[idx].id;
+                }
+                return null;
+              })
+              .filter((id) => id !== null);
+
+            console.log(`[ARCHIVE] 削除対象ID:`, selectedIds);
+
+            // 元の配列から選択されたIDのプロンプトを削除
+            const originalLength = prompts.length;
+            prompts = prompts.filter((p) => !selectedIds.includes(p.id));
+            console.log(
+              `[ARCHIVE] 選択削除: ${originalLength} → ${prompts.length}件`
+            );
           }
 
+          // ストレージに保存
           await save(PROMPT_KEY, prompts);
+
+          // グローバル変数を更新
           window.prompts = prompts;
+
           console.log(`[ARCHIVE] ${deleteCount}件のプロンプトを削除しました`);
-          renderArchiveList(); // アーカイブ画面を再描画
-        },
-        onCancel: () => {
+
+          // アーカイブ画面を再描画
+          renderArchiveList();
+        } else {
           console.log("[ARCHIVE] 削除をキャンセルしました");
-        },
-      });
+        }
+      }
     });
 
   console.log("[renderArchiveView] end");
@@ -1629,10 +1722,23 @@ function renderEdit(idx, isNew = false) {
       console.log("削除ボタンがクリックされました");
 
       // おしゃれな削除確認ポップアップを表示
+      // ダイアログタイトルは常に2行表示にする
+      const removeTitle = "プロンプトフィールドを<br>削除しますか？";
+      const slider =
+        document.querySelector(".size-slider") ||
+        document.querySelector("#sizeSlider");
+      console.log(
+        "削除ダイアログタイトルを設定:",
+        removeTitle,
+        "slider value:",
+        slider ? slider.value : "N/A"
+      );
+
       window.AppUtils.showSaveConfirmDialog({
-        title: "プロンプトフィールドを削除しますか？",
+        title: removeTitle,
         message:
-          "この操作は元に戻すことができません。<br><span style='color: #D93544; font-weight: bold;'>この操作は取り消せません。</span>",
+          "この操作は元に戻すことができません。<br><span class='delete-warning'>この操作は取り消せません。</span>",
+        centerHeader: true,
         discardLabel: "削除",
         cancelLabel: "キャンセル",
         discardColor: "#D93544",
@@ -2095,7 +2201,6 @@ function renderRun(idx) {
     }
   });
 
-
   /* ── 内部 send() ── */
   async function send(index) {
     const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
@@ -2414,8 +2519,7 @@ function checkForUnsavedChanges(originalObj, isNew) {
   // 新規作成、または比較対象がない場合
   if (isNew || !originalObj) {
     const result =
-      currentTitle !== "" ||
-      currentFields.some((f) => f.text.trim() !== "");
+      currentTitle !== "" || currentFields.some((f) => f.text.trim() !== "");
     console.log("[CHECK UNSAVED] new or no original ->", result);
     return result;
   }
@@ -2464,7 +2568,12 @@ function hasUnsavedPromptChanges() {
   const base = window.editingOriginalPrompt || (prompts ? prompts[idx] : null);
 
   const result = checkForUnsavedChanges(base, isNew);
-  console.log("[CHECK UNSAVED GLOBAL]", { idx, total, isNew, hasChanges: result });
+  console.log("[CHECK UNSAVED GLOBAL]", {
+    idx,
+    total,
+    isNew,
+    hasChanges: result,
+  });
   return result;
 }
 window.hasUnsavedPromptChanges = hasUnsavedPromptChanges;
@@ -2500,7 +2609,8 @@ window.saveAndGoBack = async function () {
   const currentIndex = getCurrentPromptIndex();
   const totalCount = Array.isArray(prompts) ? prompts.length : 0;
   const isNew = currentIndex === -1 || currentIndex >= totalCount;
-  const originalObj = !isNew && prompts[currentIndex] ? prompts[currentIndex] : null;
+  const originalObj =
+    !isNew && prompts[currentIndex] ? prompts[currentIndex] : null;
 
   // 現在の入力内容を取得
   const currentTitle = $(".title-input")?.value.trim() || "";
@@ -2860,51 +2970,142 @@ function renderArchiveFooter() {
       }
 
       // 確認ダイアログを表示
-      window.AppUtils.showSaveConfirmDialog({
-        title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #D93544; font-weight: bold;">この操作は取り消せません。</span>`,
-        discardLabel: "削除",
-        cancelLabel: "キャンセル",
-        discardColor: "#D93544",
-        cancelColor: "#4A5568",
-        showSave: false,
-        showDiscard: true,
-        showCancel: true,
-        iconClass: "bi bi-trash-fill",
-        onDiscard: async () => {
-          // 削除処理を実行
+      if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+        window.AppUtils.showSaveConfirmDialog({
+          title: "削除の確認",
+          message: `${confirmMessage}<br><span class="delete-warning">この操作は取り消せません。</span>`,
+          centerHeader: true,
+          discardLabel: "削除",
+          cancelLabel: "キャンセル",
+          discardColor: "#D93544",
+          cancelColor: "#4A5568",
+          showSave: false,
+          showDiscard: true,
+          showCancel: true,
+          iconClass: "bi bi-trash-fill",
+          onDiscard: async () => {
+            console.log("[ARCHIVE] 削除処理を開始します");
+
+            // 現在のプロンプトデータを取得
+            let prompts = await load(PROMPT_KEY);
+
+            if (checkedItems.length === 0) {
+              // 全削除の場合：アーカイブされたプロンプトを全て削除
+              const originalLength = prompts.length;
+              prompts = prompts.filter((p) => !p.archived);
+              console.log(
+                `[ARCHIVE] 全削除: ${originalLength} → ${prompts.length}件`
+              );
+            } else {
+              // 選択されたアイテムのみ削除
+              const selectedIndices = Array.from(checkedItems).map((cb) =>
+                parseInt(cb.dataset.index)
+              );
+              console.log(
+                `[ARCHIVE] 選択削除対象: ${selectedIndices.length}件`,
+                selectedIndices
+              );
+
+              // アーカイブされたプロンプトの配列を取得
+              const archivedPrompts = prompts.filter((p) => p.archived);
+
+              // 選択されたアーカイブプロンプトのIDを取得
+              const selectedIds = selectedIndices
+                .map((idx) => {
+                  if (idx >= 0 && idx < archivedPrompts.length) {
+                    return archivedPrompts[idx].id;
+                  }
+                  return null;
+                })
+                .filter((id) => id !== null);
+
+              console.log(`[ARCHIVE] 削除対象ID:`, selectedIds);
+
+              // 元の配列から選択されたIDのプロンプトを削除
+              const originalLength = prompts.length;
+              prompts = prompts.filter((p) => !selectedIds.includes(p.id));
+              console.log(
+                `[ARCHIVE] 選択削除: ${originalLength} → ${prompts.length}件`
+              );
+            }
+
+            // ストレージに保存
+            await save(PROMPT_KEY, prompts);
+
+            // グローバル変数を更新
+            window.prompts = prompts;
+
+            console.log(`[ARCHIVE] ${deleteCount}件のプロンプトを削除しました`);
+
+            // アーカイブ画面を再描画
+            renderArchiveList();
+          },
+          onCancel: () => {
+            console.log("[ARCHIVE] 削除をキャンセルしました");
+          },
+        });
+      } else {
+        // AppUtilsが利用できない場合は標準のconfirmを使用
+        if (confirm(`${confirmMessage}\n\nこの操作は取り消せません。`)) {
+          console.log("[ARCHIVE] 削除処理を開始します（標準confirm）");
+
+          // 現在のプロンプトデータを取得
+          let prompts = await load(PROMPT_KEY);
+
           if (checkedItems.length === 0) {
-            // 全削除の場合
+            // 全削除の場合：アーカイブされたプロンプトを全て削除
+            const originalLength = prompts.length;
             prompts = prompts.filter((p) => !p.archived);
+            console.log(
+              `[ARCHIVE] 全削除: ${originalLength} → ${prompts.length}件`
+            );
           } else {
             // 選択されたアイテムのみ削除
             const selectedIndices = Array.from(checkedItems).map((cb) =>
               parseInt(cb.dataset.index)
             );
-            console.log(`[ARCHIVE] 一括削除対象: ${selectedIndices.length}件`);
+            console.log(
+              `[ARCHIVE] 選択削除対象: ${selectedIndices.length}件`,
+              selectedIndices
+            );
 
-            // 選択されたアーカイブプロンプトを削除
-            selectedIndices.sort((a, b) => b - a); // 逆順でソート（インデックスずれを防ぐ）
-            selectedIndices.forEach((idx) => {
-              const archivedPrompt = archivedPrompts[idx];
-              const originalIndex = prompts.findIndex(
-                (p) => p.id === archivedPrompt.id
-              );
-              if (originalIndex !== -1) {
-                prompts.splice(originalIndex, 1);
-              }
-            });
+            // アーカイブされたプロンプトの配列を取得
+            const archivedPrompts = prompts.filter((p) => p.archived);
+
+            // 選択されたアーカイブプロンプトのIDを取得
+            const selectedIds = selectedIndices
+              .map((idx) => {
+                if (idx >= 0 && idx < archivedPrompts.length) {
+                  return archivedPrompts[idx].id;
+                }
+                return null;
+              })
+              .filter((id) => id !== null);
+
+            console.log(`[ARCHIVE] 削除対象ID:`, selectedIds);
+
+            // 元の配列から選択されたIDのプロンプトを削除
+            const originalLength = prompts.length;
+            prompts = prompts.filter((p) => !selectedIds.includes(p.id));
+            console.log(
+              `[ARCHIVE] 選択削除: ${originalLength} → ${prompts.length}件`
+            );
           }
 
+          // ストレージに保存
           await save(PROMPT_KEY, prompts);
+
+          // グローバル変数を更新
           window.prompts = prompts;
+
           console.log(`[ARCHIVE] ${deleteCount}件のプロンプトを削除しました`);
-          renderArchiveList(); // アーカイブ画面を再描画
-        },
-        onCancel: () => {
+
+          // アーカイブ画面を再描画
+          renderArchiveList();
+        } else {
           console.log("[ARCHIVE] 削除をキャンセルしました");
-        },
-      });
+        }
+      }
     });
 
   console.log("renderArchiveFooter: end");
