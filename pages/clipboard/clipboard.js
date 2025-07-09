@@ -590,7 +590,7 @@ async function renderClipboardView() {
     }, 50); // DOM追加後に実行（少し長めの遅延で確実に実行）
   });
 
-  // メイン画面のfooterを設定
+  // メイン画面のfooterを設定（通常表示の場合）
   renderMainFooter();
 
   console.log("renderClipboardView: end");
@@ -861,11 +861,11 @@ function renderArchiveFooter() {
   const footer = document.querySelector(".memo-footer");
   footer.classList.add("archive");
   footer.innerHTML = `
-    <button class="nav-btn back-btn">
+    <button class="nav-btn back-btn" title="戻る">
       <i class="bi bi-arrow-left-circle"></i>
       <span class="nav-text">戻る</span>
     </button>
-    <button class="nav-btn delete-all-btn">
+    <button class="nav-btn delete-all-btn" title="一括削除">
       <i class="bi bi-trash"></i>
       <span class="nav-text">一括削除</span>
     </button>
@@ -990,45 +990,7 @@ function renderArchiveFooter() {
 // ───────────────────────────────────────
 // アーカイブアニメーション機能（memo.jsから移植）
 
-// ───────────────────────────────────────
-// Initialization on load
-// ───────────────────────────────────────
-window.addEventListener("DOMContentLoaded", async () => {
-  console.log("CLIPBOARDページ DOMContentLoaded fired");
-
-  // AppUtilsの読み込み状況を確認
-  console.log("[CLIPBOARD] AppUtils check:", {
-    AppUtils: !!window.AppUtils,
-    animateRestoreItem: !!(
-      window.AppUtils && window.AppUtils.animateRestoreItem
-    ),
-    showConfirmDialog: !!(window.AppUtils && window.AppUtils.showConfirmDialog),
-  });
-
-  // 現在のページがCLIPBOARDページかどうかを確認
-  const currentPage = window.location.pathname;
-  if (!currentPage.includes("/clipboard/")) {
-    console.log("現在のページはCLIPBOARDページではありません:", currentPage);
-    return; // CLIPBOARDページでない場合は初期化をスキップ
-  }
-
-  // 起動時は常に一覧画面を表示（ページ状態の復元を無効化）
-  console.log("CLIPBOARDページ: 起動時に一覧画面を表示");
-  await renderClipboardView();
-
-  // Add event listener to CLIPBOARD button
-  const clipboardButton = document.getElementById("btn-clipboard");
-  if (clipboardButton) {
-    clipboardButton.addEventListener("click", () => {
-      console.log("CLIPBOARD page button clicked");
-      // ヘッダーをクリックした時は常に一覧画面を表示
-      renderClipboardView();
-    });
-  }
-
-  // グローバルに最新のclipsを設定
-  window.clips = clips;
-});
+// 重複した初期化処理を削除 - 上記のDOMContentLoadedイベントで統一
 
 // グローバルに公開
 window.renderClipboardView = renderClipboardView;
@@ -1350,6 +1312,9 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     console.error("初期化: .memo-content要素が見つかりません");
   }
+
+  // 初期表示を実行
+  renderClipboardView();
 });
 
 // ───────────────────────────────────────
@@ -1395,6 +1360,85 @@ function testArchiveAnimation() {
 
 // ブラウザコンソールで実行: testArchiveAnimation()
 
+// デバッグ用：footerの状態を確認
+function debugFooter() {
+  console.log("=== FOOTER DEBUG ===");
+
+  const footer = document.querySelector(".memo-footer");
+  if (!footer) {
+    console.error("footer要素が見つかりません");
+    return;
+  }
+
+  console.log("footer要素:", footer);
+  console.log("footerのHTML:", footer.innerHTML);
+  console.log("footerのクラス:", footer.className);
+
+  const buttons = footer.querySelectorAll(".nav-btn");
+  console.log(`ボタン数: ${buttons.length}`);
+
+  buttons.forEach((btn, index) => {
+    const navText = btn.querySelector(".nav-text");
+    const icon = btn.querySelector("i");
+
+    console.log(`ボタン${index + 1}:`, {
+      className: btn.className,
+      text: navText?.textContent,
+      textElement: navText,
+      icon: icon?.className,
+      iconElement: icon,
+      disabled: btn.disabled,
+      title: btn.title,
+      innerHTML: btn.innerHTML,
+    });
+
+    // CSSの確認
+    const computedStyle = window.getComputedStyle(btn);
+    const textComputedStyle = navText ? window.getComputedStyle(navText) : null;
+
+    console.log(`ボタン${index + 1}のCSS:`, {
+      width: computedStyle.width,
+      height: computedStyle.height,
+      position: computedStyle.position,
+      display: computedStyle.display,
+      opacity: computedStyle.opacity,
+    });
+
+    if (textComputedStyle) {
+      console.log(`ボタン${index + 1}のテキストCSS:`, {
+        opacity: textComputedStyle.opacity,
+        position: textComputedStyle.position,
+        transform: textComputedStyle.transform,
+        display: textComputedStyle.display,
+        visibility: textComputedStyle.visibility,
+      });
+    }
+  });
+
+  // ホバー状態のテスト
+  console.log("=== ホバーテスト ===");
+  const firstButton = buttons[0];
+  if (firstButton) {
+    console.log("最初のボタンにホバーイベントをテストします");
+    const originalOpacity = window.getComputedStyle(
+      firstButton.querySelector(".nav-text")
+    ).opacity;
+    console.log("ホバー前のテキストopacity:", originalOpacity);
+
+    // ホバーイベントをシミュレート
+    firstButton.dispatchEvent(new MouseEvent("mouseenter"));
+    setTimeout(() => {
+      const hoverOpacity = window.getComputedStyle(
+        firstButton.querySelector(".nav-text")
+      ).opacity;
+      console.log("ホバー後のテキストopacity:", hoverOpacity);
+      firstButton.dispatchEvent(new MouseEvent("mouseleave"));
+    }, 100);
+  }
+}
+
+// ブラウザコンソールで実行: debugFooter()
+
 // メイン画面用のfooter設定関数
 function renderMainFooter() {
   console.log("renderMainFooter: start");
@@ -1409,11 +1453,11 @@ function renderMainFooter() {
 
   // メイン画面用のfooterを設定
   footer.innerHTML = `
-    <button class="nav-btn archive-toggle" id="btn-archive-toggle">
+    <button class="nav-btn archive-toggle" id="btn-archive-toggle" title="アーカイブ">
       <i class="bi bi-archive"></i>
       <span class="nav-text">アーカイブ</span>
     </button>
-    <button class="nav-btn encrypt-btn">
+    <button class="nav-btn encrypt-btn" title="エクスポート">
       <i class="bi bi-download"></i>
       <span class="nav-text">エクスポート</span>
     </button>
@@ -1438,6 +1482,9 @@ function renderMainFooter() {
       "メイン画面: エクスポートボタンにイベントリスナーを設定しました"
     );
   }
+
+  // ボタンの状態を更新
+  updateExportButtonState();
 
   console.log("renderMainFooter: end");
 }
