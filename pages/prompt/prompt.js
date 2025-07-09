@@ -23,6 +23,27 @@ const ce = (tag, cls = "", html = "") => {
 };
 const draftKey = (promptId, fieldIdx) => `draft_${promptId}_${fieldIdx}`;
 
+/* ───────────────────────────────────────
+  textarea自動リサイズ
+  編集画面だけでなく他の箇所でも利用できるよう
+  ここで定義してwindowに公開しておく
+─────────────────────────────────────── */
+function autoResize(textarea) {
+  // 高さをリセットしてscrollHeightを取得
+  textarea.style.height = "auto";
+
+  const minHeight = 80;
+  const contentHeight = textarea.scrollHeight;
+  const newHeight = Math.max(minHeight, contentHeight);
+
+  textarea.style.height = `${newHeight}px`;
+
+  console.log(
+    `[AUTO RESIZE] height=${newHeight} content=${contentHeight} min=${minHeight}`
+  );
+}
+window.autoResize = autoResize;
+
 /* ━━━━━━━━━ ヘルパー関数 ━━━━━━━━━ */
 const getCurrentPromptIndex = () => currentPromptIndex;
 
@@ -94,6 +115,9 @@ let runs = []; // 実行履歴
 let dragPromptIndex = null; // ドラッグ元インデックス
 let dragPromptStarred = null; // ドラッグ元の星状態を記録
 let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデックス
+let editingOriginalPrompt = null; // 編集開始時点のプロンプトスナップショット
+// ナビゲーション側から参照できるようにグローバルにも保持
+window.editingOriginalPrompt = editingOriginalPrompt;
 
 // ───────────────────────────────────────
 // Drag & Drop handlers for prompt list
@@ -355,6 +379,9 @@ async function renderList() {
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
+
+  // 実行モードで付与されたクラスが残っている場合は除去する
+  body.classList.remove("run-mode");
 
   // 実行画面から戻る場合の自動保存処理
   const runBox = body.querySelector(".prompt-run-box");
@@ -1152,6 +1179,7 @@ function renderEdit(idx, isNew = false) {
   const body = $(".memo-content");
   const footer = $(".memo-footer");
   const root = document.body; // HTMLの直接の親要素を取得
+  body.classList.remove("run-mode"); // remove run-mode when editing
 
   // 新規作成時は仮のオブジェクトを作成
   let obj;
@@ -1164,9 +1192,14 @@ function renderEdit(idx, isNew = false) {
       archived: false,
     };
     console.log("[renderEdit] 新規オブジェクトを作成:", obj);
+    editingOriginalPrompt = null; // 新規作成時は比較対象なし
+    window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
   } else {
     obj = prompts[idx];
     console.log("[renderEdit] 既存オブジェクトを編集:", obj);
+    // 既存オブジェクトのスナップショットを保持
+    editingOriginalPrompt = structuredClone(obj);
+    window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
   }
 
   // グローバルに最新のpromptsを設定
@@ -1176,19 +1209,31 @@ function renderEdit(idx, isNew = false) {
   root.querySelector(".form-header")?.remove();
 
   /*━━━━━━━━━━ 2. ヘッダーを "カードの外" に生成 ━━━━━*/
-  const head = ce(
-    "div",
-    "form-header d-flex justify-content-between align-items-center mb-2 px-2",
-    `
-      <span class="text-success fw-bold">プロンプト編集中</span>
-      <button class="btn-dup">
-        <i class="bi bi-copy me-1"></i> 複製する
-      </button>`
-  );
-  head.querySelector(".btn-dup").onclick = () => {
+  const head = document.createElement("div");
+  head.className =
+    "form-header d-flex justify-content-between align-items-center mb-2 px-2";
+
+  const status = document.createElement("span");
+  status.className = "text-success fw-bold";
+  status.textContent = "プロンプト編集中";
+
+  const dupBtn = document.createElement("button");
+  dupBtn.className = "btn-dup";
+
+  const dupIcon = document.createElement("i");
+  dupIcon.className = "bi bi-copy me-1";
+  dupBtn.appendChild(dupIcon);
+  dupBtn.appendChild(document.createTextNode(" 複製する"));
+
+  dupBtn.addEventListener("click", () => {
     console.log("[DUP] 複製ボタンがクリックされました, idx:", idx);
     duplicate(idx);
-  };
+  });
+
+  head.appendChild(status);
+  head.appendChild(dupBtn);
+
+  console.log("[renderEdit] ヘッダーDOM生成完了");
 
   /* ★★★ ここが重要 ★★★
      MEMO 入力画面と同じく "カードの手前" に挿入する */
@@ -1247,8 +1292,9 @@ function renderEdit(idx, isNew = false) {
   };
 
   $(".back-btn").onclick = async () => {
-    // 変更があるかチェック
-    const hasChanges = checkForUnsavedChanges(obj, isNew);
+    // 編集開始時のスナップショットと比較
+    const base = editingOriginalPrompt || obj;
+    const hasChanges = checkForUnsavedChanges(base, isNew);
 
     if (hasChanges) {
       // 変更がある場合は保存確認ダイアログを表示
@@ -2049,22 +2095,6 @@ function renderRun(idx) {
     }
   });
 
-  /* ── 自動リサイズ関数（改行・エンターで無限に広がる） ── */
-  function autoResize(textarea) {
-    // 一時的に高さをリセットして正確なscrollHeightを取得
-    textarea.style.height = "auto";
-
-    // 最小高さ（80px）と内容に応じた高さの大きい方を設定（最大高さ制限なし）
-    const minHeight = 80;
-    const contentHeight = textarea.scrollHeight;
-    const newHeight = Math.max(minHeight, contentHeight);
-
-    textarea.style.height = newHeight + "px";
-
-    console.log(
-      `PROMPT textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, min: ${minHeight}px)`
-    );
-  }
 
   /* ── 内部 send() ── */
   async function send(index) {
@@ -2374,22 +2404,32 @@ function checkForUnsavedChanges(originalObj, isNew) {
     on: w.querySelector(".field-toggle")?.checked || false,
   }));
 
-  // 新規作成の場合
-  if (isNew) {
-    // タイトルまたはフィールドに内容があれば変更あり
-    return (
-      currentTitle !== "" || currentFields.some((f) => f.text.trim() !== "")
-    );
+  console.log("[CHECK UNSAVED]", {
+    isNew,
+    hasOriginal: !!originalObj,
+    currentTitle,
+    fieldCount: currentFields.length,
+  });
+
+  // 新規作成、または比較対象がない場合
+  if (isNew || !originalObj) {
+    const result =
+      currentTitle !== "" ||
+      currentFields.some((f) => f.text.trim() !== "");
+    console.log("[CHECK UNSAVED] new or no original ->", result);
+    return result;
   }
 
   // 既存編集の場合
   // タイトルの変更をチェック
   if (currentTitle !== (originalObj.title || "")) {
+    console.log("[CHECK UNSAVED] title changed");
     return true;
   }
 
   // フィールド数の変更をチェック
   if (currentFields.length !== originalObj.fields.length) {
+    console.log("[CHECK UNSAVED] field length changed");
     return true;
   }
 
@@ -2403,12 +2443,31 @@ function checkForUnsavedChanges(originalObj, isNew) {
       current.text !== original.text ||
       current.on !== original.on
     ) {
+      console.log("[CHECK UNSAVED] field", i, "changed");
       return true;
     }
   }
 
+  console.log("[CHECK UNSAVED] no changes");
   return false;
 }
+
+/* ───────────────────────────────────────
+  現在の編集内容が保存されていないか判定するヘルパー
+  ナビゲーション側からも呼び出せるようwindowに公開
+─────────────────────────────────────── */
+function hasUnsavedPromptChanges() {
+  const idx = getCurrentPromptIndex ? getCurrentPromptIndex() : -1;
+  const total = Array.isArray(prompts) ? prompts.length : 0;
+
+  const isNew = !window.editingOriginalPrompt && (idx === -1 || idx >= total);
+  const base = window.editingOriginalPrompt || (prompts ? prompts[idx] : null);
+
+  const result = checkForUnsavedChanges(base, isNew);
+  console.log("[CHECK UNSAVED GLOBAL]", { idx, total, isNew, hasChanges: result });
+  return result;
+}
+window.hasUnsavedPromptChanges = hasUnsavedPromptChanges;
 
 /*━━━━━━━━━━ 空のプロンプト判定機能 ━━━━━━━━━━*/
 function isEmptyPrompt(prompt) {
@@ -2433,13 +2492,15 @@ window.checkForUnsavedChanges = checkForUnsavedChanges;
 window.prompts = prompts;
 window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
+window.editingOriginalPrompt = editingOriginalPrompt;
 
 // 保存・破棄関数をグローバルに公開
 window.saveAndGoBack = async function () {
   // 現在編集中のプロンプト情報を取得
   const currentIndex = getCurrentPromptIndex();
-  const originalObj = currentIndex !== -1 ? prompts[currentIndex] : null;
-  const isNew = currentIndex === -1;
+  const totalCount = Array.isArray(prompts) ? prompts.length : 0;
+  const isNew = currentIndex === -1 || currentIndex >= totalCount;
+  const originalObj = !isNew && prompts[currentIndex] ? prompts[currentIndex] : null;
 
   // 現在の入力内容を取得
   const currentTitle = $(".title-input")?.value.trim() || "";
@@ -2476,6 +2537,8 @@ window.saveAndGoBack = async function () {
 
     await save(PROMPT_KEY, prompts);
     window.prompts = prompts;
+    editingOriginalPrompt = null; // 編集完了後はスナップショットを破棄
+    window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
     console.log("[PROMPT] 保存完了");
   } catch (error) {
     console.error("[PROMPT] 保存中にエラー:", error);
@@ -2484,6 +2547,8 @@ window.saveAndGoBack = async function () {
 
 window.discardAndGoBack = function () {
   console.log("[PROMPT] 変更を破棄して戻ります");
+  editingOriginalPrompt = null; // スナップショットを破棄
+  window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
   // 何も保存せずに一覧画面に戻る
 };
 
@@ -3113,8 +3178,9 @@ function updateExportButtonState() {
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderList = renderList;
 window.checkForUnsavedChanges = checkForUnsavedChanges;
-window.saveAndGoBack = saveAndGoBack;
-window.discardAndGoBack = discardAndGoBack;
+window.hasUnsavedPromptChanges = hasUnsavedPromptChanges;
 window.prompts = prompts;
 window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
+window.editingOriginalPrompt = editingOriginalPrompt;
+window.autoResize = autoResize;
