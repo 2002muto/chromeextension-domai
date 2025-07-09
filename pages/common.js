@@ -462,6 +462,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     const hasChanges = window.checkForUnsavedChanges(obj, isNew);
+    console.log("[NAV DEBUG] hasChanges", hasChanges);
 
     if (!hasChanges) return false; // 変更がなければ処理しない
 

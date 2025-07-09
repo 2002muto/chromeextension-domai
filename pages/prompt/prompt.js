@@ -95,6 +95,8 @@ let dragPromptIndex = null; // ドラッグ元インデックス
 let dragPromptStarred = null; // ドラッグ元の星状態を記録
 let currentPromptIndex = -1; // 現在の実行画面のプロンプトインデックス
 let editingOriginalPrompt = null; // 編集開始時点のプロンプトスナップショット
+// ナビゲーション側から参照できるようにグローバルにも保持
+window.editingOriginalPrompt = editingOriginalPrompt;
 
 // ───────────────────────────────────────
 // Drag & Drop handlers for prompt list
@@ -1166,11 +1168,13 @@ function renderEdit(idx, isNew = false) {
     };
     console.log("[renderEdit] 新規オブジェクトを作成:", obj);
     editingOriginalPrompt = null; // 新規作成時は比較対象なし
+    window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
   } else {
     obj = prompts[idx];
     console.log("[renderEdit] 既存オブジェクトを編集:", obj);
     // 既存オブジェクトのスナップショットを保持
     editingOriginalPrompt = structuredClone(obj);
+    window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
   }
 
   // グローバルに最新のpromptsを設定
@@ -2494,6 +2498,7 @@ window.saveAndGoBack = async function () {
     await save(PROMPT_KEY, prompts);
     window.prompts = prompts;
     editingOriginalPrompt = null; // 編集完了後はスナップショットを破棄
+    window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
     console.log("[PROMPT] 保存完了");
   } catch (error) {
     console.error("[PROMPT] 保存中にエラー:", error);
@@ -2503,6 +2508,7 @@ window.saveAndGoBack = async function () {
 window.discardAndGoBack = function () {
   console.log("[PROMPT] 変更を破棄して戻ります");
   editingOriginalPrompt = null; // スナップショットを破棄
+  window.editingOriginalPrompt = editingOriginalPrompt; // グローバルも更新
   // 何も保存せずに一覧画面に戻る
 };
 
