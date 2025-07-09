@@ -67,7 +67,6 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
             ${
               showDiscard
                 ? `<button class="dialog-btn discard-btn" data-action="discard">
-                     <i class="bi bi-trash3"></i>
                      <span>${discardLabel}</span>
                    </button>`
                 : ""
@@ -75,7 +74,6 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
             ${
               showCancel
                 ? `<button class="dialog-btn cancel-btn" data-action="cancel">
-                     <i class="bi bi-x-circle"></i>
                      <span>${cancelLabel}</span>
                    </button>`
                 : ""
@@ -83,7 +81,6 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
             ${
               showSave
                 ? `<button class="dialog-btn save-btn" data-action="save">
-                     <i class="bi bi-check-circle"></i>
                      <span>${saveLabel}</span>
                    </button>`
                 : ""
@@ -229,8 +226,8 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       
       .save-confirm-dialog .dialog-buttons-wrapper {
         display: flex;
-        gap: 12px;
-        justify-content: flex-end;
+        gap: 16px;
+        justify-content: center;
         flex-wrap: wrap;
       }
 
@@ -345,6 +342,29 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
   const header = dialog.querySelector(".dialog-header");
   const iconWrapper = dialog.querySelector(".dialog-icon-wrapper");
   const icon = dialog.querySelector(".dialog-icon");
+  // --- 追加: メッセージ中央揃え・上下padding ---
+  const messageWrapper = dialog.querySelector(".dialog-message-wrapper");
+  if (messageWrapper) {
+    messageWrapper.style.display = "flex";
+    messageWrapper.style.justifyContent = "center";
+    messageWrapper.style.alignItems = "center";
+    messageWrapper.style.width = "100%";
+    messageWrapper.style.padding = "28px 28px 20px 28px";
+    messageWrapper.style.boxSizing = "border-box";
+  }
+  const messageEl = dialog.querySelector(".dialog-message");
+  if (messageEl) {
+    messageEl.style.textAlign = "center";
+    messageEl.style.width = "100%";
+    messageEl.style.margin = "0";
+  }
+  // --- 追加: dialog-footerの上下padding ---
+  const footer = dialog.querySelector(".dialog-footer");
+  if (footer) {
+    // 上paddingのみ0、左右下はそのまま
+    footer.style.padding = "0 28px 20px 28px";
+    footer.style.boxSizing = "border-box";
+  }
 
   // 各要素に確実にスタイルを適用
   if (dialogOverlay) {
@@ -430,13 +450,14 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       display: flex !important;
       align-items: center !important;
       gap: 8px !important;
-      padding: 12px 24px !important;
+      padding: 0 16px !important;
       border: none !important;
       border-radius: 12px !important;
-      font-size: 1rem !important;
+      font-size: 1.05rem !important;
       font-weight: 600 !important;
       cursor: pointer !important;
-      min-width: 100px !important;
+      min-width: 92px !important;
+      height: 48px !important;
       background: linear-gradient(135deg, #dc3545 0%, #b91c1c 100%) !important;
       color: #ffffff !important;
       border: 1px solid rgba(220, 53, 69, 0.3) !important;
@@ -465,13 +486,14 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       display: flex !important;
       align-items: center !important;
       gap: 8px !important;
-      padding: 12px 24px !important;
+      padding: 0 16px !important;
       border: none !important;
       border-radius: 12px !important;
-      font-size: 1rem !important;
+      font-size: 1.05rem !important;
       font-weight: 600 !important;
       cursor: pointer !important;
-      min-width: 100px !important;
+      min-width: 92px !important;
+      height: 48px !important;
       background: linear-gradient(135deg, #4a5568 0%, #374151 100%) !important;
       color: #ffffff !important;
       border: 1px solid rgba(74, 85, 104, 0.3) !important;
@@ -500,13 +522,14 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       display: flex !important;
       align-items: center !important;
       gap: 8px !important;
-      padding: 12px 24px !important;
+      padding: 0 16px !important;
       border: none !important;
       border-radius: 12px !important;
-      font-size: 1rem !important;
+      font-size: 1.05rem !important;
       font-weight: 600 !important;
       cursor: pointer !important;
-      min-width: 100px !important;
+      min-width: 92px !important;
+      height: 48px !important;
       background: linear-gradient(135deg, #00A31E 0%, #16a34a 100%) !important;
       color: #ffffff !important;
       border: 1px solid rgba(0, 163, 30, 0.3) !important;
@@ -633,8 +656,8 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
   if (saveButtonsWrapper) {
     saveButtonsWrapper.style.display = "flex";
     saveButtonsWrapper.style.flexDirection = "row";
-    saveButtonsWrapper.style.gap = "20px";
-    saveButtonsWrapper.style.justifyContent = "flex-end";
+    saveButtonsWrapper.style.gap = "16px";
+    saveButtonsWrapper.style.justifyContent = "center";
     saveButtonsWrapper.style.flexWrap = "nowrap";
     // モバイルのみ縦並び
     const styleTag = document.createElement("style");
@@ -642,12 +665,24 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
       @media (max-width: 480px) {
         .dialog-buttons-wrapper {
           flex-direction: column !important;
-          gap: 10px !important;
+          gap: 8px !important;
         }
       }
     `;
     document.head.appendChild(styleTag);
   }
+
+  // ボタン内spanを中央揃え
+  const allBtnSpans = dialog.querySelectorAll(".dialog-btn span");
+  allBtnSpans.forEach((span) => {
+    span.style.display = "block";
+    span.style.width = "100%";
+    span.style.textAlign = "center";
+    span.style.lineHeight = "1";
+    span.style.margin = "0 auto";
+    span.style.fontWeight = "600";
+    span.style.letterSpacing = "0.01em";
+  });
 };
 
 /* ━━━━━━━━━━ 汎用削除確認ダイアログ ━━━━━━━━━━ */
