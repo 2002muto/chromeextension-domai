@@ -317,6 +317,7 @@
  * explanatory text becomes visible.  This mirrors the behaviour of
  * MEMO/PROMPT pages.
  */
+
 .memo-footer .nav-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -332,10 +333,6 @@
 .memo-footer .nav-btn:disabled:hover {
   transform: none;
   background: transparent;
-  width: 100px;
-  border-radius: 18px;
-  padding: 0;
-  justify-content: center;
 }
 
 /* アーカイブボタンが無効化された時のスタイル */
@@ -453,10 +450,8 @@
 .memo-footer .nav-btn.encrypt-btn:disabled:hover {
   transform: none;
   filter: grayscale(1);
-  width: 100px;
-  border-radius: 18px;
-  padding: 0;
-  justify-content: center;
+  width: 36px;
+  border-radius: 50%;
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover i {
