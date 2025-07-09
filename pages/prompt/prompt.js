@@ -2452,6 +2452,23 @@ function checkForUnsavedChanges(originalObj, isNew) {
   return false;
 }
 
+/* ───────────────────────────────────────
+  現在の編集内容が保存されていないか判定するヘルパー
+  ナビゲーション側からも呼び出せるようwindowに公開
+─────────────────────────────────────── */
+function hasUnsavedPromptChanges() {
+  const idx = getCurrentPromptIndex ? getCurrentPromptIndex() : -1;
+  const total = Array.isArray(prompts) ? prompts.length : 0;
+
+  const isNew = !window.editingOriginalPrompt && (idx === -1 || idx >= total);
+  const base = window.editingOriginalPrompt || (prompts ? prompts[idx] : null);
+
+  const result = checkForUnsavedChanges(base, isNew);
+  console.log("[CHECK UNSAVED GLOBAL]", { idx, total, isNew, hasChanges: result });
+  return result;
+}
+window.hasUnsavedPromptChanges = hasUnsavedPromptChanges;
+
 /*━━━━━━━━━━ 空のプロンプト判定機能 ━━━━━━━━━━*/
 function isEmptyPrompt(prompt) {
   return (
@@ -3160,6 +3177,7 @@ function updateExportButtonState() {
 // グローバルに公開してヘッダーナビから呼び出せるようにする
 window.renderList = renderList;
 window.checkForUnsavedChanges = checkForUnsavedChanges;
+window.hasUnsavedPromptChanges = hasUnsavedPromptChanges;
 window.saveAndGoBack = saveAndGoBack;
 window.discardAndGoBack = discardAndGoBack;
 window.prompts = prompts;

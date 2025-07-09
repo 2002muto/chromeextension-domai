@@ -444,24 +444,18 @@ document.addEventListener("DOMContentLoaded", function () {
       inPromptEdit,
     });
 
-    if (!inPromptEdit || typeof window.checkForUnsavedChanges !== "function") {
+    if (!inPromptEdit || typeof window.hasUnsavedPromptChanges !== "function") {
       return false; // 編集画面でなければ処理しない
     }
 
-    const idx = window.getCurrentPromptIndex ? window.getCurrentPromptIndex() : -1;
-    const total = Array.isArray(window.prompts) ? window.prompts.length : 0;
+    let hasChanges = false;
+    try {
+      hasChanges = window.hasUnsavedPromptChanges();
+    } catch (err) {
+      console.error("[NAV DEBUG] failed to check unsaved", err);
+    }
 
-    const isNew = !window.editingOriginalPrompt && (idx === -1 || idx >= total);
-    const base = window.editingOriginalPrompt || (window.prompts ? window.prompts[idx] : null);
-    const hasChanges = window.checkForUnsavedChanges(base, isNew);
-
-    console.log("[NAV DEBUG] unsaved check", {
-      idx,
-      total,
-      isNew,
-      baseExists: !!base,
-      hasChanges,
-    });
+    console.log("[NAV DEBUG] unsaved result", { hasChanges });
 
     if (!hasChanges) return false; // 変更がなければ処理しない
 
