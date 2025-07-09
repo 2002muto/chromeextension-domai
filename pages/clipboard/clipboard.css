@@ -310,15 +310,32 @@
 }
 
 /* フッターボタンの無効化スタイル */
+
+/*
+ * Disable state for footer buttons. Unlike the previous implementation
+ * pointer-events are kept so that hover animations work and the
+ * explanatory text becomes visible.  This mirrors the behaviour of
+ * MEMO/PROMPT pages.
+ */
 .memo-footer .nav-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  pointer-events: none;
+  /* allow hover events for tooltip animation */
+  pointer-events: auto;
 }
 
+
+/*
+ * When hovering a disabled button still expand so that the title text
+ * is visible. This matches the user experience on other pages.
+ */
 .memo-footer .nav-btn:disabled:hover {
   transform: none;
   background: transparent;
+  width: 100px;
+  border-radius: 18px;
+  padding: 0;
+  justify-content: center;
 }
 
 /* アーカイブボタンが無効化された時のスタイル */
@@ -436,8 +453,10 @@
 .memo-footer .nav-btn.encrypt-btn:disabled:hover {
   transform: none;
   filter: grayscale(1);
-  width: 36px;
-  border-radius: 50%;
+  width: 100px;
+  border-radius: 18px;
+  padding: 0;
+  justify-content: center;
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover i {
