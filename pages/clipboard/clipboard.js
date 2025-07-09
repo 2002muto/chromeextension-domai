@@ -295,6 +295,8 @@ async function renderClipboardView() {
       }
     }, 100);
 
+    // メイン画面のfooterを設定（Empty Stateの場合）
+    renderMainFooter();
     return; // ここで処理を終了
   }
 
@@ -587,6 +589,9 @@ async function renderClipboardView() {
       autoResize();
     }, 50); // DOM追加後に実行（少し長めの遅延で確実に実行）
   });
+
+  // メイン画面のfooterを設定
+  renderMainFooter();
 
   console.log("renderClipboardView: end");
 }
@@ -1388,3 +1393,50 @@ function testArchiveAnimation() {
 }
 
 // ブラウザコンソールで実行: testArchiveAnimation()
+
+// メイン画面用のfooter設定関数
+function renderMainFooter() {
+  console.log("renderMainFooter: start");
+  const footer = document.querySelector(".memo-footer");
+  if (!footer) {
+    console.error(".memo-footer要素が見つかりません");
+    return;
+  }
+
+  // アーカイブ状態をクリア
+  footer.classList.remove("archive");
+
+  // メイン画面用のfooterを設定
+  footer.innerHTML = `
+    <button class="nav-btn archive-toggle" id="btn-archive-toggle">
+      <i class="bi bi-archive"></i>
+      <span class="nav-text">アーカイブ</span>
+    </button>
+    <button class="nav-btn encrypt-btn">
+      <i class="bi bi-download"></i>
+      <span class="nav-text">エクスポート</span>
+    </button>
+  `;
+
+  footer.style.display = "flex";
+
+  // アーカイブボタンのイベントリスナー
+  const archiveToggleBtn = footer.querySelector("#btn-archive-toggle");
+  if (archiveToggleBtn) {
+    archiveToggleBtn.addEventListener("click", () => renderArchiveNav("clip"));
+    console.log(
+      "メイン画面: アーカイブトグルボタンにイベントリスナーを設定しました"
+    );
+  }
+
+  // エクスポートボタンのイベントリスナー
+  const exportBtn = footer.querySelector(".encrypt-btn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportAllClips);
+    console.log(
+      "メイン画面: エクスポートボタンにイベントリスナーを設定しました"
+    );
+  }
+
+  console.log("renderMainFooter: end");
+}
