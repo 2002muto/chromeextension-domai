@@ -429,8 +429,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // 全てのナビゲーションボタンを取得
-  const navButtons = document.querySelectorAll(".nav-btn");
+  // ヘッダー要素を取得（動的に生成されたボタンにも対応するため）
+  const header = document.querySelector("header");
 
   // PROMPT編集画面から他ページへ遷移する際の未保存チェック
   function confirmPromptNavigation(e, button) {
@@ -444,13 +444,26 @@ document.addEventListener("DOMContentLoaded", function () {
       inPromptEdit,
     });
 
-    if (!inPromptEdit || typeof window.hasUnsavedPromptChanges !== "function") {
+    if (!inPromptEdit) {
       return false; // 編集画面でなければ処理しない
     }
 
+    // 状態のスナップショットと現在の入力内容を比較して未保存変更を確認
     let hasChanges = false;
     try {
-      hasChanges = window.hasUnsavedPromptChanges();
+      const idx = window.getCurrentPromptIndex
+        ? window.getCurrentPromptIndex()
+        : -1;
+      const total = Array.isArray(window.prompts) ? window.prompts.length : 0;
+      const isNew =
+        !window.editingOriginalPrompt && (idx === -1 || idx >= total);
+      const base =
+        window.editingOriginalPrompt ||
+        (window.prompts && window.prompts[idx] ? window.prompts[idx] : null);
+
+      if (typeof window.checkForUnsavedChanges === "function") {
+        hasChanges = window.checkForUnsavedChanges(base, isNew);
+      }
     } catch (err) {
       console.error("[NAV DEBUG] failed to check unsaved", err);
     }
@@ -490,9 +503,12 @@ document.addEventListener("DOMContentLoaded", function () {
     return true;
   }
 
-  navButtons.forEach((button) => {
-    // クリック時のイベントリスナーを追加
-    button.addEventListener("click", function (e) {
+  if (header) {
+    // ヘッダー全体でクリックを監視し、ボタンを判定する
+    header.addEventListener("click", function (e) {
+      const button = e.target.closest(".nav-btn");
+      if (!button) return;
+
       console.log("[NAV CLICK]", button.id, "clicked");
       // PROMPT編集中の場合は未保存チェック
       if (confirmPromptNavigation(e, button)) return;
@@ -509,13 +525,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // 現在のページへのリンクの場合はページ遷移を防ぐ
-      if (this.classList.contains("active")) {
+      if (button.classList.contains("active")) {
         e.preventDefault();
 
         // アクティブなボタンがクリックされた場合、一覧画面に戻る
         const currentPage = window.location.pathname;
 
-        if (currentPage.includes("/memo/") && this.id === "btn-memo") {
+        if (currentPage.includes("/memo/") && button.id === "btn-memo") {
           // MEMOページでMEMOボタンがクリックされた場合
           // 保存された状態を取得
           const savedState = PageStateManager.getPageState("memo");
@@ -629,7 +645,7 @@ document.addEventListener("DOMContentLoaded", function () {
           restoreMemoPageState(savedState);
         } else if (
           currentPage.includes("/prompt/") &&
-          this.id === "btn-prompt"
+          button.id === "btn-prompt"
         ) {
           // PROMPTページでPROMPTボタンがクリックされた場合
           console.log("PROMPTヘッダーアイコンがクリックされました");
@@ -717,18 +733,18 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else if (
           currentPage.includes("/clipboard/") &&
-          this.id === "btn-clipboard"
+          button.id === "btn-clipboard"
         ) {
           // CLIPBOARDページでCLIPBOARDボタンがクリックされた場合
           const savedState = PageStateManager.getPageState("clipboard");
           restoreClipboardPageState(savedState);
-        } else if (currentPage.includes("/ai/") && this.id === "btn-ai") {
+        } else if (currentPage.includes("/ai/") && button.id === "btn-ai") {
           // AIページでAIボタンがクリックされた場合
           const savedState = PageStateManager.getPageState("ai");
           restoreAIPageState(savedState);
         } else if (
           currentPage.includes("/setting/") &&
-          this.id === "btn-setting"
+          button.id === "btn-setting"
         ) {
           // 設定ページで設定ボタンがクリックされた場合
           const savedState = PageStateManager.getPageState("setting");
@@ -841,7 +857,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             console.error(
                               "[NAV] 既存プロンプトが見つかりません"
                             );
-                            window.location.href = this.href;
+                            window.location.href = button.getAttribute("href");
                             return;
                           }
                           obj.title = titleInput.value.trim() || "(無題)";
@@ -894,12 +910,12 @@ document.addEventListener("DOMContentLoaded", function () {
                       // フォームヘッダーを削除
                       document.querySelector(".form-header")?.remove();
                       // ページ遷移を実行
-                      window.location.href = this.href;
+                      window.location.href = button.getAttribute("href");
                     } catch (error) {
                       console.error("[NAV] 保存中にエラーが発生:", error);
                       // エラーが発生してもページ遷移は実行
                       document.querySelector(".form-header")?.remove();
-                      window.location.href = this.href;
+                      window.location.href = button.getAttribute("href");
                     }
                   },
                   onDiscard: () => {
@@ -908,7 +924,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // フォームヘッダーを削除
                     document.querySelector(".form-header")?.remove();
                     // ページ遷移を実行
-                    window.location.href = this.href;
+                    window.location.href = button.getAttribute("href");
                   },
                 });
                 return; // ここで処理を終了
@@ -920,7 +936,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (confirmResult) {
                   console.log("[NAV] Fallback: 変更を破棄してページ遷移");
                   document.querySelector(".form-header")?.remove();
-                  window.location.href = this.href;
+                  window.location.href = button.getAttribute("href");
                 } else {
                   console.log(
                     "[NAV] Fallback: ユーザーがページ遷移をキャンセル"
@@ -1020,10 +1036,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
 
                         // ページ遷移を実行
-                        window.location.href = this.href;
+                        window.location.href = button.getAttribute("href");
                       } else {
                         // ページ遷移を実行
-                        window.location.href = this.href;
+                        window.location.href = button.getAttribute("href");
                       }
                     },
                     onDiscard: () => {
@@ -1032,7 +1048,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         "[MEMO NAV] 変更を破棄してページ遷移しました"
                       );
                       // ページ遷移を実行
-                      window.location.href = this.href;
+                      window.location.href = button.getAttribute("href");
                     },
                   });
                   return; // ここで処理を終了
@@ -1044,20 +1060,20 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // 展開状態のクラスを追加
-      this.classList.add("expanded");
+      button.classList.add("expanded");
 
       // data-click-tooltip属性がある場合（AI専用メッセージ）
-      if (this.hasAttribute("data-click-tooltip")) {
-        this.classList.add("clicked");
+      if (button.hasAttribute("data-click-tooltip")) {
+        button.classList.add("clicked");
       }
 
       // 2秒後にクラスを削除
       setTimeout(() => {
-        this.classList.remove("expanded");
-        this.classList.remove("clicked");
+        button.classList.remove("expanded");
+        button.classList.remove("clicked");
       }, 2000);
     });
-  });
+  }
 });
 
 // ━━━━━━━━━━ ヘッダーナビゲーションのドラッグ＆ドロップ機能 ━━━━━━━━━━
