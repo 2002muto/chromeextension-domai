@@ -453,16 +453,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const idx = window.getCurrentPromptIndex
       ? window.getCurrentPromptIndex()
-      : null;
-    const total = window.prompts ? window.prompts.length : 0;
-    const isNew = idx === -1 || idx === null || idx >= total;
-    const obj = !isNew
-      ? window.editingOriginalPrompt || (idx !== null && window.prompts
-          ? window.prompts[idx]
-          : null)
-      : null;
+      : -1;
+    const total = Array.isArray(window.prompts) ? window.prompts.length : 0;
+    const isNew = idx === -1 || idx >= total || window.editingOriginalPrompt === null;
+    const obj = isNew
+      ? null
+      : window.editingOriginalPrompt || (window.prompts ? window.prompts[idx] : null);
 
-    console.log("[NAV DEBUG]", {
+    console.log("[NAV DEBUG] state", {
       idx,
       total,
       isNew,
@@ -508,10 +506,11 @@ document.addEventListener("DOMContentLoaded", function () {
   navButtons.forEach((button) => {
     // クリック時のイベントリスナーを追加
     button.addEventListener("click", function (e) {
-      // すでにアクティブなページなら何もしない
-      if (button.classList.contains("active")) return;
       // PROMPT編集中の場合は未保存チェック
       if (confirmPromptNavigation(e, button)) return;
+
+      // すでにアクティブなページなら何もしない
+      if (button.classList.contains("active")) return;
 
       // ドラッグ中の場合はクリックイベントを無効化
       if (window.isDraggingNavigation) {
