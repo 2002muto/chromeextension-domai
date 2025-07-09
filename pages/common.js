@@ -481,8 +481,11 @@ document.addEventListener("DOMContentLoaded", function () {
         title: "変更を保存しますか？",
         message:
           "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
-        onSave: () => {
-          window.saveAndGoBack && window.saveAndGoBack();
+        onSave: async () => {
+          // 保存が完了してから遷移する
+          if (window.saveAndGoBack) {
+            await window.saveAndGoBack();
+          }
           window.location.href = button.getAttribute("href");
         },
         onDiscard: () => {
