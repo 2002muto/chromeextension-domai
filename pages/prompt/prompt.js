@@ -1102,7 +1102,7 @@ async function renderArchiveView() {
       // 確認ダイアログを表示
       window.AppUtils.showSaveConfirmDialog({
         title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #D93544; font-weight: bold;">この操作は取り消せません。</span>`,
+        message: `${confirmMessage}<br><span style="color: #FF0000; font-weight: bold;">この操作は取り消せません。</span>`,
         discardLabel: "削除",
         cancelLabel: "キャンセル",
         discardColor: "#D93544",
@@ -1629,10 +1629,17 @@ function renderEdit(idx, isNew = false) {
       console.log("削除ボタンがクリックされました");
 
       // おしゃれな削除確認ポップアップを表示
+      const slider = document.querySelector('.size-slider') || document.querySelector('#sizeSlider');
+      const removeTitle =
+        slider && parseInt(slider.value) === parseInt(slider.min)
+          ? "プロンプトフィールドを<br>削除しますか？"
+          : "プロンプトフィールドを削除しますか？";
+      console.log('削除ダイアログタイトル:', removeTitle, 'slider', slider?.value);
+
       window.AppUtils.showSaveConfirmDialog({
-        title: "プロンプトフィールドを削除しますか？",
+        title: removeTitle,
         message:
-          "この操作は元に戻すことができません。<br><span style='color: #D93544; font-weight: bold;'>この操作は取り消せません。</span>",
+          "この操作は元に戻すことができません。<br><span style='color: #FF0000; font-weight: bold;'>この操作は取り消せません。</span>",
         discardLabel: "削除",
         cancelLabel: "キャンセル",
         discardColor: "#D93544",
@@ -2862,7 +2869,7 @@ function renderArchiveFooter() {
       // 確認ダイアログを表示
       window.AppUtils.showSaveConfirmDialog({
         title: "削除の確認",
-        message: `${confirmMessage}<br><span style="color: #D93544; font-weight: bold;">この操作は取り消せません。</span>`,
+        message: `${confirmMessage}<br><span style="color: #FF0000; font-weight: bold;">この操作は取り消せません。</span>`,
         discardLabel: "削除",
         cancelLabel: "キャンセル",
         discardColor: "#D93544",
