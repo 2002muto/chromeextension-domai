@@ -452,28 +452,39 @@ document.addEventListener("DOMContentLoaded", function () {
         const obj = idx !== -1 && window.prompts ? window.prompts[idx] : null;
         const hasChanges = window.checkForUnsavedChanges(obj, isNew);
 
-        if (
-          hasChanges &&
-          window.AppUtils &&
-          window.AppUtils.showSaveConfirmDialog
-        ) {
+        console.log("[NAV] PROMPT編集中", { idx, isNew, hasChanges, obj });
+
+        if (hasChanges) {
           e.preventDefault();
           e.stopPropagation();
-          window.AppUtils.showSaveConfirmDialog({
-            title: "変更を保存しますか？",
-            message:
-              "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
-            onSave: () => {
-              window.saveAndGoBack && window.saveAndGoBack();
-              // ページ遷移
+          if (
+            window.AppUtils &&
+            window.AppUtils.showSaveConfirmDialog
+          ) {
+            window.AppUtils.showSaveConfirmDialog({
+              title: "変更を保存しますか？",
+              message:
+                "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+              onSave: () => {
+                window.saveAndGoBack && window.saveAndGoBack();
+                window.location.href = button.getAttribute("href");
+              },
+              onDiscard: () => {
+                window.discardAndGoBack && window.discardAndGoBack();
+                window.location.href = button.getAttribute("href");
+              },
+            });
+          } else {
+            const confirmResult = confirm(
+              "プロンプト内容に変更があります。保存せずに移動しますか？"
+            );
+            if (confirmResult) {
+              console.log("[NAV] Fallback: 変更を破棄してページ遷移");
               window.location.href = button.getAttribute("href");
-            },
-            onDiscard: () => {
-              window.discardAndGoBack && window.discardAndGoBack();
-              // ページ遷移
-              window.location.href = button.getAttribute("href");
-            },
-          });
+            } else {
+              console.log("[NAV] Fallback: ユーザーがページ遷移をキャンセル");
+            }
+          }
           return false;
         }
       }
