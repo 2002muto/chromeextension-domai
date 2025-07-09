@@ -3132,3 +3132,48 @@ window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
 // handleScreenTransition を他のスクリプトから利用できるように公開
 window.handleScreenTransition = handleScreenTransition;
+
+// ナビゲーション時の保存確認を共通化
+window.confirmPromptNavigation = function (href) {
+  const idx = getCurrentPromptIndex ? getCurrentPromptIndex() : -1;
+  const obj = idx !== -1 && prompts ? prompts[idx] : null;
+  const isNew = window.originalPromptData === null || !obj || idx === -1;
+  const original =
+    window.originalPromptData && !isNew ? window.originalPromptData : obj;
+  const hasChanges =
+    typeof checkForUnsavedChanges === "function" &&
+    checkForUnsavedChanges(original, isNew);
+
+  console.log("[confirmPromptNavigation]", {
+    href,
+    idx,
+    isNew,
+    hasChanges,
+    original,
+  });
+
+  if (!hasChanges) return false; // 変更なし
+
+  if (window.AppUtils?.showSaveConfirmDialog) {
+    window.AppUtils.showSaveConfirmDialog({
+      title: "変更を保存しますか？",
+      message:
+        "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+      onSave: async () => {
+        if (window.saveAndGoBack) await window.saveAndGoBack();
+        window.location.href = href;
+      },
+      onDiscard: () => {
+        window.discardAndGoBack && window.discardAndGoBack();
+        window.location.href = href;
+      },
+    });
+  } else {
+    const confirmResult = confirm(
+      "プロンプト内容に変更があります。保存せずに移動しますか？"
+    );
+    if (confirmResult) window.location.href = href;
+  }
+
+  return true;
+};

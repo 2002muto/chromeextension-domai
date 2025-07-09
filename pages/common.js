@@ -444,59 +444,12 @@ document.addEventListener("DOMContentLoaded", function () {
           .querySelector(".memo-content")
           ?.classList.contains("edit-mode") &&
         window.location.pathname.includes("/prompt/");
-      if (isPromptEdit && typeof window.checkForUnsavedChanges === "function") {
-        const idx = window.getCurrentPromptIndex
-          ? window.getCurrentPromptIndex()
-          : null;
-        const obj =
-          idx !== null && window.prompts ? window.prompts[idx] : null;
-        const isNewPrompt =
-          window.originalPromptData === null || !obj || idx === -1;
-        const original =
-          window.originalPromptData && !isNewPrompt
-            ? window.originalPromptData
-            : obj;
-        const hasChanges = window.checkForUnsavedChanges(original, isNewPrompt);
-
-        console.log("[NAV] PROMPT編集中", {
-          idx,
-          isNew: isNewPrompt,
-          hasChanges,
-          obj,
-          original,
-        });
-
-        if (hasChanges) {
+      if (isPromptEdit && typeof window.confirmPromptNavigation === "function") {
+        const href = button.getAttribute("href");
+        const handled = window.confirmPromptNavigation(href);
+        if (handled) {
           e.preventDefault();
           e.stopPropagation();
-          if (
-            window.AppUtils &&
-            window.AppUtils.showSaveConfirmDialog
-          ) {
-            window.AppUtils.showSaveConfirmDialog({
-              title: "変更を保存しますか？",
-              message:
-                "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
-              onSave: () => {
-                window.saveAndGoBack && window.saveAndGoBack();
-                window.location.href = button.getAttribute("href");
-              },
-              onDiscard: () => {
-                window.discardAndGoBack && window.discardAndGoBack();
-                window.location.href = button.getAttribute("href");
-              },
-            });
-          } else {
-            const confirmResult = confirm(
-              "プロンプト内容に変更があります。保存せずに移動しますか？"
-            );
-            if (confirmResult) {
-              console.log("[NAV] Fallback: 変更を破棄してページ遷移");
-              window.location.href = button.getAttribute("href");
-            } else {
-              console.log("[NAV] Fallback: ユーザーがページ遷移をキャンセル");
-            }
-          }
           return false;
         }
       }
