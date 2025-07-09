@@ -2374,22 +2374,32 @@ function checkForUnsavedChanges(originalObj, isNew) {
     on: w.querySelector(".field-toggle")?.checked || false,
   }));
 
-  // 新規作成の場合
-  if (isNew) {
-    // タイトルまたはフィールドに内容があれば変更あり
-    return (
-      currentTitle !== "" || currentFields.some((f) => f.text.trim() !== "")
-    );
+  console.log("[CHECK UNSAVED]", {
+    isNew,
+    hasOriginal: !!originalObj,
+    currentTitle,
+    fieldCount: currentFields.length,
+  });
+
+  // 新規作成、または比較対象がない場合
+  if (isNew || !originalObj) {
+    const result =
+      currentTitle !== "" ||
+      currentFields.some((f) => f.text.trim() !== "");
+    console.log("[CHECK UNSAVED] new or no original ->", result);
+    return result;
   }
 
   // 既存編集の場合
   // タイトルの変更をチェック
   if (currentTitle !== (originalObj.title || "")) {
+    console.log("[CHECK UNSAVED] title changed");
     return true;
   }
 
   // フィールド数の変更をチェック
   if (currentFields.length !== originalObj.fields.length) {
+    console.log("[CHECK UNSAVED] field length changed");
     return true;
   }
 
@@ -2403,10 +2413,12 @@ function checkForUnsavedChanges(originalObj, isNew) {
       current.text !== original.text ||
       current.on !== original.on
     ) {
+      console.log("[CHECK UNSAVED] field", i, "changed");
       return true;
     }
   }
 
+  console.log("[CHECK UNSAVED] no changes");
   return false;
 }
 

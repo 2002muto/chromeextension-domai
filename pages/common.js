@@ -439,17 +439,20 @@ document.addEventListener("DOMContentLoaded", function () {
       if (button.classList.contains("active")) return;
 
       // PROMPT編集中の未保存チェック
+      // PROMPTページで編集モードかどうかを判定
+      const promptHeader = document.querySelector(".form-header");
       const isPromptEdit =
-        document
-          .querySelector(".memo-content")
-          ?.classList.contains("edit-mode") &&
-        window.location.pathname.includes("/prompt/");
+        !!promptHeader && window.location.pathname.includes("/prompt/");
       if (isPromptEdit && typeof window.checkForUnsavedChanges === "function") {
         const idx = window.getCurrentPromptIndex
           ? window.getCurrentPromptIndex()
           : null;
-        const isNew = idx === -1;
-        const obj = idx !== -1 && window.prompts ? window.prompts[idx] : null;
+        const total = window.prompts ? window.prompts.length : 0;
+        const isNew = idx === -1 || idx === null || idx >= total;
+        const obj = !isNew && idx !== null && window.prompts
+          ? window.prompts[idx]
+          : null;
+        console.log("[NAV DEBUG]", { idx, total, isNew, objExists: !!obj });
         const hasChanges = window.checkForUnsavedChanges(obj, isNew);
 
         if (
@@ -474,6 +477,21 @@ document.addEventListener("DOMContentLoaded", function () {
               window.location.href = button.getAttribute("href");
             },
           });
+          return false;
+        } else if (hasChanges) {
+          // AppUtilsがない場合はconfirmで確認
+          e.preventDefault();
+          e.stopPropagation();
+          const ok = confirm(
+            "編集内容に変更があります。保存せずに移動しますか？"
+          );
+          if (ok) {
+            window.discardAndGoBack && window.discardAndGoBack();
+          }
+          // OKなら遷移、キャンセルなら何もしない
+          if (ok) {
+            window.location.href = button.getAttribute("href");
+          }
           return false;
         }
       }
