@@ -1169,6 +1169,10 @@ function renderEdit(idx, isNew = false) {
     console.log("[renderEdit] 既存オブジェクトを編集:", obj);
   }
 
+  // 編集開始時点のデータを保持してナビゲーション確認に利用
+  window.originalPromptData = isNew ? null : structuredClone(obj);
+  console.log("[renderEdit] originalPromptData:", window.originalPromptData);
+
   // グローバルに最新のpromptsを設定
   window.prompts = prompts;
 

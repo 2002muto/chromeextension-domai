@@ -450,9 +450,16 @@ document.addEventListener("DOMContentLoaded", function () {
           : null;
         const isNew = idx === -1;
         const obj = idx !== -1 && window.prompts ? window.prompts[idx] : null;
-        const hasChanges = window.checkForUnsavedChanges(obj, isNew);
+        const original = window.originalPromptData || obj;
+        const hasChanges = window.checkForUnsavedChanges(original, isNew);
 
-        console.log("[NAV] PROMPT編集中", { idx, isNew, hasChanges, obj });
+        console.log("[NAV] PROMPT編集中", {
+          idx,
+          isNew,
+          hasChanges,
+          obj,
+          original,
+        });
 
         if (hasChanges) {
           e.preventDefault();
