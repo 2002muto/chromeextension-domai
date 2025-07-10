@@ -432,6 +432,46 @@ document.addEventListener("DOMContentLoaded", function () {
   // ヘッダー要素を取得（動的に生成されたボタンにも対応するため）
   const header = document.querySelector("header");
 
+  // Debug: hoverでテキスト表示アニメーションを制御
+  if (header) {
+    const activeBtn = header.querySelector(".nav-btn.active");
+    if (activeBtn) {
+      console.log("[NAV DEBUG] active button at load:", activeBtn.id);
+    }
+
+    header.querySelectorAll(".nav-btn").forEach((btn) => {
+      const textSpan = btn.querySelector(".nav-text");
+      if (!textSpan) return;
+
+      btn.addEventListener("mouseenter", () => {
+        const state = btn.classList.contains("active") ? "active" : "inactive";
+        const textWidth = textSpan.scrollWidth;
+        btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+        btn.classList.add("show-text");
+        console.log("[NAV DEBUG] hover start:", btn.id, state, {
+          btnWidth: btn.offsetWidth,
+          textWidth,
+        });
+      });
+
+      btn.addEventListener("mouseleave", () => {
+        btn.classList.remove("show-text");
+        btn.style.removeProperty("--nav-text-max");
+        console.log("[NAV DEBUG] hover end:", btn.id, {
+          btnWidth: btn.offsetWidth,
+        });
+      });
+
+      textSpan.addEventListener("transitionend", (e) => {
+        if (e.propertyName === "max-width") {
+          console.log("[NAV DEBUG] text shown:", btn.id, {
+            finalWidth: textSpan.offsetWidth,
+          });
+        }
+      });
+    });
+  }
+
   // PROMPT編集画面から他ページへ遷移する際の未保存チェック
   function confirmPromptNavigation(e, button) {
     const editContent = document.querySelector(".memo-content.edit-mode");
