@@ -559,6 +559,13 @@ async function renderHistory() {
   if (history.length === 0) {
     console.log(`[iframe] 履歴が空のため、空の状態を表示`);
     searchHistoryEl.innerHTML = `
+      <!-- 左側のアイコン群 -->
+      <div class="footer-icons">
+        <i class="bi bi-house footer-icon" title="ホーム"></i>
+        <i class="bi bi-arrow-clockwise footer-icon" title="更新"></i>
+        <i class="bi bi-pc-display-horizontal footer-icon" title="デスクトップ"></i>
+        <i class="bi bi-phone footer-icon" title="モバイル"></i>
+      </div>
       <div class="history-container">
         <span class="text-muted">検索履歴はありません</span>
       </div>
@@ -569,14 +576,18 @@ async function renderHistory() {
     return;
   }
 
-  // 基本構造を作成
+  // 基本構造を作成（横一列レイアウト）
   console.log(`[iframe] 履歴表示の基本構造を作成`);
   searchHistoryEl.innerHTML = `
+    <!-- 左側のアイコン群 -->
+    <div class="footer-icons">
+      <i class="bi bi-house footer-icon" title="ホーム"></i>
+      <i class="bi bi-arrow-clockwise footer-icon" title="更新"></i>
+      <i class="bi bi-pc-display-horizontal footer-icon" title="デスクトップ"></i>
+      <i class="bi bi-phone footer-icon" title="モバイル"></i>
+    </div>
     <div class="history-container">
       <div class="search-history">
-        <div class="history-header">
-          <i class="bi bi-clock-history"></i> 検索履歴
-        </div>
         <div id="favicon-row"></div>
       </div>
     </div>
@@ -594,6 +605,12 @@ async function renderHistory() {
   console.log(`[iframe] favicon-row要素:`, row);
 
   // 全履歴を横スクロールで無制限に表示
+  // まずラベルを追加
+  const label = document.createElement("span");
+  label.className = "history-label";
+  label.innerHTML = '<i class="bi bi-clock-history"></i> 検索履歴';
+  row.appendChild(label);
+
   for (let i = 0; i < history.length; i++) {
     const h = history[i];
     console.log(`[iframe] 履歴アイコン${i}を作成:`, h);
