@@ -166,12 +166,13 @@ body {
 
 /* テキストは通常時は非表示 */
 .memo-footer .nav-btn .nav-text {
-  position: absolute;
+  position: relative; /* absoluteからrelativeに変更してホバー時と統一 */
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
   opacity: 0;
-  transform: translateX(10px) scale(0.8);
+  display: none; /* 初期状態では完全に非表示 */
+  margin-left: 0; /* 初期状態では間隔なし */
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   white-space: nowrap;
 }
@@ -185,22 +186,26 @@ body {
 .memo-footer .nav-btn:hover {
   width: 100px;
   border-radius: 18px;
-  padding: 0;
-  justify-content: center;
+  padding: 0 8px; /* 左右にパディングを追加 */
+  justify-content: flex-start; /* 左寄せに変更 */
   animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* ホバー時のアイコンを非表示に */
+/* ホバー時のアイコンを左端に配置（非表示にしない） */
 .memo-footer .nav-btn:hover i {
-  display: none;
+  display: block; /* アイコンを表示したまま */
+  margin-left: 6px; /* アイコンを左端から少し離す */
+  flex-shrink: 0; /* アイコンのサイズを固定 */
 }
 
-/* ホバー時のテキストを中央配置 */
+/* ホバー時のテキストをアイコンの右隣に配置 */
 .memo-footer .nav-btn:hover .nav-text {
+  display: block; /* テキストを表示 */
   opacity: 1;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative; /* absoluteからrelativeに変更 */
+  left: auto; /* leftの指定を削除 */
+  transform: none; /* transformを削除 */
+  margin-left: 8px; /* アイコンとの間隔 */
   transition: all 0.3s ease;
 }
 
@@ -233,19 +238,25 @@ body {
 .memo-footer .nav-btn.encrypt-btn:disabled:hover {
   transform: none;
   filter: grayscale(1);
-  width: 36px;
-  border-radius: 50%;
+  width: 100px; /* 展開状態に変更 */
+  border-radius: 18px; /* 角丸に変更 */
+  padding: 0 8px; /* 左右にパディングを追加 */
+  justify-content: flex-start; /* 左寄せに変更 */
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover i {
-  display: none;
+  display: block; /* アイコンを表示したまま */
+  margin-left: 6px; /* アイコンを左端から少し離す */
+  flex-shrink: 0; /* アイコンのサイズを固定 */
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
+  display: block; /* テキストを表示 */
   opacity: 1;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative; /* absoluteからrelativeに変更 */
+  left: auto; /* leftの指定を削除 */
+  transform: none; /* transformを削除 */
+  margin-left: 8px; /* アイコンとの間隔 */
   transition: all 0.3s ease;
 }
 .memo-footer .nav-btn.archive-toggle {

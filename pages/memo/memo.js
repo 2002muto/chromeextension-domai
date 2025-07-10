@@ -35,7 +35,7 @@ function handleOtherHeaderClick(e) {
   e.preventDefault(); // デフォルトのリンク動作を防ぐ
   e.stopPropagation(); // イベントの伝播を停止
   console.log(
-    "他のHeaderアイコンがクリックされました:",
+    "他のHeaderアイコンがクリックされました - ホバー時UI改善版:",
     e.target.closest("a").id
   );
 
@@ -112,7 +112,7 @@ function handleOtherHeaderClick(e) {
 function handleMemoHeaderClick(e) {
   e.preventDefault(); // デフォルトのリンク動作を防ぐ
   e.stopPropagation(); // イベントの伝播を停止
-  console.log("MEMOヘッダーアイコンがクリックされました");
+  console.log("MEMOヘッダーアイコンがクリックされました - ホバー時UI改善版");
 
   // デバッグ情報を追加
   const memoContent = document.querySelector(".memo-content");
@@ -2324,6 +2324,9 @@ document.addEventListener("DOMContentLoaded", restoreMemoState);
 
 // サイドパネルを開く機能
 document.addEventListener("DOMContentLoaded", () => {
+  console.log(
+    "[MEMO] ページ初期化完了 - ヘッダーホバー時UI改善版 v2（アイコンとテキスト表示修正）"
+  );
   const openSidePanelBtn = document.getElementById("open-side-panel");
   if (openSidePanelBtn) {
     openSidePanelBtn.addEventListener("click", async () => {

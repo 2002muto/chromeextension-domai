@@ -60,12 +60,13 @@ body::-webkit-scrollbar,
 
 /* テキストは通常時は非表示 */
 .nav-btn .nav-text {
-  position: absolute;
+  position: relative; /* absoluteからrelativeに変更してホバー時と統一 */
   font-size: 0.8rem; /* 11px→0.8rem に統一（小サイズ） */
   font-weight: bold;
   text-transform: uppercase;
   opacity: 0;
-  transform: translateX(10px) scale(0.8);
+  display: none; /* 初期状態では完全に非表示 */
+  margin-left: 0; /* 初期状態では間隔なし */
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   white-space: nowrap;
 }
@@ -91,12 +92,12 @@ body::-webkit-scrollbar,
 #btn-setting:hover:not(.active) {
   width: 100px; /* 120pxから100pxに縮小 */
   border-radius: 18px; /* 24pxから18pxに縮小 */
-  padding: 0;
-  justify-content: center;
+  padding: 0 8px; /* 左右にパディングを追加 */
+  justify-content: flex-start; /* 左寄せに変更 */
   animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* ホバー時のアイコンを非表示に */
+/* ホバー時のアイコンを左端に配置（非表示にしない） */
 #btn-memo-list:hover:not(.active) i,
 #btn-clipboard:hover:not(.active) i,
 #btn-prompt:hover:not(.active) i,
@@ -105,10 +106,12 @@ body::-webkit-scrollbar,
 #btn-qrcode:hover:not(.active) i,
 #btn-status:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
-  display: none;
+  display: block; /* アイコンを表示したまま */
+  margin-left: 6px; /* アイコンを左端から少し離す */
+  flex-shrink: 0; /* アイコンのサイズを固定 */
 }
 
-/* ホバー時のテキストを中央配置 */
+/* ホバー時のテキストをアイコンの右隣に配置 */
 #btn-memo-list:hover:not(.active) .nav-text,
 #btn-clipboard:hover:not(.active) .nav-text,
 #btn-prompt:hover:not(.active) .nav-text,
@@ -117,10 +120,12 @@ body::-webkit-scrollbar,
 #btn-qrcode:hover:not(.active) .nav-text,
 #btn-status:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
+  display: block; /* テキストを表示 */
   opacity: 1;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative; /* absoluteからrelativeに変更 */
+  left: auto; /* leftの指定を削除 */
+  transform: none; /* transformを削除 */
+  margin-left: 8px; /* アイコンとの間隔 */
   transition: all 0.3s ease;
 }
 
@@ -128,8 +133,8 @@ body::-webkit-scrollbar,
 .nav-btn.expanded {
   width: 100px; /* 120pxから100pxに縮小 */
   border-radius: 18px; /* 24pxから18pxに縮小 */
-  padding: 0;
-  justify-content: center;
+  padding: 0 8px; /* 左右にパディングを追加 */
+  justify-content: flex-start; /* 左寄せに変更 */
   transform: scaleX(1);
   animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
@@ -158,37 +163,45 @@ body::-webkit-scrollbar,
   }
 }
 
-/* クリック時のみアイコンを完全に非表示 */
+/* クリック時のアイコンを左端に配置（非表示にしない） */
 .nav-btn.expanded i {
-  display: none;
+  display: block; /* アイコンを表示したまま */
+  margin-left: 6px; /* アイコンを左端から少し離す */
+  flex-shrink: 0; /* アイコンのサイズを固定 */
 }
 
 .nav-btn.expanded .nav-text {
+  display: block; /* テキストを表示 */
   opacity: 1;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative; /* absoluteからrelativeに変更 */
+  left: auto; /* leftの指定を削除 */
+  transform: none; /* transformを削除 */
+  margin-left: 8px; /* アイコンとの間隔 */
   transition: all 0.3s ease;
 }
 
-/* ★ アクティブ状態：テキストのみ表示 */
+/* ★ アクティブ状態：アイコンとテキストを並べて表示 */
 .nav-btn.active {
   width: 100px; /* 120pxから100pxに縮小 */
   border-radius: 18px; /* 24pxから18pxに縮小 */
-  padding: 0;
-  justify-content: center;
+  padding: 0 8px; /* 左右にパディングを追加 */
+  justify-content: flex-start; /* 左寄せに変更 */
 }
 
-/* アクティブ状態のアイコンも完全に非表示 */
+/* アクティブ状態のアイコンを左端に配置（非表示にしない） */
 .nav-btn.active i {
-  display: none;
+  display: block; /* アイコンを表示したまま */
+  margin-left: 6px; /* アイコンを左端から少し離す */
+  flex-shrink: 0; /* アイコンのサイズを固定 */
 }
 
 .nav-btn.active .nav-text {
+  display: block; /* テキストを表示 */
   opacity: 1;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative; /* absoluteからrelativeに変更 */
+  left: auto; /* leftの指定を削除 */
+  transform: none; /* transformを削除 */
+  margin-left: 8px; /* アイコンとの間隔 */
 }
 
 /* ホバー時の❌ボタン表示（一時的に無効化） */
@@ -372,140 +385,13 @@ main {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.nav-btn:hover .nav-text {
-  opacity: 1;
-  left: 50%;
-  transform: translateX(-50%);
-  position: absolute;
-  color: #fff !important;
-  z-index: 2;
-  transition: all 0.3s ease;
-}
+/* 古いホバー時のテキスト表示スタイル（削除済み） */
 
-/* ═══════════════════════════════════════
-   ヘッダーアイコンのみ表示の修正
-   ═══════════════════════════════════════ */
+/* 古いアイコンスタイル調整（削除済み） */
 
-/* テキストは完全に非表示 */
-.nav-btn .nav-text {
-  display: none !important;
-}
+/* 古いクリック時のスタイル（削除済み） */
 
-/* ボタンサイズをアイコン専用に調整 */
-.nav-btn {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50% !important;
-  transition: all 0.3s ease !important;
-}
-
-/* ホバー時の拡張動作を無効化 */
-.nav-btn:hover:not(.active) {
-  width: 40px !important;
-  border-radius: 50% !important;
-  animation: none !important;
-  transform: translateY(-2px) scale(1.05) !important;
-}
-
-/* 拡張状態を無効化 */
-.nav-btn.expanded {
-  width: 40px !important;
-  border-radius: 50% !important;
-  animation: none !important;
-}
-
-/* アクティブ状態も同じサイズ */
-.nav-btn.active {
-  width: 40px !important;
-  border-radius: 50% !important;
-}
-
-/* アイコンのスタイル調整 */
-.nav-btn i {
-  color: #bbb !important;
-  filter: grayscale(1) brightness(0.8);
-  transition: color 0.3s, filter 0.3s;
-  display: block !important;
-}
-
-/* アクティブなアイコンのみカラー */
-.nav-btn.active i {
-  color: #fff !important;
-  filter: none;
-}
-
-/* ホバー時のアイコン非表示を解除 */
-.nav-btn:hover:not(.active) i {
-  display: block !important;
-  color: #fff !important;
-  filter: none;
-}
-
-/* 拡張時のアイコン非表示を解除 */
-.nav-btn.expanded i {
-  display: block !important;
-}
-
-/* クリック時のツールチップを完全に無効化 */
-.nav-btn::before {
-  display: none !important;
-}
-
-.nav-btn.clicked::before {
-  display: none !important;
-}
-
-/* クリック時の展開効果を完全に無効化 */
-.nav-btn.clicked {
-  width: 40px !important;
-  border-radius: 50% !important;
-  animation: none !important;
-  transform: translateY(-2px) scale(1.05) !important;
-}
-
-/* クリック時もアイコンを表示し続ける */
-.nav-btn.clicked i {
-  display: block !important;
-  color: #fff !important;
-  filter: none;
-}
-
-/* クリック時のテキスト表示を無効化 */
-.nav-btn.clicked .nav-text {
-  display: none !important;
-}
-
-/* すべてのnav-btnアイコンを中央揃え */
-.nav-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* アイコンの縦位置を中央に */
-.nav-btn i {
-  vertical-align: middle !important;
-  line-height: 1 !important;
-  font-size: 1.4rem !important;
-}
-
-/* AIアイコンの個別補正をリセット */
-#btn-ai i {
-  position: relative !important;
-  top: 0 !important;
-}
-
-/* アクティブ・クリック時もアイコンを常に表示 */
-.nav-btn.active i,
-.nav-btn.clicked i {
-  display: block !important;
-}
-
-/* nav-btnの順序を明示的に統一 */
-/* ドラッグ＆ドロップ機能のため、orderプロパティを完全に無効化 */
-.nav-btn {
-  order: unset !important;
-}
+/* 古いアイコン中央揃えとレイアウト調整（削除済み） */
 
 .coming-soon-container {
   display: flex;
@@ -549,14 +435,7 @@ main {
   /* transition: all 0.2s ease !important; */
 }
 
-/* ドラッグ可能であることを示すカーソル - 無効化 */
-.nav-btn {
-  cursor: pointer !important; /* grab から pointer に変更 */
-  user-select: none !important; /* テキスト選択を無効化 */
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-}
+/* ドラッグ可能であることを示すカーソル - 削除済み */
 
 .nav-btn:active {
   cursor: pointer !important; /* grabbing から pointer に変更 */
@@ -615,14 +494,7 @@ main {
   }
 }
 
-/* リンク要素のドラッグを無効化 */
-.nav-btn {
-  -webkit-user-drag: none !important;
-  -khtml-user-drag: none !important;
-  -moz-user-drag: none !important;
-  -o-user-drag: none !important;
-  user-drag: none !important;
-}
+/* リンク要素のドラッグを無効化 - 削除済み */
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
