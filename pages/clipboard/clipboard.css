@@ -1148,3 +1148,80 @@
 }
 
 /* ドラッグオーバー時のハイライト（旧スタイル - 削除予定） */
+
+/* CLIPBOARDページのfooterアーカイブボタンはテキスト非表示 */
+.memo-footer .archive-toggle .nav-text {
+  display: none !important;
+}
+
+/* CLIPBOARDページのfooterボタンはhoverアニメーションを無効化 */
+.memo-footer .nav-btn:hover {
+  filter: none !important;
+  transform: none !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  width: 36px !important;
+}
+
+/* CLIPBOARDページのfooterバックアップボタンもhoverアニメーション・テキスト表示を無効化 */
+.memo-footer .encrypt-btn .nav-text {
+  display: none !important;
+}
+.memo-footer .encrypt-btn:hover {
+  filter: none !important;
+  transform: none !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  width: 36px !important;
+}
+
+/* CLIPBOARDページのfooterボタン：MEMO/PROMPTと同じレイアウトでhover時にテキスト表示、余白・角丸も統一（アニメーションなし） */
+.memo-footer .archive-toggle,
+.memo-footer .encrypt-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  padding: 0;
+  justify-content: center;
+  transition: none;
+}
+.memo-footer .archive-toggle:hover,
+.memo-footer .encrypt-btn:hover {
+  width: auto !important;
+  min-width: 0;
+  border-radius: 18px !important;
+  padding: 0 8px !important;
+  justify-content: flex-start !important;
+}
+.memo-footer .archive-toggle .nav-text,
+.memo-footer .encrypt-btn .nav-text {
+  display: none !important;
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
+  transition: none;
+}
+.memo-footer .archive-toggle:hover .nav-text,
+.memo-footer .encrypt-btn:hover .nav-text {
+  display: inline-block !important;
+  max-width: 200px;
+  margin-left: 8px;
+  opacity: 1;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  vertical-align: middle;
+  transition: none;
+}
+.memo-footer .archive-toggle i,
+.memo-footer .encrypt-btn i {
+  margin-left: 0;
+  transition: none;
+}
+.memo-footer .archive-toggle:hover i,
+.memo-footer .encrypt-btn:hover i {
+  margin-left: 6px;
+  transition: none;
+}
