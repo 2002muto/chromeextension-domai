@@ -81,7 +81,7 @@ body::-webkit-scrollbar,
   transform: translateY(-2px) scale(1.05);
 }
 
-/* ★ ホバー時の共通スタイル */
+/* ★ ホバー時の共通スタイル（最大幅を設定） */
 #btn-memo-list:hover:not(.active),
 #btn-clipboard:hover:not(.active),
 #btn-prompt:hover:not(.active),
@@ -90,11 +90,15 @@ body::-webkit-scrollbar,
 #btn-qrcode:hover:not(.active),
 #btn-status:hover:not(.active),
 #btn-setting:hover:not(.active) {
-  width: 100px; /* 120pxから100pxに縮小 */
-  border-radius: 18px; /* 24pxから18pxに縮小 */
-  padding: 0 8px; /* 左右にパディングを追加 */
-  justify-content: flex-start; /* 左寄せに変更 */
+  width: auto;
+  min-width: 100px;
+  max-width: 180px;
+  border-radius: 18px;
+  padding: 0 12px;
+  justify-content: flex-start;
   animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  display: flex;
+  align-items: center;
 }
 
 /* ホバー時のアイコンを左端に配置（非表示にしない） */
@@ -111,7 +115,7 @@ body::-webkit-scrollbar,
   flex-shrink: 0; /* アイコンのサイズを固定 */
 }
 
-/* ホバー時のテキストをアイコンの右隣に配置 */
+/* ホバー時のテキストをアイコンの右隣に配置し、長い場合は省略 */
 #btn-memo-list:hover:not(.active) .nav-text,
 #btn-clipboard:hover:not(.active) .nav-text,
 #btn-prompt:hover:not(.active) .nav-text,
@@ -120,13 +124,17 @@ body::-webkit-scrollbar,
 #btn-qrcode:hover:not(.active) .nav-text,
 #btn-status:hover:not(.active) .nav-text,
 #btn-setting:hover:not(.active) .nav-text {
-  display: block; /* テキストを表示 */
+  display: block;
   opacity: 1;
-  position: relative; /* absoluteからrelativeに変更 */
-  left: auto; /* leftの指定を削除 */
-  transform: none; /* transformを削除 */
-  margin-left: 8px; /* アイコンとの間隔 */
+  position: relative;
+  left: auto;
+  transform: none;
+  margin-left: 8px;
   transition: all 0.3s ease;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ★ クリック時の展開状態 - 中心から左右に拡張 */
@@ -180,28 +188,64 @@ body::-webkit-scrollbar,
   transition: all 0.3s ease;
 }
 
-/* ★ アクティブ状態：アイコンとテキストを並べて表示 */
+/* アクティブ状態：通常時はアイコンだけ中央表示、枠拡張なし */
 .nav-btn.active {
-  width: 100px; /* 120pxから100pxに縮小 */
-  border-radius: 18px; /* 24pxから18pxに縮小 */
-  padding: 0 8px; /* 左右にパディングを追加 */
-  justify-content: flex-start; /* 左寄せに変更 */
+  width: 36px;
+  border-radius: 50%;
+  padding: 0;
+  justify-content: center;
 }
 
-/* アクティブ状態のアイコンを左端に配置（非表示にしない） */
-.nav-btn.active i {
-  display: block; /* アイコンを表示したまま */
-  margin-left: 6px; /* アイコンを左端から少し離す */
-  flex-shrink: 0; /* アイコンのサイズを固定 */
+/* アクティブ状態＋ホバー時のみ枠拡張＋テキスト表示 */
+.nav-btn.active:hover {
+  width: auto;
+  min-width: 100px;
+  max-width: 180px;
+  border-radius: 18px;
+  padding: 0 12px;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-.nav-btn.active .nav-text {
-  display: block; /* テキストを表示 */
+.nav-btn.active:hover .nav-text {
+  display: block;
   opacity: 1;
-  position: relative; /* absoluteからrelativeに変更 */
-  left: auto; /* leftの指定を削除 */
-  transform: none; /* transformを削除 */
-  margin-left: 8px; /* アイコンとの間隔 */
+  position: relative;
+  left: auto;
+  transform: none;
+  margin-left: 8px;
+  transition: all 0.3s ease;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* アクティブ状態のアイコンは常に表示 */
+.nav-btn.active i {
+  display: block;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+/* アクティブ状態のテキストは非表示（ホバー時のみ表示） */
+.nav-btn.active .nav-text {
+  display: none;
+  opacity: 0;
+}
+
+/* ホバー時のみテキストを表示（アクティブ状態も含む） */
+.nav-btn:hover .nav-text,
+.nav-btn.active:hover .nav-text {
+  display: block;
+  opacity: 1;
+  position: relative;
+  left: auto;
+  transform: none;
+  margin-left: 8px;
+  transition: all 0.3s ease;
 }
 
 /* ホバー時の❌ボタン表示（一時的に無効化） */
