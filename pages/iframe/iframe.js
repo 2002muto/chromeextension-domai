@@ -603,56 +603,7 @@ async function renderHistory() {
 
   // --- 自動スクロール機能 ---
   if (history.length > 0) {
-    const wrappers = row.querySelectorAll(".favicon-wrapper");
-    const lastWrapper = wrappers[wrappers.length - 1];
-    const firstWrapper = wrappers[0];
-    let scrollInterval = null;
-
-    function stopAutoScroll() {
-      if (scrollInterval) {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
-      }
-    }
-
-    function startAutoScroll(direction) {
-      stopAutoScroll();
-      scrollInterval = setInterval(() => {
-        if (direction === "right") {
-          if (row.scrollLeft < row.scrollWidth - row.clientWidth) {
-            row.scrollLeft += 8;
-          } else {
-            stopAutoScroll();
-          }
-        } else {
-          if (row.scrollLeft > 0) {
-            row.scrollLeft -= 8;
-          } else {
-            stopAutoScroll();
-          }
-        }
-      }, 16);
-    }
-
-    // 右端: 右方向スクロール
-    lastWrapper.addEventListener("mouseenter", () => {
-      console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
-      startAutoScroll("right");
-    });
-    lastWrapper.addEventListener("mouseleave", () => {
-      console.log("[iframe] 最後のアイコンleave - スクロール停止");
-      stopAutoScroll();
-    });
-
-    // 左端: 左方向スクロール
-    firstWrapper.addEventListener("mouseenter", () => {
-      console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
-      startAutoScroll("left");
-    });
-    firstWrapper.addEventListener("mouseleave", () => {
-      console.log("[iframe] 最初のアイコンleave - スクロール停止");
-      stopAutoScroll();
-    });
+    setupAutoScroll(row);
   }
   // --- 自動スクロール機能ここまで ---
 
@@ -849,6 +800,65 @@ function focusSearchInput() {
     urlInput.focus();
     urlInput.select();
   }
+}
+
+// 自動スクロール機能を設定する関数
+function setupAutoScroll(row) {
+  console.log("[iframe] setupAutoScroll called", {
+    scrollWidth: row.scrollWidth,
+    clientWidth: row.clientWidth,
+  });
+
+  const wrappers = row.querySelectorAll(".favicon-wrapper");
+  if (wrappers.length === 0) return;
+  const lastWrapper = wrappers[wrappers.length - 1];
+  const firstWrapper = wrappers[0];
+
+  let scrollInterval = null;
+
+  function stopAutoScroll() {
+    if (scrollInterval) {
+      clearInterval(scrollInterval);
+      scrollInterval = null;
+      console.log("[iframe] auto-scroll stopped");
+    }
+  }
+
+  function startAutoScroll(direction) {
+    stopAutoScroll();
+    console.log(`[iframe] auto-scroll start: ${direction}`);
+    scrollInterval = setInterval(() => {
+      if (direction === "right") {
+        if (row.scrollLeft < row.scrollWidth - row.clientWidth) {
+          row.scrollLeft += 8;
+        } else {
+          stopAutoScroll();
+        }
+      } else {
+        if (row.scrollLeft > 0) {
+          row.scrollLeft -= 8;
+        } else {
+          stopAutoScroll();
+        }
+      }
+    }, 16);
+  }
+
+  lastWrapper.addEventListener("mouseenter", () => {
+    if (row.scrollWidth > row.clientWidth) {
+      console.log("[iframe] hover last icon - auto scroll right");
+      startAutoScroll("right");
+    }
+  });
+  lastWrapper.addEventListener("mouseleave", stopAutoScroll);
+
+  firstWrapper.addEventListener("mouseenter", () => {
+    if (row.scrollLeft >= row.scrollWidth - row.clientWidth) {
+      console.log("[iframe] hover first icon - auto scroll left");
+      startAutoScroll("left");
+    }
+  });
+  firstWrapper.addEventListener("mouseleave", stopAutoScroll);
 }
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う

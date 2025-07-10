@@ -391,6 +391,8 @@ body {
   overflow-x: auto;
   overflow-y: hidden;
   position: relative;
+  width: 100%;
+  white-space: nowrap;
   transition: all 0.3s ease;
   scrollbar-width: none; /* Firefox用 */
   -ms-overflow-style: none; /* IE/Edge用 */
