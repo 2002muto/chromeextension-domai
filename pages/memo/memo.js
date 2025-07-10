@@ -340,15 +340,16 @@ function handleDragEnd() {
 //  - 'archive'   → Back / Delete All buttons (set by renderArchiveNav)
 // ───────────────────────────────────────
 function setFooter(mode) {
+  console.log("[FOOTER] setFooter", mode);
   const foot = document.querySelector(".memo-footer");
   foot.style.display = "flex";
   if (mode === "list") {
     foot.innerHTML = `
-      <button id="btn-archive-toggle" class="nav-btn archive-toggle" title="アーカイブへ移動">
+      <button id="btn-archive-toggle" class="nav-btn archive-toggle">
         <i class="bi bi-archive"></i>
         <span class="nav-text">アーカイブ</span>
       </button>
-      <button class="nav-btn encrypt-btn" title="バックアップ">
+      <button class="nav-btn encrypt-btn">
         <i class="bi bi-download"></i>
         <span class="nav-text">バックアップ</span>
       </button>
@@ -356,15 +357,15 @@ function setFooter(mode) {
   } else if (mode === "edit") {
     /* ← 追加：MEMO入力／編集画面用フッター */
     foot.innerHTML = `
-      <button class="nav-btn back-btn" title="戻る">
+      <button class="nav-btn back-btn">
         <i class="bi bi-arrow-left-circle"></i>
         <span class="nav-text">戻る</span>
       </button>
-      <button class="nav-btn save-btn" title="保存">
+      <button class="nav-btn save-btn">
         <i class="bi bi-save"></i>
         <span class="nav-text">保存</span>
       </button>
-      <button class="nav-btn delete-btn" title="削除">
+      <button class="nav-btn delete-btn">
         <i class="bi bi-trash"></i>
         <span class="nav-text">削除</span>
       </button>
@@ -1744,11 +1745,11 @@ function renderArchiveFooter() {
   const footer = document.querySelector(".memo-footer");
   footer.classList.add("archive");
   footer.innerHTML = `
-    <button class="nav-btn back-btn" title="戻る">
+    <button class="nav-btn back-btn">
       <i class="bi bi-arrow-left-circle"></i>
       <span class="nav-text">戻る</span>
     </button>
-    <button class="nav-btn delete-all-btn" title="一括削除">
+    <button class="nav-btn delete-all-btn">
       <i class="bi bi-trash"></i>
       <span class="nav-text">一括削除</span>
     </button>

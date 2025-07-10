@@ -901,14 +901,16 @@ textarea.field-text,
 
 /* テキストは通常時は非表示 */
 .memo-footer .nav-btn .nav-text {
-  position: absolute;
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
+  display: inline-block;
+  overflow: hidden;
+  max-width: 0;
+  margin-left: 0;
   opacity: 0;
-  transform: translateX(10px) scale(0.8);
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   white-space: nowrap;
+  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
 }
 
 .memo-footer .nav-btn:hover {
@@ -918,25 +920,24 @@ textarea.field-text,
 
 /* フッターボタンのホバー時展開 */
 .memo-footer .nav-btn:hover {
-  width: 100px;
+  width: auto;
   border-radius: 18px;
-  padding: 0;
-  justify-content: center;
-  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  padding: 0 8px;
+  justify-content: flex-start;
 }
 
 /* ホバー時のアイコンを非表示に */
 .memo-footer .nav-btn:hover i {
-  display: none;
+  display: block;
+  margin-left: 6px;
+  flex-shrink: 0;
 }
 
-/* ホバー時のテキストを中央配置 */
+/* ホバー時のテキストをアイコンの右に表示 */
 .memo-footer .nav-btn:hover .nav-text {
   opacity: 1;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  transition: all 0.3s ease;
+  max-width: 200px;
+  margin-left: 8px;
 }
 
 /* 一覧表示用フッターの色分け（MEMO・CLIPBOARDと統一） */
@@ -969,20 +970,22 @@ textarea.field-text,
 .memo-footer .nav-btn.encrypt-btn:disabled:hover {
   transform: none;
   filter: grayscale(1);
-  width: 36px;
-  border-radius: 50%;
+  width: auto;
+  border-radius: 18px;
+  padding: 0 8px;
+  justify-content: flex-start;
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover i {
-  display: none;
+  display: block;
+  margin-left: 6px;
+  flex-shrink: 0;
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
   opacity: 1;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  transition: all 0.3s ease;
+  max-width: 200px;
+  margin-left: 8px;
 }
 
 /* 編集モード時のボタンの色分け */
