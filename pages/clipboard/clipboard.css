@@ -138,6 +138,8 @@
 .clipboard-insert {
   background: transparent;
   border: none;
+  box-sizing: border-box;
+  box-sizing: border-box;
   padding: 8px;
   border-radius: 4px;
   color: #04e949;
@@ -182,6 +184,7 @@
 .clipboard-copy {
   background: transparent;
   border: none;
+  box-sizing: border-box;
   border-radius: 6px;
   width: 36px;
   height: 36px;
@@ -220,6 +223,7 @@
 .clipboard-drag-handle {
   background: transparent;
   border: none;
+  box-sizing: border-box;
   padding: 8px;
   border-radius: 4px;
   color: #999999;
@@ -245,6 +249,7 @@
 .clipboard-archive {
   background: transparent;
   border: none;
+  box-sizing: border-box;
   padding: 8px;
   border-radius: 4px;
   color: #ffffff;
@@ -369,19 +374,22 @@
   overflow: hidden;
   transform-origin: center center;
   border: none;
+  box-sizing: border-box; /* ensure button dimensions stay consistent */
   padding: 0; /* Bootstrap 既定の余白を解除して中央に */
   line-height: 1; /* 垂直方向も合わせる */
 }
 
 .memo-footer .nav-btn i {
-  /* Ensure the icon starts centered before hover */
+  /** Ensure the icon is perfectly centered */
   font-size: 14px;
   margin-left: 0;
-  line-height: 1; /* align vertically */
-  vertical-align: middle; /* Bootstrap Icons offset fix */
-  display: inline-flex; /* flex centering like other pages */
+  line-height: 1;
+  vertical-align: middle;
+  display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -487,6 +495,7 @@
   background: #3a3f4a;
   color: #e2e8f0;
   border: none;
+  box-sizing: border-box;
   border-radius: 4px;
   font-size: 0.9rem;
   transition: height 0.2s ease;
@@ -515,6 +524,7 @@
   background: linear-gradient(135deg, #04e949, #00b0cf);
   color: #fff;
   border: none;
+  box-sizing: border-box;
   border-radius: 6px 6px 0 0; /* 上のみ角丸（MEMOページと統一） */
   padding: 12px 16px;
   font-size: 1rem;
@@ -585,6 +595,7 @@
   background: linear-gradient(135deg, #04e949, #00b0cf);
   color: #ffffff;
   border: none;
+  box-sizing: border-box;
   border-radius: 6px;
   padding: 10px 20px;
   font-size: 0.9rem;
@@ -765,6 +776,7 @@
   background: #00a31e;
   color: #ffffff;
   border: none;
+  box-sizing: border-box;
   padding: 6px 8px;
   font-size: 0.9rem;
   border-radius: 4px;

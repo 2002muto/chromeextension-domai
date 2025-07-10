@@ -1337,6 +1337,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const archiveToggleBtn = document.getElementById("btn-archive-toggle");
   if (archiveToggleBtn) {
     console.log("初期化: アーカイブトグルボタンを発見しました");
+    // デバッグ用: サイズとスタイルをログ出力
+    const archStyle = window.getComputedStyle(archiveToggleBtn);
+    console.log("archiveToggleBtn center check", {
+      width: archStyle.width,
+      height: archStyle.height,
+      padding: archStyle.padding,
+      lineHeight: archStyle.lineHeight,
+    });
   } else {
     console.error("初期化: アーカイブトグルボタンが見つかりません");
   }
