@@ -2496,6 +2496,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("[NAV CHECK] icon center", btn.id, {
       btnCenter: btnRect.left + btnRect.width / 2,
       iconCenter: iconRect.left + iconRect.width / 2,
+      btnCenterY: btnRect.top + btnRect.height / 2,
+      iconCenterY: iconRect.top + iconRect.height / 2,
     });
   });
 
@@ -2510,6 +2512,8 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("[FOOTER CHECK] icon center", btn.id || btn.className, {
         btnCenter: btnRect.left + btnRect.width / 2,
         iconCenter: iconRect.left + iconRect.width / 2,
+        btnCenterY: btnRect.top + btnRect.height / 2,
+        iconCenterY: iconRect.top + iconRect.height / 2,
       });
     });
   }
