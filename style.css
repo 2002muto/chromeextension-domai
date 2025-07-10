@@ -58,17 +58,28 @@ body::-webkit-scrollbar,
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* テキストは通常時は非表示 */
+/* テキストは通常時は幅0で非表示。hoverでクラスを付与して伸ばす */
 .nav-btn .nav-text {
-  position: relative; /* absoluteからrelativeに変更してホバー時と統一 */
-  font-size: 0.8rem; /* 11px→0.8rem に統一（小サイズ） */
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden;
+  max-width: 0;
+  margin-left: 0;
   font-weight: bold;
   text-transform: uppercase;
   opacity: 0;
-  display: none; /* 初期状態では完全に非表示 */
-  margin-left: 0; /* 初期状態では間隔なし */
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  white-space: nowrap;
+  white-space: normal; /* 折り返し許可で全表示 */
+  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+}
+
+/* JSで付与するクラス。textの横幅に合わせて表示 */
+.nav-btn.show-text .nav-text {
+  margin-left: 8px;
+  opacity: 1;
+  max-width: var(--nav-text-max, 200px);
 }
 
 .nav-btn:link,
@@ -112,25 +123,7 @@ body::-webkit-scrollbar,
   flex-shrink: 0; /* アイコンのサイズを固定 */
 }
 
-/* ホバー時のテキストをアイコンの右隣に配置し、長い場合は省略 */
-#btn-memo-list:hover:not(.active) .nav-text,
-#btn-clipboard:hover:not(.active) .nav-text,
-#btn-prompt:hover:not(.active) .nav-text,
-#btn-iframe:hover:not(.active) .nav-text,
-#btn-todolist:hover:not(.active) .nav-text,
-#btn-qrcode:hover:not(.active) .nav-text,
-#btn-status:hover:not(.active) .nav-text,
-#btn-setting:hover:not(.active) .nav-text {
-  display: block;
-  opacity: 1;
-  position: relative;
-  left: auto;
-  transform: none;
-  margin-left: 8px;
-  transition: all 0.3s ease;
-  white-space: normal; /* allow wrapping; no truncation */
-}
-
+/* 個別ボタンのhover処理はJSからshow-textを付与して行う */
 /* ★ クリック時の展開状態 - 中心から左右に拡張 */
 .nav-btn.expanded {
   width: 100px; /* 120pxから100pxに縮小 */
@@ -201,17 +194,7 @@ body::-webkit-scrollbar,
   align-items: center;
 }
 
-.nav-btn.active:hover .nav-text {
-  display: block;
-  opacity: 1;
-  position: relative;
-  left: auto;
-  transform: none;
-  margin-left: 8px;
-  transition: all 0.3s ease;
-  white-space: normal; /* allow wrapping */
-}
-
+/* テキスト表示用クラスはJSから付与 */
 /* アクティブ状態のアイコンは常に表示 */
 .nav-btn.active i {
   display: block;
@@ -222,12 +205,6 @@ body::-webkit-scrollbar,
 /* Active button icon should be centered when title is hidden */
 .nav-btn.active:not(:hover) i {
   margin-left: 0;
-}
-
-/* アクティブ状態のテキストは非表示（ホバー時のみ表示） */
-.nav-btn.active .nav-text {
-  display: none;
-  opacity: 0;
 }
 
 /* ホバー時のみテキストを表示 */

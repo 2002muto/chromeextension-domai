@@ -432,7 +432,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // ヘッダー要素を取得（動的に生成されたボタンにも対応するため）
   const header = document.querySelector("header");
 
-  // Debug: log hover events for all navigation buttons
+  // Debug: hoverでテキスト表示アニメーションを制御
   if (header) {
     const activeBtn = header.querySelector(".nav-btn.active");
     if (activeBtn) {
@@ -440,17 +440,34 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     header.querySelectorAll(".nav-btn").forEach((btn) => {
+      const textSpan = btn.querySelector(".nav-text");
+      if (!textSpan) return;
+
       btn.addEventListener("mouseenter", () => {
         const state = btn.classList.contains("active") ? "active" : "inactive";
+        const textWidth = textSpan.scrollWidth;
+        btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+        btn.classList.add("show-text");
         console.log("[NAV DEBUG] hover start:", btn.id, state, {
-          width: btn.offsetWidth,
-          scrollWidth: btn.scrollWidth,
+          btnWidth: btn.offsetWidth,
+          textWidth,
         });
       });
+
       btn.addEventListener("mouseleave", () => {
+        btn.classList.remove("show-text");
+        btn.style.removeProperty("--nav-text-max");
         console.log("[NAV DEBUG] hover end:", btn.id, {
-          width: btn.offsetWidth,
+          btnWidth: btn.offsetWidth,
         });
+      });
+
+      textSpan.addEventListener("transitionend", (e) => {
+        if (e.propertyName === "max-width") {
+          console.log("[NAV DEBUG] text shown:", btn.id, {
+            finalWidth: textSpan.offsetWidth,
+          });
+        }
       });
     });
   }
@@ -481,7 +498,8 @@ document.addEventListener("DOMContentLoaded", function () {
           : -1;
       const prompts = window.prompts || [];
       const base = window.editingOriginalPrompt || prompts[idx] || null;
-      const isNew = !window.editingOriginalPrompt && (idx === -1 || idx >= prompts.length);
+      const isNew =
+        !window.editingOriginalPrompt && (idx === -1 || idx >= prompts.length);
       if (typeof window.checkForUnsavedChanges === "function") {
         hasChanges = window.checkForUnsavedChanges(base, isNew);
       }
@@ -504,7 +522,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
       window.AppUtils.showSaveConfirmDialog({
         title: "変更を保存しますか？",
-        message: "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
+        message:
+          "編集内容に変更があります。<br>保存せずに移動すると変更が失われます。",
         onSave: async () => {
           if (window.saveAndGoBack) {
             await window.saveAndGoBack();
