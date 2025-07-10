@@ -66,9 +66,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
         <div class="dialog-footer">
           <div class="dialog-buttons-wrapper">
             ${
-              showDiscard
-                ? `<button class="dialog-btn discard-btn" data-action="discard">
-                     <span>${discardLabel}</span>
+              showSave
+                ? `<button class="dialog-btn save-btn" data-action="save">
+                     <span>${saveLabel}</span>
                    </button>`
                 : ""
             }
@@ -80,9 +80,9 @@ window.AppUtils.showSaveConfirmDialog = function (options = {}) {
                 : ""
             }
             ${
-              showSave
-                ? `<button class="dialog-btn save-btn" data-action="save">
-                     <span>${saveLabel}</span>
+              showDiscard
+                ? `<button class="dialog-btn discard-btn" data-action="discard">
+                     <span>${discardLabel}</span>
                    </button>`
                 : ""
             }
@@ -703,7 +703,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
   const {
     title: deleteTitle = "削除の確認",
     message:
-      deleteMessage = "選択された1件のメモを完全に削除しますか？<br><span class=\"delete-warning\">この操作は取り消せません。</span>",
+      deleteMessage = '選択された1件のメモを完全に削除しますか？<br><span class="delete-warning">この操作は取り消せません。</span>',
     onConfirm,
     onCancel,
     confirmLabel = "確認",
@@ -1054,7 +1054,9 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
     if (dialogMessage) {
       dialogMessage.style.color = "#BEC3C9";
     }
-    const deleteTitleWrapper = deleteContent.querySelector(".dialog-title-wrapper");
+    const deleteTitleWrapper = deleteContent.querySelector(
+      ".dialog-title-wrapper"
+    );
     if (deleteTitleWrapper) {
       deleteTitleWrapper.style.textAlign = "center";
     }

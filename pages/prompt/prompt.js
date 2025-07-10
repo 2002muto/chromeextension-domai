@@ -719,21 +719,18 @@ async function renderList() {
 
           // アニメーション付きで削除（アーカイブには保存しない）
           if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+            li.classList.add("archive-item"); // ←追加：MEMO・CLIPBOARDと統一
             await window.AppUtils.animateArchiveItem(li, async () => {
               // プロンプトを完全に削除（アーカイブではない）
-              const promptIndex = prompts.findIndex(
-                (prompt) => prompt.id === p.id
-              );
-              if (promptIndex !== -1) {
-                prompts.splice(promptIndex, 1);
-                await save(PROMPT_KEY, prompts);
-                window.prompts = prompts;
+              prompts.splice(originalIndex, 1);
+              await save(PROMPT_KEY, prompts);
+              // グローバルに最新のpromptsを設定
+              window.prompts = prompts;
 
-                // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
-                const activePrompts = prompts.filter((p) => !p.archived);
-                if (activePrompts.length === 0) {
-                  renderList();
-                }
+              // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
+              const activePrompts = prompts.filter((p) => !p.archived);
+              if (activePrompts.length === 0) {
+                renderList();
               }
             });
           } else {
@@ -742,27 +739,36 @@ async function renderList() {
               "[PROMPT] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
             );
 
-            // シンプルなアニメーション
-            li.style.transition = "all 0.5s ease-in-out";
-            li.style.transform = "translateY(-20px) scale(0.95)";
-            li.style.opacity = "0";
+            // シンプルなアニメーション（CSP準拠）
+            li.classList.add("archive-item", "archive-fallback-animating");
+
+            // フォールバックアニメーション用のスタイルを動的に追加
+            if (!document.querySelector("#archive-fallback-styles")) {
+              const fallbackStyles = document.createElement("style");
+              fallbackStyles.id = "archive-fallback-styles";
+              fallbackStyles.textContent = `
+                .archive-fallback-animating {
+                  transition: all 0.5s ease-in-out !important;
+                  transform: translateY(-20px) scale(0.95) !important;
+                  opacity: 0 !important;
+                  pointer-events: none !important;
+                }
+              `;
+              document.head.appendChild(fallbackStyles);
+            }
 
             await new Promise((resolve) => {
               setTimeout(async () => {
                 // プロンプトを完全に削除（アーカイブではない）
-                const promptIndex = prompts.findIndex(
-                  (prompt) => prompt.id === p.id
-                );
-                if (promptIndex !== -1) {
-                  prompts.splice(promptIndex, 1);
-                  await save(PROMPT_KEY, prompts);
-                  window.prompts = prompts;
+                prompts.splice(originalIndex, 1);
+                await save(PROMPT_KEY, prompts);
+                // グローバルに最新のpromptsを設定
+                window.prompts = prompts;
 
-                  // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
-                  const activePrompts = prompts.filter((p) => !p.archived);
-                  if (activePrompts.length === 0) {
-                    renderList();
-                  }
+                // 削除後、アクティブなプロンプトが空になった場合は即座に画面を更新
+                const activePrompts = prompts.filter((p) => !p.archived);
+                if (activePrompts.length === 0) {
+                  renderList();
                 }
 
                 console.log("[PROMPT] 代替削除アニメーション完了");
@@ -775,11 +781,17 @@ async function renderList() {
 
         // アニメーション付きでアーカイブ
         if (window.AppUtils && window.AppUtils.animateArchiveItem) {
+          li.classList.add("archive-item"); // ←追加：MEMO・CLIPBOARDと統一
           await window.AppUtils.animateArchiveItem(li, async () => {
             p.archived = true;
             await save(PROMPT_KEY, prompts);
             // グローバルに最新のpromptsを設定
             window.prompts = prompts;
+
+            // トースト通知
+            if (window.AppUtils && window.AppUtils.showArchiveToast) {
+              window.AppUtils.showArchiveToast();
+            }
 
             // アーカイブ後、アクティブなプロンプトが空になった場合は即座に画面を更新
             const activePrompts = prompts.filter((p) => !p.archived);
@@ -793,10 +805,23 @@ async function renderList() {
             "[PROMPT] AppUtils.animateArchiveItemが利用できません。代替処理を実行します。"
           );
 
-          // シンプルなアニメーション
-          li.style.transition = "all 0.5s ease-in-out";
-          li.style.transform = "translateY(-20px) scale(0.95)";
-          li.style.opacity = "0";
+          // シンプルなアニメーション（CSP準拠）
+          li.classList.add("archive-item", "archive-fallback-animating");
+
+          // フォールバックアニメーション用のスタイルを動的に追加
+          if (!document.querySelector("#archive-fallback-styles")) {
+            const fallbackStyles = document.createElement("style");
+            fallbackStyles.id = "archive-fallback-styles";
+            fallbackStyles.textContent = `
+              .archive-fallback-animating {
+                transition: all 0.5s ease-in-out !important;
+                transform: translateY(-20px) scale(0.95) !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+              }
+            `;
+            document.head.appendChild(fallbackStyles);
+          }
 
           await new Promise((resolve) => {
             setTimeout(async () => {
@@ -805,6 +830,11 @@ async function renderList() {
               await save(PROMPT_KEY, prompts);
               // グローバルに最新のpromptsを設定
               window.prompts = prompts;
+
+              // トースト通知
+              if (window.AppUtils && window.AppUtils.showArchiveToast) {
+                window.AppUtils.showArchiveToast();
+              }
 
               // アーカイブ後、アクティブなプロンプトが空になった場合は即座に画面を更新
               const activePrompts = prompts.filter((p) => !p.archived);
@@ -927,7 +957,7 @@ async function renderArchiveView() {
   } else {
     body.innerHTML = `
       <div class="archive-header">
-        <h2 class="archive-title">アーカイブ (${archivedPrompts.length}件)</h2>
+        <h3 class="archive-title">アーカイブ</h3>
         <label class="select-all-label">
           <input type="checkbox" id="chk-select-all" /> 全て選択する
         </label>
@@ -935,66 +965,139 @@ async function renderArchiveView() {
       <ul class="archive-list"></ul>`;
 
     const ul = body.querySelector(".archive-list");
+    if (!ul) {
+      console.error(".archive-list要素が見つかりません");
+      return;
+    }
 
-    archivedPrompts.forEach((p, idx) => {
-      const li = document.createElement("li");
-      li.className = "archive-item";
+    console.log("[ARCH] アーカイブリスト要素:", ul);
 
-      // チェックボックス
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.className = "arch-check";
-      cb.dataset.index = idx;
-      li.appendChild(cb);
+    // 行生成またはEmpty State
+    if (archivedPrompts.length === 0) {
+      // Empty State: アーカイブが空の場合
+      ul.innerHTML = `
+        <div class="prompt-empty-state">
+          <div class="prompt-empty-state-content">
+            <div class="prompt-empty-state-icon">
+              <i class="bi bi-terminal"></i>
+            </div>
+            <h3 class="prompt-empty-state-title">アーカイブされた<br>プロンプトはありません</h3>
+            <p class="prompt-empty-state-message">
+              プロンプトをアーカイブすると、<br>ここに表示されます。
+            </p>
+          </div>
+        </div>
+      `;
 
-      // タイトル
-      const span = document.createElement("span");
-      span.className = "arch-title";
-      span.textContent = p.title || "(無題)";
-      span.title = p.title; // Add title attribute for tooltip
-      li.appendChild(span);
+      // Empty Stateのフェードインアニメーション
+      setTimeout(() => {
+        const emptyContent = ul.querySelector(".prompt-empty-state-content");
+        if (emptyContent) {
+          emptyContent.classList.add("show");
+        }
+      }, 100);
+    } else {
+      // 通常のアーカイブアイテム表示
+      archivedPrompts.forEach((it, displayIdx) => {
+        // 元の配列での実際のインデックスを取得
+        const actualIdx = archivedPrompts.findIndex(
+          (item) => item.id === it.id
+        );
 
-      // 復元ボタン
-      const btn = document.createElement("button");
-      btn.className = "restore-btn";
-      btn.innerHTML = '<i class="bi bi-upload"></i>';
-      btn.title = "復元";
-      btn.addEventListener("click", async (e) => {
-        console.log("[ARCH] 復元ボタンがクリックされました！");
-        e.preventDefault();
-        e.stopPropagation();
+        const li = document.createElement("li");
+        li.className = "archive-item";
 
-        // 重複クリックを防ぐ
-        if (btn.disabled) {
-          console.log("[ARCH] 復元処理中です...");
-          return;
+        // 左：チェック
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.className = "arch-check";
+        cb.dataset.index = actualIdx;
+        li.appendChild(cb);
+
+        // 中央：タイトル＋プレビューコンテナ
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "arch-content";
+
+        // タイトル
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "arch-title";
+        titleSpan.textContent = it.title || "無題";
+        contentDiv.appendChild(titleSpan);
+
+        // プロンプト固有：内容プレビュー
+        if (it.fields && it.fields.length > 0) {
+          const previewSpan = document.createElement("div");
+          previewSpan.className = "prompt-preview";
+          // 最初の有効なフィールドの内容をプレビューとして表示
+          const firstField = it.fields.find(
+            (field) => field.text && field.text.trim() !== ""
+          );
+          const previewText = firstField
+            ? firstField.text.length > 100
+              ? firstField.text.substring(0, 100) + "..."
+              : firstField.text
+            : "内容なし";
+          previewSpan.textContent = previewText;
+          contentDiv.appendChild(previewSpan);
         }
 
-        console.log("[ARCH] restore idx:", idx);
+        li.appendChild(contentDiv);
 
-        // ボタンを一時的に無効化
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-        btn.style.cursor = "not-allowed";
+        // 右：復元ボタン
+        const btn = document.createElement("button");
+        btn.className = "restore-btn";
+        btn.innerHTML = '<i class="bi bi-upload"></i>';
+        btn.title = "復元";
 
-        try {
-          console.log("[ARCH] 復元処理を開始します...");
+        console.log("[ARCH] 復元ボタンを作成しました:", {
+          displayIndex: displayIdx,
+          actualIndex: actualIdx,
+          itemTitle: it.title || "無題",
+          archiveType: archiveType,
+        });
 
-          /* PROMPT: archived → false */
-          const prompts = await load(PROMPT_KEY);
-          console.log("[ARCH] 現在のプロンプト数:", prompts.length);
+        btn.addEventListener("click", async (e) => {
+          console.log("[ARCH] 復元ボタンがクリックされました！");
+          e.preventDefault();
+          e.stopPropagation();
 
-          const target = prompts.find((prompt) => prompt.id === p.id);
-          console.log("[ARCH] 復元対象のプロンプト:", target);
+          // 重複クリックを防ぐ
+          if (btn.disabled) {
+            console.log("[ARCH] 復元処理中です...");
+            return;
+          }
 
-          if (target) {
-            target.archived = false;
-            console.log("[ARCH] プロンプトを復元しました:", target.title);
+          // ボタンを一時的に無効化
+          btn.disabled = true;
+          btn.style.opacity = "0.5";
+          btn.style.cursor = "not-allowed";
 
-            await save(PROMPT_KEY, prompts);
-            // グローバルに最新のpromptsを設定
-            window.prompts = prompts;
-            console.log("[ARCH] プロンプトストレージを更新しました");
+          try {
+            console.log("[ARCH] 復元処理を開始します...");
+
+            // プロンプト: archived → false に変更
+            const prompts = await load(PROMPT_KEY);
+            const target = prompts.find((prompt) => prompt.id === it.id);
+            if (target) {
+              target.archived = false;
+              await save(PROMPT_KEY, prompts);
+              // グローバルに最新のpromptsを設定
+              window.prompts = prompts;
+              console.log(
+                "[ARCH] プロンプトを復元しました:",
+                target.title || "無題"
+              );
+            } else {
+              console.error(
+                "[ARCH] 復元対象のプロンプトが見つかりません:",
+                it.id
+              );
+              // ボタンを再度有効化
+              btn.disabled = false;
+              btn.style.opacity = "1";
+              btn.style.cursor = "pointer";
+              return;
+            }
 
             // 復元アニメーションを実行
             if (window.AppUtils && window.AppUtils.animateRestoreItem) {
@@ -1021,36 +1124,44 @@ async function renderArchiveView() {
               });
             }
 
-            // 復元後にアーカイブリストを再描画
+            // アーカイブ画面を再描画
             renderArchiveList();
-          } else {
-            console.error("[ARCH] 復元対象のプロンプトが見つかりません:", p.id);
+          } catch (error) {
+            console.error("[ARCH] 復元処理中にエラーが発生しました:", error);
             // ボタンを再度有効化
             btn.disabled = false;
             btn.style.opacity = "1";
             btn.style.cursor = "pointer";
           }
+        });
 
-          console.log("[ARCH] 復元処理が完了しました");
-        } catch (error) {
-          console.error("[ARCH] 復元処理中にエラーが発生しました:", error);
-          // エラーが発生した場合はボタンを再度有効化
-          btn.disabled = false;
-          btn.style.opacity = "1";
-          btn.style.cursor = "pointer";
-        }
+        li.appendChild(btn);
+        ul.appendChild(li);
       });
-      li.appendChild(btn);
 
-      ul.appendChild(li);
-    });
-
-    // 全選択チェック
-    body.querySelector("#chk-select-all").addEventListener("change", (e) => {
-      ul.querySelectorAll(".arch-check").forEach(
-        (c) => (c.checked = e.target.checked)
-      );
-    });
+      // 全選択チェックボタンのイベントリスナーを追加
+      const selectAllCheckbox = content.querySelector("#chk-select-all");
+      if (selectAllCheckbox) {
+        console.log("[ARCH] 全選択チェックボタンのイベントリスナーを設定");
+        selectAllCheckbox.addEventListener("change", (e) => {
+          console.log(
+            "[ARCH] 全選択チェックボックスが変更されました:",
+            e.target.checked
+          );
+          const checkboxes = ul.querySelectorAll(".arch-check");
+          checkboxes.forEach((checkbox) => {
+            checkbox.checked = e.target.checked;
+          });
+          console.log(
+            `[ARCH] ${checkboxes.length}個のチェックボックスを${
+              e.target.checked ? "選択" : "解除"
+            }しました`
+          );
+        });
+      } else {
+        console.error("[ARCH] 全選択チェックボックスが見つかりません");
+      }
+    }
   }
 
   body.classList.remove("show");
@@ -1069,7 +1180,12 @@ async function renderArchiveView() {
 
   // 戻るボタンの機能
   footer.querySelector(".back-btn").addEventListener("click", () => {
-    console.log("アーカイブから一覧に戻ります");
+    // アーカイブ表示を解除
+    document.querySelector(".memo-content").classList.remove("archive");
+    document.querySelector(".sub-archive-nav")?.remove();
+    footer.classList.remove("archive");
+
+    // 一覧画面に戻る
     renderList();
   });
 
@@ -1240,7 +1356,7 @@ async function renderArchiveView() {
       }
     });
 
-  console.log("[renderArchiveView] end");
+  console.log("renderArchiveFooter: end");
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2888,11 +3004,11 @@ async function renderArchiveList() {
             });
           }
 
-          // 復元後にアーカイブリストを再描画
+          // アーカイブ画面を再描画
           renderArchiveList();
         } catch (error) {
           console.error("[ARCH] 復元処理中にエラーが発生しました:", error);
-          // エラーが発生した場合はボタンを再度有効化
+          // ボタンを再度有効化
           btn.disabled = false;
           btn.style.opacity = "1";
           btn.style.cursor = "pointer";
@@ -2902,6 +3018,29 @@ async function renderArchiveList() {
       li.appendChild(btn);
       ul.appendChild(li);
     });
+
+    // 全選択チェックボタンのイベントリスナーを追加
+    const selectAllCheckbox = content.querySelector("#chk-select-all");
+    if (selectAllCheckbox) {
+      console.log("[ARCH] 全選択チェックボタンのイベントリスナーを設定");
+      selectAllCheckbox.addEventListener("change", (e) => {
+        console.log(
+          "[ARCH] 全選択チェックボックスが変更されました:",
+          e.target.checked
+        );
+        const checkboxes = ul.querySelectorAll(".arch-check");
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = e.target.checked;
+        });
+        console.log(
+          `[ARCH] ${checkboxes.length}個のチェックボックスを${
+            e.target.checked ? "選択" : "解除"
+          }しました`
+        );
+      });
+    } else {
+      console.error("[ARCH] 全選択チェックボックスが見つかりません");
+    }
   }
 
   // アーカイブフッターを描画
