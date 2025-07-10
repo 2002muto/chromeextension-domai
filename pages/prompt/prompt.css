@@ -869,7 +869,7 @@ textarea.field-text,
   backdrop-filter: blur(10px); /* ぼかし効果 */
   box-sizing: border-box;
   align-items: center;
-  justify-content: center; /* Center footer buttons horizontally */
+  justify-content: flex-start;
   z-index: 1000; /* 他の要素より前面に */
 }
 

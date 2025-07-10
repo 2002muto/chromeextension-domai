@@ -2479,6 +2479,23 @@ window.addEventListener("load", () => {
       subtree: true,
     });
 
-    console.log("COMMON: 今後実装予定のアイコン監視を開始しました");
+console.log("COMMON: 今後実装予定のアイコン監視を開始しました");
   }
+});
+
+// Debug: log icon center positions to verify alignment
+document.addEventListener("DOMContentLoaded", () => {
+  const header = document.querySelector("header");
+  if (!header) return;
+
+  header.querySelectorAll(".nav-btn").forEach((btn) => {
+    const icon = btn.querySelector("i");
+    if (!icon) return;
+    const btnRect = btn.getBoundingClientRect();
+    const iconRect = icon.getBoundingClientRect();
+    console.log("[NAV CHECK] icon center", btn.id, {
+      btnCenter: btnRect.left + btnRect.width / 2,
+      iconCenter: iconRect.left + iconRect.width / 2,
+    });
+  });
 });
