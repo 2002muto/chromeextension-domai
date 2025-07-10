@@ -432,6 +432,19 @@ document.addEventListener("DOMContentLoaded", function () {
   // ヘッダー要素を取得（動的に生成されたボタンにも対応するため）
   const header = document.querySelector("header");
 
+  // Debug: log hover events for the active navigation button
+  if (header) {
+    const activeBtn = header.querySelector(".nav-btn.active");
+    if (activeBtn) {
+      activeBtn.addEventListener("mouseenter", () => {
+        console.log("[NAV DEBUG] active hover start:", activeBtn.id);
+      });
+      activeBtn.addEventListener("mouseleave", () => {
+        console.log("[NAV DEBUG] active hover end:", activeBtn.id);
+      });
+    }
+  }
+
   // PROMPT編集画面から他ページへ遷移する際の未保存チェック
   function confirmPromptNavigation(e, button) {
     const editContent = document.querySelector(".memo-content.edit-mode");

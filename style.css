@@ -197,10 +197,9 @@ body::-webkit-scrollbar,
 }
 
 /* アクティブ状態＋ホバー時のみ枠拡張＋テキスト表示 */
+/* Active button shows text on hover and expands based on title length */
 .nav-btn.active:hover {
-  width: auto;
-  min-width: 100px;
-  max-width: 180px;
+  width: auto; /* auto width to fit text */
   border-radius: 18px;
   padding: 0 12px;
   justify-content: flex-start;
@@ -217,10 +216,7 @@ body::-webkit-scrollbar,
   transform: none;
   margin-left: 8px;
   transition: all 0.3s ease;
-  max-width: 110px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal; /* allow wrapping */
 }
 
 /* アクティブ状態のアイコンは常に表示 */
@@ -236,9 +232,8 @@ body::-webkit-scrollbar,
   opacity: 0;
 }
 
-/* ホバー時のみテキストを表示（アクティブ状態も含む） */
-.nav-btn:hover .nav-text,
-.nav-btn.active:hover .nav-text {
+/* ホバー時のみテキストを表示 */
+.nav-btn:hover .nav-text {
   display: block;
   opacity: 1;
   position: relative;
