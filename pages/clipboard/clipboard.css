@@ -361,6 +361,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0; /* remove default button padding */
+  box-sizing: border-box; /* ensure width/height include border */
   width: 36px;
   height: 36px;
   color: #fff;
