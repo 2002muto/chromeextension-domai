@@ -1337,6 +1337,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const archiveToggleBtn = document.getElementById("btn-archive-toggle");
   if (archiveToggleBtn) {
     console.log("初期化: アーカイブトグルボタンを発見しました");
+    // デバッグ用: サイズとスタイルをログ出力
+    const archStyle = window.getComputedStyle(archiveToggleBtn);
+    console.log("archiveToggleBtn center check", {
+      width: archStyle.width,
+      height: archStyle.height,
+      padding: archStyle.padding,
+      lineHeight: archStyle.lineHeight,
+    });
+    // アイコンの位置も確認
+    const icon = archiveToggleBtn.querySelector("i");
+    if (icon) {
+      const iconStyle = window.getComputedStyle(icon);
+      console.log("archive icon style", {
+        width: iconStyle.width,
+        height: iconStyle.height,
+        marginLeft: iconStyle.marginLeft,
+      });
+    }
   } else {
     console.error("初期化: アーカイブトグルボタンが見つかりません");
   }
