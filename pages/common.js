@@ -2479,6 +2479,42 @@ window.addEventListener("load", () => {
       subtree: true,
     });
 
-    console.log("COMMON: 今後実装予定のアイコン監視を開始しました");
+console.log("COMMON: 今後実装予定のアイコン監視を開始しました");
+  }
+});
+
+// Debug: log icon center positions to verify alignment
+document.addEventListener("DOMContentLoaded", () => {
+  const header = document.querySelector("header");
+  if (!header) return;
+
+  header.querySelectorAll(".nav-btn").forEach((btn) => {
+    const icon = btn.querySelector("i");
+    if (!icon) return;
+    const btnRect = btn.getBoundingClientRect();
+    const iconRect = icon.getBoundingClientRect();
+    console.log("[NAV CHECK] icon center", btn.id, {
+      btnCenter: btnRect.left + btnRect.width / 2,
+      iconCenter: iconRect.left + iconRect.width / 2,
+      btnCenterY: btnRect.top + btnRect.height / 2,
+      iconCenterY: iconRect.top + iconRect.height / 2,
+    });
+  });
+
+  // Also verify footer icon centers for troubleshooting
+  const footer = document.querySelector("footer.memo-footer");
+  if (footer) {
+    footer.querySelectorAll(".nav-btn").forEach((btn) => {
+      const icon = btn.querySelector("i");
+      if (!icon) return;
+      const btnRect = btn.getBoundingClientRect();
+      const iconRect = icon.getBoundingClientRect();
+      console.log("[FOOTER CHECK] icon center", btn.id || btn.className, {
+        btnCenter: btnRect.left + btnRect.width / 2,
+        iconCenter: iconRect.left + iconRect.width / 2,
+        btnCenterY: btnRect.top + btnRect.height / 2,
+        iconCenterY: iconRect.top + iconRect.height / 2,
+      });
+    });
   }
 });

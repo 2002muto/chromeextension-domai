@@ -415,7 +415,6 @@ async function renderList() {
     <button
       id="btn-archive-toggle"
       class="nav-btn archive-toggle"
-      title="アーカイブへ移動"
     >
       <i class="bi bi-archive"></i>
       <span class="nav-text">アーカイブ</span>
@@ -3059,11 +3058,11 @@ function renderArchiveFooter() {
 
   // アーカイブモード用のフッターに変更
   footer.innerHTML = `
-    <button class="nav-btn back-btn" title="戻る">
+    <button class="nav-btn back-btn">
       <i class="bi bi-arrow-left-circle"></i>
       <span class="nav-text">戻る</span>
     </button>
-    <button class="nav-btn delete-all-btn" title="一括削除">
+    <button class="nav-btn delete-all-btn">
       <i class="bi bi-trash"></i>
       <span class="nav-text">一括削除</span>
     </button>

@@ -161,20 +161,25 @@ body {
 
 .memo-footer .nav-btn i {
   font-size: 14px;
+  line-height: 1; /* keep icon centered */
+  display: inline-flex; /* center icon within button */
+  align-items: center;
+  justify-content: center;
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* テキストは通常時は非表示 */
 .memo-footer .nav-btn .nav-text {
-  position: relative; /* absoluteからrelativeに変更してホバー時と統一 */
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
+  display: inline-block;
+  overflow: hidden;
+  max-width: 0;
+  margin-left: 0;
   opacity: 0;
-  display: none; /* 初期状態では完全に非表示 */
-  margin-left: 0; /* 初期状態では間隔なし */
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   white-space: nowrap;
+  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
 }
 
 .memo-footer .nav-btn:hover {
@@ -184,11 +189,10 @@ body {
 
 /* フッターボタンのホバー時展開 */
 .memo-footer .nav-btn:hover {
-  width: 100px;
+  width: auto;
   border-radius: 18px;
-  padding: 0 8px; /* 左右にパディングを追加 */
-  justify-content: flex-start; /* 左寄せに変更 */
-  animation: expandCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  padding: 0 8px;
+  justify-content: flex-start;
 }
 
 /* ホバー時のアイコンを左端に配置（非表示にしない） */
@@ -200,13 +204,9 @@ body {
 
 /* ホバー時のテキストをアイコンの右隣に配置 */
 .memo-footer .nav-btn:hover .nav-text {
-  display: block; /* テキストを表示 */
   opacity: 1;
-  position: relative; /* absoluteからrelativeに変更 */
-  left: auto; /* leftの指定を削除 */
-  transform: none; /* transformを削除 */
-  margin-left: 8px; /* アイコンとの間隔 */
-  transition: all 0.3s ease;
+  max-width: 200px;
+  margin-left: 8px;
 }
 
 /* 戻る／保存／削除ボタンの色分け */
@@ -238,10 +238,10 @@ body {
 .memo-footer .nav-btn.encrypt-btn:disabled:hover {
   transform: none;
   filter: grayscale(1);
-  width: 100px; /* 展開状態に変更 */
-  border-radius: 18px; /* 角丸に変更 */
-  padding: 0 8px; /* 左右にパディングを追加 */
-  justify-content: flex-start; /* 左寄せに変更 */
+  width: auto;
+  border-radius: 18px;
+  padding: 0 8px;
+  justify-content: flex-start;
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover i {
@@ -251,13 +251,9 @@ body {
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
-  display: block; /* テキストを表示 */
   opacity: 1;
-  position: relative; /* absoluteからrelativeに変更 */
-  left: auto; /* leftの指定を削除 */
-  transform: none; /* transformを削除 */
-  margin-left: 8px; /* アイコンとの間隔 */
-  transition: all 0.3s ease;
+  max-width: 200px;
+  margin-left: 8px;
 }
 .memo-footer .nav-btn.archive-toggle {
   background-color: #2c2c2c;
