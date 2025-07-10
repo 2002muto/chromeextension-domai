@@ -922,10 +922,20 @@ async function renderInputForm(id) {
     setTimeout(autoResizeTextarea, 100);
   });
 
-  // 強制的に最大高さを設定する関数
+  // 強制的に最大高さを設定する関数（フォントサイズ変更に対応）
   function forceMaxHeight() {
     const viewportHeight = window.innerHeight;
     const maxHeight = Math.floor(viewportHeight * 0.7); // ビューポートの70%
+
+    // フォントサイズ変更時は強制的な高さ設定をスキップして自動調整を優先
+    if (ta.style.fontSize && parseInt(ta.style.fontSize) !== 16) {
+      console.log(
+        `Skipping forced height due to custom font size: ${ta.style.fontSize}`
+      );
+      autoResizeTextarea();
+      return;
+    }
+
     ta.style.height = maxHeight + "px";
     console.log(
       `Forced max height: ${maxHeight}px (viewport: ${viewportHeight}px)`
@@ -1036,6 +1046,14 @@ async function renderInputForm(id) {
         parseInt(option.dataset.size) === currentFontSize
       );
     });
+
+    // フォントサイズ変更後にtextareaの高さを再調整
+    setTimeout(() => {
+      autoResizeTextarea();
+      console.log(
+        `Font size changed to ${currentFontSize}px, textarea height adjusted`
+      );
+    }, 10);
   }
 
   // ドロップダウン機能
