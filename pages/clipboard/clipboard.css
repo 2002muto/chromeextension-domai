@@ -374,22 +374,15 @@
   overflow: hidden;
   transform-origin: center center;
   border: none;
-  box-sizing: border-box; /* ensure button dimensions stay consistent */
-  padding: 0; /* Bootstrap 既定の余白を解除して中央に */
-  line-height: 1; /* 垂直方向も合わせる */
 }
 
 .memo-footer .nav-btn i {
-  /** Ensure the icon is perfectly centered */
   font-size: 14px;
   margin-left: 0;
   line-height: 1;
-  vertical-align: middle;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
