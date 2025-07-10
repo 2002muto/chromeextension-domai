@@ -376,6 +376,9 @@
   font-size: 14px;
   margin-left: 0;
   line-height: 1; /* align vertically */
+  display: inline-flex; /* flex centering like other pages */
+  align-items: center;
+  justify-content: center;
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 

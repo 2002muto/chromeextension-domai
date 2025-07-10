@@ -57,6 +57,9 @@ body::-webkit-scrollbar,
   font-size: 14px; /* 18pxから14pxに縮小 */
   margin-left: 0; /* Ensure icon starts centered */
   line-height: 1; /* Keep icon vertically centered */
+  display: inline-flex; /* center icon within button */
+  align-items: center; /* vertical centering */
+  justify-content: center; /* horizontal centering */
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
