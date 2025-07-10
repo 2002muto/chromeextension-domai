@@ -1345,6 +1345,16 @@ document.addEventListener("DOMContentLoaded", () => {
       padding: archStyle.padding,
       lineHeight: archStyle.lineHeight,
     });
+    // アイコンの位置も確認
+    const icon = archiveToggleBtn.querySelector("i");
+    if (icon) {
+      const iconStyle = window.getComputedStyle(icon);
+      console.log("archive icon style", {
+        width: iconStyle.width,
+        height: iconStyle.height,
+        marginLeft: iconStyle.marginLeft,
+      });
+    }
   } else {
     console.error("初期化: アーカイブトグルボタンが見つかりません");
   }
