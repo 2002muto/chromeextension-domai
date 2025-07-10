@@ -442,10 +442,15 @@ document.addEventListener("DOMContentLoaded", function () {
     header.querySelectorAll(".nav-btn").forEach((btn) => {
       btn.addEventListener("mouseenter", () => {
         const state = btn.classList.contains("active") ? "active" : "inactive";
-        console.log("[NAV DEBUG] hover start:", btn.id, state);
+        console.log("[NAV DEBUG] hover start:", btn.id, state, {
+          width: btn.offsetWidth,
+          scrollWidth: btn.scrollWidth,
+        });
       });
       btn.addEventListener("mouseleave", () => {
-        console.log("[NAV DEBUG] hover end:", btn.id);
+        console.log("[NAV DEBUG] hover end:", btn.id, {
+          width: btn.offsetWidth,
+        });
       });
     });
   }
