@@ -861,11 +861,11 @@ function renderArchiveFooter() {
   const footer = document.querySelector(".memo-footer");
   footer.classList.add("archive");
   footer.innerHTML = `
-    <button class="nav-btn back-btn" title="戻る">
+    <button class="nav-btn back-btn">
       <i class="bi bi-arrow-left-circle"></i>
       <span class="nav-text">戻る</span>
     </button>
-    <button class="nav-btn delete-all-btn" title="一括削除">
+    <button class="nav-btn delete-all-btn">
       <i class="bi bi-trash"></i>
       <span class="nav-text">一括削除</span>
     </button>
@@ -1281,7 +1281,6 @@ function updateExportButtonState() {
   // エクスポートボタンの状態更新
   if (exportBtn) {
     exportBtn.disabled = !hasActiveClips;
-    exportBtn.title = hasActiveClips ? "バックアップ" : "クリップはありません";
 
     // ホバーテキストも更新
     const exportText = exportBtn.querySelector(".nav-text");
@@ -1295,7 +1294,6 @@ function updateExportButtonState() {
   // アーカイブボタンの状態更新（MEMOページと同様に常に有効）
   if (archiveBtn) {
     archiveBtn.disabled = false; // 常に有効（MEMOページと同様）
-    archiveBtn.title = "アーカイブへ移動";
 
     // ホバーテキストも更新
     const archiveText = archiveBtn.querySelector(".nav-text");
@@ -1412,11 +1410,11 @@ function renderMainFooter() {
 
   // メイン画面用のfooterを設定
   footer.innerHTML = `
-    <button class="nav-btn archive-toggle" id="btn-archive-toggle" title="アーカイブ">
+    <button class="nav-btn archive-toggle" id="btn-archive-toggle">
       <i class="bi bi-archive"></i>
       <span class="nav-text">アーカイブ</span>
     </button>
-    <button class="nav-btn encrypt-btn" title="エクスポート">
+    <button class="nav-btn encrypt-btn">
       <i class="bi bi-download"></i>
       <span class="nav-text">エクスポート</span>
     </button>

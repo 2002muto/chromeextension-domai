@@ -24,6 +24,7 @@
 
   /* ───────── アーカイブモード開始 ───────── */
   function startArchiveMode(type = "memo") {
+    console.log("[ARCH] startArchiveMode", type);
     archiveType = type;
 
     /* コンテンツに archive クラスを付与 */
@@ -155,15 +156,18 @@
 
   /* ───────── フッター描画 ───────── */
   function renderArchiveFooter() {
+    console.log("[ARCH] renderArchiveFooter start");
     const footer = document.querySelector(".memo-footer");
     footer.classList.add("archive");
     footer.style.display = "flex";
     footer.innerHTML = `
-      <button class="footer-btn back-btn" title="戻る">
-        <i class="bi bi-arrow-left-circle"></i> 戻る
+      <button class="nav-btn back-btn">
+        <i class="bi bi-arrow-left-circle"></i>
+        <span class="nav-text">戻る</span>
       </button>
-      <button class="footer-btn delete-all-btn" title="一括削除">
-        <i class="bi bi-trash"></i> 一括削除
+      <button class="nav-btn delete-all-btn">
+        <i class="bi bi-trash"></i>
+        <span class="nav-text">一括削除</span>
       </button>`;
 
     /* 戻る */
