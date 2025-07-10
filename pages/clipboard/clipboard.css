@@ -369,6 +369,8 @@
   overflow: hidden;
   transform-origin: center center;
   border: none;
+  padding: 0; /* Bootstrap 既定の余白を解除して中央に */
+  line-height: 1; /* 垂直方向も合わせる */
 }
 
 .memo-footer .nav-btn i {
@@ -376,6 +378,7 @@
   font-size: 14px;
   margin-left: 0;
   line-height: 1; /* align vertically */
+  vertical-align: middle; /* Bootstrap Icons offset fix */
   display: inline-flex; /* flex centering like other pages */
   align-items: center;
   justify-content: center;
