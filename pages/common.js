@@ -436,6 +436,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (header) {
     const activeBtn = header.querySelector(".nav-btn.active");
     if (activeBtn) {
+      console.log("[NAV DEBUG] active button at load:", activeBtn.id);
       activeBtn.addEventListener("mouseenter", () => {
         console.log("[NAV DEBUG] active hover start:", activeBtn.id);
       });

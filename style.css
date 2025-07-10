@@ -226,6 +226,11 @@ body::-webkit-scrollbar,
   flex-shrink: 0;
 }
 
+/* Active button icon should be centered when title is hidden */
+.nav-btn.active:not(:hover) i {
+  margin-left: 0;
+}
+
 /* アクティブ状態のテキストは非表示（ホバー時のみ表示） */
 .nav-btn.active .nav-text {
   display: none;
