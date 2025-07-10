@@ -2498,4 +2498,19 @@ document.addEventListener("DOMContentLoaded", () => {
       iconCenter: iconRect.left + iconRect.width / 2,
     });
   });
+
+  // Also verify footer icon centers for troubleshooting
+  const footer = document.querySelector("footer.memo-footer");
+  if (footer) {
+    footer.querySelectorAll(".nav-btn").forEach((btn) => {
+      const icon = btn.querySelector("i");
+      if (!icon) return;
+      const btnRect = btn.getBoundingClientRect();
+      const iconRect = icon.getBoundingClientRect();
+      console.log("[FOOTER CHECK] icon center", btn.id || btn.className, {
+        btnCenter: btnRect.left + btnRect.width / 2,
+        iconCenter: iconRect.left + iconRect.width / 2,
+      });
+    });
+  }
 });
