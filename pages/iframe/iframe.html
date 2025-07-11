@@ -53,25 +53,20 @@
         <span>メインページを読み込む</span>
       </div>
 
-      <!-- iframe表示エリア（オーバーレイ機能付き） -->
+      <!-- iframe表示エリア（中央レイアウト） -->
       <div class="iframe-container">
-        <!-- iframe本体（背景） -->
-        <iframe
-          id="mainFrame"
-          class="w-100 border-0 iframe-main"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
-          allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
-          referrerpolicy="no-referrer-when-downgrade"
-          loading="lazy"
-        >
-          <!-- オーバーレイUIコンテナ -->
-          <div class="overlay-ui">
-            <!-- 検索・URL入力エリア -->
-            <div class="input-group mb-2">
+        <!-- 中央UIコンテナ -->
+        <div class="center-ui-container">
+          <!-- 検索・URL入力エリア -->
+          <div class="search-section">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-google"></i>
+              </span>
               <input
                 id="urlInput"
                 class="form-control"
-                placeholder="🔍 検索キーワード または 📋 URL（ChatGPT、Figma、Gemini等のログイン済みURL対応）"
+                placeholder="URLを入力またはキーワードを検索します"
                 autocomplete="off"
               />
               <button id="goBtn" class="btn btn-primary">
@@ -81,28 +76,28 @@
                 <i class="bi bi-x-circle"></i>
               </button>
             </div>
+          </div>
 
-            <!-- BOOKMARKセクション -->
-            <div class="bookmark-section">
-              <div class="bookmark-header">
-                <i class="bi bi-bookmarks"></i>
-                <span class="bookmark-label">BOOKMARK</span>
+          <!-- BOOKMARKセクション -->
+          <div class="bookmark-section">
+            <div class="bookmark-header">
+              <i class="bi bi-bookmarks"></i>
+              <span class="bookmark-label">BOOKMARK</span>
+            </div>
+            <div class="bookmark-grid">
+              <div id="bookmarkList" class="bookmark-list">
+                <!-- ブックマークアイコンがここに表示されます -->
               </div>
-              <div class="bookmark-container">
-                <div id="bookmarkList" class="bookmark-list">
-                  <!-- ブックマークアイコンがここに表示されます -->
-                </div>
-                <button
-                  id="addBookmarkBtn"
-                  class="add-bookmark-btn"
-                  title="ブックマークを追加"
-                >
-                  <i class="bi bi-plus"></i>
-                </button>
-              </div>
+              <button
+                id="addBookmarkBtn"
+                class="add-bookmark-btn"
+                title="ブックマークを追加"
+              >
+                <i class="bi bi-plus"></i>
+              </button>
             </div>
           </div>
-        </iframe>
+        </div>
       </div>
     </div>
 

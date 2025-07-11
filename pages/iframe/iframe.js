@@ -11,8 +11,11 @@ let urlInput,
   statusBar,
   loginInfo,
   quickBtns,
-  searchHistoryEl;
+  searchHistoryEl,
+  addBookmarkBtn,
+  bookmarkList;
 const HISTORY_KEY = "iframeSearchHistory";
+const BOOKMARK_KEY = "iframeBookmarks";
 
 // 要素を確実に取得する関数
 function initializeElements() {
@@ -26,6 +29,8 @@ function initializeElements() {
   loginInfo = document.getElementById("loginInfo");
   quickBtns = document.querySelectorAll(".quick-btn");
   searchHistoryEl = document.getElementById("searchHistory");
+  addBookmarkBtn = document.getElementById("addBookmarkBtn");
+  bookmarkList = document.getElementById("bookmarkList");
 
   console.log("[iframe] 要素取得結果:", {
     urlInput: !!urlInput,
@@ -36,6 +41,8 @@ function initializeElements() {
     loginInfo: !!loginInfo,
     quickBtns: quickBtns.length,
     searchHistoryEl: !!searchHistoryEl,
+    addBookmarkBtn: !!addBookmarkBtn,
+    bookmarkList: !!bookmarkList,
   });
 
   if (!searchHistoryEl) {
@@ -547,6 +554,91 @@ function getGoogleSVG() {
   return `<svg width="24" height="24" viewBox="0 0 48 48"><g><circle fill="#fff" cx="24" cy="24" r="24"/><path fill="#4285F4" d="M34.6 24.2c0-.7-.1-1.4-.2-2H24v4.1h6c-.3 1.5-1.3 2.7-2.7 3.5v2.9h4.4c2.6-2.4 4.1-5.9 4.1-10.5z"/><path fill="#34A853" d="M24 36c3.6 0 6.6-1.2 8.8-3.2l-4.4-2.9c-1.2.8-2.7 1.3-4.4 1.3-3.4 0-6.2-2.3-7.2-5.4h-4.5v3.1C15.2 33.8 19.3 36 24 36z"/><path fill="#FBBC05" d="M16.8 25.8c-.3-.8-.5-1.7-.5-2.8s.2-2 .5-2.8v-3.1h-4.5C11.5 19.2 11 21.5 11 24s.5 4.8 1.3 6.9l4.5-3.1z"/><path fill="#EA4335" d="M24 17.7c2 0 3.7.7 5.1 2.1l3.8-3.8C30.6 13.9 27.6 12.5 24 12.5c-4.7 0-8.8 2.2-11.2 5.6l4.5 3.1c1-3.1 3.8-5.4 7.2-5.4z"/></g></svg>`;
 }
 
+// ブックマーク管理関数
+function loadBookmarks() {
+  try {
+    const stored = localStorage.getItem(BOOKMARK_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("[iframe] ブックマーク読み込みエラー:", error);
+    return [];
+  }
+}
+
+function saveBookmarks(bookmarks) {
+  try {
+    localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
+    console.log("[iframe] ブックマーク保存完了:", bookmarks.length, "件");
+  } catch (error) {
+    console.error("[iframe] ブックマーク保存エラー:", error);
+  }
+}
+
+function addBookmark(title, url) {
+  const bookmarks = loadBookmarks();
+  const newBookmark = {
+    id: Date.now().toString(),
+    title: title || "新しいブックマーク",
+    url: url || "https://www.google.com",
+    timestamp: Date.now(),
+  };
+  bookmarks.push(newBookmark);
+  saveBookmarks(bookmarks);
+  renderBookmarks();
+  console.log("[iframe] ブックマーク追加:", newBookmark);
+}
+
+function removeBookmark(id) {
+  const bookmarks = loadBookmarks();
+  const filteredBookmarks = bookmarks.filter((b) => b.id !== id);
+  saveBookmarks(filteredBookmarks);
+  renderBookmarks();
+  console.log("[iframe] ブックマーク削除:", id);
+}
+
+function renderBookmarks() {
+  if (!bookmarkList) {
+    console.warn("[iframe] bookmarkList要素が見つかりません");
+    return;
+  }
+
+  const bookmarks = loadBookmarks();
+  console.log("[iframe] ブックマーク描画:", bookmarks.length, "件");
+
+  bookmarkList.innerHTML = "";
+
+  bookmarks.forEach((bookmark) => {
+    const bookmarkElement = document.createElement("a");
+    bookmarkElement.className = "bookmark-item";
+    bookmarkElement.href = "#";
+    bookmarkElement.onclick = (e) => {
+      e.preventDefault();
+      openBookmarkInNewTab(bookmark.url);
+    };
+
+    bookmarkElement.innerHTML = `
+      <div class="bookmark-icon">
+        <i class="bi bi-box-arrow-in-right"></i>
+      </div>
+      <div class="bookmark-title">${bookmark.title}</div>
+      <button class="bookmark-remove" onclick="event.stopPropagation(); removeBookmark('${bookmark.id}')">×</button>
+    `;
+
+    bookmarkList.appendChild(bookmarkElement);
+  });
+}
+
+function openBookmarkInNewTab(url) {
+  try {
+    chrome.tabs.create({ url: url });
+    updateStatus(`✅ 新しいタブで開きました: ${url}`, "success");
+    console.log("[iframe] 新しいタブで開く:", url);
+  } catch (error) {
+    console.error("[iframe] タブ作成エラー:", error);
+    updateStatus(`❌ タブ作成エラー: ${error.message}`, "error");
+  }
+}
+
 async function renderHistory() {
   const history = loadHistory();
   console.log(`[iframe] renderHistory呼び出し時の履歴数: ${history.length}`);
@@ -996,6 +1088,34 @@ function setupEventListeners() {
     });
   }
 
+  // ブックマーク追加ボタン
+  if (addBookmarkBtn) {
+    addBookmarkBtn.addEventListener("click", () => {
+      console.log("[iframe] 🔥 ブックマーク追加ボタンクリック");
+      // 仮のダミーブックマークを追加（今後は登録画面で実装）
+      const dummyTitles = [
+        "Google",
+        "GitHub",
+        "Stack Overflow",
+        "MDN",
+        "YouTube",
+      ];
+      const dummyUrls = [
+        "https://www.google.com",
+        "https://github.com",
+        "https://stackoverflow.com",
+        "https://developer.mozilla.org",
+        "https://www.youtube.com",
+      ];
+      const randomIndex = Math.floor(Math.random() * dummyTitles.length);
+      addBookmark(dummyTitles[randomIndex], dummyUrls[randomIndex]);
+      updateStatus(
+        `✅ ブックマーク「${dummyTitles[randomIndex]}」を追加しました`,
+        "success"
+      );
+    });
+  }
+
   console.log("[iframe] イベントリスナー設定完了");
 }
 
@@ -1040,6 +1160,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   await renderHistory();
+
+  // ブックマークを描画
+  renderBookmarks();
 
   // イベントリスナーを設定
   setupEventListeners();
