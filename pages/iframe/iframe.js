@@ -1227,12 +1227,14 @@ function setupEventListeners() {
         const response = await chrome.runtime.sendMessage({
           type: "GET_LAST_PAGE_URL",
         });
+        console.log("[iframe] GET_LAST_PAGE_URL response", response);
         if (response && response.url) {
           handleInput(response.url, true);
         } else {
           updateStatus("メインページURLの取得に失敗しました", "error");
         }
       } catch (e) {
+        console.error("[iframe] GET_LAST_PAGE_URL error", e);
         updateStatus("メインページURLの取得に失敗しました", "error");
       }
     });

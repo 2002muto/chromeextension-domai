@@ -5,6 +5,15 @@ const WIDTH = 420;
 const popups = new Map(); // baseWin.id → popup.id
 let lastTab = null; // 直近入力フォーカスのページタブ
 const EXTENSION_URL_PREFIX = chrome.runtime.getURL(""); // 拡張機能ページ判定用
+const LAST_TAB_STORAGE_KEY = "lastTab"; // Storageキー
+
+// 起動時に保存済みlastTabを取得
+chrome.storage.local.get([LAST_TAB_STORAGE_KEY], (res) => {
+  if (res[LAST_TAB_STORAGE_KEY] !== undefined) {
+    lastTab = res[LAST_TAB_STORAGE_KEY];
+    console.log(`[BG] lastTab restored from storage: ${lastTab}`);
+  }
+});
 
 // ───────────────────────────────────────
 // DeclarativeNetRequest制御
@@ -256,6 +265,7 @@ chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
     const url = tab.url || "";
     if (!url.startsWith(EXTENSION_URL_PREFIX)) {
       lastTab = tabId;
+      chrome.storage.local.set({ [LAST_TAB_STORAGE_KEY]: lastTab });
       console.log(`[BG] lastTab updated to ${lastTab} (url: ${url})`);
     } else {
       console.log(`[BG] onActivated ignored extension page: ${url}`);
@@ -270,6 +280,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
     console.log(`[BG] FOCUS_TAB from tab ${sender.tab.id} url: ${senderUrl}`);
     if (!senderUrl.startsWith(EXTENSION_URL_PREFIX)) {
       lastTab = sender.tab.id;
+      chrome.storage.local.set({ [LAST_TAB_STORAGE_KEY]: lastTab });
       console.log(`[BG] lastTab updated to ${lastTab} (FOCUS_TAB)`);
     }
     return;
@@ -440,12 +451,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === "GET_LAST_PAGE_URL") {
     console.log(`[BG] GET_LAST_PAGE_URL → lastTab ${lastTab}`);
+
+    const respondWithTabId = (tabId) => {
+      if (tabId !== null && tabId !== undefined) {
+        chrome.tabs.get(tabId, (tab) => {
+          const u = tab && tab.url && !tab.url.startsWith(EXTENSION_URL_PREFIX) ? tab.url : null;
+          sendResponse({ url: u });
+        });
+      } else {
+        sendResponse({ url: null });
+      }
+    };
+
     if (lastTab !== null) {
-      chrome.tabs.get(lastTab, (tab) => {
-        sendResponse({ url: tab && tab.url ? tab.url : null });
-      });
+      respondWithTabId(lastTab);
     } else {
-      sendResponse({ url: null });
+      chrome.storage.local.get([LAST_TAB_STORAGE_KEY], (res) => {
+        const stored = res[LAST_TAB_STORAGE_KEY];
+        if (stored !== undefined) {
+          lastTab = stored;
+          console.log(`[BG] lastTab loaded from storage: ${lastTab}`);
+          respondWithTabId(stored);
+        } else {
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+            const active = tabs && tabs[0];
+            const activeUrl = active && active.url && !active.url.startsWith(EXTENSION_URL_PREFIX) ? active.url : null;
+            console.log(`[BG] Active tab fallback URL: ${activeUrl}`);
+            sendResponse({ url: activeUrl });
+          });
+        }
+      });
     }
     return true; // async response
   }
