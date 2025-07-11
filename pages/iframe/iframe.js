@@ -13,7 +13,8 @@ let urlInput,
   quickBtns,
   searchHistoryEl,
   addBookmarkBtn,
-  bookmarkList;
+  bookmarkList,
+  loadMainPageBtn;
 const HISTORY_KEY = "iframeSearchHistory";
 const BOOKMARK_KEY = "iframeBookmarks";
 
@@ -31,6 +32,7 @@ function initializeElements() {
   searchHistoryEl = document.getElementById("searchHistory");
   addBookmarkBtn = document.getElementById("addBookmarkBtn");
   bookmarkList = document.getElementById("bookmarkList");
+  loadMainPageBtn = document.getElementById("loadMainPageBtn");
 
   console.log("[iframe] 要素取得結果:", {
     urlInput: !!urlInput,
@@ -43,6 +45,7 @@ function initializeElements() {
     searchHistoryEl: !!searchHistoryEl,
     addBookmarkBtn: !!addBookmarkBtn,
     bookmarkList: !!bookmarkList,
+    loadMainPageBtn: !!loadMainPageBtn,
   });
 
   if (!searchHistoryEl) {
@@ -1113,6 +1116,18 @@ function setupEventListeners() {
         `✅ ブックマーク「${dummyTitles[randomIndex]}」を追加しました`,
         "success"
       );
+    });
+  }
+
+  // メインページ読み込みボタン
+  if (loadMainPageBtn) {
+    loadMainPageBtn.addEventListener("click", () => {
+      console.log("[iframe] 🔥 メインページ読み込みボタンクリック");
+      // ここでメインページのURLを読み込む
+      // 仮のURLとして 'https://www.google.com' を設定
+      const mainPageUrl = "https://www.google.com";
+      handleInput(mainPageUrl);
+      updateStatus(`🚀 メインページを読み込んでいます...`, "info");
     });
   }
 
