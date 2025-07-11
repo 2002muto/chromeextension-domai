@@ -1153,8 +1153,24 @@ header {
 .modal-actions .btn-close {
   background-color: #ef5350; /* よりソフトな赤色に変更 */
   color: white;
+  background-image: none !important; /* ❌アイコンを削除 */
 }
 
 .modal-actions .btn-close:hover {
   background-color: #e53935; /* ホバー時の色を調整 */
+}
+
+.modal-actions .btn-save,
+.modal-actions .btn-close {
+  width: 100px;
+  height: 40px;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  text-align: center;
+  box-sizing: border-box;
 }
