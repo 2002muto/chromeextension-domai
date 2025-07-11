@@ -12,6 +12,20 @@ chrome.storage.local.get([LAST_TAB_STORAGE_KEY], (res) => {
   if (res[LAST_TAB_STORAGE_KEY] !== undefined) {
     lastTab = res[LAST_TAB_STORAGE_KEY];
     console.log(`[BG] lastTab restored from storage: ${lastTab}`);
+  } else {
+    chrome.tabs.query({ active: true }, (tabs) => {
+      const cand = (tabs || []).find(
+        (t) => t.url && !t.url.startsWith(EXTENSION_URL_PREFIX)
+      );
+      if (cand) {
+        lastTab = cand.id;
+        console.log(
+          `[BG] lastTab initialized from active tab ${cand.id} url: ${cand.url}`
+        );
+      } else {
+        console.log("[BG] No non-extension active tab found on startup");
+      }
+    });
   }
 });
 
@@ -473,11 +487,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           console.log(`[BG] lastTab loaded from storage: ${lastTab}`);
           respondWithTabId(stored);
         } else {
-          chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-            const active = tabs && tabs[0];
-            const activeUrl = active && active.url && !active.url.startsWith(EXTENSION_URL_PREFIX) ? active.url : null;
-            console.log(`[BG] Active tab fallback URL: ${activeUrl}`);
-            sendResponse({ url: activeUrl });
+          chrome.tabs.query({ active: true }, (tabs) => {
+            const cand = (tabs || []).find(
+              (t) => t.url && !t.url.startsWith(EXTENSION_URL_PREFIX)
+            );
+            if (cand) {
+              lastTab = cand.id;
+              console.log(
+                `[BG] Fallback found active tab ${cand.id} url: ${cand.url}`
+              );
+              sendResponse({ url: cand.url });
+            } else {
+              console.log("[BG] No suitable active tab found in fallback");
+              sendResponse({ url: null });
+            }
           });
         }
       });
