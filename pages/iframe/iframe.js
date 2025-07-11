@@ -974,9 +974,9 @@ function focusSearchInput() {
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う
 async function handleInput(input, forceShow = false) {
-  console.log(`[iframe] 🔥 入力処理: ${input}`);
+  console.log(`[iframe] 🔥 入力処理開始: ${input}`);
 
-  if (!input.trim()) {
+  if (!input || input.trim() === "") {
     // updateStatus("入力が空です", "error");
     return;
   }
@@ -988,6 +988,7 @@ async function handleInput(input, forceShow = false) {
 
   // @記号を除去
   const cleanInput = input.replace(/^@+/, "").trim();
+  const iframeContainer = document.querySelector(".iframe-container");
 
   if (isValidUrl(cleanInput)) {
     // URL直接アクセス
@@ -997,22 +998,22 @@ async function handleInput(input, forceShow = false) {
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
 
     currentUrl = fullUrl;
-    // forceShow=trueならiframeに必ず表示
-    if (forceShow || mainFrame.src !== fullUrl) {
-      try {
-        await forceLoadIframe(fullUrl);
-      } catch (error) {
-        console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
-        updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
+    iframeContainer.classList.add("viewing");
 
-        // エラー時は新しいタブで開く
-        try {
-          chrome.tabs.create({ url: fullUrl });
-          updateStatus(`✅ 新しいタブで開きました: ${fullUrl}`, "success");
-        } catch (tabError) {
-          console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
-          updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
-        }
+    try {
+      await forceLoadIframe(fullUrl);
+    } catch (error) {
+      console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
+      updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
+      iframeContainer.classList.remove("viewing");
+
+      // エラー時は新しいタブで開く
+      try {
+        chrome.tabs.create({ url: fullUrl });
+        updateStatus(`✅ 新しいタブで開きました: ${fullUrl}`, "success");
+      } catch (tabError) {
+        console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
+        updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
       }
     }
   } else {
@@ -1023,26 +1024,26 @@ async function handleInput(input, forceShow = false) {
     console.log(`[iframe] 🔥 Google検索: ${searchUrl}`);
 
     currentUrl = searchUrl;
-    // forceShow=trueならiframeに必ず表示
-    if (forceShow || mainFrame.src !== searchUrl) {
-      try {
-        updateStatus("Google検索中...", "info");
-        mainFrame.src = searchUrl;
-        setTimeout(() => {
-          updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
-        }, 1000);
-      } catch (error) {
-        console.error(`[iframe] 🔥 Google検索エラー:`, error);
-        updateStatus(`❌ 検索エラー: ${error.message}`, "error");
+    iframeContainer.classList.add("viewing");
 
-        // エラー時は新しいタブで開く
-        try {
-          chrome.tabs.create({ url: searchUrl });
-          updateStatus(`✅ 新しいタブで検索しました: ${cleanInput}`, "success");
-        } catch (tabError) {
-          console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
-          updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
-        }
+    try {
+      updateStatus("Google検索中...", "info");
+      mainFrame.src = searchUrl;
+      setTimeout(() => {
+        updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
+      }, 1000);
+    } catch (error) {
+      console.error(`[iframe] 🔥 Google検索エラー:`, error);
+      updateStatus(`❌ 検索エラー: ${error.message}`, "error");
+      iframeContainer.classList.remove("viewing");
+
+      // エラー時は新しいタブで開く
+      try {
+        chrome.tabs.create({ url: searchUrl });
+        updateStatus(`✅ 新しいタブで検索しました: ${cleanInput}`, "success");
+      } catch (tabError) {
+        console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
+        updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
       }
     }
   }
