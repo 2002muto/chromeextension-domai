@@ -261,9 +261,9 @@ header {
 .iframe-container {
   background: #242424;
   border-radius: 8px;
-  border: none;
+  border: none !important;
   overflow: hidden;
-  box-shadow: none;
+  box-shadow: none !important;
   margin: 0;
   position: relative;
   flex: 1 1 0%;
@@ -288,6 +288,7 @@ header {
   animation: gradientShift 4s ease infinite;
   border-radius: 14px;
   z-index: -1;
+  display: none !important;
 }
 
 @keyframes gradientShift {
