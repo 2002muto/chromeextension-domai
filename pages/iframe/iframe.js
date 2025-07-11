@@ -130,18 +130,11 @@ let currentUrl = "";
 function updateStatus(message, type = "info") {
   console.log(`[iframe] ステータス更新: ${message}`);
 
-  // ステータス表示用の要素を作成または取得
+  // ステータス表示用の要素を取得
   let statusElement = document.getElementById("statusBar");
   if (!statusElement) {
-    statusElement = document.createElement("div");
-    statusElement.id = "statusBar";
-    statusElement.className = "alert alert-secondary mb-3";
-
-    // iframe-contentの最初に挿入
-    const iframeContent = document.querySelector(".iframe-content");
-    if (iframeContent) {
-      iframeContent.insertBefore(statusElement, iframeContent.firstChild);
-    }
+    console.warn(`[iframe] statusBar要素が見つかりません`);
+    return;
   }
 
   const icon =
@@ -150,7 +143,23 @@ function updateStatus(message, type = "info") {
       : type === "error"
       ? "bi-exclamation-triangle"
       : "bi-info-circle";
-  statusElement.innerHTML = `<i class="bi ${icon}"></i> ${message}`;
+
+  // drag-drop-toastスタイルで表示
+  statusElement.innerHTML = `<i class="bi ${icon}"></i><span>${message}</span>`;
+  statusElement.style.display = "flex";
+  statusElement.classList.remove("fade-out");
+
+  // 一定時間後に自動で非表示
+  setTimeout(() => {
+    if (statusElement) {
+      statusElement.classList.add("fade-out");
+      setTimeout(() => {
+        if (statusElement) {
+          statusElement.style.display = "none";
+        }
+      }, 300); // アニメーション時間を考慮
+    }
+  }, 3000); // 3秒後に非表示
 }
 
 // URLかどうかを判定
@@ -1034,6 +1043,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // イベントリスナーを設定
   setupEventListeners();
+
+  // 初期メッセージを表示
+  updateStatus("メインページを読み込む", "info");
 
   // URLパラメータ処理
   const urlParams = new URLSearchParams(window.location.search);

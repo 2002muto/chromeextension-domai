@@ -90,9 +90,10 @@ body {
 .input-group {
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid #667eea;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
 }
 
 #urlInput {
@@ -119,7 +120,7 @@ body {
 #goBtn {
   background: linear-gradient(135deg, #667eea, #764ba2);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 12px 20px;
   color: white;
   font-weight: 600;
@@ -136,7 +137,7 @@ body {
 #clearBtn {
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 12px 16px;
   color: #e2e8f0;
   transition: all 0.3s ease;
@@ -239,20 +240,21 @@ body {
   display: block;
 }
 
-/* ─── iframe表示エリア ─── */
+/* ─── iframe表示エリア（オーバーレイ版） ─── */
 .iframe-container {
-  background: #ffffff;
-  border-radius: 0;
+  background: #242424;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   box-shadow: none;
   margin: 0;
   position: relative;
   flex: 1 1 0%;
   min-height: 0;
-  height: 100%;
+  height: calc(100vh - 90px);
   width: 100%;
   padding: 0;
-  display: flex;
+  display: block;
 }
 
 .iframe-container::before {
@@ -283,11 +285,30 @@ body {
   width: 100%;
   height: 100%;
   border: none;
-  background: #ffffff;
-  border-radius: 0;
+  background: #242424;
+  border-radius: 6px;
   display: block;
-  min-height: 0;
-  flex: 1 1 0%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/* オーバーレイUIコンテナ */
+.overlay-ui {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.overlay-ui > * {
+  pointer-events: auto;
 }
 
 /* ─── ステータス表示 ─── */
@@ -694,4 +715,219 @@ body {
 .history-label i {
   font-size: 16px;
   margin-right: 2px;
+}
+
+/* BOOKMARKセクション */
+.bookmark-section {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 10px;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.bookmark-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bookmark-header i {
+  color: #667eea;
+  font-size: 16px;
+}
+
+.bookmark-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bookmark-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px 0;
+}
+
+.bookmark-list::-webkit-scrollbar {
+  height: 4px;
+}
+
+.bookmark-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.bookmark-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.bookmark-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.bookmark-item {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.bookmark-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.bookmark-item img {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  margin: 6px;
+  object-fit: cover;
+}
+
+.bookmark-item .bookmark-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.bookmark-item:hover .bookmark-remove {
+  display: flex;
+}
+
+.bookmark-remove:hover {
+  background: #c82333;
+}
+
+.add-bookmark-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px dashed rgba(102, 126, 234, 0.4);
+  background: transparent;
+  border-radius: 6px;
+  color: rgba(102, 126, 234, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.add-bookmark-btn:hover {
+  border-color: rgba(102, 126, 234, 0.8);
+  color: rgba(102, 126, 234, 1);
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.add-bookmark-btn i {
+  font-size: 16px;
+}
+
+/* ステータスバー（drag-drop-toastスタイル） */
+#statusBar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(135deg, #00b06b, #6bff97);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(107, 255, 151, 0.15);
+  font-size: 0.8rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10000;
+  opacity: 0.7;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+  max-width: 250px;
+  word-wrap: break-word;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideInRight 0.3s ease-out;
+}
+
+#statusBar i {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+#statusBar.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* トースト通知のアニメーション */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .overlay-ui {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    gap: 8px;
+  }
+
+  .bookmark-section {
+    padding: 8px;
+  }
+
+  .bookmark-header {
+    font-size: 13px;
+  }
+
+  .bookmark-item,
+  .add-bookmark-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .bookmark-item img {
+    width: 16px;
+    height: 16px;
+    margin: 6px;
+  }
 }
