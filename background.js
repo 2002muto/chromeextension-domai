@@ -413,6 +413,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // 非同期レスポンスを有効化
   }
 
+  if (request.type === "GET_ACTIVE_TAB_URL") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs[0] && tabs[0].url) {
+        sendResponse({ url: tabs[0].url });
+      } else {
+        sendResponse({ url: null });
+      }
+    });
+    return true; // async response
+  }
+
   // 非同期処理を無理矢理同期的に扱う
   (async () => {
     try {

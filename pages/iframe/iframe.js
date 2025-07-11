@@ -14,7 +14,12 @@ let urlInput,
   searchHistoryEl,
   addBookmarkBtn,
   bookmarkList,
-  loadMainPageBtn;
+  addBookmarkModal,
+  closeModalBtn,
+  saveBookmarkBtn,
+  bookmarkUrlInput,
+  bookmarkTitleInput,
+  loadMainPageBtn; // 追加
 const HISTORY_KEY = "iframeSearchHistory";
 const BOOKMARK_KEY = "iframeBookmarks";
 
@@ -32,7 +37,12 @@ function initializeElements() {
   searchHistoryEl = document.getElementById("searchHistory");
   addBookmarkBtn = document.getElementById("addBookmarkBtn");
   bookmarkList = document.getElementById("bookmarkList");
-  loadMainPageBtn = document.getElementById("loadMainPageBtn");
+  addBookmarkModal = document.getElementById("addBookmarkModal");
+  closeModalBtn = document.getElementById("closeModalBtn");
+  saveBookmarkBtn = document.getElementById("saveBookmarkBtn");
+  bookmarkUrlInput = document.getElementById("bookmarkUrlInput");
+  bookmarkTitleInput = document.getElementById("bookmarkTitleInput");
+  loadMainPageBtn = document.getElementById("loadMainPageBtn"); // 追加
 
   console.log("[iframe] 要素取得結果:", {
     urlInput: !!urlInput,
@@ -45,6 +55,11 @@ function initializeElements() {
     searchHistoryEl: !!searchHistoryEl,
     addBookmarkBtn: !!addBookmarkBtn,
     bookmarkList: !!bookmarkList,
+    addBookmarkModal: !!addBookmarkModal,
+    closeModalBtn: !!closeModalBtn,
+    saveBookmarkBtn: !!saveBookmarkBtn,
+    bookmarkUrlInput: !!bookmarkUrlInput,
+    bookmarkTitleInput: !!bookmarkTitleInput,
     loadMainPageBtn: !!loadMainPageBtn,
   });
 
@@ -135,6 +150,7 @@ const LOGIN_SITES = {
 
 // 現在のURL
 let currentUrl = "";
+let currentLoadIsLoginSite = false; // ★ログイン維持サイトかのフラグ
 
 // ステータス更新
 function updateStatus(message, type = "info") {
@@ -231,6 +247,8 @@ async function forceLoadIframe(url) {
   console.log(`[iframe] 🔥 無理矢理読み込み開始: ${url}`);
 
   const loginCheck = isLoginSite(url);
+  currentLoadIsLoginSite = loginCheck.isLogin; // ★フラグを設定
+
   if (loginCheck.isLogin) {
     updateStatus(
       `${loginCheck.siteName} のログイン状態を維持して接続中...`,
@@ -1090,6 +1108,36 @@ function setupEventListeners() {
     });
   }
 
+  // iframeの読み込み完了イベント
+  if (mainFrame) {
+    mainFrame.onload = () => {
+      console.log("[iframe] iframe 読み込み完了:", mainFrame.src);
+
+      // 成功メッセージを表示
+      if (currentLoadIsLoginSite) {
+        updateStatus("✅ 接続成功: (ログイン状態維持)", "success");
+      } else {
+        updateStatus("✅ ページの読み込みが完了しました", "success");
+      }
+      currentLoadIsLoginSite = false; // フラグをリセット
+
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.remove("loading");
+      }
+    };
+    mainFrame.onerror = () => {
+      console.error("[iframe] iframe 読み込みエラー:", mainFrame.src);
+      updateStatus("❌ ページの読み込みに失敗しました", "error");
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.remove("loading");
+        iframeContainer.classList.remove("viewing");
+      }
+      currentLoadIsLoginSite = false; // フラグをリセット
+    };
+  }
+
   // クイックアクセスボタン
   if (quickBtns && quickBtns.length > 0) {
     quickBtns.forEach((btn) => {
@@ -1106,43 +1154,92 @@ function setupEventListeners() {
   if (addBookmarkBtn) {
     addBookmarkBtn.addEventListener("click", () => {
       console.log("[iframe] 🔥 ブックマーク追加ボタンクリック");
-      // 仮のダミーブックマークを追加（今後は登録画面で実装）
-      const dummyTitles = [
-        "Google",
-        "GitHub",
-        "Stack Overflow",
-        "MDN",
-        "YouTube",
-      ];
-      const dummyUrls = [
-        "https://www.google.com",
-        "https://github.com",
-        "https://stackoverflow.com",
-        "https://developer.mozilla.org",
-        "https://www.youtube.com",
-      ];
-      const randomIndex = Math.floor(Math.random() * dummyTitles.length);
-      addBookmark(dummyTitles[randomIndex], dummyUrls[randomIndex]);
-      updateStatus(
-        `✅ ブックマーク「${dummyTitles[randomIndex]}」を追加しました`,
-        "success"
-      );
+      if (addBookmarkModal) {
+        addBookmarkModal.style.display = "flex";
+        bookmarkUrlInput.focus(); // URL入力にフォーカス
+      }
+    });
+  } else {
+    console.warn("[iframe] addBookmarkBtn が見つかりません");
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", () => {
+      if (addBookmarkModal) {
+        addBookmarkModal.style.display = "none";
+      }
     });
   }
 
-  // メインページ読み込みボタン
+  if (saveBookmarkBtn) {
+    saveBookmarkBtn.addEventListener("click", () => {
+      const url = bookmarkUrlInput.value.trim();
+      const title = bookmarkTitleInput.value.trim();
+
+      if (url && title) {
+        addBookmark(title, url);
+        bookmarkUrlInput.value = "";
+        bookmarkTitleInput.value = "";
+        if (addBookmarkModal) {
+          addBookmarkModal.style.display = "none";
+        }
+      } else {
+        updateStatus("URLとタイトルを両方入力してください", "error");
+      }
+    });
+  }
+
+  // モーダルの外側をクリックしたときに閉じる
+  if (addBookmarkModal) {
+    addBookmarkModal.addEventListener("click", (e) => {
+      if (e.target === addBookmarkModal) {
+        addBookmarkModal.style.display = "none";
+      }
+    });
+  }
+
+  // URL入力でEnterキーを押したらタイトル入力にフォーカス
+  if (bookmarkUrlInput) {
+    bookmarkUrlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        bookmarkTitleInput.focus();
+      }
+    });
+  }
+
+  // タイトル入力でEnterキーを押したら保存
+  if (bookmarkTitleInput) {
+    bookmarkTitleInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveBookmarkBtn.click();
+      }
+    });
+  }
+
+  // メインページ読み込みボタンのイベント
   if (loadMainPageBtn) {
-    loadMainPageBtn.addEventListener("click", () => {
-      console.log("[iframe] 🔥 メインページ読み込みボタンクリック");
-      // ここでメインページのURLを読み込む
-      // 仮のURLとして 'https://www.google.com' を設定
-      const mainPageUrl = "https://www.google.com";
-      handleInput(mainPageUrl);
-      updateStatus(`🚀 メインページを読み込んでいます...`, "info");
+    loadMainPageBtn.addEventListener("click", async () => {
+      // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
+      try {
+        const response = await chrome.runtime.sendMessage({
+          type: "GET_ACTIVE_TAB_URL",
+        });
+        if (response && response.url) {
+          handleInput(response.url, true);
+        } else {
+          updateStatus("メインページURLの取得に失敗しました", "error");
+        }
+      } catch (e) {
+        updateStatus("メインページURLの取得に失敗しました", "error");
+      }
     });
   }
 
-  console.log("[iframe] イベントリスナー設定完了");
+  // document.addEventListener("DOMContentLoaded", initialize);
+  // 直接呼び出しに変更
+  initialize();
 }
 
 // ページ読み込み時の初期化
@@ -1193,8 +1290,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // イベントリスナーを設定
   setupEventListeners();
 
-  // 初期メッセージを表示
-  updateStatus("メインページを読み込む", "info");
+  // 初期メッセージを表示しないように変更
+  // updateStatus("メインページを読み込む", "info");
 
   // URLパラメータ処理
   const urlParams = new URLSearchParams(window.location.search);

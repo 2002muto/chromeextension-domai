@@ -57,7 +57,7 @@
       <div class="iframe-container">
         <!-- 中央UIコンテナ -->
         <div class="center-ui-container">
-          <!-- メインページ読み込みセクション -->
+          <!-- メインページ読み込みボタン（左アイコン＋右テキスト） -->
           <div id="loadMainPageBtn" class="main-page-load-section">
             <i class="bi bi-box-arrow-in-right"></i>
             <span>メインページを読み込む</span>
@@ -152,3 +152,25 @@
     <script src="iframe.js"></script>
   </body>
 </html>
+
+<!-- ブックマーク追加モーダル -->
+<div id="addBookmarkModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="form-group">
+      <label for="bookmarkUrlInput">URL</label>
+      <input
+        type="text"
+        id="bookmarkUrlInput"
+        placeholder="URL を入力または貼り付け"
+      />
+    </div>
+    <div class="form-group">
+      <label for="bookmarkTitleInput">タイトル</label>
+      <input type="text" id="bookmarkTitleInput" placeholder="名前を入力" />
+    </div>
+    <div class="modal-actions">
+      <button id="saveBookmarkBtn" class="btn-save">保存</button>
+      <button id="closeModalBtn" class="btn-close">閉じる</button>
+    </div>
+  </div>
+</div>

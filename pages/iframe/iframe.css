@@ -15,6 +15,11 @@ body {
   overflow-x: hidden;
 }
 
+/* ─── 共通ヘッダー ─── */
+header {
+  background-color: #242424;
+}
+
 /* ─── ヘッダー（非表示） ─── */
 /* .iframe-header { background: #314559 !important; } */
 
@@ -112,7 +117,7 @@ body {
   border: none;
   padding: 12px 16px;
   font-size: 14px;
-  color: #a9a9a9; /* 修正1 */
+  color: #333; /* ★文字がはっきり見えるように濃い色に変更 */
   outline: none;
   background: #fff;
   transition: all 0.3s ease;
@@ -125,7 +130,7 @@ body {
 }
 
 #urlInput::placeholder {
-  color: #a9a9a9; /* 修正1 */
+  color: #6d6d6d; /* ★プレースホルダーの文字色を調整 */
   font-size: 13px;
 }
 
@@ -332,26 +337,32 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 12px 20px;
+  padding: 14px 28px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #a9a9a9; /* 修正1 */
-  font-size: 16px;
-  font-weight: 500;
+  background: #242424;
+  border: 1px solid #a9a9a9;
+  color: #a9a9a9;
+  font-size: 18px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-bottom: 18px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 340px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .main-page-load-section:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #333;
+  border-color: #fff;
+  color: #fff;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .main-page-load-section i {
-  font-size: 20px;
+  font-size: 22px;
 }
 
 /* 検索セクション */
@@ -417,11 +428,10 @@ body {
   right: 0;
   margin: 0;
   padding: 8px 16px 16px 16px;
-  background: rgba(49, 69, 89, 0.95);
-  backdrop-filter: blur(10px);
+  background: #242424; /* ヘッダーと背景色を統一 */
   box-sizing: border-box;
   z-index: 1000;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none; /* 上の境界線を削除 */
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -981,8 +991,10 @@ body {
   opacity: 0.7;
   transform: translateX(0);
   transition: all 0.3s ease;
-  max-width: 250px;
-  word-wrap: break-word;
+  max-width: 300px; /* 少し幅を広げる */
+  white-space: nowrap; /* ★改行を禁止 */
+  overflow: hidden; /* ★はみ出しを隠す */
+  text-overflow: ellipsis; /* ★省略記号(...)を表示 */
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: slideInRight 0.3s ease-out;
@@ -1032,31 +1044,108 @@ body {
   }
 
   .bookmark-grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 12px;
   }
 
-  .bookmark-item,
-  .add-bookmark-btn {
-    width: 70px;
-    height: 70px;
-  }
+  /* ブックマークアイテムのレスポンシブサイズ指定を削除し、デフォルトの96pxを維持 */
+}
 
-  .bookmark-item {
-    padding: 10px;
-  }
+/* ─── ブックマーク追加モーダル ─── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: none; /* 初期状態は非表示 */
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
 
-  .bookmark-item .bookmark-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-  }
+.modal-content {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  animation: modal-fade-in 0.3s ease-out;
+}
 
-  .bookmark-item .bookmark-title {
-    font-size: 11px;
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-  .add-bookmark-btn {
-    font-size: 20px;
-  }
+.modal-content .form-group {
+  margin-bottom: 20px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.modal-content input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  color: #495057;
+}
+
+.modal-content input[type="text"]::placeholder {
+  color: #adb5bd;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 90px; /* ★固定幅を指定してボタンのサイズを完全に統一 */
+  text-align: center;
+}
+
+.modal-actions .btn-save {
+  background-color: #28a745;
+  color: white;
+}
+
+.modal-actions .btn-save:hover {
+  background-color: #218838;
+}
+
+.modal-actions .btn-close {
+  background-color: #ef5350; /* よりソフトな赤色に変更 */
+  color: white;
+}
+
+.modal-actions .btn-close:hover {
+  background-color: #e53935; /* ホバー時の色を調整 */
 }
