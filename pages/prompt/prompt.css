@@ -918,8 +918,9 @@ textarea.field-text,
 }
 
 .memo-footer .nav-btn:hover {
-  filter: brightness(1.2);
-  transform: translateY(-2px) scale(1.05);
+  /* アニメーション無効化 */
+  filter: none;
+  transform: none;
 }
 
 /* フッターボタンのホバー時展開 */
@@ -937,11 +938,11 @@ textarea.field-text,
   flex-shrink: 0;
 }
 
-/* ホバー時のテキストをアイコンの右に表示 */
+/* ホバー時のテキストをアイコンの右に表示 - 無効化（統一されたfooter動作のため） */
 .memo-footer .nav-btn:hover .nav-text {
-  opacity: 1;
-  max-width: 200px;
-  margin-left: 8px;
+  opacity: 0; /* テキスト非表示 */
+  max-width: 0;
+  margin-left: 0;
 }
 
 /* 一覧表示用フッターの色分け（MEMO・CLIPBOARDと統一） */
@@ -987,9 +988,9 @@ textarea.field-text,
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
-  opacity: 1;
-  max-width: 200px;
-  margin-left: 8px;
+  opacity: 0; /* テキスト非表示 */
+  max-width: 0;
+  margin-left: 0;
 }
 
 /* 編集モード時のボタンの色分け */
@@ -1014,9 +1015,10 @@ textarea.field-text,
 }
 
 .memo-footer .nav-btn.history-btn:hover .nav-text {
-  color: #2c2c2c; /* ダークグレー文字を確実に適用 */
-  font-weight: 900; /* より太い文字 */
-  font-size: 12px; /* わずかに大きく */
+  display: none; /* テキスト非表示 */
+  opacity: 0;
+  max-width: 0;
+  margin-left: 0;
 }
 
 /*--------------------------------------------------------------

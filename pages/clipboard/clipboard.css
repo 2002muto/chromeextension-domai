@@ -398,8 +398,9 @@
 }
 
 .memo-footer .nav-btn:hover {
-  filter: brightness(1.2);
-  transform: translateY(-2px) scale(1.05);
+  /* アニメーション無効化 */
+  filter: none;
+  transform: none;
 }
 
 /* フッターボタンのホバー時展開 */
@@ -417,12 +418,12 @@
   flex-shrink: 0;
 }
 
-/* ホバー時のテキストをアイコンの右に表示 */
+/* ホバー時のテキストをアイコンの右に表示 - 無効化（統一されたfooter動作のため） */
 .memo-footer .nav-btn:hover .nav-text {
-  display: inline-block;
-  opacity: 1;
-  max-width: 200px;
-  margin-left: 8px;
+  display: none; /* テキスト非表示 */
+  opacity: 0;
+  max-width: 0;
+  margin-left: 0;
 }
 
 /* アーカイブボタンの色分け（MEMOページと完全統一） */
@@ -459,9 +460,9 @@
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
-  opacity: 1;
-  max-width: 200px;
-  margin-left: 8px;
+  opacity: 0; /* テキスト非表示 */
+  max-width: 0;
+  margin-left: 0;
 }
 
 /* ドラッグオーバー時のハイライト（旧スタイル - 削除予定） */
@@ -1137,10 +1138,10 @@
 }
 .memo-footer .archive-toggle:hover .nav-text,
 .memo-footer .encrypt-btn:hover .nav-text {
-  display: inline-block !important;
-  max-width: 200px;
-  margin-left: 8px;
-  opacity: 1;
+  display: none !important; /* テキスト非表示 */
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
@@ -1186,13 +1187,14 @@
 }
 .memo-footer .archive-toggle:hover,
 .memo-footer .encrypt-btn:hover {
-  width: auto !important;
-  min-width: 0;
-  border-radius: 18px !important;
-  padding: 0 8px !important;
-  justify-content: flex-start !important;
-  filter: brightness(1.2);
-  transform: translateY(-2px) scale(1.05);
+  /* アニメーション無効化 - 形状変更も無効化 */
+  width: 36px !important;
+  min-width: 36px;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  filter: none;
+  transform: none;
 }
 .memo-footer .archive-toggle .nav-text,
 .memo-footer .encrypt-btn .nav-text {
@@ -1209,9 +1211,9 @@
 }
 .memo-footer .archive-toggle:hover .nav-text,
 .memo-footer .encrypt-btn:hover .nav-text {
-  opacity: 1;
-  max-width: 200px;
-  margin-left: 8px;
+  opacity: 0; /* テキスト非表示 */
+  max-width: 0;
+  margin-left: 0;
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
@@ -1266,13 +1268,14 @@
 
 .memo-footer.archive .back-btn:hover,
 .memo-footer.archive .delete-all-btn:hover {
-  width: auto !important;
-  min-width: 0;
-  border-radius: 18px !important;
-  padding: 0 8px !important;
-  justify-content: flex-start !important;
-  filter: brightness(1.2);
-  transform: translateY(-2px) scale(1.05);
+  /* アニメーション無効化 - 形状変更も無効化 */
+  width: 36px !important;
+  min-width: 36px;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  filter: none;
+  transform: none;
 }
 
 .memo-footer.archive .back-btn .nav-text,
@@ -1291,10 +1294,10 @@
 
 .memo-footer.archive .back-btn:hover .nav-text,
 .memo-footer.archive .delete-all-btn:hover .nav-text {
-  display: inline-block;
-  opacity: 1;
-  max-width: 200px;
-  margin-left: 8px;
+  display: none; /* テキスト非表示 */
+  opacity: 0;
+  max-width: 0;
+  margin-left: 0;
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;

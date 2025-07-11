@@ -183,8 +183,9 @@ body {
 }
 
 .memo-footer .nav-btn:hover {
-  filter: brightness(1.2);
-  transform: translateY(-2px) scale(1.05);
+  /* アニメーション無効化 */
+  filter: none;
+  transform: none;
 }
 
 /* フッターボタンのホバー時展開 */
@@ -204,9 +205,9 @@ body {
 
 /* ホバー時のテキストをアイコンの右隣に配置 */
 .memo-footer .nav-btn:hover .nav-text {
-  opacity: 1;
-  max-width: 200px;
-  margin-left: 8px;
+  opacity: 0; /* テキストを非表示に変更 */
+  max-width: 0; /* 幅も0に設定 */
+  margin-left: 0; /* マージンも0に設定 */
 }
 
 /* 戻る／保存／削除ボタンの色分け */
