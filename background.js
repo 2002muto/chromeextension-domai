@@ -7,18 +7,31 @@ let lastTab = null; // 直近入力フォーカスのページタブ
 const EXTENSION_URL_PREFIX = chrome.runtime.getURL(""); // 拡張機能ページ判定用
 const LAST_TAB_STORAGE_KEY = "lastTab"; // Storageキー
 
+// 有効なページタブか判定
+function isValidPageTab(tab) {
+  return tab && tab.url && !tab.url.startsWith(EXTENSION_URL_PREFIX);
+}
+
 // 起動時に保存済みlastTabを取得
 chrome.storage.local.get([LAST_TAB_STORAGE_KEY], (res) => {
   if (res[LAST_TAB_STORAGE_KEY] !== undefined) {
     lastTab = res[LAST_TAB_STORAGE_KEY];
     console.log(`[BG] lastTab restored from storage: ${lastTab}`);
+    chrome.tabs.get(lastTab, (tab) => {
+      if (chrome.runtime.lastError || !isValidPageTab(tab)) {
+        console.log(
+          `[BG] stored lastTab ${lastTab} invalid on startup: ${chrome.runtime.lastError?.message}`
+        );
+        lastTab = null;
+        chrome.storage.local.remove(LAST_TAB_STORAGE_KEY);
+      }
+    });
   } else {
     chrome.tabs.query({ active: true }, (tabs) => {
-      const cand = (tabs || []).find(
-        (t) => t.url && !t.url.startsWith(EXTENSION_URL_PREFIX)
-      );
+      const cand = (tabs || []).find((t) => isValidPageTab(t));
       if (cand) {
         lastTab = cand.id;
+        chrome.storage.local.set({ [LAST_TAB_STORAGE_KEY]: lastTab });
         console.log(
           `[BG] lastTab initialized from active tab ${cand.id} url: ${cand.url}`
         );
@@ -287,6 +300,15 @@ chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
   });
 });
 
+// タブが閉じられたらlastTabを無効化
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (tabId === lastTab) {
+    console.log(`[BG] lastTab ${tabId} was closed`);
+    lastTab = null;
+    chrome.storage.local.remove(LAST_TAB_STORAGE_KEY);
+  }
+});
+
 // 2) 既存の FOCUS_TAB／GET_LAST_PAGE_TAB 処理
 chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
   if (msg.type === "FOCUS_TAB" && sender.tab?.id) {
@@ -465,43 +487,51 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === "GET_LAST_PAGE_URL") {
     console.log(`[BG] GET_LAST_PAGE_URL → lastTab ${lastTab}`);
+    const respond = (url) => sendResponse({ url: url || null });
 
-    const respondWithTabId = (tabId) => {
-      if (tabId !== null && tabId !== undefined) {
-        chrome.tabs.get(tabId, (tab) => {
-          const u = tab && tab.url && !tab.url.startsWith(EXTENSION_URL_PREFIX) ? tab.url : null;
-          sendResponse({ url: u });
-        });
-      } else {
-        sendResponse({ url: null });
+    const findFallback = () => {
+      chrome.tabs.query({ active: true }, (tabs) => {
+        const cand = (tabs || []).find((t) => isValidPageTab(t));
+        if (cand) {
+          lastTab = cand.id;
+          chrome.storage.local.set({ [LAST_TAB_STORAGE_KEY]: lastTab });
+          console.log(`[BG] Fallback found active tab ${cand.id} url: ${cand.url}`);
+          respond(cand.url);
+        } else {
+          console.log("[BG] No suitable active tab found in fallback");
+          respond(null);
+        }
+      });
+    };
+
+    const checkTabId = (tabId) => {
+      if (tabId === null || tabId === undefined) {
+        findFallback();
+        return;
       }
+      chrome.tabs.get(tabId, (tab) => {
+        if (chrome.runtime.lastError || !isValidPageTab(tab)) {
+          console.log(
+            `[BG] stored tabId ${tabId} invalid: ${chrome.runtime.lastError?.message || (tab && tab.url)}`
+          );
+          findFallback();
+        } else {
+          respond(tab.url);
+        }
+      });
     };
 
     if (lastTab !== null) {
-      respondWithTabId(lastTab);
+      checkTabId(lastTab);
     } else {
       chrome.storage.local.get([LAST_TAB_STORAGE_KEY], (res) => {
         const stored = res[LAST_TAB_STORAGE_KEY];
         if (stored !== undefined) {
           lastTab = stored;
           console.log(`[BG] lastTab loaded from storage: ${lastTab}`);
-          respondWithTabId(stored);
+          checkTabId(stored);
         } else {
-          chrome.tabs.query({ active: true }, (tabs) => {
-            const cand = (tabs || []).find(
-              (t) => t.url && !t.url.startsWith(EXTENSION_URL_PREFIX)
-            );
-            if (cand) {
-              lastTab = cand.id;
-              console.log(
-                `[BG] Fallback found active tab ${cand.id} url: ${cand.url}`
-              );
-              sendResponse({ url: cand.url });
-            } else {
-              console.log("[BG] No suitable active tab found in fallback");
-              sendResponse({ url: null });
-            }
-          });
+          findFallback();
         }
       });
     }
