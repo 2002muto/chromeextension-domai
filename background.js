@@ -424,6 +424,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // async response
   }
 
+  if (request.type === "GET_LAST_PAGE_URL") {
+    console.log(`[BG] GET_LAST_PAGE_URL → lastTab ${lastTab}`);
+    if (lastTab !== null) {
+      chrome.tabs.get(lastTab, (tab) => {
+        sendResponse({ url: tab && tab.url ? tab.url : null });
+      });
+    } else {
+      sendResponse({ url: null });
+    }
+    return true; // async response
+  }
+
   // 非同期処理を無理矢理同期的に扱う
   (async () => {
     try {

@@ -1221,10 +1221,11 @@ function setupEventListeners() {
   // メインページ読み込みボタンのイベント
   if (loadMainPageBtn) {
     loadMainPageBtn.addEventListener("click", async () => {
-      // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
+      console.log("[iframe] メインページ読み込みボタン押下");
+      // 最後にフォーカスされていたタブのURLをbackground.js経由で取得
       try {
         const response = await chrome.runtime.sendMessage({
-          type: "GET_ACTIVE_TAB_URL",
+          type: "GET_LAST_PAGE_URL",
         });
         if (response && response.url) {
           handleInput(response.url, true);
