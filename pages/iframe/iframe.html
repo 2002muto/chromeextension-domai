@@ -63,46 +63,46 @@
           allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
           referrerpolicy="no-referrer-when-downgrade"
           loading="lazy"
-        ></iframe>
-
-        <!-- オーバーレイUIコンテナ -->
-        <div class="overlay-ui">
-          <!-- 検索・URL入力エリア -->
-          <div class="input-group mb-2">
-            <input
-              id="urlInput"
-              class="form-control"
-              placeholder="🔍 検索キーワード または 📋 URL（ChatGPT、Figma、Gemini等のログイン済みURL対応）"
-              autocomplete="off"
-            />
-            <button id="goBtn" class="btn btn-primary">
-              <i class="bi bi-search"></i> 実行
-            </button>
-            <button id="clearBtn" class="btn btn-outline-secondary">
-              <i class="bi bi-x-circle"></i>
-            </button>
-          </div>
-
-          <!-- BOOKMARKセクション -->
-          <div class="bookmark-section">
-            <div class="bookmark-header">
-              <i class="bi bi-bookmarks"></i>
-              <span class="bookmark-label">BOOKMARK</span>
-            </div>
-            <div class="bookmark-container">
-              <div id="bookmarkList" class="bookmark-list">
-                <!-- ブックマークアイコンがここに表示されます -->
-              </div>
-              <button
-                id="addBookmarkBtn"
-                class="add-bookmark-btn"
-                title="ブックマークを追加"
-              >
-                <i class="bi bi-plus"></i>
+        >
+          <!-- オーバーレイUIコンテナ -->
+          <div class="overlay-ui">
+            <!-- 検索・URL入力エリア -->
+            <div class="input-group mb-2">
+              <input
+                id="urlInput"
+                class="form-control"
+                placeholder="🔍 検索キーワード または 📋 URL（ChatGPT、Figma、Gemini等のログイン済みURL対応）"
+                autocomplete="off"
+              />
+              <button id="goBtn" class="btn btn-primary">
+                <i class="bi bi-search"></i> 実行
+              </button>
+              <button id="clearBtn" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i>
               </button>
             </div>
+
+            <!-- BOOKMARKセクション -->
+            <div class="bookmark-section">
+              <div class="bookmark-header">
+                <i class="bi bi-bookmarks"></i>
+                <span class="bookmark-label">BOOKMARK</span>
+              </div>
+              <div class="bookmark-container">
+                <div id="bookmarkList" class="bookmark-list">
+                  <!-- ブックマークアイコンがここに表示されます -->
+                </div>
+                <button
+                  id="addBookmarkBtn"
+                  class="add-bookmark-btn"
+                  title="ブックマークを追加"
+                >
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </iframe>
       </div>
     </div>
 
