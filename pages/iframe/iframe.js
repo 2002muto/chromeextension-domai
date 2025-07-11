@@ -569,68 +569,78 @@ function loadBookmarks() {
 }
 
 function saveBookmarks(bookmarks) {
-  try {
-    localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
-    console.log("[iframe] ブックマーク保存完了:", bookmarks.length, "件");
-  } catch (error) {
-    console.error("[iframe] ブックマーク保存エラー:", error);
-  }
+  localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
+  console.log("[iframe] ブックマークを保存しました", bookmarks);
 }
 
+// ブックマーク追加
 function addBookmark(title, url) {
-  const bookmarks = loadBookmarks();
-  const newBookmark = {
-    id: Date.now().toString(),
-    title: title || "新しいブックマーク",
-    url: url || "https://www.google.com",
-    timestamp: Date.now(),
-  };
-  bookmarks.push(newBookmark);
-  saveBookmarks(bookmarks);
-  renderBookmarks();
-  console.log("[iframe] ブックマーク追加:", newBookmark);
-}
-
-function removeBookmark(id) {
-  const bookmarks = loadBookmarks();
-  const filteredBookmarks = bookmarks.filter((b) => b.id !== id);
-  saveBookmarks(filteredBookmarks);
-  renderBookmarks();
-  console.log("[iframe] ブックマーク削除:", id);
-}
-
-function renderBookmarks() {
-  if (!bookmarkList) {
-    console.warn("[iframe] bookmarkList要素が見つかりません");
-    return;
+  console.log(`[iframe] ブックマーク追加: ${title} (${url})`);
+  let bookmarks = loadBookmarks();
+  if (!bookmarks.some((b) => b.url === url)) {
+    bookmarks.push({ title, url, id: url }); // idとしてURLを使用
+    saveBookmarks(bookmarks);
+    renderBookmarks();
+    updateStatus(`「${title}」をブックマークに追加しました`, "success");
+  } else {
+    updateStatus("このブックマークは既に追加されています", "info");
   }
+}
 
+// ブックマーク削除
+function removeBookmark(id) {
+  console.log(`[iframe] ブックマーク削除: ${id}`);
+  let bookmarks = loadBookmarks();
+  const updatedBookmarks = bookmarks.filter((b) => b.id !== id);
+  saveBookmarks(updatedBookmarks);
+  renderBookmarks();
+  updateStatus("ブックマークを削除しました", "info");
+}
+
+// ブックマーク描画
+function renderBookmarks() {
+  console.log("[iframe] ブックマークを描画します");
   const bookmarks = loadBookmarks();
-  console.log("[iframe] ブックマーク描画:", bookmarks.length, "件");
-
-  bookmarkList.innerHTML = "";
+  bookmarkList.innerHTML = ""; // 既存のブックマークをクリア
 
   bookmarks.forEach((bookmark) => {
-    const bookmarkElement = document.createElement("a");
-    bookmarkElement.className = "bookmark-item";
-    bookmarkElement.href = "#";
-    bookmarkElement.onclick = (e) => {
-      e.preventDefault();
-      openBookmarkInNewTab(bookmark.url);
-    };
+    const bookmarkItem = document.createElement("a");
+    bookmarkItem.href = "#"; // クリックでページ遷移しないように
+    bookmarkItem.className = "bookmark-item";
+    bookmarkItem.dataset.url = bookmark.url;
+    bookmarkItem.title = bookmark.title;
 
-    bookmarkElement.innerHTML = `
+    bookmarkItem.innerHTML = `
       <div class="bookmark-icon">
-        <i class="bi bi-box-arrow-in-right"></i>
+        <img src="https://www.google.com/s2/favicons?domain=${bookmark.url}&sz=32" alt="" width="32" height="32" style="border-radius: 4px;">
       </div>
-      <div class="bookmark-title">${bookmark.title}</div>
-      <button class="bookmark-remove" onclick="event.stopPropagation(); removeBookmark('${bookmark.id}')">×</button>
+      <span class="bookmark-title">${bookmark.title}</span>
+      <button class="bookmark-remove" title="削除">&times;</button>
     `;
 
-    bookmarkList.appendChild(bookmarkElement);
+    // ブックマーク本体のクリックイベント
+    bookmarkItem.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log(`[iframe] ブックマーククリック: ${bookmark.url}`);
+      openBookmarkInNewTab(bookmark.url);
+    });
+
+    // 削除ボタンのクリックイベント
+    const removeBtn = bookmarkItem.querySelector(".bookmark-remove");
+    if (removeBtn) {
+      removeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // ★重要: 親要素(aタグ)へのイベント伝播を停止
+        removeBookmark(bookmark.id);
+      });
+    }
+
+    bookmarkList.appendChild(bookmarkItem);
   });
 }
 
+// ブックマークを新しいタブで開く
 function openBookmarkInNewTab(url) {
   try {
     chrome.tabs.create({ url: url });
