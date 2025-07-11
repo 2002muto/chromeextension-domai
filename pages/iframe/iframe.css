@@ -261,7 +261,7 @@ header {
 .iframe-container {
   background: #242424;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   overflow: hidden;
   box-shadow: none;
   margin: 0;
@@ -306,6 +306,14 @@ header {
 
 .iframe-container.viewing .iframe-main {
   display: block;
+}
+
+.iframe-container.viewing {
+  border: none !important;
+  box-shadow: none !important;
+}
+.iframe-container.viewing::before {
+  display: none !important;
 }
 
 /* 中央UIコンテナ */
