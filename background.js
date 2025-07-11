@@ -4,6 +4,7 @@
 const WIDTH = 420;
 const popups = new Map(); // baseWin.id → popup.id
 let lastTab = null; // 直近入力フォーカスのページタブ
+const EXTENSION_URL_PREFIX = chrome.runtime.getURL(""); // 拡張機能ページ判定用
 
 // ───────────────────────────────────────
 // DeclarativeNetRequest制御
@@ -250,14 +251,27 @@ toggleIframeRules(true); // Ensure iframe rules are enabled
 // 1) タブ切り替え（アクティブタブ変更）を監視
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
   console.log(`[BG] onActivated → window ${windowId}, tab ${tabId}`);
-  lastTab = tabId;
+  chrome.tabs.get(tabId, (tab) => {
+    if (!tab) return;
+    const url = tab.url || "";
+    if (!url.startsWith(EXTENSION_URL_PREFIX)) {
+      lastTab = tabId;
+      console.log(`[BG] lastTab updated to ${lastTab} (url: ${url})`);
+    } else {
+      console.log(`[BG] onActivated ignored extension page: ${url}`);
+    }
+  });
 });
 
 // 2) 既存の FOCUS_TAB／GET_LAST_PAGE_TAB 処理
 chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
   if (msg.type === "FOCUS_TAB" && sender.tab?.id) {
-    console.log(`[BG] FOCUS_TAB received from tab ${sender.tab.id}`);
-    lastTab = sender.tab.id;
+    const senderUrl = sender.tab.url || "";
+    console.log(`[BG] FOCUS_TAB from tab ${sender.tab.id} url: ${senderUrl}`);
+    if (!senderUrl.startsWith(EXTENSION_URL_PREFIX)) {
+      lastTab = sender.tab.id;
+      console.log(`[BG] lastTab updated to ${lastTab} (FOCUS_TAB)`);
+    }
     return;
   }
 
