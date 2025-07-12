@@ -166,8 +166,12 @@ let currentUrl = "";
 let currentLoadIsLoginSite = false; // ★ログイン維持サイトかのフラグ
 
 // ステータス更新
-function updateStatus(message, type = "info") {
-  console.log(`[iframe] ステータス更新: ${message}`);
+// ステータスバーへのメッセージ表示とログ出力を制御する関数
+// suppressLog: true の場合、コンソールへの出力を抑制します
+function updateStatus(message, type = "info", suppressLog = false) {
+  if (!suppressLog) {
+    console.log(`[iframe] ステータス更新: ${message}`);
+  }
 
   // ステータス表示用の要素を取得
   let statusElement = document.getElementById("statusBar");
@@ -746,11 +750,15 @@ async function addBookmark(title, url) {
   console.log(`[iframe] ブックマーク追加: ${title} (${url})`);
   // URLバリデーション追加
   if (!/^https?:\/\//.test(url)) {
-    updateStatus(
-      "有効なURL（http:// または https:// で始まる）を入力してください",
-      "error"
-    );
-    alert("有効なURL（http:// または https:// で始まる）を入力してください");
+    // URLが無効な場合は処理を中断し、トーストで通知
+    console.log(`[iframe] ブックマーク追加を中断: 無効なURL (${url})`);
+    if (window.AppUtils && window.AppUtils.showToast) {
+      // トーストで保存失敗を表示
+      window.AppUtils.showToast("保存失敗", "error");
+    } else {
+      // AppUtilsがない場合はステータスバーで表示
+      updateStatus("保存失敗", "error");
+    }
     return;
   }
   let bookmarks = loadBookmarks();
