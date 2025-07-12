@@ -917,6 +917,8 @@ async function renderHistory() {
 
     function startAutoScroll(direction) {
       stopAutoScroll();
+      // 横スクロールが必要な場合のみ
+      if (row.scrollWidth <= row.clientWidth) return;
       scrollInterval = setInterval(() => {
         if (direction === "right") {
           if (row.scrollLeft < row.scrollWidth - row.clientWidth) {
@@ -936,8 +938,10 @@ async function renderHistory() {
 
     // 右端: 右方向スクロール
     lastWrapper.addEventListener("mouseenter", () => {
-      console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
-      startAutoScroll("right");
+      if (row.scrollWidth > row.clientWidth) {
+        console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
+        startAutoScroll("right");
+      }
     });
     lastWrapper.addEventListener("mouseleave", () => {
       console.log("[iframe] 最後のアイコンleave - スクロール停止");
@@ -946,8 +950,10 @@ async function renderHistory() {
 
     // 左端: 左方向スクロール
     firstWrapper.addEventListener("mouseenter", () => {
-      console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
-      startAutoScroll("left");
+      if (row.scrollWidth > row.clientWidth) {
+        console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
+        startAutoScroll("left");
+      }
     });
     firstWrapper.addEventListener("mouseleave", () => {
       console.log("[iframe] 最初のアイコンleave - スクロール停止");
