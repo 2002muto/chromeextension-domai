@@ -1169,6 +1169,18 @@ async function renderHistory() {
     console.log("[iframe] 検索履歴削除ボタンのイベントを登録しました");
   }
 
+  // リロードアイコンのイベント
+  const reloadIcon = document.querySelector(
+    ".footer-icons .bi-arrow-clockwise.footer-icon"
+  );
+  if (reloadIcon) {
+    reloadIcon.addEventListener("click", () => {
+      console.log("[iframe] リロードアイコンクリック - ページを再読み込みします");
+      location.reload();
+    });
+    console.log("[iframe] リロードアイコンのイベントを登録しました");
+  }
+
   // 拡大/縮小アイコンのイベント
   expandToggleBtn = document.getElementById("expandToggle");
   if (expandToggleBtn) {
