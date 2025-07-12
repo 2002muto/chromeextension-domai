@@ -1063,8 +1063,8 @@ header {
 
 /* bookmark drag over indicator */
 .bookmark-item.drop-indicator {
-  /* highlight with dashed outline instead of green underline */
-  outline: 2px dashed #00b06b;
+  /* highlight with black dashed outline to show drop position */
+  outline: 2px dashed #000;
   outline-offset: -2px;
 }
 
