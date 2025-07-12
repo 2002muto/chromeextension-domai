@@ -172,7 +172,13 @@ let currentLoadIsLoginSite = false; // ★ログイン維持サイトかのフ�
 // ステータス更新
 // ステータスバーへのメッセージ表示とログ出力を制御する関数
 // suppressLog: true の場合、コンソールへの出力を抑制します
-function updateStatus(message, type = "info", suppressLog = false) {
+// suppressToast: true の場合、トースターメッセージの表示を抑制します
+function updateStatus(
+  message,
+  type = "info",
+  suppressLog = false,
+  suppressToast = false
+) {
   if (!suppressLog) {
     console.log(`[iframe] ステータス更新: ${message}`);
   }
@@ -187,6 +193,11 @@ function updateStatus(message, type = "info", suppressLog = false) {
   // メッセージが空・null・undefinedなら非表示にする
   if (!message) {
     statusElement.style.display = "none";
+    return;
+  }
+
+  // suppressToastがtrueの場合はトースターメッセージを表示しない
+  if (suppressToast) {
     return;
   }
 
@@ -752,13 +763,21 @@ function convertYouTubeUrl(url) {
     }
 
     // youtube.com/watch?v=<id>
-    if (!videoId && u.hostname.includes("youtube.com") && u.pathname === "/watch") {
+    if (
+      !videoId &&
+      u.hostname.includes("youtube.com") &&
+      u.pathname === "/watch"
+    ) {
       videoId = u.searchParams.get("v");
       start = u.searchParams.get("t") || u.searchParams.get("start");
     }
 
     // youtube.com/shorts/<id>
-    if (!videoId && u.hostname.includes("youtube.com") && u.pathname.startsWith("/shorts/")) {
+    if (
+      !videoId &&
+      u.hostname.includes("youtube.com") &&
+      u.pathname.startsWith("/shorts/")
+    ) {
       videoId = u.pathname.split("/")[2] || u.pathname.split("/")[1];
     }
 
@@ -891,42 +910,44 @@ async function handleBookmarkDrop(e) {
   let bookmarks = loadBookmarks();
 
   // ドラッグ元とドロップ先の要素を入れ替える
-  [
-    bookmarks[dragBookmarkIndex],
+  [bookmarks[dragBookmarkIndex], bookmarks[dropIndex]] = [
     bookmarks[dropIndex],
-  ] = [bookmarks[dropIndex], bookmarks[dragBookmarkIndex]];
+    bookmarks[dragBookmarkIndex],
+  ];
 
   console.log("[BOOKMARK D&D] 保存前のbookmarks配列:", bookmarks);
   saveBookmarks(bookmarks);
   console.log("[BOOKMARK D&D] 保存完了");
 
   renderBookmarks();
-  showDragDropSuccessMessage(dragBookmarkIndex + 1, dropIndex + 1);
+  // BOOKMARKの入れ替え時のトースターメッセージは削除
+  // showDragDropSuccessMessage(dragBookmarkIndex + 1, dropIndex + 1);
 
   dragBookmarkIndex = null;
 }
 
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
-function showDragDropSuccessMessage(fromPosition, toPosition) {
-  const message = `${fromPosition}番目と${toPosition}番目を入れ替えました`;
-  const toast = document.createElement("div");
-  toast.className = "drag-drop-toast";
-  toast.innerHTML = `
-    <i class="bi bi-check-circle-fill"></i>
-    <span>${message}</span>
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = "1";
-    toast.style.transform = "translateX(0)";
-  }, 10);
-  setTimeout(() => {
-    toast.classList.add("fade-out");
-    setTimeout(() => {
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    }, 300);
-  }, 3000);
-}
+// BOOKMARKの入れ替え時のトースターメッセージは削除
+// function showDragDropSuccessMessage(fromPosition, toPosition) {
+//   const message = `${fromPosition}番目と${toPosition}番目を入れ替えました`;
+//   const toast = document.createElement("div");
+//   toast.className = "drag-drop-toast";
+//   toast.innerHTML = `
+//     <i class="bi bi-check-circle-fill"></i>
+//     <span>${message}</span>
+//   `;
+//   document.body.appendChild(toast);
+//   setTimeout(() => {
+//     toast.style.opacity = "1";
+//     toast.style.transform = "translateX(0)";
+//   }, 10);
+//   setTimeout(() => {
+//     toast.classList.add("fade-out");
+//     setTimeout(() => {
+//       if (toast.parentNode) toast.parentNode.removeChild(toast);
+//     }, 300);
+//   }, 3000);
+// }
 
 // ブックマーク描画
 function renderBookmarks() {
@@ -1508,8 +1529,8 @@ function focusSearchInput() {
   // 現在のURLをリセット
   currentUrl = "";
 
-  // ステータスを更新
-  updateStatus("新しい検索の準備ができました", "info");
+  // 初期化時はトースターメッセージを表示しない
+  // updateStatus("新しい検索の準備ができました", "info");
 
   console.log("[iframe] 🔥 IFRAME初期状態に戻しました");
 }
@@ -2279,6 +2300,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ステータスバーも初期は非表示を強制
   if (statusBar) {
     statusBar.style.display = "none";
+    statusBar.classList.remove("fade-out");
   }
 
   // 履歴を読み込んで表示
@@ -2346,6 +2368,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 初期メッセージを表示しないように変更
   // updateStatus("メインページを読み込む", "info");
 
+  // 初期化時はトースターメッセージを抑制
+  const originalUpdateStatus = updateStatus;
+  updateStatus = function (
+    message,
+    type = "info",
+    suppressLog = false,
+    suppressToast = true
+  ) {
+    return originalUpdateStatus(message, type, suppressLog, suppressToast);
+  };
+
   // URLパラメータ処理
   const urlParams = new URLSearchParams(window.location.search);
   const qParam = urlParams.get("q") || urlParams.get("url");
@@ -2357,6 +2390,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   console.log("[iframe] 初期化完了");
+
+  // 初期化完了後は元のupdateStatus関数に戻す
+  updateStatus = originalUpdateStatus;
 });
 
 // ページ読み込み完了後にも実行（フォールバック）
@@ -2403,7 +2439,6 @@ function toggleExpand() {
   }
   console.log(`[iframe] 拡大状態切替: ${isExpanded}`);
 }
-
 
 // 新しい検索ボタンのイベント（setupEventListeners関数内で設定されるため削除）
 

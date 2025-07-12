@@ -445,17 +445,19 @@ header {
 
 /* ─── ステータス表示 ─── */
 #statusBar {
-  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+  background: linear-gradient(45deg, #c0c0c0, #a0a0a0);
   border: none;
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 13px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
+  color: #333; /* テキスト色を濃いグレーに設定 */
 }
 
 #statusBar i {
   margin-right: 6px;
+  color: #c0c0c0; /* シルバー系の色に統一 */
 }
 
 /* ─── 検索履歴（footerと同じ配置） ─── */
@@ -538,7 +540,6 @@ header {
 
 /* ファビコン履歴のコンテナ */
 .history-container {
-
   display: flex;
   align-items: center;
   overflow: visible;
@@ -768,8 +769,8 @@ header {
 
 /* ─── 成功状態 ─── */
 .success {
-  border: 2px solid #22c55e;
-  background: rgba(34, 197, 94, 0.1);
+  border: 2px solid #c0c0c0;
+  background: rgba(192, 192, 192, 0.1);
 }
 
 /* ─── フォーカス状態の強化 ─── */
@@ -1017,7 +1018,7 @@ header {
   position: fixed;
   top: 16px;
   right: 16px;
-  background: linear-gradient(135deg, #00b06b, #6bff97);
+  background: linear-gradient(135deg, #363636, #363636);
   color: rgba(255, 255, 255, 0.9);
   padding: 8px 12px;
   border-radius: 6px;
