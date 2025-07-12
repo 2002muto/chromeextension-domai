@@ -79,9 +79,9 @@ function initializeElements() {
     statusBar.style.display = "none";
   }
 
-  // ★ 追加: オーバーレイアイコンを初期状態で表示
+  // ★ 追加: オーバーレイアイコンは初期状態で非表示
   if (iframeOverlayIcon) {
-    iframeOverlayIcon.style.display = "flex";
+    iframeOverlayIcon.style.display = "none";
   }
 }
 
@@ -2248,9 +2248,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 要素を初期化
   initializeElements();
 
-  // オーバーレイアイコンを初期状態で表示（IFRAME起動時は空なので非表示になる）
+  // オーバーレイアイコンも読み込み時点では非表示にしておく
   if (iframeOverlayIcon) {
-    iframeOverlayIcon.style.display = "flex";
+    iframeOverlayIcon.style.display = "none";
+  }
+
+  // ステータスバーも初期は非表示を強制
+  if (statusBar) {
+    statusBar.style.display = "none";
   }
 
   // 履歴を読み込んで表示
