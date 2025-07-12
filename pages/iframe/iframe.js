@@ -249,6 +249,66 @@ function isLoginSite(url) {
   return { isLogin: false, siteName: "", domain: "" };
 }
 
+// SideEffect: URLに対してファビコンを自動設定する機能
+const FAVICON_CACHE_KEY = "iframeFaviconCache";
+
+// ファビコンキャッシュを読み込む
+function loadFaviconCache() {
+  try {
+    const stored = localStorage.getItem(FAVICON_CACHE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.error("[iframe] ファビコンキャッシュ読み込みエラー:", error);
+    return {};
+  }
+}
+
+// ファビコンキャッシュを保存する
+function saveFaviconCache(cache) {
+  try {
+    localStorage.setItem(FAVICON_CACHE_KEY, JSON.stringify(cache));
+    console.log(
+      "[iframe] ファビコンキャッシュを保存しました",
+      Object.keys(cache).length,
+      "件"
+    );
+  } catch (error) {
+    console.error("[iframe] ファビコンキャッシュ保存エラー:", error);
+  }
+}
+
+// URLに対してファビコンを自動設定（SideEffect）
+async function setFaviconForUrl(url) {
+  const domain = getDomain(url);
+  if (!domain) return;
+
+  const cache = loadFaviconCache();
+
+  // キャッシュに既に存在する場合はスキップ
+  if (cache[domain]) {
+    console.log(`[iframe] ファビコンキャッシュヒット: ${domain}`);
+    return;
+  }
+
+  console.log(`[iframe] SideEffect: ${domain} のファビコンを自動設定`);
+
+  try {
+    const faviconUrl = await getFaviconUrl(url);
+    if (faviconUrl) {
+      cache[domain] = faviconUrl;
+      saveFaviconCache(cache);
+      console.log(
+        `[iframe] SideEffect: ${domain} のファビコンをキャッシュに保存`
+      );
+    }
+  } catch (error) {
+    console.error(
+      `[iframe] SideEffect: ${domain} のファビコン設定エラー:`,
+      error
+    );
+  }
+}
+
 // 動的ルール追加（ログイン状態維持のため）
 async function addDynamicRule(domain) {
   console.log(`[iframe] 🔥 動的ルール追加: ${domain}`);
@@ -420,7 +480,7 @@ function loadHistory() {
     const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 
     // 旧データ構造（文字列配列）を新データ構造（オブジェクト配列）に変換
-    return history.map((item) => {
+    const convertedHistory = history.map((item) => {
       if (typeof item === "string") {
         return {
           url: item,
@@ -431,6 +491,32 @@ function loadHistory() {
       }
       return item;
     });
+
+    // 古いBlob URLをbase64形式に変換
+    const updatedHistory = convertedHistory.map((item) => {
+      if (item && typeof item === "object" && item.faviconUrl) {
+        // Blob URLの場合、キャッシュからbase64を取得
+        if (item.faviconUrl.startsWith("blob:")) {
+          const domain = getDomain(item.url);
+          if (domain) {
+            const cache = loadFaviconCache();
+            if (cache[domain]) {
+              console.log(`[iframe] Blob URLをbase64に変換: ${domain}`);
+              return { ...item, faviconUrl: cache[domain] };
+            }
+          }
+        }
+      }
+      return item;
+    });
+
+    // 更新された履歴を保存
+    if (JSON.stringify(convertedHistory) !== JSON.stringify(updatedHistory)) {
+      saveHistory(updatedHistory);
+      console.log("[iframe] 履歴のBlob URLをbase64形式に変換しました");
+    }
+
+    return updatedHistory;
   } catch (error) {
     console.error("[iframe] 履歴読み込みエラー:", error);
     return [];
@@ -489,7 +575,7 @@ function getPageTitle(url) {
   }
 }
 
-// ファビコンURLを取得する関数（Google Favicon API + Chrome拡張API）
+// ファビコンURLを取得する関数（base64形式で永続化対応）
 async function getFaviconUrl(url) {
   console.log(`[iframe] getFaviconUrl呼び出し: ${url}`);
 
@@ -508,11 +594,21 @@ async function getFaviconUrl(url) {
 
     console.log(`[iframe] ドメイン取得成功: ${domain}`);
 
+    // 0. まずキャッシュを確認
+    const cache = loadFaviconCache();
+    if (cache[domain]) {
+      console.log(`[iframe] ファビコンキャッシュヒット: ${domain}`);
+      return cache[domain];
+    }
+
     // 1. まずChrome拡張APIでファビコンを取得
     try {
       const dataUrl = await fetchFaviconDataUrl(domain);
       if (dataUrl) {
         console.log(`[iframe] ファビコン取得成功 (Chrome拡張API): ${domain}`);
+        // キャッシュに保存
+        cache[domain] = dataUrl;
+        saveFaviconCache(cache);
         return dataUrl;
       }
     } catch (error) {
@@ -531,9 +627,13 @@ async function getFaviconUrl(url) {
       const response = await fetch(googleFaviconUrl);
       if (response.ok) {
         const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
+        // base64形式で保存するため、dataURLに変換
+        const dataUrl = await blobToDataUrl(blob);
         console.log(`[iframe] ファビコン取得成功 (Google API): ${domain}`);
-        return objectUrl;
+        // キャッシュに保存
+        cache[domain] = dataUrl;
+        saveFaviconCache(cache);
+        return dataUrl;
       } else {
         console.log(
           `[iframe] Google Favicon API レスポンスエラー: ${response.status}`
@@ -554,9 +654,13 @@ async function getFaviconUrl(url) {
       const response = await fetch(directFaviconUrl);
       if (response.ok) {
         const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
+        // base64形式で保存するため、dataURLに変換
+        const dataUrl = await blobToDataUrl(blob);
         console.log(`[iframe] ファビコン取得成功 (直接URL): ${domain}`);
-        return objectUrl;
+        // キャッシュに保存
+        cache[domain] = dataUrl;
+        saveFaviconCache(cache);
+        return dataUrl;
       }
     } catch (error) {
       console.log(`[iframe] 直接ファビコンURL取得失敗: ${domain}`, error);
@@ -571,6 +675,16 @@ async function getFaviconUrl(url) {
     console.error(`[iframe] ファビコン取得エラー: ${url}`, error);
     return null;
   }
+}
+
+// BlobをDataURLに変換する関数
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function fetchFaviconDataUrl(domain) {
@@ -738,7 +852,7 @@ async function renderHistory() {
       <div class="history-container">
         <span class="text-muted">検索履歴はありません</span>
       </div>
-      <button class="new-search-btn" onclick="focusSearchInput()">
+      <button class="new-search-btn" id="newSearchBtn">
         <i class="bi bi-plus-circle"></i> 新しい検索
       </button>
     `;
@@ -761,7 +875,7 @@ async function renderHistory() {
       </div>
     </div>
     <div class="search-btns-wrapper">
-      <button class="new-search-btn" onclick="focusSearchInput()">
+      <button class="new-search-btn" id="newSearchBtn">
         <i class="bi bi-plus-circle"></i> 新しい検索
       </button>
       <button class="clear-history-btn" id="clearHistoryBtn" title="検索履歴を全削除">
@@ -841,6 +955,15 @@ async function renderHistory() {
     });
   }
   // --- 自動スクロール機能ここまで ---
+
+  // 新しい検索ボタンのイベント
+  const newSearchBtn = document.getElementById("newSearchBtn");
+  if (newSearchBtn) {
+    newSearchBtn.addEventListener("click", () => {
+      console.log("[iframe] 新しい検索ボタンクリック");
+      focusSearchInput();
+    });
+  }
 
   // 検索履歴全削除ボタンのイベント
   const clearBtn = document.getElementById("clearHistoryBtn");
@@ -980,8 +1103,32 @@ function createFaviconWrapper(historyItem, index) {
         // SVGデータURLの場合
         console.log(`[iframe] SVGデータURLを使用`);
         a.innerHTML = getGoogleSVG();
+      } else if (historyItem.faviconUrl.startsWith("data:image/")) {
+        // base64形式のデータURLの場合（永続化対応）
+        console.log(
+          `[iframe] base64データURLを使用:`,
+          historyItem.faviconUrl.substring(0, 50) + "..."
+        );
+        const img = document.createElement("img");
+        img.src = historyItem.faviconUrl;
+        img.alt = "favicon";
+        img.className = "favicon-img";
+        img.onerror = function () {
+          console.log(
+            `[iframe] base64データURL読み込みエラー:`,
+            historyItem.faviconUrl.substring(0, 50) + "..."
+          );
+          this.parentElement.innerHTML = getGoogleSVG();
+        };
+        img.onload = function () {
+          console.log(
+            `[iframe] base64データURL読み込み成功:`,
+            historyItem.faviconUrl.substring(0, 50) + "..."
+          );
+        };
+        a.appendChild(img);
       } else if (historyItem.faviconUrl.startsWith("blob:")) {
-        // Blob URLの場合
+        // Blob URLの場合（後方互換性）
         console.log(`[iframe] Blob URLを使用:`, historyItem.faviconUrl);
         const img = document.createElement("img");
         img.src = historyItem.faviconUrl;
@@ -1032,13 +1179,40 @@ function createFaviconWrapper(historyItem, index) {
   return wrapper;
 }
 
-// 検索入力にフォーカスする関数
+// 検索入力にフォーカスし、IFRAMEを初期状態に戻す関数
 function focusSearchInput() {
+  console.log("[iframe] 🔥 新しい検索ボタンクリック - 初期状態に戻す");
+
+  // URL入力欄をクリア
   if (urlInput) {
+    urlInput.value = "";
     urlInput.focus();
-    urlInput.select();
   }
+
+  // IFRAMEを初期状態に戻す
+  const iframeContainer = document.querySelector(".iframe-container");
+  if (iframeContainer) {
+    iframeContainer.classList.remove("viewing");
+    console.log("[iframe] 🔥 iframeContainer.viewingクラスを削除");
+  }
+
+  // mainFrameをクリア
+  if (mainFrame) {
+    mainFrame.src = "";
+    console.log("[iframe] 🔥 mainFrame.srcをクリア");
+  }
+
+  // 現在のURLをリセット
+  currentUrl = "";
+
+  // ステータスを更新
+  updateStatus("新しい検索の準備ができました", "info");
+
+  console.log("[iframe] 🔥 IFRAME初期状態に戻しました");
 }
+
+// グローバルスコープに公開（デバッグ用）
+window.focusSearchInput = focusSearchInput;
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う
 async function handleInput(input, forceShow = false) {
@@ -1073,6 +1247,9 @@ async function handleInput(input, forceShow = false) {
       ? cleanInput
       : "https://" + cleanInput;
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
+
+    // SideEffect: URLに対してファビコンを自動設定
+    setFaviconForUrl(fullUrl);
 
     currentUrl = fullUrl;
     console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行前`);
@@ -1149,11 +1326,28 @@ function setupEventListeners() {
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       console.log("[iframe] 🔥 クリアボタンクリック");
+
+      // URL入力欄をクリア
       urlInput.value = "";
+
+      // IFRAMEを初期状態に戻す
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.remove("viewing");
+        console.log("[iframe] 🔥 iframeContainer.viewingクラスを削除");
+      }
+
+      // mainFrameをクリア
       mainFrame.src = "";
       currentUrl = "";
+
+      // ログイン情報を非表示
       if (loginInfo) loginInfo.style.display = "none";
+
+      // ステータスを更新
       updateStatus("クリアしました", "info");
+
+      console.log("[iframe] 🔥 IFRAME初期状態に戻しました");
     });
   }
 
@@ -1361,6 +1555,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // イベントリスナーを設定
   setupEventListeners();
+
+  // SideEffect: 既存の履歴からファビコンを自動設定
+  const historyForFavicon = loadHistory();
+  for (const item of historyForFavicon) {
+    if (item && item.url && isValidUrl(item.url)) {
+      setFaviconForUrl(item.url);
+    }
+  }
 
   // 初期メッセージを表示しないように変更
   // updateStatus("メインページを読み込む", "info");
