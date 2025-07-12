@@ -354,6 +354,16 @@ let nextDynamicRuleId = 10000;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("[BG] 🔥 メッセージ受信:", request);
 
+  // GET_ACTIVE_TAB_URL を早期に処理して確実に URL を返す
+  if (request.type === "GET_ACTIVE_TAB_URL") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const url = tabs && tabs[0] ? tabs[0].url : null;
+      console.log("[BG] 直ちにアクティブタブのURLを返却:", url);
+      sendResponse({ url });
+    });
+    return true; // 非同期レスポンスを有効化
+  }
+
   if (request.action === "fetchFavicon") {
     console.log("[BG] favicon fetch start for domain:", request.domain);
 
