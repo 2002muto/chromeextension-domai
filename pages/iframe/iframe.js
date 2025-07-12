@@ -1289,6 +1289,7 @@ function setupEventListeners() {
 
       // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
       try {
+        console.log("[iframe] requesting active tab URL from background");
         const response = await chrome.runtime.sendMessage({
           type: "GET_ACTIVE_TAB_URL",
         });
