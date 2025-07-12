@@ -512,11 +512,11 @@ header {
 
 /* 新しい検索ボタン */
 .new-search-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border: none;
+  background: transparent; /* 背景を透明に */
+  color: #a9a9a9; /* 文字色を統一 */
+  border: 1px solid #a9a9a9; /* 枠線を追加 */
   border-radius: 8px;
-  padding: 8px 16px;
-  color: white;
+  padding: 4px 12px; /* アイコンボタン風に調整 */
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -525,16 +525,20 @@ header {
   flex-shrink: 0; /* 縮小しない */
   margin-left: 8px;
   margin-right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .new-search-btn:hover {
-  background: linear-gradient(135deg, #764ba2, #667eea);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  color: #667eea; /* ホバー時のアクセント */
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ファビコン履歴のコンテナ */
 .history-container {
+
   display: flex;
   align-items: center;
   overflow: visible;
@@ -792,25 +796,25 @@ header {
 }
 
 .clear-history-btn {
-  background: linear-gradient(135deg, #dc3545, #a600cf);
-  border: none;
+  background: transparent; /* 背景を透明に */
+  color: #a9a9a9; /* 文字色を統一 */
+  border: 1px solid #a9a9a9; /* 枠線を追加 */
   border-radius: 8px;
-  padding: 8px 12px;
-  color: white;
+  padding: 4px 8px;
   font-size: 16px;
   margin-left: 0;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 .clear-history-btn:hover {
-  background: linear-gradient(135deg, #a600cf, #dc3545);
-  filter: brightness(1.1);
+  color: #667eea;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.1);
 }
-
 .search-btns-wrapper {
   display: flex;
   align-items: center;

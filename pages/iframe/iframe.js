@@ -1157,6 +1157,7 @@ async function renderHistory() {
       console.log("[iframe] 新しい検索ボタンクリック");
       focusSearchInput();
     });
+    console.log("[iframe] 新しい検索ボタンのイベントを登録しました");
   }
 
   // 検索履歴全削除ボタンのイベント
@@ -1165,6 +1166,41 @@ async function renderHistory() {
     clearBtn.addEventListener("click", () => {
       showDeleteHistoryDialog();
     });
+    console.log("[iframe] 検索履歴削除ボタンのイベントを登録しました");
+  }
+
+  // リロードアイコンのイベント
+  const reloadIcon = document.querySelector(
+    ".footer-icons .bi-arrow-clockwise.footer-icon"
+  );
+  if (reloadIcon) {
+    reloadIcon.addEventListener("click", () => {
+      console.log(
+        "[iframe] リロードアイコンクリック - iframe内ページを再読み込みします"
+      );
+      if (mainFrame && mainFrame.src) {
+        const currentSrc = mainFrame.src; // 現在のURLを保持
+        mainFrame.src = currentSrc; // iframeだけをリロード
+        console.log("[iframe] mainFrame.src を再設定:", currentSrc);
+      } else {
+        console.log("[iframe] mainFrame が見つからないか src が空です");
+      }
+    });
+    console.log("[iframe] リロードアイコンのイベントを登録しました");
+  }
+
+  // ホームアイコンのイベント
+  const homeIcon = document.querySelector(
+    ".footer-icons .bi-house.footer-icon"
+  );
+  if (homeIcon) {
+    homeIcon.addEventListener("click", () => {
+      console.log(
+        "[iframe] ホームアイコンクリック - 新しい検索ページを表示します"
+      );
+      focusSearchInput();
+    });
+    console.log("[iframe] ホームアイコンのイベントを登録しました");
   }
 
   // 拡大/縮小アイコンのイベント
