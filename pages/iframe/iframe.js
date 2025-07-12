@@ -1175,8 +1175,16 @@ async function renderHistory() {
   );
   if (reloadIcon) {
     reloadIcon.addEventListener("click", () => {
-      console.log("[iframe] リロードアイコンクリック - ページを再読み込みします");
-      location.reload();
+      console.log(
+        "[iframe] リロードアイコンクリック - iframe内ページを再読み込みします"
+      );
+      if (mainFrame && mainFrame.src) {
+        const currentSrc = mainFrame.src; // 現在のURLを保持
+        mainFrame.src = currentSrc; // iframeだけをリロード
+        console.log("[iframe] mainFrame.src を再設定:", currentSrc);
+      } else {
+        console.log("[iframe] mainFrame が見つからないか src が空です");
+      }
     });
     console.log("[iframe] リロードアイコンのイベントを登録しました");
   }
