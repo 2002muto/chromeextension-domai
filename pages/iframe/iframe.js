@@ -1157,6 +1157,7 @@ async function renderHistory() {
       console.log("[iframe] 新しい検索ボタンクリック");
       focusSearchInput();
     });
+    console.log("[iframe] 新しい検索ボタンのイベントを登録しました");
   }
 
   // 検索履歴全削除ボタンのイベント
@@ -1165,6 +1166,7 @@ async function renderHistory() {
     clearBtn.addEventListener("click", () => {
       showDeleteHistoryDialog();
     });
+    console.log("[iframe] 検索履歴削除ボタンのイベントを登録しました");
   }
 
   // 拡大/縮小アイコンのイベント
