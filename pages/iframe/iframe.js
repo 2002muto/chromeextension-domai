@@ -66,6 +66,11 @@ function initializeElements() {
   if (!searchHistoryEl) {
     console.error("[iframe] searchHistoryElが見つかりません！");
   }
+
+  // ★ 追加: ステータスバーを必ず非表示に初期化
+  if (statusBar) {
+    statusBar.style.display = "none";
+  }
 }
 
 // ログイン状態維持対応サイト
@@ -160,6 +165,12 @@ function updateStatus(message, type = "info") {
   let statusElement = document.getElementById("statusBar");
   if (!statusElement) {
     console.warn(`[iframe] statusBar要素が見つかりません`);
+    return;
+  }
+
+  // メッセージが空・null・undefinedなら非表示にする
+  if (!message) {
+    statusElement.style.display = "none";
     return;
   }
 
