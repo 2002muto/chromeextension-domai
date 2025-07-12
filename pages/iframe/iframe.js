@@ -1278,57 +1278,32 @@ function setupEventListeners() {
 
   // メインページ読み込みボタンのイベント
   if (loadMainPageBtn) {
-    const btnLabel = loadMainPageBtn.querySelector("span");
-
     loadMainPageBtn.addEventListener("click", async () => {
-      console.log("[iframe] loadMainPageBtn clicked");
+      console.log("[iframe] 🔥 メインページ読み込みボタンクリック");
 
-      if (btnLabel) {
-        btnLabel.textContent = "読み込み中...";
-      }
-
-      // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
       try {
-        console.log("[iframe] requesting active tab URL from background");
-        const response = await chrome.runtime.sendMessage({
-          type: "GET_ACTIVE_TAB_URL",
+        // 成功系のコードを参考に、直接chrome.tabs.queryを使用
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
         });
-        console.log("[iframe] GET_ACTIVE_TAB_URL response", response);
-        if (response && response.url) {
-          console.log("[iframe] loading active tab URL", response.url);
 
-          const restoreText = () => {
-            if (btnLabel) {
-              btnLabel.textContent = "メインページを読み込む";
-            }
-            mainFrame.removeEventListener("load", restoreText);
-            mainFrame.removeEventListener("error", handleError);
-          };
+        if (tab && tab.url) {
+          console.log("[iframe] 🔥 取得したURL:", tab.url);
 
-          const handleError = () => {
-            if (btnLabel) {
-              btnLabel.textContent = "エラーが発生しました";
-            }
-            console.error("[iframe] iframe load error for active tab", mainFrame.src);
-            mainFrame.removeEventListener("load", restoreText);
-            mainFrame.removeEventListener("error", handleError);
-          };
-
-          mainFrame.addEventListener("load", restoreText);
-          mainFrame.addEventListener("error", handleError);
-
-          handleInput(response.url, true);
-        } else {
-          if (btnLabel) {
-            btnLabel.textContent = "メインページを読み込む";
+          // URL入力欄に設定
+          if (urlInput) {
+            urlInput.value = tab.url;
           }
+
+          // handleInputで処理（forceShow=trueで履歴追加をスキップ）
+          handleInput(tab.url, true);
+        } else {
+          console.log("[iframe] 🔥 アクティブタブが見つからない");
           updateStatus("メインページURLの取得に失敗しました", "error");
         }
-      } catch (e) {
-        console.error("[iframe] failed to get active tab URL", e);
-        if (btnLabel) {
-          btnLabel.textContent = "エラーが発生しました";
-        }
+      } catch (error) {
+        console.error("[iframe] 🔥 タブ情報の取得に失敗:", error);
         updateStatus("メインページURLの取得に失敗しました", "error");
       }
     });

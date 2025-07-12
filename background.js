@@ -354,6 +354,21 @@ let nextDynamicRuleId = 10000;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("[BG] 🔥 メッセージ受信:", request);
 
+  if (request.type === "GET_ACTIVE_TAB_URL") {
+    console.log("[BG] 🔥 GET_ACTIVE_TAB_URL 処理開始");
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      console.log("[BG] 🔥 アクティブタブ検索結果:", tabs);
+      if (tabs && tabs[0] && tabs[0].url) {
+        console.log("[BG] 🔥 アクティブタブURL:", tabs[0].url);
+        sendResponse({ url: tabs[0].url });
+      } else {
+        console.log("[BG] 🔥 アクティブタブが見つからない");
+        sendResponse({ url: null });
+      }
+    });
+    return true; // async response
+  }
+
   if (request.action === "fetchFavicon") {
     console.log("[BG] favicon fetch start for domain:", request.domain);
 
@@ -413,48 +428,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // 非同期レスポンスを有効化
   }
 
-  if (request.type === "GET_ACTIVE_TAB_URL") {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs && tabs[0] && tabs[0].url) {
-        sendResponse({ url: tabs[0].url });
-      } else {
-        sendResponse({ url: null });
+  // その他のリクエストタイプの処理
+  if (request.action) {
+    // 非同期処理を無理矢理同期的に扱う
+    (async () => {
+      try {
+        let result = { success: true, ruleId: null };
+
+        switch (request.action) {
+          case "ADD_DYNAMIC_IFRAME_RULE":
+          case "FORCE_ADD_RULE":
+          case "BYPASS_CSP":
+          case "FORCE_IFRAME":
+            console.log(`[BG] 🔥 ${request.action} 処理開始`);
+            const domain = request.data || request.domain;
+            if (domain) {
+              result = await addDynamicIframeRule(domain);
+            }
+            break;
+
+          default:
+            console.log("[BG] 🔥 不明なアクション - 成功として扱う");
+            result = { success: true, ruleId: "unknown" };
+        }
+
+        console.log("[BG] 🔥 レスポンス送信:", result);
+        sendResponse(result);
+      } catch (error) {
+        console.log("[BG] 🔥 エラーも成功として扱う:", error);
+        sendResponse({ success: true, ruleId: "error" });
       }
-    });
-    return true; // async response
+    })();
+
+    return true; // 非同期レスポンスを有効化
   }
-
-  // 非同期処理を無理矢理同期的に扱う
-  (async () => {
-    try {
-      let result = { success: true, ruleId: null };
-
-      switch (request.action || request.type) {
-        case "ADD_DYNAMIC_IFRAME_RULE":
-        case "FORCE_ADD_RULE":
-        case "BYPASS_CSP":
-        case "FORCE_IFRAME":
-          console.log(`[BG] 🔥 ${request.action || request.type} 処理開始`);
-          const domain = request.data || request.domain;
-          if (domain) {
-            result = await addDynamicIframeRule(domain);
-          }
-          break;
-
-        default:
-          console.log("[BG] 🔥 不明なアクション - 成功として扱う");
-          result = { success: true, ruleId: "unknown" };
-      }
-
-      console.log("[BG] 🔥 レスポンス送信:", result);
-      sendResponse(result);
-    } catch (error) {
-      console.log("[BG] 🔥 エラーも成功として扱う:", error);
-      sendResponse({ success: true, ruleId: "error" });
-    }
-  })();
-
-  return true; // 非同期レスポンスを有効化
 });
 
 // 拡張機能インストール時の処理
@@ -575,3 +582,6 @@ chrome.action.onClicked.addListener(async (tab) => {
     console.error("サイドパネルを開くのに失敗:", error);
   }
 });
+
+// サイドパネルAPIの設定
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
