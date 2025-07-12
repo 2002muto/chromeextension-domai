@@ -51,9 +51,9 @@ header {
 .iframe-overlay-icon {
   position: absolute;
   top: 20px;
-  right: 20px;
+  right: 32px;
   width: 40px;
-  height: 40px;
+  height: 16px;
   background: rgba(0, 0, 0, 0.8);
   color: white;
   border-radius: 50%;
@@ -62,7 +62,7 @@ header {
   justify-content: center;
   cursor: pointer;
   z-index: 1000;
-  font-size: 18px;
+  font-size: 40px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
@@ -1057,6 +1057,71 @@ header {
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/*━━━━━━━━━━ BOOKMARK Drag & Drop Styles ━━━━━━━━━━*/
+
+/* bookmark drag over indicator */
+.bookmark-item.drop-indicator {
+  /* highlight with black dashed outline to show drop position */
+  outline: 2px dashed #000;
+  outline-offset: -2px;
+}
+
+.bookmark-item.drop-indicator.active {
+  animation: bookmarkDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+@keyframes bookmarkDropIndicatorPulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.bookmark-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.drag-drop-toast {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(135deg, #00b06b, #6bff97);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(107, 255, 151, 0.15);
+  font-size: 0.8rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10000;
+  opacity: 0.7;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+  max-width: 250px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideInRight 0.3s ease-out;
+}
+
+.drag-drop-toast i {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.drag-drop-toast.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
 }
 
 /* レスポンシブ対応 */

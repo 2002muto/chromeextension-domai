@@ -791,6 +791,98 @@ function removeBookmark(id) {
   updateStatus("ブックマークを削除しました", "info");
 }
 
+// ───────────────────────────────────────
+// Drag & Drop handlers for BOOKMARKs
+// ───────────────────────────────────────
+// ドラッグ開始元のインデックスを保持
+let dragBookmarkIndex = null;
+
+// ドラッグ開始時に呼び出される
+function handleBookmarkDragStart(e) {
+  dragBookmarkIndex = +this.dataset.index;
+  console.log("[BOOKMARK D&D] drag start:", dragBookmarkIndex);
+  e.dataTransfer.effectAllowed = "move";
+}
+
+// ドラッグしている要素が他のブックマーク上にあるときの処理
+function handleBookmarkDragOver(e) {
+  e.preventDefault();
+
+  document.querySelectorAll(".bookmark-item.drop-indicator").forEach((el) => {
+    el.classList.remove("drop-indicator", "active");
+  });
+
+  console.log(`[BOOKMARK D&D] dragover on index ${this.dataset.index}`);
+
+  // ハイライト表示のみ行う
+  this.classList.add("drop-indicator", "active");
+}
+
+// ドラッグしている要素が範囲外に出たときの処理
+function handleBookmarkDragLeave() {
+  this.classList.remove("drop-indicator", "active");
+  console.log(`[BOOKMARK D&D] dragleave on index ${this.dataset.index}`);
+}
+
+// ドラッグ操作が終了したときの処理
+function handleBookmarkDragEnd() {
+  document
+    .querySelectorAll(".bookmark-item")
+    .forEach((el) => el.classList.remove("drop-indicator", "active"));
+  dragBookmarkIndex = null;
+  console.log("[BOOKMARK D&D] drag end");
+}
+
+async function handleBookmarkDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const dropIndex = +this.dataset.index;
+
+  console.log(
+    `[BOOKMARK D&D] drop from ${dragBookmarkIndex} onto ${dropIndex}`
+  );
+  if (dragBookmarkIndex === null || dragBookmarkIndex === dropIndex) return;
+
+  let bookmarks = loadBookmarks();
+
+  // ドラッグ元とドロップ先の要素を入れ替える
+  [
+    bookmarks[dragBookmarkIndex],
+    bookmarks[dropIndex],
+  ] = [bookmarks[dropIndex], bookmarks[dragBookmarkIndex]];
+
+  console.log("[BOOKMARK D&D] 保存前のbookmarks配列:", bookmarks);
+  saveBookmarks(bookmarks);
+  console.log("[BOOKMARK D&D] 保存完了");
+
+  renderBookmarks();
+  showDragDropSuccessMessage(dragBookmarkIndex + 1, dropIndex + 1);
+
+  dragBookmarkIndex = null;
+}
+
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
+function showDragDropSuccessMessage(fromPosition, toPosition) {
+  const message = `${fromPosition}番目と${toPosition}番目を入れ替えました`;
+  const toast = document.createElement("div");
+  toast.className = "drag-drop-toast";
+  toast.innerHTML = `
+    <i class="bi bi-check-circle-fill"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  }, 10);
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, 3000);
+}
+
 // ブックマーク描画
 function renderBookmarks() {
   console.log("[iframe] ブックマークを描画します");
@@ -829,6 +921,8 @@ function renderBookmarks() {
     bookmarkItem.href = "#"; // クリックでページ遷移しないように
     bookmarkItem.className = "bookmark-item";
     bookmarkItem.dataset.url = bookmark.url;
+    bookmarkItem.dataset.index = index;
+    bookmarkItem.draggable = true;
     bookmarkItem.title = bookmark.title;
 
     // img要素を生成しfaviconUrlがあればそれをsrcに、なければ地球儀
@@ -887,6 +981,13 @@ function renderBookmarks() {
       // handleInputで処理
       handleInput(bookmark.url);
     });
+
+    // Drag & Drop events
+    bookmarkItem.addEventListener("dragstart", handleBookmarkDragStart);
+    bookmarkItem.addEventListener("dragover", handleBookmarkDragOver);
+    bookmarkItem.addEventListener("dragleave", handleBookmarkDragLeave);
+    bookmarkItem.addEventListener("drop", handleBookmarkDrop);
+    bookmarkItem.addEventListener("dragend", handleBookmarkDragEnd);
 
     bookmarkList.appendChild(bookmarkItem);
   });
@@ -959,7 +1060,7 @@ async function renderHistory() {
       <button class="new-search-btn" id="newSearchBtn">
         <i class="bi bi-plus-circle"></i> 新しい検索
       </button>
-      <button class="clear-history-btn" id="clearHistoryBtn" title="検索履歴を全削除">
+      <button class="clear-history-btn" id="clearHistoryBtn" title="検索履歴を全消去">
         <i class="bi bi-trash"></i>
       </button>
     </div>
