@@ -1836,6 +1836,9 @@ function setupEventListeners() {
       if (iframeContainer) {
         iframeContainer.classList.remove("loading");
       }
+
+      // iframe内のページにアイコンを追加
+      addIconToIframePage();
     };
     mainFrame.onerror = () => {
       console.error("[iframe] iframe 読み込みエラー:", mainFrame.src);
@@ -2064,6 +2067,97 @@ window.addEventListener("load", async () => {
     await renderHistory();
   }
 });
+
+// iframe内のページにアイコンを追加する関数
+function addIconToIframePage() {
+  try {
+    // iframe内のドキュメントにアクセス
+    const iframeDoc =
+      mainFrame.contentDocument || mainFrame.contentWindow.document;
+
+    if (!iframeDoc) {
+      console.log("[iframe] iframe内のドキュメントにアクセスできません");
+      return;
+    }
+
+    // 既存のアイコンを削除（重複防止）
+    const existingIcon = iframeDoc.querySelector(".iframe-external-icon");
+    if (existingIcon) {
+      existingIcon.remove();
+    }
+
+    // アイコン要素を作成
+    const iconElement = document.createElement("div");
+    iconElement.className = "iframe-external-icon";
+    iconElement.innerHTML = '<i class="bi bi-box-arrow-up"></i>';
+    iconElement.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9999;
+      font-size: 18px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    `;
+
+    // ホバー効果
+    iconElement.addEventListener("mouseenter", () => {
+      iconElement.style.background = "rgba(0, 0, 0, 0.9)";
+      iconElement.style.transform = "scale(1.1)";
+    });
+
+    iconElement.addEventListener("mouseleave", () => {
+      iconElement.style.background = "rgba(0, 0, 0, 0.8)";
+      iconElement.style.transform = "scale(1)";
+    });
+
+    // クリックイベント
+    iconElement.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        const currentUrl = mainFrame.src;
+        if (currentUrl && currentUrl !== "about:blank") {
+          console.log(
+            "[iframe] 🔥 アイコンクリック - 新しいタブで開く:",
+            currentUrl
+          );
+
+          // 新しいタブでページを開く
+          await chrome.tabs.create({
+            url: currentUrl,
+            active: true,
+          });
+
+          // 成功メッセージを表示（iframe外から）
+          updateStatus("✅ メインページで開きました", "success");
+        }
+      } catch (error) {
+        console.error("[iframe] 🔥 タブ作成に失敗:", error);
+        updateStatus("メインページでの開封に失敗しました", "error");
+      }
+    });
+
+    // iframe内のbodyに追加
+    iframeDoc.body.appendChild(iconElement);
+    console.log("[iframe] 🔥 iframe内にアイコンを追加しました");
+  } catch (error) {
+    console.error(
+      "[iframe] 🔥 iframe内にアイコンを追加できませんでした:",
+      error
+    );
+  }
+}
 
 // デバッグ用グローバル関数
 window.debugIframe = () => {
