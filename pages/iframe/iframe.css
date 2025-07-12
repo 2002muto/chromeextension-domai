@@ -1060,48 +1060,27 @@ header {
 }
 
 /*━━━━━━━━━━ BOOKMARK Drag & Drop Styles ━━━━━━━━━━*/
+
+/* bookmark drag over indicator */
 .bookmark-item.drop-indicator {
-  position: relative;
+  /* highlight with dashed outline instead of green underline */
+  outline: 2px dashed #00b06b;
+  outline-offset: -2px;
 }
 
-.bookmark-item.drop-indicator::after {
-  content: "";
-  position: absolute;
-  left: -4px;
-  right: -4px;
-  height: 3px;
-  background: linear-gradient(90deg, #00b06b, #6bff97);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(107, 255, 151, 0.6);
-  z-index: 1001;
-  opacity: 0;
-  transform: scaleX(0);
-  transition: all 0.2s ease;
-}
-
-.bookmark-item.drop-indicator.drop-above::after {
-  top: -2px;
-}
-
-.bookmark-item.drop-indicator.drop-below::after {
-  bottom: -2px;
-}
-
-.bookmark-item.drop-indicator.active::after {
-  opacity: 1;
-  transform: scaleX(1);
+.bookmark-item.drop-indicator.active {
   animation: bookmarkDropIndicatorPulse 1s ease-in-out infinite;
 }
 
 @keyframes bookmarkDropIndicatorPulse {
   0% {
-    box-shadow: 0 0 8px rgba(107, 255, 151, 0.6);
+    opacity: 0.6;
   }
   50% {
-    box-shadow: 0 0 16px rgba(107, 255, 151, 0.8);
+    opacity: 1;
   }
   100% {
-    box-shadow: 0 0 8px rgba(107, 255, 151, 0.6);
+    opacity: 0.6;
   }
 }
 

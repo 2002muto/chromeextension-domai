@@ -813,6 +813,10 @@ function handleBookmarkDragOver(e) {
   const mouseY = e.clientY;
   const itemCenter = rect.top + rect.height / 2;
 
+  console.log(
+    `[BOOKMARK D&D] dragover on index ${this.dataset.index}, mouseY=${mouseY}, center=${itemCenter}`
+  );
+
   this.classList.add("drop-indicator", "active");
 
   if (mouseY < itemCenter) {
@@ -824,6 +828,9 @@ function handleBookmarkDragOver(e) {
 
 function handleBookmarkDragLeave() {
   this.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
+  console.log(
+    `[BOOKMARK D&D] dragleave on index ${this.dataset.index}`
+  );
 }
 
 function handleBookmarkDragEnd() {
@@ -838,6 +845,7 @@ function handleBookmarkDragEnd() {
       )
     );
   dragBookmarkIndex = null;
+  console.log("[BOOKMARK D&D] drag end");
 }
 
 async function handleBookmarkDrop(e) {
@@ -851,6 +859,10 @@ async function handleBookmarkDrop(e) {
   const mouseY = e.clientY;
   const itemCenter = rect.top + rect.height / 2;
   const dropAbove = mouseY < itemCenter;
+
+  console.log(
+    `[BOOKMARK D&D] drop position: ${dropAbove ? 'above' : 'below'}, dropIndex=${dropIndex}`
+  );
 
   let bookmarks = loadBookmarks();
   const [moved] = bookmarks.splice(dragBookmarkIndex, 1);
