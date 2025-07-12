@@ -975,8 +975,6 @@ async function renderHistory() {
   // --- 自動スクロール機能 ---
   if (history.length > 0) {
     const wrappers = row.querySelectorAll(".favicon-wrapper");
-    const lastWrapper = wrappers[wrappers.length - 1];
-    const firstWrapper = wrappers[0];
     let scrollInterval = null;
 
     function stopAutoScroll() {
@@ -1007,24 +1005,22 @@ async function renderHistory() {
       }, 16);
     }
 
-    // 右端: 右方向スクロール
-    lastWrapper.addEventListener("mouseenter", () => {
-      if (row.scrollWidth > row.clientWidth) {
-        console.log(
-          "[iframe] 最後のアイコンhover - スクロール開始(right)"
-        );
-        startAutoScroll("right");
-      }
-    });
+    // 端のアイコンにホバーしたときだけ自動スクロールを開始
+    wrappers.forEach((wrapper) => {
+      wrapper.addEventListener("mouseenter", () => {
+        if (row.scrollWidth <= row.clientWidth) return;
+        const rowRect = row.getBoundingClientRect();
+        const iconRect = wrapper.getBoundingClientRect();
+        const threshold = 4; // px: アイコンが端にあるとみなす範囲
 
-    // 左端: 左方向スクロール
-    firstWrapper.addEventListener("mouseenter", () => {
-      if (row.scrollWidth > row.clientWidth) {
-        console.log(
-          "[iframe] 最初のアイコンhover - スクロール開始(left)"
-        );
-        startAutoScroll("left");
-      }
+        if (rowRect.right - iconRect.right <= threshold) {
+          console.log("[iframe] 右端アイコンhover - スクロール開始(right)");
+          startAutoScroll("right");
+        } else if (iconRect.left - rowRect.left <= threshold) {
+          console.log("[iframe] 左端アイコンhover - スクロール開始(left)");
+          startAutoScroll("left");
+        }
+      });
     });
 
     // マウスポインタが履歴行から離れたら自動スクロールを停止
