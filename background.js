@@ -575,3 +575,25 @@ chrome.action.onClicked.addListener(async (tab) => {
     console.error("サイドパネルを開くのに失敗:", error);
   }
 });
+
+// コンテキストメニューに「SideEffectで開く」を追加
+chrome.runtime.onInstalled.addListener(() => {
+  console.log("[BG] コンテキストメニューを作成します");
+  chrome.contextMenus.create({
+    id: "open-in-sideeffect",
+    title: "SideEffectで開く",
+    contexts: ["all"],
+  });
+});
+
+// コンテキストメニュークリック時にサイドパネルを開く
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === "open-in-sideeffect" && tab) {
+    try {
+      console.log("[BG] コンテキストメニューからサイドパネルを開きます");
+      await chrome.sidePanel.open({ tabId: tab.id });
+    } catch (error) {
+      console.error("[BG] サイドパネルを開くのに失敗:", error);
+    }
+  }
+});
