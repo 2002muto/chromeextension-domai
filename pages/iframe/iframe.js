@@ -750,8 +750,15 @@ async function addBookmark(title, url) {
   console.log(`[iframe] ブックマーク追加: ${title} (${url})`);
   // URLバリデーション追加
   if (!/^https?:\/\//.test(url)) {
-    // URLが無効な場合は処理を中断し、ユーザーへの通知やエラーログを残さない
+    // URLが無効な場合は処理を中断し、トーストで通知
     console.log(`[iframe] ブックマーク追加を中断: 無効なURL (${url})`);
+    if (window.AppUtils && window.AppUtils.showToast) {
+      // トーストで保存失敗を表示
+      window.AppUtils.showToast("保存失敗", "error");
+    } else {
+      // AppUtilsがない場合はステータスバーで表示
+      updateStatus("保存失敗", "error");
+    }
     return;
   }
   let bookmarks = loadBookmarks();
