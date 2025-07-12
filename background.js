@@ -576,22 +576,42 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-// コンテキストメニューに「SideEffectで開く」を追加
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("[BG] コンテキストメニューを作成します");
-  chrome.contextMenus.create({
-    id: "open-in-sideeffect",
-    title: "SideEffectで開く",
-    contexts: ["all"],
+// コンテキストメニュー項目を登録する関数
+function createContextMenu() {
+  chrome.contextMenus.removeAll(() => {
+    console.log("[BG] コンテキストメニューを作成します");
+    chrome.contextMenus.create({
+      id: "open-in-sideeffect",
+      title: "SideEffectで開く",
+      contexts: ["all"],
+    });
   });
+}
+
+// 拡張機能のインストール時にコンテキストメニューを作成
+chrome.runtime.onInstalled.addListener(() => {
+  createContextMenu();
 });
+
+// 念のためService Worker起動時にもメニューを作成
+createContextMenu();
 
 // コンテキストメニュークリック時にサイドパネルを開く
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "open-in-sideeffect" && tab) {
     try {
       console.log("[BG] コンテキストメニューからサイドパネルを開きます");
+      const targetUrl = info.pageUrl || tab.url || "";
+      console.log(`[BG] ターゲットURL: ${targetUrl}`);
+
+      await chrome.sidePanel.setOptions({
+        tabId: tab.id,
+        enabled: true,
+        path: `pages/iframe/iframe.html?url=${encodeURIComponent(targetUrl)}`,
+      });
+
       await chrome.sidePanel.open({ tabId: tab.id });
+      console.log("[BG] サイドパネルを開きました");
     } catch (error) {
       console.error("[BG] サイドパネルを開くのに失敗:", error);
     }
