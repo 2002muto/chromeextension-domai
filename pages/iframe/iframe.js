@@ -732,6 +732,9 @@ function getDomain(entry) {
 }
 
 // YouTube URLを埋め込み用URLに変換する関数
+// YouTubeの視聴ページを埋め込み用URLに変換する関数
+// - 通常のwatch/shortsリンクを iframe 再生用に変換する
+// - 変換できない場合はそのまま返す
 function convertYouTubeUrl(url) {
   console.log(`[iframe] convertYouTubeUrl: ${url}`);
   try {
@@ -744,7 +747,7 @@ function convertYouTubeUrl(url) {
     for (const p of patterns) {
       const match = url.match(p);
       if (match && match[1]) {
-        const embed = `https://www.youtube.com/embed/${match[1]}`;
+        const embed = `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0`;
         console.log(`[iframe] YouTube埋め込みURLに変換: ${embed}`);
         return embed;
       }
@@ -1927,7 +1930,11 @@ async function handleInput(input, forceShow = false) {
     let fullUrl = cleanInput.startsWith("http")
       ? cleanInput
       : "https://" + cleanInput;
-    fullUrl = convertYouTubeUrl(fullUrl);
+    const converted = convertYouTubeUrl(fullUrl);
+    if (converted !== fullUrl) {
+      console.log(`[iframe] YouTube URL変換: ${fullUrl} -> ${converted}`);
+      fullUrl = converted;
+    }
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
 
     // SideEffect: URLに対してファビコンを自動設定
