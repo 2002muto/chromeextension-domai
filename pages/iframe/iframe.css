@@ -47,6 +47,35 @@ header {
   z-index: -1;
 }
 
+/* ─── iframeオーバーレイアイコン ─── */
+.iframe-overlay-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.iframe-overlay-icon:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.iframe-overlay-icon i {
+  color: white;
+}
+
 /* ─── Empty State（URL未入力時の表示） ─── */
 .iframe-empty-state {
   display: flex;
