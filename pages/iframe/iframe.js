@@ -1278,18 +1278,45 @@ function setupEventListeners() {
 
   // メインページ読み込みボタンのイベント
   if (loadMainPageBtn) {
+    // メインページを読み込むボタンクリック時の処理
     loadMainPageBtn.addEventListener("click", async () => {
-      // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
+      console.log("[iframe] メインページ読み込みボタンがクリックされました");
+
       try {
+        // 現在アクティブなタブのURLをbackground.js経由で取得
         const response = await chrome.runtime.sendMessage({
           type: "GET_ACTIVE_TAB_URL",
         });
+
         if (response && response.url) {
-          handleInput(response.url, true);
+          console.log("[iframe] アクティブタブURL:", response.url);
+
+          // ドメインを抽出しルートURLを作成
+          const domain = extractDomain(response.url);
+          if (domain) {
+            const urlObj = new URL(response.url.startsWith("http") ? response.url : "https://" + response.url);
+            urlObj.pathname = "/";
+            urlObj.search = "";
+            urlObj.hash = "";
+
+            // CSP対策として動的ルールを追加
+            await chrome.runtime.sendMessage({
+              type: "ADD_DYNAMIC_IFRAME_RULE",
+              domain: domain,
+            });
+
+            console.log("[iframe] ルートURLを読み込み:", urlObj.href);
+            handleInput(urlObj.href, true);
+          } else {
+            console.warn("[iframe] ドメインの抽出に失敗しました:", response.url);
+            updateStatus("メインページURLの解析に失敗しました", "error");
+          }
         } else {
+          console.warn("[iframe] GET_ACTIVE_TAB_URL 応答が不正です", response);
           updateStatus("メインページURLの取得に失敗しました", "error");
         }
       } catch (e) {
+        console.error("[iframe] メインページ読み込みエラー:", e);
         updateStatus("メインページURLの取得に失敗しました", "error");
       }
     });
