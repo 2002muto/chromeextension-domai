@@ -1279,17 +1279,31 @@ function setupEventListeners() {
   // メインページ読み込みボタンのイベント
   if (loadMainPageBtn) {
     loadMainPageBtn.addEventListener("click", async () => {
-      // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
+      console.log("[iframe] 🔥 メインページ読み込みボタンクリック");
+
       try {
-        const response = await chrome.runtime.sendMessage({
-          type: "GET_ACTIVE_TAB_URL",
+        // 成功系のコードを参考に、直接chrome.tabs.queryを使用
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
         });
-        if (response && response.url) {
-          handleInput(response.url, true);
+
+        if (tab && tab.url) {
+          console.log("[iframe] 🔥 取得したURL:", tab.url);
+
+          // URL入力欄に設定
+          if (urlInput) {
+            urlInput.value = tab.url;
+          }
+
+          // handleInputで処理（forceShow=trueで履歴追加をスキップ）
+          handleInput(tab.url, true);
         } else {
+          console.log("[iframe] 🔥 アクティブタブが見つからない");
           updateStatus("メインページURLの取得に失敗しました", "error");
         }
-      } catch (e) {
+      } catch (error) {
+        console.error("[iframe] 🔥 タブ情報の取得に失敗:", error);
         updateStatus("メインページURLの取得に失敗しました", "error");
       }
     });
