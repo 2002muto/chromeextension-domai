@@ -79,9 +79,9 @@ function initializeElements() {
     statusBar.style.display = "none";
   }
 
-  // ★ 追加: オーバーレイアイコンを初期状態で表示
+  // ★ 追加: オーバーレイアイコンは初期状態で非表示
   if (iframeOverlayIcon) {
-    iframeOverlayIcon.style.display = "flex";
+    iframeOverlayIcon.style.display = "none";
   }
 }
 
@@ -426,6 +426,7 @@ async function forceLoadIframe(url) {
       "allow",
       "accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
     );
+    mainFrame.setAttribute("allowfullscreen", "true");
     mainFrame.setAttribute("referrerpolicy", "unsafe-url");
     mainFrame.setAttribute("credentialless", "false");
 
@@ -459,6 +460,7 @@ async function forceLoadIframe(url) {
       "allow",
       "accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
     );
+    newFrame.setAttribute("allowfullscreen", "true");
     newFrame.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
     newFrame.setAttribute("loading", "eager");
 
@@ -727,6 +729,49 @@ function getDomain(entry) {
   } catch {
     return null;
   }
+}
+
+// YouTube URLを埋め込み用URLに変換する関数
+// YouTubeの視聴ページを埋め込み用URLに変換する関数
+// - 通常のwatch/shortsリンクを iframe 再生用に変換する
+// - 変換できない場合はそのまま返す
+// YouTubeのURLを iframe で再生できる形式に変換する
+// - watch や shorts, youtu.be 形式をサポート
+// - 変換できない場合は入力URLをそのまま返す
+function convertYouTubeUrl(url) {
+  console.log(`[iframe] convertYouTubeUrl: ${url}`);
+  try {
+    const u = new URL(url);
+    let videoId = null;
+    let start = null;
+
+    // youtu.be/<id>
+    if (u.hostname === "youtu.be") {
+      videoId = u.pathname.slice(1);
+      start = u.searchParams.get("t") || u.searchParams.get("start");
+    }
+
+    // youtube.com/watch?v=<id>
+    if (!videoId && u.hostname.includes("youtube.com") && u.pathname === "/watch") {
+      videoId = u.searchParams.get("v");
+      start = u.searchParams.get("t") || u.searchParams.get("start");
+    }
+
+    // youtube.com/shorts/<id>
+    if (!videoId && u.hostname.includes("youtube.com") && u.pathname.startsWith("/shorts/")) {
+      videoId = u.pathname.split("/")[2] || u.pathname.split("/")[1];
+    }
+
+    if (videoId) {
+      let embed = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
+      if (start) embed += `&start=${parseInt(start, 10)}`;
+      console.log(`[iframe] YouTube埋め込みURLに変換: ${embed}`);
+      return embed;
+    }
+  } catch (e) {
+    console.error("[iframe] convertYouTubeUrl error:", e);
+  }
+  return url;
 }
 
 function getGoogleSVG() {
@@ -1898,9 +1943,14 @@ async function handleInput(input, forceShow = false) {
 
   if (isValidUrl(cleanInput)) {
     // URL直接アクセス
-    const fullUrl = cleanInput.startsWith("http")
+    let fullUrl = cleanInput.startsWith("http")
       ? cleanInput
       : "https://" + cleanInput;
+    const converted = convertYouTubeUrl(fullUrl);
+    if (converted !== fullUrl) {
+      console.log(`[iframe] YouTube URL変換: ${fullUrl} -> ${converted}`);
+      fullUrl = converted;
+    }
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
 
     // SideEffect: URLに対してファビコンを自動設定
@@ -2221,9 +2271,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 要素を初期化
   initializeElements();
 
-  // オーバーレイアイコンを初期状態で表示（IFRAME起動時は空なので非表示になる）
+  // オーバーレイアイコンも読み込み時点では非表示にしておく
   if (iframeOverlayIcon) {
-    iframeOverlayIcon.style.display = "flex";
+    iframeOverlayIcon.style.display = "none";
+  }
+
+  // ステータスバーも初期は非表示を強制
+  if (statusBar) {
+    statusBar.style.display = "none";
   }
 
   // 履歴を読み込んで表示
