@@ -166,8 +166,12 @@ let currentUrl = "";
 let currentLoadIsLoginSite = false; // ★ログイン維持サイトかのフラグ
 
 // ステータス更新
-function updateStatus(message, type = "info") {
-  console.log(`[iframe] ステータス更新: ${message}`);
+// ステータスバーへのメッセージ表示とログ出力を制御する関数
+// suppressLog: true の場合、コンソールへの出力を抑制します
+function updateStatus(message, type = "info", suppressLog = false) {
+  if (!suppressLog) {
+    console.log(`[iframe] ステータス更新: ${message}`);
+  }
 
   // ステータス表示用の要素を取得
   let statusElement = document.getElementById("statusBar");
@@ -746,11 +750,15 @@ async function addBookmark(title, url) {
   console.log(`[iframe] ブックマーク追加: ${title} (${url})`);
   // URLバリデーション追加
   if (!/^https?:\/\//.test(url)) {
-    updateStatus(
-      "有効なURL（http:// または https:// で始まる）を入力してください",
-      "error"
-    );
-    alert("有効なURL（http:// または https:// で始まる）を入力してください");
+    // URLが無効な場合は処理を中断し、トーストで通知
+    console.log(`[iframe] ブックマーク追加を中断: 無効なURL (${url})`);
+    if (window.AppUtils && window.AppUtils.showToast) {
+      // トーストで保存失敗を表示
+      window.AppUtils.showToast("保存失敗", "error");
+    } else {
+      // AppUtilsがない場合はステータスバーで表示
+      updateStatus("保存失敗", "error");
+    }
     return;
   }
   let bookmarks = loadBookmarks();
@@ -975,8 +983,9 @@ async function renderHistory() {
   // --- 自動スクロール機能 ---
   if (history.length > 0) {
     const wrappers = row.querySelectorAll(".favicon-wrapper");
-    const lastWrapper = wrappers[wrappers.length - 1];
-    const firstWrapper = wrappers[0];
+    // 自動スクロール時の速度設定
+    const AUTO_SCROLL_STEP = 12; // px/interval: 高速化
+    const AUTO_SCROLL_INTERVAL = 60; // ms
     let scrollInterval = null;
 
     function stopAutoScroll() {
@@ -990,44 +999,49 @@ async function renderHistory() {
       stopAutoScroll();
       // 横スクロールが必要な場合のみ
       if (row.scrollWidth <= row.clientWidth) return;
+      console.log("[iframe] 自動スクロール開始", {
+        direction,
+        step: AUTO_SCROLL_STEP,
+        interval: AUTO_SCROLL_INTERVAL,
+      });
       scrollInterval = setInterval(() => {
         if (direction === "right") {
           if (row.scrollLeft < row.scrollWidth - row.clientWidth) {
-            row.scrollLeft += 8;
+            row.scrollLeft += AUTO_SCROLL_STEP;
           } else {
             stopAutoScroll();
           }
         } else {
           if (row.scrollLeft > 0) {
-            row.scrollLeft -= 8;
+            row.scrollLeft -= AUTO_SCROLL_STEP;
           } else {
             stopAutoScroll();
           }
         }
-      }, 16);
+      }, AUTO_SCROLL_INTERVAL);
     }
 
-    // 右端: 右方向スクロール
-    lastWrapper.addEventListener("mouseenter", () => {
-      if (row.scrollWidth > row.clientWidth) {
-        console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
-        startAutoScroll("right");
-      }
-    });
-    lastWrapper.addEventListener("mouseleave", () => {
-      console.log("[iframe] 最後のアイコンleave - スクロール停止");
-      stopAutoScroll();
+    // 端のアイコンにホバーしたときだけ自動スクロールを開始
+    wrappers.forEach((wrapper) => {
+      wrapper.addEventListener("mouseenter", () => {
+        if (row.scrollWidth <= row.clientWidth) return;
+        const rowRect = row.getBoundingClientRect();
+        const iconRect = wrapper.getBoundingClientRect();
+        const threshold = 4; // px: アイコンが端にあるとみなす範囲
+
+        if (rowRect.right - iconRect.right <= threshold) {
+          console.log("[iframe] 右端アイコンhover - スクロール開始(right)");
+          startAutoScroll("right");
+        } else if (iconRect.left - rowRect.left <= threshold) {
+          console.log("[iframe] 左端アイコンhover - スクロール開始(left)");
+          startAutoScroll("left");
+        }
+      });
     });
 
-    // 左端: 左方向スクロール
-    firstWrapper.addEventListener("mouseenter", () => {
-      if (row.scrollWidth > row.clientWidth) {
-        console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
-        startAutoScroll("left");
-      }
-    });
-    firstWrapper.addEventListener("mouseleave", () => {
-      console.log("[iframe] 最初のアイコンleave - スクロール停止");
+    // マウスポインタが履歴行から離れたら自動スクロールを停止
+    row.addEventListener("mouseleave", () => {
+      console.log("[iframe] favicon-row leave - スクロール停止");
       stopAutoScroll();
     });
   }
