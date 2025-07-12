@@ -1189,6 +1189,20 @@ async function renderHistory() {
     console.log("[iframe] リロードアイコンのイベントを登録しました");
   }
 
+  // ホームアイコンのイベント
+  const homeIcon = document.querySelector(
+    ".footer-icons .bi-house.footer-icon"
+  );
+  if (homeIcon) {
+    homeIcon.addEventListener("click", () => {
+      console.log(
+        "[iframe] ホームアイコンクリック - 新しい検索ページを表示します"
+      );
+      focusSearchInput();
+    });
+    console.log("[iframe] ホームアイコンのイベントを登録しました");
+  }
+
   // 拡大/縮小アイコンのイベント
   expandToggleBtn = document.getElementById("expandToggle");
   if (expandToggleBtn) {
