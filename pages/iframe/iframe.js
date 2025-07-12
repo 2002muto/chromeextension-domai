@@ -20,7 +20,9 @@ let urlInput,
   bookmarkUrlInput,
   bookmarkTitleInput,
   loadMainPageBtn, // 追加
-  iframeOverlayIcon; // 追加
+  iframeOverlayIcon, // 追加
+  expandToggleBtn; // 追加
+let isExpanded = false; // 拡大状態フラグ
 const HISTORY_KEY = "iframeSearchHistory";
 const BOOKMARK_KEY = "iframeBookmarks";
 
@@ -45,6 +47,7 @@ function initializeElements() {
   bookmarkTitleInput = document.getElementById("bookmarkTitleInput");
   loadMainPageBtn = document.getElementById("loadMainPageBtn"); // 追加
   iframeOverlayIcon = document.getElementById("iframeOverlayIcon"); // 追加
+  expandToggleBtn = document.getElementById("expandToggle"); // 追加
 
   console.log("[iframe] 要素取得結果:", {
     urlInput: !!urlInput,
@@ -64,6 +67,7 @@ function initializeElements() {
     bookmarkTitleInput: !!bookmarkTitleInput,
     loadMainPageBtn: !!loadMainPageBtn,
     iframeOverlayIcon: !!iframeOverlayIcon,
+    expandToggleBtn: !!expandToggleBtn,
   });
 
   if (!searchHistoryEl) {
@@ -925,8 +929,7 @@ async function renderHistory() {
       <div class="footer-icons">
         <i class="bi bi-house footer-icon" title="ホーム"></i>
         <i class="bi bi-arrow-clockwise footer-icon" title="更新"></i>
-        <i class="bi bi-pc-display-horizontal footer-icon" title="デスクトップ"></i>
-        <i class="bi bi-phone footer-icon" title="モバイル"></i>
+        <i id="expandToggle" class="bi bi-arrows-angle-expand footer-icon" title="拡大/縮小"></i>
       </div>
       <div class="history-container">
         <span class="text-muted">検索履歴はありません</span>
@@ -945,8 +948,7 @@ async function renderHistory() {
     <div class="footer-icons">
       <i class="bi bi-house footer-icon" title="ホーム"></i>
       <i class="bi bi-arrow-clockwise footer-icon" title="更新"></i>
-      <i class="bi bi-pc-display-horizontal footer-icon" title="デスクトップ"></i>
-      <i class="bi bi-phone footer-icon" title="モバイル"></i>
+      <i id="expandToggle" class="bi bi-arrows-angle-expand footer-icon" title="拡大/縮小"></i>
     </div>
     <div class="history-container">
       <div class="search-history">
@@ -1062,6 +1064,12 @@ async function renderHistory() {
     clearBtn.addEventListener("click", () => {
       showDeleteHistoryDialog();
     });
+  }
+
+  // 拡大/縮小アイコンのイベント
+  expandToggleBtn = document.getElementById("expandToggle");
+  if (expandToggleBtn) {
+    expandToggleBtn.addEventListener("click", toggleExpand);
   }
 }
 
@@ -2192,6 +2200,18 @@ window.debugIframe = () => {
   console.log("mainFrame.src:", mainFrame.src);
   console.log("ログイン対応サイト:", LOGIN_SITES);
 };
+
+// 拡大表示トグル関数
+function toggleExpand() {
+  isExpanded = !isExpanded;
+  document.body.classList.toggle("iframe-expanded", isExpanded);
+  if (expandToggleBtn) {
+    expandToggleBtn.classList.toggle("bi-arrows-angle-expand", !isExpanded);
+    expandToggleBtn.classList.toggle("bi-arrows-angle-contract", isExpanded);
+  }
+  console.log(`[iframe] 拡大状態切替: ${isExpanded}`);
+}
+
 
 // 新しい検索ボタンのイベント（setupEventListeners関数内で設定されるため削除）
 

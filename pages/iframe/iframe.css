@@ -1206,3 +1206,12 @@ header {
 .text-muted {
   color: #ffffff !important;
 }
+
+/* 拡大表示モード */
+body.iframe-expanded header {
+  display: none;
+}
+
+body.iframe-expanded .iframe-container {
+  height: calc(100vh - 80px);
+}
