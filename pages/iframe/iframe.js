@@ -249,6 +249,13 @@ async function forceLoadIframe(url) {
   const loginCheck = isLoginSite(url);
   currentLoadIsLoginSite = loginCheck.isLogin; // ★フラグを設定
 
+  // ドメインを抽出して動的ルールを追加
+  const targetDomain = loginCheck.isLogin ? loginCheck.domain : extractDomain(url);
+
+  if (targetDomain) {
+    await addDynamicRule(targetDomain);
+  }
+
   if (loginCheck.isLogin) {
     updateStatus(
       `${loginCheck.siteName} のログイン状態を維持して接続中...`,
@@ -256,8 +263,6 @@ async function forceLoadIframe(url) {
     );
     loginInfo.style.display = "block";
 
-    // ログイン状態維持のための動的ルール追加
-    await addDynamicRule(loginCheck.domain);
   } else {
     loginInfo.style.display = "none";
     updateStatus("接続中...", "info");
@@ -1018,7 +1023,10 @@ async function handleInput(input, forceShow = false) {
     iframeContainer.classList.add("viewing");
 
     try {
-      await forceLoadIframe(fullUrl);
+      const ok = await forceLoadIframe(fullUrl);
+      if (!ok) {
+        updateStatus(`❌ ページを表示できません: ${fullUrl}`, "error");
+      }
     } catch (error) {
       console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
       updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
@@ -1091,6 +1099,7 @@ function setupEventListeners() {
   if (urlInput) {
     urlInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
+        e.preventDefault();
         console.log("[iframe] 🔥 Enterキー押下");
         handleInput(urlInput.value);
       }
