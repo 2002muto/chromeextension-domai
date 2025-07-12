@@ -426,6 +426,7 @@ async function forceLoadIframe(url) {
       "allow",
       "accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
     );
+    mainFrame.setAttribute("allowfullscreen", "true");
     mainFrame.setAttribute("referrerpolicy", "unsafe-url");
     mainFrame.setAttribute("credentialless", "false");
 
@@ -459,6 +460,7 @@ async function forceLoadIframe(url) {
       "allow",
       "accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
     );
+    newFrame.setAttribute("allowfullscreen", "true");
     newFrame.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
     newFrame.setAttribute("loading", "eager");
 
@@ -727,6 +729,30 @@ function getDomain(entry) {
   } catch {
     return null;
   }
+}
+
+// YouTube URLを埋め込み用URLに変換する関数
+function convertYouTubeUrl(url) {
+  console.log(`[iframe] convertYouTubeUrl: ${url}`);
+  try {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=)([\w-]+)/,
+      /(?:youtu\.be\/)([\w-]+)/,
+      /(?:youtube\.com\/shorts\/)([\w-]+)/,
+    ];
+
+    for (const p of patterns) {
+      const match = url.match(p);
+      if (match && match[1]) {
+        const embed = `https://www.youtube.com/embed/${match[1]}`;
+        console.log(`[iframe] YouTube埋め込みURLに変換: ${embed}`);
+        return embed;
+      }
+    }
+  } catch (e) {
+    console.error('[iframe] convertYouTubeUrl error:', e);
+  }
+  return url;
 }
 
 function getGoogleSVG() {
@@ -1898,9 +1924,10 @@ async function handleInput(input, forceShow = false) {
 
   if (isValidUrl(cleanInput)) {
     // URL直接アクセス
-    const fullUrl = cleanInput.startsWith("http")
+    let fullUrl = cleanInput.startsWith("http")
       ? cleanInput
       : "https://" + cleanInput;
+    fullUrl = convertYouTubeUrl(fullUrl);
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
 
     // SideEffect: URLに対してファビコンを自動設定
