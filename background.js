@@ -414,12 +414,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.type === "GET_ACTIVE_TAB_URL") {
+    console.log("[BG] GET_ACTIVE_TAB_URL request received");
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs && tabs[0] && tabs[0].url) {
-        sendResponse({ url: tabs[0].url });
-      } else {
-        sendResponse({ url: null });
-      }
+      const url = tabs && tabs[0] ? tabs[0].url : null;
+      console.log("[BG] active tab url:", url);
+      sendResponse({ url });
     });
     return true; // async response
   }
@@ -430,6 +429,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       let result = { success: true, ruleId: null };
 
       switch (request.action || request.type) {
+        case "GET_ACTIVE_TAB_URL":
+          console.log("[BG] fallback GET_ACTIVE_TAB_URL handling");
+          result = await new Promise((resolve) => {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+              const url = tabs && tabs[0] ? tabs[0].url : null;
+              console.log("[BG] fallback active tab url:", url);
+              resolve({ url });
+            });
+          });
+          break;
         case "ADD_DYNAMIC_IFRAME_RULE":
         case "FORCE_ADD_RULE":
         case "BYPASS_CSP":
