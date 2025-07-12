@@ -47,168 +47,86 @@
 
     <!-- メインコンテンツ -->
     <div class="iframe-content">
-      <!-- 検索・URL入力エリア -->
-      <div class="input-group mb-2">
-        <input
-          id="urlInput"
-          class="form-control"
-          placeholder="🔍 検索キーワード または 📋 URL（ChatGPT、Figma、Gemini等のログイン済みURL対応）"
-          autocomplete="off"
-        />
-        <button id="goBtn" class="btn btn-primary">
-          <i class="bi bi-search"></i> 実行
-        </button>
-        <button id="clearBtn" class="btn btn-outline-secondary">
-          <i class="bi bi-x-circle"></i>
-        </button>
-      </div>
-
-      <!-- ログイン状態維持の説明 -->
-      <div class="alert alert-info alert-sm p-2 mb-2" id="loginInfo">
+      <!-- ステータスメッセージ（drag-drop-toastスタイル） -->
+      <div id="statusBar" style="display: none">
         <i class="bi bi-info-circle"></i>
-        <strong>ログイン状態維持:</strong>
-        ChatGPT、Figma、Gemini等のログイン済みURLを貼り付けると、ブラウザのログイン状態を共有してアクセスできます。
+        <span>メインページを読み込む</span>
       </div>
 
-      <!-- 人気サイトのクイックアクセス -->
-      <div class="quick-access mb-2">
-        <!-- AIサービス -->
-        <div class="mb-2">
-          <small class="text-muted">🤖 AIサービス</small>
-          <div class="btn-group btn-group-sm" role="group">
-            <button
-              type="button"
-              class="btn btn-outline-primary quick-btn"
-              data-url="https://chatgpt.com"
-            >
-              <i class="bi bi-robot"></i> ChatGPT
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary quick-btn"
-              data-url="https://claude.ai"
-            >
-              <i class="bi bi-robot"></i> Claude
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary quick-btn"
-              data-url="https://gemini.google.com"
-            >
-              <i class="bi bi-robot"></i> Gemini
-            </button>
-
-            <button
-              type="button"
-              class="btn btn-outline-primary quick-btn"
-              data-url="https://copilot.microsoft.com"
-            >
-              <i class="bi bi-robot"></i> Copilot
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary quick-btn"
-              data-url="https://you.com"
-            >
-              <i class="bi bi-robot"></i> You.com
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary quick-btn"
-              data-url="https://phind.com"
-            >
-              <i class="bi bi-robot"></i> Phind
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary quick-btn"
-              data-url="https://genspark.ai"
-            >
-              <i class="bi bi-robot"></i> Genspark
-            </button>
-          </div>
-        </div>
-
-        <!-- 開発ツール -->
-        <div class="mb-2">
-          <small class="text-muted">💻 開発ツール</small>
-          <div class="btn-group btn-group-sm" role="group">
-            <button
-              type="button"
-              class="btn btn-outline-dark quick-btn"
-              data-url="https://figma.com"
-            >
-              <i class="bi bi-palette"></i> Figma
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-dark quick-btn"
-              data-url="https://github.com"
-            >
-              <i class="bi bi-github"></i> GitHub
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-dark quick-btn"
-              data-url="https://gitlab.com"
-            >
-              <i class="bi bi-git"></i> GitLab
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-dark quick-btn"
-              data-url="https://notion.so"
-            >
-              <i class="bi bi-journal-text"></i> Notion
-            </button>
-          </div>
-        </div>
-
-        <!-- コミュニケーション -->
-        <div class="mb-2">
-          <small class="text-muted">💬 コミュニケーション</small>
-          <div class="btn-group btn-group-sm" role="group">
-            <button
-              type="button"
-              class="btn btn-outline-info quick-btn"
-              data-url="https://slack.com"
-            >
-              <i class="bi bi-slack"></i> Slack
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-info quick-btn"
-              data-url="https://discord.com"
-            >
-              <i class="bi bi-discord"></i> Discord
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-info quick-btn"
-              data-url="https://x.com"
-            >
-              <i class="bi bi-twitter"></i> X
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-info quick-btn"
-              data-url="https://linkedin.com"
-            >
-              <i class="bi bi-linkedin"></i> LinkedIn
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- iframe表示エリア -->
+      <!-- iframe表示エリア（中央レイアウト） -->
       <div class="iframe-container">
+        <!-- 中央UIコンテナ -->
+        <div class="center-ui-container">
+          <!-- メインページ読み込みボタン（左アイコン＋右テキスト） -->
+          <div id="loadMainPageBtn" class="main-page-load-section">
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>メインページを読み込む</span>
+          </div>
+
+          <!-- 検索・URL入力エリア -->
+          <div class="search-section">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-google"></i>
+              </span>
+              <input
+                id="urlInput"
+                class="form-control"
+                placeholder="URLを入力またはキーワードを検索します"
+                autocomplete="off"
+              />
+              <button id="clearBtn" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 説明セクション -->
+          <div class="info-section">
+            <div class="info-card">
+              <i class="bi bi-info-circle"></i>
+              <div class="info-title">
+                メインページでのログイン状態を維持します
+              </div>
+              <div class="info-text">
+                ChatGPT、Figma、Gemini等の各サービスのメインページでのログイン状態を維持したまま、サイドウィンドウで表示することが出来ます。
+              </div>
+            </div>
+            <div class="info-card">
+              <i class="bi bi-exclamation-triangle"></i>
+              <div class="info-title">サイドウィンドウでの表示の制限</div>
+              <div class="info-text">
+                ログイン状態はブラウザのログインステータスに依存します。また、表示元サイトのセキュリティポリシーによっては表示できない可能性があります。<br />（メールサービス等の認証等）
+              </div>
+            </div>
+          </div>
+
+          <!-- BOOKMARKセクション -->
+          <div class="bookmark-section">
+            <div class="bookmark-header">
+              <i class="bi bi-bookmarks"></i>
+              <span class="bookmark-label">BOOKMARK</span>
+            </div>
+            <div class="bookmark-grid">
+              <div id="bookmarkList" class="bookmark-list">
+                <!-- ブックマークアイコンがここに表示されます -->
+              </div>
+              <button
+                id="addBookmarkBtn"
+                class="add-bookmark-btn"
+                title="ブックマークを追加"
+              >
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- iframe本体 -->
         <iframe
           id="mainFrame"
-          class="w-100 border-0 iframe-main"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
-          allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; cross-origin-isolated; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking"
-          referrerpolicy="no-referrer-when-downgrade"
-          loading="lazy"
+          class="iframe-main"
+          style="display: none"
         ></iframe>
       </div>
     </div>
@@ -234,3 +152,25 @@
     <script src="iframe.js"></script>
   </body>
 </html>
+
+<!-- ブックマーク追加モーダル -->
+<div id="addBookmarkModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="form-group">
+      <label for="bookmarkUrlInput">URL</label>
+      <input
+        type="text"
+        id="bookmarkUrlInput"
+        placeholder="URL を入力または貼り付け"
+      />
+    </div>
+    <div class="form-group">
+      <label for="bookmarkTitleInput">タイトル</label>
+      <input type="text" id="bookmarkTitleInput" placeholder="名前を入力" />
+    </div>
+    <div class="modal-actions">
+      <button id="saveBookmarkBtn" class="btn-save">保存</button>
+      <button id="closeModalBtn" class="btn-close">閉じる</button>
+    </div>
+  </div>
+</div>

@@ -5,14 +5,19 @@
 
 /* ─── ベース設定 ─── */
 body {
-  background-color: #314559;
+  background-color: #242424; /* 背景色を#242424に統一 */
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
-  color: #e2e8f0;
+  color: #a9a9a9; /* 修正1: 全体の文字色を #A9A9A9 に変更 */
   overflow-x: hidden;
+}
+
+/* ─── 共通ヘッダー ─── */
+header {
+  background-color: #242424;
 }
 
 /* ─── ヘッダー（非表示） ─── */
@@ -89,37 +94,50 @@ body {
 /* ─── 検索・URL入力エリア ─── */
 .input-group {
   background: rgba(255, 255, 255, 0.95);
-  border: 2px solid #667eea;
+  border: none;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+}
+
+.input-group-text {
+  background: transparent;
+  border: none;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  color: #a9a9a9; /* 修正1 */
+  font-size: 18px;
 }
 
 #urlInput {
   border: none;
   padding: 12px 16px;
   font-size: 14px;
-  color: #333;
+  color: #333; /* ★文字がはっきり見えるように濃い色に変更 */
   outline: none;
   background: #fff;
   transition: all 0.3s ease;
+  flex: 1;
 }
 
 #urlInput:focus {
   background: #ffffff;
-  border-color: #764ba2;
-  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2);
+  box-shadow: none;
 }
 
 #urlInput::placeholder {
-  color: #666;
+  color: #6d6d6d; /* ★プレースホルダーの文字色を調整 */
   font-size: 13px;
 }
 
 #goBtn {
   background: linear-gradient(135deg, #667eea, #764ba2);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 12px 20px;
   color: white;
   font-weight: 600;
@@ -134,18 +152,18 @@ body {
 }
 
 #clearBtn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
   padding: 12px 16px;
-  color: #e2e8f0;
+  color: #a9a9a9; /* 修正1 */
   transition: all 0.3s ease;
   cursor: pointer;
+  font-size: 18px;
 }
 
 #clearBtn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ─── ログイン状態維持の説明 ─── */
@@ -239,20 +257,23 @@ body {
   display: block;
 }
 
-/* ─── iframe表示エリア ─── */
+/* ─── iframe表示エリア（中央レイアウト版） ─── */
 .iframe-container {
-  background: #ffffff;
-  border-radius: 0;
+  background: #242424;
+  border-radius: 8px;
+  border: none !important;
   overflow: hidden;
-  box-shadow: none;
+  box-shadow: none !important;
   margin: 0;
   position: relative;
   flex: 1 1 0%;
   min-height: 0;
-  height: 100%;
+  height: calc(100vh - 90px);
   width: 100%;
-  padding: 0;
+  padding: 20px;
   display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .iframe-container::before {
@@ -267,6 +288,7 @@ body {
   animation: gradientShift 4s ease infinite;
   border-radius: 14px;
   z-index: -1;
+  display: none !important;
 }
 
 @keyframes gradientShift {
@@ -279,15 +301,117 @@ body {
   }
 }
 
+.iframe-container.viewing .center-ui-container {
+  display: none;
+}
+
+.iframe-container.viewing .iframe-main {
+  display: block;
+}
+
+.iframe-container.viewing {
+  border: none !important;
+  box-shadow: none !important;
+}
+.iframe-container.viewing::before {
+  display: none !important;
+}
+
+/* 中央UIコンテナ */
+.center-ui-container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 10;
+}
+
 .iframe-main {
   width: 100%;
   height: 100%;
   border: none;
-  background: #ffffff;
-  border-radius: 0;
+  background: #242424;
+  border-radius: 6px;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/* メインページ読み込みセクション */
+.main-page-load-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 28px;
+  border-radius: 8px;
+  background: #242424;
+  border: 1px solid #a9a9a9;
+  color: #a9a9a9;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 18px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 340px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.main-page-load-section:hover {
+  background: #333;
+  border-color: #fff;
+  color: #fff;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.main-page-load-section i {
+  font-size: 22px;
+}
+
+/* 検索セクション */
+.search-section {
+  width: 100%;
+}
+
+/* 説明セクション */
+.info-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-card {
+  background: transparent; /* 修正3: 背景を透明に */
+  border: 1px solid #a9a9a9; /* 修正3: 枠線を #A9A9A9 に */
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  color: #a9a9a9; /* 修正1 */
+}
+
+.info-card i {
+  font-size: 24px;
+  margin-bottom: 12px;
   display: block;
-  min-height: 0;
-  flex: 1 1 0%;
+}
+
+.info-card .info-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #a9a9a9; /* 修正1 */
+  margin-bottom: 8px;
+}
+
+.info-card .info-text {
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* ─── ステータス表示 ─── */
@@ -313,11 +437,10 @@ body {
   right: 0;
   margin: 0;
   padding: 8px 16px 16px 16px;
-  background: rgba(49, 69, 89, 0.95);
-  backdrop-filter: blur(10px);
+  background: #242424; /* ヘッダーと背景色を統一 */
   box-sizing: border-box;
   z-index: 1000;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none; /* 上の境界線を削除 */
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -694,4 +817,360 @@ body {
 .history-label i {
   font-size: 16px;
   margin-right: 2px;
+}
+
+/* BOOKMARKセクション */
+.bookmark-section {
+  padding: 20px;
+  width: 100%;
+  /* 修正2: 背景関連のスタイルを削除 */
+}
+
+.bookmark-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: #a9a9a9; /* 修正1 */
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  justify-content: center;
+}
+
+.bookmark-header i {
+  color: #a9a9a9; /* 修正1 */
+  font-size: 20px;
+}
+
+.bookmark-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(96px, 1fr)
+  ); /* アイテムサイズに合わせて変更 */
+  gap: 16px;
+  min-height: 120px;
+  align-items: start;
+  justify-items: center;
+}
+
+.bookmark-list {
+  display: contents;
+}
+
+.bookmark-list::-webkit-scrollbar {
+  height: 4px;
+}
+
+.bookmark-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.bookmark-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.bookmark-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.bookmark-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px; /* アイコンとの間隔を調整 */
+  width: 96px; /* サイズを大きくする */
+  min-height: 96px; /* サイズを大きくする */
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #a9a9a9; /* 枠線を#A9A9A9に統一 */
+  background: transparent; /* 背景を透明に */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: #a9a9a9; /* 文字色を#A9A9A9に統一 */
+}
+
+.bookmark-item:hover {
+  background: rgba(169, 169, 169, 0.1); /* ホバー時の背景色 */
+  border-color: #a9a9a9;
+  transform: translateY(-2px);
+  box-shadow: none; /* 影は削除 */
+}
+
+.bookmark-item .bookmark-icon {
+  width: 40px; /* アイコンサイズを大きく */
+  height: 40px; /* アイコンサイズを大きく */
+  border-radius: 8px; /* 角丸を調整 */
+  /* backgroundとcolorを削除して画像のみ表示 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.bookmark-item .bookmark-title {
+  width: 100%; /* 省略表示のために幅を指定 */
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  color: #a9a9a9; /* 文字色を#A9A9A9に統一 */
+  line-height: 1.2;
+  white-space: nowrap; /* ★改行を禁止 */
+  overflow: hidden; /* ★はみ出しを隠す */
+  text-overflow: ellipsis; /* ★省略記号(...)を表示 */
+}
+
+.bookmark-item .bookmark-remove {
+  position: absolute;
+  top: -8px; /* 位置を調整 */
+  right: -8px; /* 位置を調整 */
+  width: 20px; /* 少し大きく */
+  height: 20px; /* 少し大きく */
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: none; /* ★通常時は非表示 */
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.bookmark-item:hover .bookmark-remove {
+  display: flex; /* ★ホバー時に表示 */
+}
+
+.bookmark-remove:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+.add-bookmark-btn {
+  width: 96px; /* サイズを大きくする */
+  height: 96px; /* サイズを大きくする */
+  border: 1px solid #a9a9a9; /* 修正2: 四角い枠線に変更 */
+  background: transparent;
+  border-radius: 12px;
+  color: #a9a9a9; /* 修正1 & 2 */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.add-bookmark-btn:hover {
+  border-color: #a9a9a9;
+  color: #a9a9a9;
+  background: rgba(169, 169, 169, 0.1);
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.add-bookmark-btn i {
+  font-size: 16px;
+}
+
+/* ステータスバー（drag-drop-toastスタイル） */
+#statusBar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(135deg, #00b06b, #6bff97);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(107, 255, 151, 0.15);
+  font-size: 0.8rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10000;
+  opacity: 0.7;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+  max-width: 300px; /* 少し幅を広げる */
+  white-space: nowrap; /* ★改行を禁止 */
+  overflow: hidden; /* ★はみ出しを隠す */
+  text-overflow: ellipsis; /* ★省略記号(...)を表示 */
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideInRight 0.3s ease-out;
+}
+
+#statusBar i {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+#statusBar.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* トースト通知のアニメーション */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .iframe-container {
+    padding: 15px;
+  }
+
+  .center-ui-container {
+    max-width: 100%;
+    gap: 20px;
+  }
+
+  .bookmark-section {
+    padding: 15px;
+  }
+
+  .bookmark-header {
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+
+  .bookmark-grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px;
+  }
+
+  /* ブックマークアイテムのレスポンシブサイズ指定を削除し、デフォルトの96pxを維持 */
+}
+
+/* ─── ブックマーク追加モーダル ─── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: none; /* 初期状態は非表示 */
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  animation: modal-fade-in 0.3s ease-out;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content .form-group {
+  margin-bottom: 20px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.modal-content input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  color: #495057;
+}
+
+.modal-content input[type="text"]::placeholder {
+  color: #adb5bd;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 90px; /* ★固定幅を指定してボタンのサイズを完全に統一 */
+  text-align: center;
+}
+
+.modal-actions .btn-save {
+  background-color: #28a745;
+  color: white;
+}
+
+.modal-actions .btn-save:hover {
+  background-color: #218838;
+}
+
+.modal-actions .btn-close {
+  background-color: #ef5350; /* よりソフトな赤色に変更 */
+  color: white;
+  background-image: none !important; /* ❌アイコンを削除 */
+}
+
+.modal-actions .btn-close:hover {
+  background-color: #e53935; /* ホバー時の色を調整 */
+}
+
+.modal-actions .btn-save,
+.modal-actions .btn-close {
+  width: 100px;
+  height: 40px;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  text-align: center;
+  box-sizing: border-box;
 }

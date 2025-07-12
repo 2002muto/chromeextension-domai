@@ -11,8 +11,17 @@ let urlInput,
   statusBar,
   loginInfo,
   quickBtns,
-  searchHistoryEl;
+  searchHistoryEl,
+  addBookmarkBtn,
+  bookmarkList,
+  addBookmarkModal,
+  closeModalBtn,
+  saveBookmarkBtn,
+  bookmarkUrlInput,
+  bookmarkTitleInput,
+  loadMainPageBtn; // 追加
 const HISTORY_KEY = "iframeSearchHistory";
+const BOOKMARK_KEY = "iframeBookmarks";
 
 // 要素を確実に取得する関数
 function initializeElements() {
@@ -23,9 +32,17 @@ function initializeElements() {
   clearBtn = document.getElementById("clearBtn");
   mainFrame = document.getElementById("mainFrame");
   statusBar = document.getElementById("statusBar");
-  loginInfo = document.getElementById("loginInfo");
+  // loginInfo = document.getElementById("loginInfo"); // 削除（HTMLに存在しない）
   quickBtns = document.querySelectorAll(".quick-btn");
   searchHistoryEl = document.getElementById("searchHistory");
+  addBookmarkBtn = document.getElementById("addBookmarkBtn");
+  bookmarkList = document.getElementById("bookmarkList");
+  addBookmarkModal = document.getElementById("addBookmarkModal");
+  closeModalBtn = document.getElementById("closeModalBtn");
+  saveBookmarkBtn = document.getElementById("saveBookmarkBtn");
+  bookmarkUrlInput = document.getElementById("bookmarkUrlInput");
+  bookmarkTitleInput = document.getElementById("bookmarkTitleInput");
+  loadMainPageBtn = document.getElementById("loadMainPageBtn"); // 追加
 
   console.log("[iframe] 要素取得結果:", {
     urlInput: !!urlInput,
@@ -33,9 +50,17 @@ function initializeElements() {
     clearBtn: !!clearBtn,
     mainFrame: !!mainFrame,
     statusBar: !!statusBar,
-    loginInfo: !!loginInfo,
+    // loginInfo: !!loginInfo, // 削除
     quickBtns: quickBtns.length,
     searchHistoryEl: !!searchHistoryEl,
+    addBookmarkBtn: !!addBookmarkBtn,
+    bookmarkList: !!bookmarkList,
+    addBookmarkModal: !!addBookmarkModal,
+    closeModalBtn: !!closeModalBtn,
+    saveBookmarkBtn: !!saveBookmarkBtn,
+    bookmarkUrlInput: !!bookmarkUrlInput,
+    bookmarkTitleInput: !!bookmarkTitleInput,
+    loadMainPageBtn: !!loadMainPageBtn,
   });
 
   if (!searchHistoryEl) {
@@ -125,23 +150,17 @@ const LOGIN_SITES = {
 
 // 現在のURL
 let currentUrl = "";
+let currentLoadIsLoginSite = false; // ★ログイン維持サイトかのフラグ
 
 // ステータス更新
 function updateStatus(message, type = "info") {
   console.log(`[iframe] ステータス更新: ${message}`);
 
-  // ステータス表示用の要素を作成または取得
+  // ステータス表示用の要素を取得
   let statusElement = document.getElementById("statusBar");
   if (!statusElement) {
-    statusElement = document.createElement("div");
-    statusElement.id = "statusBar";
-    statusElement.className = "alert alert-secondary mb-3";
-
-    // iframe-contentの最初に挿入
-    const iframeContent = document.querySelector(".iframe-content");
-    if (iframeContent) {
-      iframeContent.insertBefore(statusElement, iframeContent.firstChild);
-    }
+    console.warn(`[iframe] statusBar要素が見つかりません`);
+    return;
   }
 
   const icon =
@@ -150,20 +169,49 @@ function updateStatus(message, type = "info") {
       : type === "error"
       ? "bi-exclamation-triangle"
       : "bi-info-circle";
-  statusElement.innerHTML = `<i class="bi ${icon}"></i> ${message}`;
+
+  // drag-drop-toastスタイルで表示
+  statusElement.innerHTML = `<i class="bi ${icon}"></i><span>${message}</span>`;
+  statusElement.style.display = "flex";
+  statusElement.classList.remove("fade-out");
+
+  // 一定時間後に自動で非表示
+  setTimeout(() => {
+    if (statusElement) {
+      statusElement.classList.add("fade-out");
+      setTimeout(() => {
+        if (statusElement) {
+          statusElement.style.display = "none";
+        }
+      }, 300); // アニメーション時間を考慮
+    }
+  }, 3000); // 3秒後に非表示
 }
 
 // URLかどうかを判定
 function isValidUrl(string) {
+  console.log(`[iframe] 🔥 isValidUrl(${string}) 開始`);
+
   try {
     const url = new URL(string);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
+    const result = url.protocol === "http:" || url.protocol === "https:";
+    console.log(`[iframe] 🔥 isValidUrl(${string}) 直接URL判定: ${result}`);
+    return result;
+  } catch (error) {
+    console.log(`[iframe] 🔥 isValidUrl(${string}) 直接URL判定失敗:`, error);
     // http:// や https:// がない場合も試す
     try {
       const url = new URL("https://" + string);
-      return url.hostname.includes(".");
-    } catch {
+      const result = url.hostname.includes(".");
+      console.log(
+        `[iframe] 🔥 isValidUrl(${string}) https://追加判定: ${result}`
+      );
+      return result;
+    } catch (error2) {
+      console.log(
+        `[iframe] 🔥 isValidUrl(${string}) https://追加判定も失敗:`,
+        error2
+      );
       return false;
     }
   }
@@ -212,17 +260,17 @@ async function forceLoadIframe(url) {
   console.log(`[iframe] 🔥 無理矢理読み込み開始: ${url}`);
 
   const loginCheck = isLoginSite(url);
+  currentLoadIsLoginSite = loginCheck.isLogin; // ★フラグを設定
+
   if (loginCheck.isLogin) {
     updateStatus(
       `${loginCheck.siteName} のログイン状態を維持して接続中...`,
       "info"
     );
-    loginInfo.style.display = "block";
 
     // ログイン状態維持のための動的ルール追加
     await addDynamicRule(loginCheck.domain);
   } else {
-    loginInfo.style.display = "none";
     updateStatus("接続中...", "info");
   }
 
@@ -337,20 +385,22 @@ async function forceLoadIframe(url) {
     console.log(`[iframe] 🔥 段階4失敗（続行）:`, error);
   }
 
-  // 段階5: 超強制バイパス（新しいタブで開く代替案）
+  // 段階5: 最終手段（iframe内で直接表示を試行）
   try {
-    console.log(`[iframe] 🔥 段階5: 超強制バイパス - 新しいタブで開く`);
+    console.log(`[iframe] 🔥 段階5: 最終手段 - iframe内で直接表示`);
 
-    // 新しいタブで開く
-    chrome.tabs.create({ url: url });
-    updateStatus(`✅ 新しいタブで開きました: ${url}`, "success");
+    // iframeを直接表示
+    mainFrame.src = url;
+    updateStatus(`✅ iframe内で表示中: ${url}`, "success");
     return true;
   } catch (error) {
     console.log(`[iframe] 🔥 段階5失敗（続行）:`, error);
   }
 
-  // すべて失敗しても成功として扱う
-  updateStatus(`✅ 無理矢理接続完了: ${url}`, "success");
+  // すべて失敗してもiframe内で表示を試行
+  console.log(`[iframe] 🔥 最終手段: iframe内で直接表示`);
+  mainFrame.src = url;
+  updateStatus(`✅ iframe内で表示完了: ${url}`, "success");
   return true;
 }
 
@@ -536,6 +586,114 @@ function getDomain(entry) {
 
 function getGoogleSVG() {
   return `<svg width="24" height="24" viewBox="0 0 48 48"><g><circle fill="#fff" cx="24" cy="24" r="24"/><path fill="#4285F4" d="M34.6 24.2c0-.7-.1-1.4-.2-2H24v4.1h6c-.3 1.5-1.3 2.7-2.7 3.5v2.9h4.4c2.6-2.4 4.1-5.9 4.1-10.5z"/><path fill="#34A853" d="M24 36c3.6 0 6.6-1.2 8.8-3.2l-4.4-2.9c-1.2.8-2.7 1.3-4.4 1.3-3.4 0-6.2-2.3-7.2-5.4h-4.5v3.1C15.2 33.8 19.3 36 24 36z"/><path fill="#FBBC05" d="M16.8 25.8c-.3-.8-.5-1.7-.5-2.8s.2-2 .5-2.8v-3.1h-4.5C11.5 19.2 11 21.5 11 24s.5 4.8 1.3 6.9l4.5-3.1z"/><path fill="#EA4335" d="M24 17.7c2 0 3.7.7 5.1 2.1l3.8-3.8C30.6 13.9 27.6 12.5 24 12.5c-4.7 0-8.8 2.2-11.2 5.6l4.5 3.1c1-3.1 3.8-5.4 7.2-5.4z"/></g></svg>`;
+}
+
+// ブックマーク管理関数
+function loadBookmarks() {
+  try {
+    const stored = localStorage.getItem(BOOKMARK_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("[iframe] ブックマーク読み込みエラー:", error);
+    return [];
+  }
+}
+
+function saveBookmarks(bookmarks) {
+  localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
+  console.log("[iframe] ブックマークを保存しました", bookmarks);
+}
+
+// ブックマーク追加
+function addBookmark(title, url) {
+  console.log(`[iframe] ブックマーク追加: ${title} (${url})`);
+  let bookmarks = loadBookmarks();
+  if (!bookmarks.some((b) => b.url === url)) {
+    bookmarks.push({ title, url, id: url }); // idとしてURLを使用
+    saveBookmarks(bookmarks);
+    renderBookmarks();
+    updateStatus(`「${title}」をブックマークに追加しました`, "success");
+  } else {
+    updateStatus("このブックマークは既に追加されています", "info");
+  }
+}
+
+// ブックマーク削除
+function removeBookmark(id) {
+  console.log(`[iframe] ブックマーク削除: ${id}`);
+  let bookmarks = loadBookmarks();
+  const updatedBookmarks = bookmarks.filter((b) => b.id !== id);
+  saveBookmarks(updatedBookmarks);
+  renderBookmarks();
+  updateStatus("ブックマークを削除しました", "info");
+}
+
+// ブックマーク描画
+function renderBookmarks() {
+  console.log("[iframe] ブックマークを描画します");
+  const bookmarks = loadBookmarks();
+  bookmarkList.innerHTML = ""; // 既存のブックマークをクリア
+
+  bookmarks.forEach((bookmark) => {
+    const bookmarkItem = document.createElement("a");
+    bookmarkItem.href = "#"; // クリックでページ遷移しないように
+    bookmarkItem.className = "bookmark-item";
+    bookmarkItem.dataset.url = bookmark.url;
+    bookmarkItem.title = bookmark.title;
+
+    bookmarkItem.innerHTML = `
+      <div class="bookmark-icon">
+        <img src="https://www.google.com/s2/favicons?domain=${bookmark.url}&sz=32" alt="" width="32" height="32" style="border-radius: 4px;">
+      </div>
+      <span class="bookmark-title">${bookmark.title}</span>
+      <button class="bookmark-remove" title="削除">&times;</button>
+    `;
+
+    // ブックマーク本体のクリックイベント
+    bookmarkItem.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log(`[iframe] ブックマーククリック: ${bookmark.url}`);
+
+      // IFRAME内で表示
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.add("viewing");
+      }
+
+      // URL入力欄に設定
+      if (urlInput) {
+        urlInput.value = bookmark.url;
+      }
+
+      // handleInputで処理
+      handleInput(bookmark.url);
+    });
+
+    // 削除ボタンのクリックイベント
+    const removeBtn = bookmarkItem.querySelector(".bookmark-remove");
+    if (removeBtn) {
+      removeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // ★重要: 親要素(aタグ)へのイベント伝播を停止
+        removeBookmark(bookmark.id);
+      });
+    }
+
+    bookmarkList.appendChild(bookmarkItem);
+  });
+}
+
+// ブックマークを新しいタブで開く
+function openBookmarkInNewTab(url) {
+  try {
+    chrome.tabs.create({ url: url });
+    updateStatus(`✅ 新しいタブで開きました: ${url}`, "success");
+    console.log("[iframe] 新しいタブで開く:", url);
+  } catch (error) {
+    console.error("[iframe] タブ作成エラー:", error);
+    updateStatus(`❌ タブ作成エラー: ${error.message}`, "error");
+  }
 }
 
 async function renderHistory() {
@@ -745,6 +903,7 @@ function createFaviconWrapper(historyItem, index) {
 
     // 既存アイコンクリック時は直接URL処理（addHistoryを呼ばない）
     const cleanInput = historyItem.url.replace(/^@+/, "").trim();
+    const iframeContainer = document.querySelector(".iframe-container");
 
     if (isValidUrl(cleanInput)) {
       // URL直接アクセス
@@ -754,6 +913,7 @@ function createFaviconWrapper(historyItem, index) {
       console.log(`[iframe] 🔥 既存アイコンURL直接アクセス: ${fullUrl}`);
 
       currentUrl = fullUrl;
+      iframeContainer.classList.add("viewing");
       try {
         forceLoadIframe(fullUrl);
       } catch (error) {
@@ -768,6 +928,7 @@ function createFaviconWrapper(historyItem, index) {
       console.log(`[iframe] 🔥 既存アイコンGoogle検索: ${searchUrl}`);
 
       currentUrl = searchUrl;
+      iframeContainer.classList.add("viewing");
       try {
         updateStatus("Google検索中...", "info");
         mainFrame.src = searchUrl;
@@ -870,20 +1031,30 @@ function focusSearchInput() {
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う
 async function handleInput(input, forceShow = false) {
-  console.log(`[iframe] 🔥 入力処理: ${input}`);
+  console.log(`[iframe] 🔥 入力処理開始: ${input}`);
 
-  if (!input.trim()) {
+  if (!input || input.trim() === "") {
+    console.log(`[iframe] 🔥 入力が空のため処理を終了`);
     // updateStatus("入力が空です", "error");
     return;
   }
 
   // forceShow=trueの場合は履歴追加をスキップ（既に履歴順序更新済み）
   if (!forceShow) {
+    console.log(`[iframe] 🔥 履歴に追加: ${input.trim()}`);
     await addHistory(input.trim());
   }
 
   // @記号を除去
   const cleanInput = input.replace(/^@+/, "").trim();
+  console.log(`[iframe] 🔥 クリーン入力: ${cleanInput}`);
+
+  const iframeContainer = document.querySelector(".iframe-container");
+  console.log(`[iframe] 🔥 iframeContainer要素:`, iframeContainer);
+
+  console.log(
+    `[iframe] 🔥 isValidUrl(${cleanInput}) = ${isValidUrl(cleanInput)}`
+  );
 
   if (isValidUrl(cleanInput)) {
     // URL直接アクセス
@@ -893,22 +1064,27 @@ async function handleInput(input, forceShow = false) {
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
 
     currentUrl = fullUrl;
-    // forceShow=trueならiframeに必ず表示
-    if (forceShow || mainFrame.src !== fullUrl) {
-      try {
-        await forceLoadIframe(fullUrl);
-      } catch (error) {
-        console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
-        updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行前`);
+    iframeContainer.classList.add("viewing");
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行後`);
 
-        // エラー時は新しいタブで開く
-        try {
-          chrome.tabs.create({ url: fullUrl });
-          updateStatus(`✅ 新しいタブで開きました: ${fullUrl}`, "success");
-        } catch (tabError) {
-          console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
-          updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
-        }
+    try {
+      console.log(`[iframe] 🔥 forceLoadIframe(${fullUrl}) 開始`);
+      await forceLoadIframe(fullUrl);
+      console.log(`[iframe] 🔥 forceLoadIframe(${fullUrl}) 完了`);
+    } catch (error) {
+      console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
+      updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
+      iframeContainer.classList.remove("viewing");
+
+      // エラー時もiframe内で表示を試行
+      try {
+        console.log(`[iframe] 🔥 エラー時のiframe表示試行: ${fullUrl}`);
+        mainFrame.src = fullUrl;
+        updateStatus(`✅ iframe内で表示中: ${fullUrl}`, "success");
+      } catch (iframeError) {
+        console.error(`[iframe] 🔥 iframe表示エラー:`, iframeError);
+        updateStatus(`❌ iframe表示エラー: ${iframeError.message}`, "error");
       }
     }
   } else {
@@ -919,26 +1095,30 @@ async function handleInput(input, forceShow = false) {
     console.log(`[iframe] 🔥 Google検索: ${searchUrl}`);
 
     currentUrl = searchUrl;
-    // forceShow=trueならiframeに必ず表示
-    if (forceShow || mainFrame.src !== searchUrl) {
-      try {
-        updateStatus("Google検索中...", "info");
-        mainFrame.src = searchUrl;
-        setTimeout(() => {
-          updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
-        }, 1000);
-      } catch (error) {
-        console.error(`[iframe] 🔥 Google検索エラー:`, error);
-        updateStatus(`❌ 検索エラー: ${error.message}`, "error");
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行前`);
+    iframeContainer.classList.add("viewing");
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行後`);
 
-        // エラー時は新しいタブで開く
-        try {
-          chrome.tabs.create({ url: searchUrl });
-          updateStatus(`✅ 新しいタブで検索しました: ${cleanInput}`, "success");
-        } catch (tabError) {
-          console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
-          updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
-        }
+    try {
+      updateStatus("Google検索中...", "info");
+      console.log(`[iframe] 🔥 mainFrame.src = ${searchUrl} 実行前`);
+      mainFrame.src = searchUrl;
+      console.log(`[iframe] 🔥 mainFrame.src = ${searchUrl} 実行後`);
+      setTimeout(() => {
+        updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
+      }, 1000);
+    } catch (error) {
+      console.error(`[iframe] 🔥 Google検索エラー:`, error);
+      updateStatus(`❌ 検索エラー: ${error.message}`, "error");
+      iframeContainer.classList.remove("viewing");
+
+      // エラー時もiframe内で表示を試行
+      try {
+        mainFrame.src = searchUrl;
+        updateStatus(`✅ iframe内で検索中: ${cleanInput}`, "success");
+      } catch (iframeError) {
+        console.error(`[iframe] 🔥 iframe検索エラー:`, iframeError);
+        updateStatus(`❌ iframe検索エラー: ${iframeError.message}`, "error");
       }
     }
   }
@@ -975,6 +1155,36 @@ function setupEventListeners() {
     });
   }
 
+  // iframeの読み込み完了イベント
+  if (mainFrame) {
+    mainFrame.onload = () => {
+      console.log("[iframe] iframe 読み込み完了:", mainFrame.src);
+
+      // 成功メッセージを表示
+      if (currentLoadIsLoginSite) {
+        updateStatus("✅ 接続成功: (ログイン状態維持)", "success");
+      } else {
+        updateStatus("✅ ページの読み込みが完了しました", "success");
+      }
+      currentLoadIsLoginSite = false; // フラグをリセット
+
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.remove("loading");
+      }
+    };
+    mainFrame.onerror = () => {
+      console.error("[iframe] iframe 読み込みエラー:", mainFrame.src);
+      updateStatus("❌ ページの読み込みに失敗しました", "error");
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.remove("loading");
+        iframeContainer.classList.remove("viewing");
+      }
+      currentLoadIsLoginSite = false; // フラグをリセット
+    };
+  }
+
   // クイックアクセスボタン
   if (quickBtns && quickBtns.length > 0) {
     quickBtns.forEach((btn) => {
@@ -987,7 +1197,96 @@ function setupEventListeners() {
     });
   }
 
-  console.log("[iframe] イベントリスナー設定完了");
+  // ブックマーク追加ボタン
+  if (addBookmarkBtn) {
+    addBookmarkBtn.addEventListener("click", () => {
+      console.log("[iframe] 🔥 ブックマーク追加ボタンクリック");
+      if (addBookmarkModal) {
+        addBookmarkModal.style.display = "flex";
+        bookmarkUrlInput.focus(); // URL入力にフォーカス
+      }
+    });
+  } else {
+    console.warn("[iframe] addBookmarkBtn が見つかりません");
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", () => {
+      if (addBookmarkModal) {
+        addBookmarkModal.style.display = "none";
+      }
+    });
+  }
+
+  if (saveBookmarkBtn) {
+    saveBookmarkBtn.addEventListener("click", () => {
+      const url = bookmarkUrlInput.value.trim();
+      const title = bookmarkTitleInput.value.trim();
+
+      if (url && title) {
+        addBookmark(title, url);
+        bookmarkUrlInput.value = "";
+        bookmarkTitleInput.value = "";
+        if (addBookmarkModal) {
+          addBookmarkModal.style.display = "none";
+        }
+      } else {
+        updateStatus("URLとタイトルを両方入力してください", "error");
+      }
+    });
+  }
+
+  // モーダルの外側をクリックしたときに閉じる
+  if (addBookmarkModal) {
+    addBookmarkModal.addEventListener("click", (e) => {
+      if (e.target === addBookmarkModal) {
+        addBookmarkModal.style.display = "none";
+      }
+    });
+  }
+
+  // URL入力でEnterキーを押したらタイトル入力にフォーカス
+  if (bookmarkUrlInput) {
+    bookmarkUrlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        bookmarkTitleInput.focus();
+      }
+    });
+  }
+
+  // タイトル入力でEnterキーを押したら保存
+  if (bookmarkTitleInput) {
+    bookmarkTitleInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveBookmarkBtn.click();
+      }
+    });
+  }
+
+  // メインページ読み込みボタンのイベント
+  if (loadMainPageBtn) {
+    loadMainPageBtn.addEventListener("click", async () => {
+      // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
+      try {
+        const response = await chrome.runtime.sendMessage({
+          type: "GET_ACTIVE_TAB_URL",
+        });
+        if (response && response.url) {
+          handleInput(response.url, true);
+        } else {
+          updateStatus("メインページURLの取得に失敗しました", "error");
+        }
+      } catch (e) {
+        updateStatus("メインページURLの取得に失敗しました", "error");
+      }
+    });
+  }
+
+  // document.addEventListener("DOMContentLoaded", initialize);
+  // 直接呼び出しに変更
+  initialize();
 }
 
 // ページ読み込み時の初期化
@@ -1032,8 +1331,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await renderHistory();
 
+  // ブックマークを描画
+  renderBookmarks();
+
   // イベントリスナーを設定
   setupEventListeners();
+
+  // 初期メッセージを表示しないように変更
+  // updateStatus("メインページを読み込む", "info");
 
   // URLパラメータ処理
   const urlParams = new URLSearchParams(window.location.search);
