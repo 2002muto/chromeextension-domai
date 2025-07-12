@@ -730,11 +730,25 @@ function saveBookmarks(bookmarks) {
 }
 
 // ブックマーク追加
-function addBookmark(title, url) {
+async function addBookmark(title, url) {
   console.log(`[iframe] ブックマーク追加: ${title} (${url})`);
+  // URLバリデーション追加
+  if (!/^https?:\/\//.test(url)) {
+    updateStatus(
+      "有効なURL（http:// または https:// で始まる）を入力してください",
+      "error"
+    );
+    alert("有効なURL（http:// または https:// で始まる）を入力してください");
+    return;
+  }
   let bookmarks = loadBookmarks();
   if (!bookmarks.some((b) => b.url === url)) {
-    bookmarks.push({ title, url, id: url }); // idとしてURLを使用
+    // faviconUrlを取得
+    let faviconUrl = await getFaviconUrl(url);
+    if (!faviconUrl) {
+      faviconUrl = null;
+    }
+    bookmarks.push({ title, url, id: url, faviconUrl }); // faviconUrlも保存
     saveBookmarks(bookmarks);
     renderBookmarks();
     updateStatus(`「${title}」をブックマークに追加しました`, "success");
@@ -757,22 +771,77 @@ function removeBookmark(id) {
 function renderBookmarks() {
   console.log("[iframe] ブックマークを描画します");
   const bookmarks = loadBookmarks();
+  console.log("[iframe] 読み込んだブックマーク:", bookmarks);
+
+  // 無効なブックマークを自動削除
+  const validBookmarks = bookmarks.filter((bookmark) => {
+    if (
+      !bookmark.url ||
+      bookmark.url === "favicon" ||
+      bookmark.url.trim() === ""
+    ) {
+      console.log(`[iframe] 無効なブックマークを削除:`, bookmark);
+      return false;
+    }
+    return true;
+  });
+
+  // 無効なブックマークが削除された場合は保存
+  if (validBookmarks.length !== bookmarks.length) {
+    console.log(
+      `[iframe] 無効なブックマークを削除して保存: ${bookmarks.length} → ${validBookmarks.length}`
+    );
+    saveBookmarks(validBookmarks);
+  }
+
   bookmarkList.innerHTML = ""; // 既存のブックマークをクリア
 
-  bookmarks.forEach((bookmark) => {
+  validBookmarks.forEach((bookmark, index) => {
+    console.log(`[iframe] ブックマーク${index}:`, bookmark);
+    console.log(`[iframe] ブックマーク${index}のURL:`, bookmark.url);
+    console.log(`[iframe] ブックマーク${index}のタイトル:`, bookmark.title);
+
     const bookmarkItem = document.createElement("a");
     bookmarkItem.href = "#"; // クリックでページ遷移しないように
     bookmarkItem.className = "bookmark-item";
     bookmarkItem.dataset.url = bookmark.url;
     bookmarkItem.title = bookmark.title;
 
-    bookmarkItem.innerHTML = `
-      <div class="bookmark-icon">
-        <img src="https://www.google.com/s2/favicons?domain=${bookmark.url}&sz=32" alt="" width="32" height="32" style="border-radius: 4px;">
-      </div>
-      <span class="bookmark-title">${bookmark.title}</span>
-      <button class="bookmark-remove" title="削除">&times;</button>
-    `;
+    // img要素を生成しfaviconUrlがあればそれをsrcに、なければ地球儀
+    const iconDiv = document.createElement("div");
+    iconDiv.className = "bookmark-icon";
+    if (bookmark.faviconUrl) {
+      const img = document.createElement("img");
+      img.src = bookmark.faviconUrl;
+      img.alt = "favicon";
+      img.width = 32;
+      img.height = 32;
+      img.style.borderRadius = "4px";
+      img.onerror = function () {
+        this.style.display = "none";
+        this.parentNode.innerHTML = `<i class='bi bi-globe' style='font-size:28px;color:#bbb;'></i>`;
+      };
+      iconDiv.appendChild(img);
+    } else {
+      iconDiv.innerHTML = `<i class='bi bi-globe' style='font-size:28px;color:#bbb;'></i>`;
+    }
+
+    bookmarkItem.innerHTML = "";
+    bookmarkItem.appendChild(iconDiv);
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "bookmark-title";
+    titleSpan.textContent = bookmark.title;
+    bookmarkItem.appendChild(titleSpan);
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "bookmark-remove";
+    removeBtn.title = "削除";
+    removeBtn.innerHTML = "&times;";
+    removeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // ★重要: 親要素(aタグ)へのイベント伝播を停止
+      removeBookmark(bookmark.id);
+    });
+    bookmarkItem.appendChild(removeBtn);
 
     // ブックマーク本体のクリックイベント
     bookmarkItem.addEventListener("click", (e) => {
@@ -794,16 +863,6 @@ function renderBookmarks() {
       // handleInputで処理
       handleInput(bookmark.url);
     });
-
-    // 削除ボタンのクリックイベント
-    const removeBtn = bookmarkItem.querySelector(".bookmark-remove");
-    if (removeBtn) {
-      removeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // ★重要: 親要素(aタグ)へのイベント伝播を停止
-        removeBookmark(bookmark.id);
-      });
-    }
 
     bookmarkList.appendChild(bookmarkItem);
   });
@@ -917,6 +976,8 @@ async function renderHistory() {
 
     function startAutoScroll(direction) {
       stopAutoScroll();
+      // 横スクロールが必要な場合のみ
+      if (row.scrollWidth <= row.clientWidth) return;
       scrollInterval = setInterval(() => {
         if (direction === "right") {
           if (row.scrollLeft < row.scrollWidth - row.clientWidth) {
@@ -936,8 +997,10 @@ async function renderHistory() {
 
     // 右端: 右方向スクロール
     lastWrapper.addEventListener("mouseenter", () => {
-      console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
-      startAutoScroll("right");
+      if (row.scrollWidth > row.clientWidth) {
+        console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
+        startAutoScroll("right");
+      }
     });
     lastWrapper.addEventListener("mouseleave", () => {
       console.log("[iframe] 最後のアイコンleave - スクロール停止");
@@ -946,8 +1009,10 @@ async function renderHistory() {
 
     // 左端: 左方向スクロール
     firstWrapper.addEventListener("mouseenter", () => {
-      console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
-      startAutoScroll("left");
+      if (row.scrollWidth > row.clientWidth) {
+        console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
+        startAutoScroll("left");
+      }
     });
     firstWrapper.addEventListener("mouseleave", () => {
       console.log("[iframe] 最初のアイコンleave - スクロール停止");
@@ -969,10 +1034,7 @@ async function renderHistory() {
   const clearBtn = document.getElementById("clearHistoryBtn");
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
-      if (confirm("検索履歴をすべて削除しますか？")) {
-        saveHistory([]);
-        renderHistory();
-      }
+      showDeleteHistoryDialog();
     });
   }
 }
@@ -1213,6 +1275,403 @@ function focusSearchInput() {
 
 // グローバルスコープに公開（デバッグ用）
 window.focusSearchInput = focusSearchInput;
+
+// CSP対応の検索履歴削除ダイアログ
+function showDeleteHistoryDialog() {
+  console.log("[iframe] 検索履歴削除ダイアログを表示");
+
+  // 既存のダイアログがあれば削除
+  const existingDialog = document.querySelector(".delete-history-dialog");
+  if (existingDialog) {
+    existingDialog.remove();
+  }
+
+  // ダイアログHTML作成
+  const dialog = document.createElement("div");
+  dialog.className = "delete-history-dialog";
+  dialog.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <div class="dialog-icon-wrapper">
+            <i class="bi bi-trash-fill dialog-icon"></i>
+          </div>
+          <div class="dialog-title-wrapper">
+            <h3 class="dialog-title">検索履歴の削除</h3>
+          </div>
+        </div>
+        <div class="dialog-body">
+          <div class="dialog-message-wrapper">
+            <p class="dialog-message">検索履歴をすべて削除しますか？<br><span class="delete-warning">この操作は取り消せません。</span></p>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <div class="dialog-buttons-wrapper">
+            <button class="dialog-btn cancel-btn" data-action="cancel">
+              <i class="bi bi-x-circle"></i>
+              <span>キャンセル</span>
+            </button>
+            <button class="dialog-btn confirm-btn" data-action="confirm">
+              <i class="bi bi-check-circle"></i>
+              <span>削除</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // CSP対応のスタイルを直接適用
+  dialog.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: auto !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    box-sizing: border-box !important;
+  `;
+
+  // オーバーレイスタイル
+  const overlay = dialog.querySelector(".dialog-overlay");
+  if (overlay) {
+    overlay.style.cssText = `
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(0, 0, 0, 0.75) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      z-index: 999998 !important;
+      width: 100% !important;
+      height: 100% !important;
+      animation: dialogFadeIn 0.25s ease-out !important;
+    `;
+  }
+
+  // コンテンツスタイル
+  const content = dialog.querySelector(".dialog-content");
+  if (content) {
+    content.style.cssText = `
+      position: relative !important;
+      background: #23272f !important;
+      border-radius: 20px !important;
+      min-width: 340px !important;
+      max-width: 420px !important;
+      width: 100% !important;
+      margin: 20px auto !important;
+      box-shadow: none !important;
+      border: none !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      z-index: 999999 !important;
+      animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    `;
+  }
+
+  // ヘッダースタイル
+  const header = dialog.querySelector(".dialog-header");
+  if (header) {
+    header.style.cssText = `
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 20px !important;
+      padding: 28px 28px 20px !important;
+      background: #23272f !important;
+      text-align: center !important;
+      border: none !important;
+      width: 100% !important;
+    `;
+  }
+
+  // アイコンラッパースタイル
+  const iconWrapper = dialog.querySelector(".dialog-icon-wrapper");
+  if (iconWrapper) {
+    iconWrapper.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+      box-shadow: none !important;
+      flex-shrink: 0 !important;
+      margin: 0 !important;
+    `;
+  }
+
+  // タイトルラッパースタイル
+  const titleWrapper = dialog.querySelector(".dialog-title-wrapper");
+  if (titleWrapper) {
+    titleWrapper.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    `;
+  }
+
+  // タイトルスタイル
+  const title = dialog.querySelector(".dialog-title");
+  if (title) {
+    title.style.cssText = `
+      color: #ffffff !important;
+      font-size: 1.3rem !important;
+      font-weight: 800 !important;
+      margin: 0 !important;
+      line-height: 1.3 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+      text-align: left !important;
+      width: auto !important;
+    `;
+  }
+
+  // ボディスタイル
+  const body = dialog.querySelector(".dialog-body");
+  if (body) {
+    body.style.cssText = `
+      padding: 24px 28px !important;
+      flex: 1 !important;
+      text-align: center !important;
+      width: 100% !important;
+      background: #23272f !important;
+      border: none !important;
+    `;
+  }
+
+  // フッタースタイル
+  const footer = dialog.querySelector(".dialog-footer");
+  if (footer) {
+    footer.style.cssText = `
+      padding: 20px 28px 28px !important;
+      background: #23272f !important;
+      text-align: center !important;
+      width: 100% !important;
+      border: none !important;
+    `;
+  }
+
+  // メッセージラッパースタイル
+  const messageWrapper = dialog.querySelector(".dialog-message-wrapper");
+  if (messageWrapper) {
+    messageWrapper.style.cssText = `
+      width: 100% !important;
+      text-align: center !important;
+    `;
+  }
+
+  // メッセージスタイル
+  const message = dialog.querySelector(".dialog-message");
+  if (message) {
+    message.style.cssText = `
+      color: #e2e8f0 !important;
+      font-size: 1.05rem !important;
+      line-height: 1.6 !important;
+      margin: 0 !important;
+      text-align: center !important;
+      width: 100% !important;
+    `;
+  }
+
+  // 警告メッセージスタイル
+  const warning = dialog.querySelector(".delete-warning");
+  if (warning) {
+    warning.style.cssText = `
+      color: #ff6b6b !important;
+      font-weight: bold !important;
+    `;
+  }
+
+  // ボタンラッパースタイル
+  const buttonsWrapper = dialog.querySelector(".dialog-buttons-wrapper");
+  if (buttonsWrapper) {
+    buttonsWrapper.style.cssText = `
+      display: flex !important;
+      gap: 12px !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+      width: 100% !important;
+    `;
+  }
+
+  // ボタン共通スタイル
+  const buttons = dialog.querySelectorAll(".dialog-btn");
+  buttons.forEach((btn) => {
+    btn.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 24px !important;
+      border: none !important;
+      border-radius: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      min-width: 100px !important;
+      transition: all 0.25s ease !important;
+    `;
+  });
+
+  // キャンセルボタンスタイル
+  const cancelBtn = dialog.querySelector(".cancel-btn");
+  if (cancelBtn) {
+    cancelBtn.style.cssText += `
+      background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(74, 85, 104, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    `;
+
+    // ホバー効果
+    cancelBtn.addEventListener("mouseenter", () => {
+      cancelBtn.style.background =
+        "linear-gradient(135deg, #2d3748 0%, #1a202c 100%)";
+      cancelBtn.style.transform = "translateY(-2px)";
+      cancelBtn.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.4)";
+    });
+    cancelBtn.addEventListener("mouseleave", () => {
+      cancelBtn.style.background =
+        "linear-gradient(135deg, #4a5568 0%, #2d3748 100%)";
+      cancelBtn.style.transform = "translateY(0)";
+      cancelBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
+  // 確認ボタンスタイル
+  const confirmBtn = dialog.querySelector(".confirm-btn");
+  if (confirmBtn) {
+    confirmBtn.style.cssText += `
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(220, 53, 69, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    `;
+
+    // ホバー効果
+    confirmBtn.addEventListener("mouseenter", () => {
+      confirmBtn.style.background =
+        "linear-gradient(135deg, #c82333 0%, #a71e2a 100%)";
+      confirmBtn.style.transform = "translateY(-2px)";
+      confirmBtn.style.boxShadow = "0 6px 20px rgba(220, 53, 69, 0.4)";
+    });
+    confirmBtn.addEventListener("mouseleave", () => {
+      confirmBtn.style.background =
+        "linear-gradient(135deg, #dc3545 0%, #c82333 100%)";
+      confirmBtn.style.transform = "translateY(0)";
+      confirmBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
+  // ボタンアイコンスタイル
+  const btnIcons = dialog.querySelectorAll(".dialog-btn i");
+  btnIcons.forEach((icon) => {
+    icon.style.cssText = `
+      font-size: 18px !important;
+      margin-right: 4px !important;
+    `;
+  });
+
+  // DOMに追加
+  document.body.appendChild(dialog);
+
+  // アニメーション用のキーフレームを動的に追加
+  if (!document.querySelector("#delete-history-animations")) {
+    const animationStyles = document.createElement("style");
+    animationStyles.id = "delete-history-animations";
+    animationStyles.textContent = `
+      @keyframes dialogFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes dialogSlideIn {
+        from { 
+          opacity: 0; 
+          transform: translateY(-40px) scale(0.95);
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+      }
+      
+      @keyframes dialogSlideOut {
+        from { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+        to { 
+          opacity: 0; 
+          transform: translateY(-20px) scale(0.98);
+        }
+      }
+    `;
+    document.head.appendChild(animationStyles);
+  }
+
+  // 閉じる処理
+  function closeDialog() {
+    content.classList.add("closing");
+    overlay.classList.add("closing");
+    setTimeout(() => {
+      dialog.remove();
+    }, 250);
+  }
+
+  // ボタンイベント
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("[iframe] 検索履歴削除をキャンセルしました");
+      closeDialog();
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("[iframe] 検索履歴を削除しました");
+      saveHistory([]);
+      renderHistory();
+      updateStatus("検索履歴を削除しました", "info");
+      closeDialog();
+    });
+  }
+
+  // オーバーレイクリックで閉じる
+  if (overlay) {
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        console.log("[iframe] 検索履歴削除をキャンセルしました");
+        closeDialog();
+      }
+    });
+  }
+
+  // ESCキーで閉じる
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      console.log("[iframe] 検索履歴削除をキャンセルしました（ESC）");
+      closeDialog();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+}
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う
 async function handleInput(input, forceShow = false) {
@@ -1520,6 +1979,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("[iframe] 初期履歴データ:", history);
   console.log("[iframe] 履歴データ数:", history.length);
   console.log("[iframe] searchHistoryEl要素:", searchHistoryEl);
+
+  // ブックマークのfaviconUrl後付け初期化
+  let bookmarks = loadBookmarks();
+  let updated = false;
+  for (let b of bookmarks) {
+    if (!b.faviconUrl) {
+      b.faviconUrl = await getFaviconUrl(b.url);
+      updated = true;
+    }
+  }
+  if (updated) {
+    saveBookmarks(bookmarks);
+  }
 
   // テスト用の履歴データを追加（履歴が空の場合）
   if (history.length === 0) {

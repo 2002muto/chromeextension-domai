@@ -524,18 +524,16 @@ header {
 #favicon-row {
   display: flex;
   align-items: center;
-  gap: 4px;
   overflow-x: auto;
-  overflow-y: hidden;
-  position: relative;
-  transition: all 0.3s ease;
-  scrollbar-width: none; /* Firefox用 */
-  -ms-overflow-style: none; /* IE/Edge用 */
   white-space: nowrap;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  min-height: 40px;
+  max-width: 100%;
 }
 
 #favicon-row::-webkit-scrollbar {
-  display: none; /* Chrome/Safari用 */
+  display: none; /* Chrome/Safari/Edge */
 }
 
 /* 段階的表示機能 */
