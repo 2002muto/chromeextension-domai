@@ -1287,6 +1287,7 @@ function setupEventListeners() {
         const response = await chrome.runtime.sendMessage({
           type: "GET_ACTIVE_TAB_URL",
         });
+        console.log("[iframe] GET_ACTIVE_TAB_URL response:", response);
 
         if (response && response.url) {
           console.log("[iframe] アクティブタブURL:", response.url);

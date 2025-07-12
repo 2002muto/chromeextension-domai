@@ -413,28 +413,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // 非同期レスポンスを有効化
   }
 
-  if (request.type === "GET_ACTIVE_TAB_URL") {
-    console.log("[BG] GET_ACTIVE_TAB_URL request received");
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const url = tabs && tabs[0] ? tabs[0].url : null;
-      console.log("[BG] active tab url:", url);
-      sendResponse({ url });
-    });
-    return true; // async response
-  }
+
 
   // 非同期処理を無理矢理同期的に扱う
   (async () => {
     try {
-      let result = { success: true, ruleId: null };
+      let result = {};
 
       switch (request.action || request.type) {
         case "GET_ACTIVE_TAB_URL":
-          console.log("[BG] fallback GET_ACTIVE_TAB_URL handling");
+          console.log("[BG] handling GET_ACTIVE_TAB_URL");
           result = await new Promise((resolve) => {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
               const url = tabs && tabs[0] ? tabs[0].url : null;
-              console.log("[BG] fallback active tab url:", url);
+              console.log("[BG] active tab url:", url);
               resolve({ url });
             });
           });
