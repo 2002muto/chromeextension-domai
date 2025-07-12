@@ -354,13 +354,21 @@ let nextDynamicRuleId = 10000;
 
 // メッセージハンドラー（無理矢理バージョン）
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("[BG] 🔥 メッセージ受信:", request);
+  // 受信メッセージを詳細にログ出力
+  try {
+    console.log("[BG] 🔥 メッセージ受信:", JSON.stringify(request));
+  } catch {
+    console.log("[BG] 🔥 メッセージ受信:", request);
+  }
 
   // GET_ACTIVE_TAB_URL: アクティブタブのURLを即座に返す
   if (request.type === "GET_ACTIVE_TAB_URL") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const url = tabs && tabs[0] ? tabs[0].url : null;
       console.log(`[BG] GET_ACTIVE_TAB_URL -> ${url}`);
+      if (!url) {
+        console.warn("[BG] アクティブタブのURLが取得できません");
+      }
       sendResponse({ url });
     });
     // これ以上の処理は不要
@@ -444,6 +452,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           if (domain) {
             result = await addDynamicIframeRule(domain);
           }
+          break;
+
+        case "GET_ACTIVE_TAB_URL":
+          const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+          result = { url: tabs && tabs[0] ? tabs[0].url : null };
+          console.log(`[BG] fallback GET_ACTIVE_TAB_URL -> ${result.url}`);
           break;
 
         default:

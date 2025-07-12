@@ -1295,10 +1295,13 @@ function setupEventListeners() {
           // ドメインを抽出しルートURLを作成
           const domain = extractDomain(response.url);
           if (domain) {
+            console.log("[iframe] 抽出したドメイン:", domain);
             const urlObj = new URL(response.url.startsWith("http") ? response.url : "https://" + response.url);
             urlObj.pathname = "/";
             urlObj.search = "";
             urlObj.hash = "";
+
+            console.log("[iframe] ルートURL候補:", urlObj.href);
 
             // CSP対策として動的ルールを追加
             const ruleRes = await chrome.runtime.sendMessage({
@@ -1309,6 +1312,7 @@ function setupEventListeners() {
 
             console.log("[iframe] ルートURLを読み込み:", urlObj.href);
             handleInput(urlObj.href, true);
+            console.log("[iframe] handleInput 完了");
           } else {
             console.warn("[iframe] ドメインの抽出に失敗しました:", response.url);
             updateStatus("メインページURLの解析に失敗しました", "error");
