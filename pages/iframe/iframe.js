@@ -977,7 +977,7 @@ async function renderHistory() {
     const wrappers = row.querySelectorAll(".favicon-wrapper");
     // 自動スクロール時の速度設定
     const AUTO_SCROLL_STEP = 12; // px/interval: 高速化
-    const AUTO_SCROLL_INTERVAL = 16; // ms
+    const AUTO_SCROLL_INTERVAL = 60; // ms
     let scrollInterval = null;
 
     function stopAutoScroll() {
@@ -991,7 +991,11 @@ async function renderHistory() {
       stopAutoScroll();
       // 横スクロールが必要な場合のみ
       if (row.scrollWidth <= row.clientWidth) return;
-      console.log("[iframe] 自動スクロール開始", { direction, step: AUTO_SCROLL_STEP, interval: AUTO_SCROLL_INTERVAL });
+      console.log("[iframe] 自動スクロール開始", {
+        direction,
+        step: AUTO_SCROLL_STEP,
+        interval: AUTO_SCROLL_INTERVAL,
+      });
       scrollInterval = setInterval(() => {
         if (direction === "right") {
           if (row.scrollLeft < row.scrollWidth - row.clientWidth) {
