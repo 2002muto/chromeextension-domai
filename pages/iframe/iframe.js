@@ -1010,24 +1010,26 @@ async function renderHistory() {
     // 右端: 右方向スクロール
     lastWrapper.addEventListener("mouseenter", () => {
       if (row.scrollWidth > row.clientWidth) {
-        console.log("[iframe] 最後のアイコンhover - スクロール開始(right)");
+        console.log(
+          "[iframe] 最後のアイコンhover - スクロール開始(right)"
+        );
         startAutoScroll("right");
       }
-    });
-    lastWrapper.addEventListener("mouseleave", () => {
-      console.log("[iframe] 最後のアイコンleave - スクロール停止");
-      stopAutoScroll();
     });
 
     // 左端: 左方向スクロール
     firstWrapper.addEventListener("mouseenter", () => {
       if (row.scrollWidth > row.clientWidth) {
-        console.log("[iframe] 最初のアイコンhover - スクロール開始(left)");
+        console.log(
+          "[iframe] 最初のアイコンhover - スクロール開始(left)"
+        );
         startAutoScroll("left");
       }
     });
-    firstWrapper.addEventListener("mouseleave", () => {
-      console.log("[iframe] 最初のアイコンleave - スクロール停止");
+
+    // マウスポインタが履歴行から離れたら自動スクロールを停止
+    row.addEventListener("mouseleave", () => {
+      console.log("[iframe] favicon-row leave - スクロール停止");
       stopAutoScroll();
     });
   }
