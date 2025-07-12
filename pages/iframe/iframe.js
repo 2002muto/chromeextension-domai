@@ -1060,7 +1060,7 @@ async function renderHistory() {
       <button class="new-search-btn" id="newSearchBtn">
         <i class="bi bi-plus-circle"></i> 新しい検索
       </button>
-      <button class="clear-history-btn" id="clearHistoryBtn" title="検索履歴を全削除">
+      <button class="clear-history-btn" id="clearHistoryBtn" title="検索履歴を全消去">
         <i class="bi bi-trash"></i>
       </button>
     </div>
