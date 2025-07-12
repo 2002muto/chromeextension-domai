@@ -969,10 +969,7 @@ async function renderHistory() {
   const clearBtn = document.getElementById("clearHistoryBtn");
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
-      if (confirm("検索履歴をすべて削除しますか？")) {
-        saveHistory([]);
-        renderHistory();
-      }
+      showDeleteHistoryDialog();
     });
   }
 }
@@ -1213,6 +1210,407 @@ function focusSearchInput() {
 
 // グローバルスコープに公開（デバッグ用）
 window.focusSearchInput = focusSearchInput;
+
+// CSP対応の検索履歴削除ダイアログ
+function showDeleteHistoryDialog() {
+  console.log("[iframe] 検索履歴削除ダイアログを表示");
+
+  // 既存のダイアログがあれば削除
+  const existingDialog = document.querySelector(".delete-history-dialog");
+  if (existingDialog) {
+    existingDialog.remove();
+  }
+
+  // ダイアログHTML作成
+  const dialog = document.createElement("div");
+  dialog.className = "delete-history-dialog";
+  dialog.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <div class="dialog-icon-wrapper">
+            <i class="bi bi-trash-fill dialog-icon"></i>
+          </div>
+          <div class="dialog-title-wrapper">
+            <h3 class="dialog-title">検索履歴の削除</h3>
+          </div>
+        </div>
+        <div class="dialog-body">
+          <div class="dialog-message-wrapper">
+            <p class="dialog-message">検索履歴をすべて削除しますか？<br><span class="delete-warning">この操作は取り消せません。</span></p>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <div class="dialog-buttons-wrapper">
+            <button class="dialog-btn cancel-btn" data-action="cancel">
+              <i class="bi bi-x-circle"></i>
+              <span>キャンセル</span>
+            </button>
+            <button class="dialog-btn confirm-btn" data-action="confirm">
+              <i class="bi bi-check-circle"></i>
+              <span>削除</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // CSP対応のスタイルを直接適用
+  dialog.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: auto !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    box-sizing: border-box !important;
+  `;
+
+  // オーバーレイスタイル
+  const overlay = dialog.querySelector(".dialog-overlay");
+  if (overlay) {
+    overlay.style.cssText = `
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(0, 0, 0, 0.75) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      z-index: 999998 !important;
+      width: 100% !important;
+      height: 100% !important;
+      animation: dialogFadeIn 0.25s ease-out !important;
+    `;
+  }
+
+  // コンテンツスタイル
+  const content = dialog.querySelector(".dialog-content");
+  if (content) {
+    content.style.cssText = `
+      position: relative !important;
+      background: #23272f !important;
+      border-radius: 20px !important;
+      min-width: 340px !important;
+      max-width: 420px !important;
+      width: 100% !important;
+      margin: 20px auto !important;
+      box-shadow: none !important;
+      border: none !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      z-index: 999999 !important;
+      animation: dialogSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    `;
+  }
+
+  // ヘッダースタイル
+  const header = dialog.querySelector(".dialog-header");
+  if (header) {
+    header.style.cssText = `
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 16px !important;
+      padding: 28px 28px 20px !important;
+      background: #23272f !important;
+      justify-content: center !important;
+      text-align: center !important;
+      border: none !important;
+      width: 100% !important;
+    `;
+  }
+
+  // アイコンラッパースタイル
+  const iconWrapper = dialog.querySelector(".dialog-icon-wrapper");
+  if (iconWrapper) {
+    iconWrapper.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+      box-shadow: none !important;
+      flex-shrink: 0 !important;
+      margin: 0 12px 0 0 !important;
+    `;
+  }
+
+  // タイトルラッパースタイル
+  const titleWrapper = dialog.querySelector(".dialog-title-wrapper");
+  if (titleWrapper) {
+    titleWrapper.style.cssText = `
+      flex: 1 !important;
+      min-width: 0 !important;
+      text-align: left !important;
+      width: auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    `;
+  }
+
+  // タイトルスタイル
+  const title = dialog.querySelector(".dialog-title");
+  if (title) {
+    title.style.cssText = `
+      color: #ffffff !important;
+      font-size: 1.25rem !important;
+      font-weight: 700 !important;
+      margin: 0 !important;
+      line-height: 1.3 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+      text-align: left !important;
+      width: auto !important;
+    `;
+  }
+
+  // ボディスタイル
+  const body = dialog.querySelector(".dialog-body");
+  if (body) {
+    body.style.cssText = `
+      padding: 24px 28px !important;
+      flex: 1 !important;
+      text-align: center !important;
+      width: 100% !important;
+      background: #23272f !important;
+      border: none !important;
+    `;
+  }
+
+  // フッタースタイル
+  const footer = dialog.querySelector(".dialog-footer");
+  if (footer) {
+    footer.style.cssText = `
+      padding: 20px 28px 28px !important;
+      background: #23272f !important;
+      text-align: center !important;
+      width: 100% !important;
+      border: none !important;
+    `;
+  }
+
+  // メッセージラッパースタイル
+  const messageWrapper = dialog.querySelector(".dialog-message-wrapper");
+  if (messageWrapper) {
+    messageWrapper.style.cssText = `
+      width: 100% !important;
+      text-align: center !important;
+    `;
+  }
+
+  // メッセージスタイル
+  const message = dialog.querySelector(".dialog-message");
+  if (message) {
+    message.style.cssText = `
+      color: #e2e8f0 !important;
+      font-size: 1.05rem !important;
+      line-height: 1.6 !important;
+      margin: 0 !important;
+      text-align: center !important;
+      width: 100% !important;
+    `;
+  }
+
+  // 警告メッセージスタイル
+  const warning = dialog.querySelector(".delete-warning");
+  if (warning) {
+    warning.style.cssText = `
+      color: #ff6b6b !important;
+      font-weight: bold !important;
+    `;
+  }
+
+  // ボタンラッパースタイル
+  const buttonsWrapper = dialog.querySelector(".dialog-buttons-wrapper");
+  if (buttonsWrapper) {
+    buttonsWrapper.style.cssText = `
+      display: flex !important;
+      gap: 12px !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+      width: 100% !important;
+    `;
+  }
+
+  // ボタン共通スタイル
+  const buttons = dialog.querySelectorAll(".dialog-btn");
+  buttons.forEach((btn) => {
+    btn.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 24px !important;
+      border: none !important;
+      border-radius: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      min-width: 100px !important;
+      transition: all 0.25s ease !important;
+    `;
+  });
+
+  // キャンセルボタンスタイル
+  const cancelBtn = dialog.querySelector(".cancel-btn");
+  if (cancelBtn) {
+    cancelBtn.style.cssText += `
+      background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(74, 85, 104, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    `;
+
+    // ホバー効果
+    cancelBtn.addEventListener("mouseenter", () => {
+      cancelBtn.style.background =
+        "linear-gradient(135deg, #2d3748 0%, #1a202c 100%)";
+      cancelBtn.style.transform = "translateY(-2px)";
+      cancelBtn.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.4)";
+    });
+    cancelBtn.addEventListener("mouseleave", () => {
+      cancelBtn.style.background =
+        "linear-gradient(135deg, #4a5568 0%, #2d3748 100%)";
+      cancelBtn.style.transform = "translateY(0)";
+      cancelBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
+  // 確認ボタンスタイル
+  const confirmBtn = dialog.querySelector(".confirm-btn");
+  if (confirmBtn) {
+    confirmBtn.style.cssText += `
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(220, 53, 69, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    `;
+
+    // ホバー効果
+    confirmBtn.addEventListener("mouseenter", () => {
+      confirmBtn.style.background =
+        "linear-gradient(135deg, #c82333 0%, #a71e2a 100%)";
+      confirmBtn.style.transform = "translateY(-2px)";
+      confirmBtn.style.boxShadow = "0 6px 20px rgba(220, 53, 69, 0.4)";
+    });
+    confirmBtn.addEventListener("mouseleave", () => {
+      confirmBtn.style.background =
+        "linear-gradient(135deg, #dc3545 0%, #c82333 100%)";
+      confirmBtn.style.transform = "translateY(0)";
+      confirmBtn.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    });
+  }
+
+  // ボタンアイコンスタイル
+  const btnIcons = dialog.querySelectorAll(".dialog-btn i");
+  btnIcons.forEach((icon) => {
+    icon.style.cssText = `
+      font-size: 18px !important;
+      margin-right: 4px !important;
+    `;
+  });
+
+  // DOMに追加
+  document.body.appendChild(dialog);
+
+  // アニメーション用のキーフレームを動的に追加
+  if (!document.querySelector("#delete-history-animations")) {
+    const animationStyles = document.createElement("style");
+    animationStyles.id = "delete-history-animations";
+    animationStyles.textContent = `
+      @keyframes dialogFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes dialogSlideIn {
+        from { 
+          opacity: 0; 
+          transform: translateY(-40px) scale(0.95);
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+      }
+      
+      @keyframes dialogSlideOut {
+        from { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+        to { 
+          opacity: 0; 
+          transform: translateY(-20px) scale(0.98);
+        }
+      }
+    `;
+    document.head.appendChild(animationStyles);
+  }
+
+  // 閉じる処理
+  function closeDialog() {
+    content.classList.add("closing");
+    overlay.classList.add("closing");
+    setTimeout(() => {
+      dialog.remove();
+    }, 250);
+  }
+
+  // ボタンイベント
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("[iframe] 検索履歴削除をキャンセルしました");
+      closeDialog();
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("[iframe] 検索履歴を削除しました");
+      saveHistory([]);
+      renderHistory();
+      updateStatus("検索履歴を削除しました", "info");
+      closeDialog();
+    });
+  }
+
+  // オーバーレイクリックで閉じる
+  if (overlay) {
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        console.log("[iframe] 検索履歴削除をキャンセルしました");
+        closeDialog();
+      }
+    });
+  }
+
+  // ESCキーで閉じる
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      console.log("[iframe] 検索履歴削除をキャンセルしました（ESC）");
+      closeDialog();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+}
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う
 async function handleInput(input, forceShow = false) {
