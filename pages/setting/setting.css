@@ -638,8 +638,16 @@
 .icon-option:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* iframeアイコンの特別なホバー効果 */
+.icon-option[data-icon="iframe"]:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 16px rgba(192, 192, 192, 0.3);
+  border-color: #c0c0c0;
 }
 
 .icon-option.selected {
@@ -677,12 +685,26 @@
   filter: none;
 }
 
+/* iframeアイコンの選択状態の特別なスタイル */
+.icon-option[data-icon="iframe"].selected i {
+  color: #ffffff;
+  transform: scale(1.15);
+  text-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+}
+
 .icon-label {
   font-size: 0.65rem;
   color: #e2e8f0;
   font-weight: 500;
   text-align: center;
   line-height: 1.2;
+}
+
+/* iframeアイコンの選択状態のラベルスタイル */
+.icon-option[data-icon="iframe"].selected .icon-label {
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 0 5px rgba(192, 192, 192, 0.3);
 }
 
 /* アイコンオプションのグラデーション効果 */
@@ -705,9 +727,11 @@
 }
 
 .icon-option[data-icon="iframe"].selected {
-  background: linear-gradient(135deg, #e95404, #a600cf);
-  border-color: #e95404;
+  background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+  border-color: #c0c0c0;
   animation: glowPulseIframe 2s ease-in-out infinite;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
 }
 
 .icon-option[data-icon="status"].selected {
@@ -757,10 +781,12 @@
 @keyframes glowPulseIframe {
   0%,
   100% {
-    box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
+    box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3),
+      0 0 20px rgba(192, 192, 192, 0.2);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(233, 84, 4, 0.6), 0 0 30px rgba(233, 84, 4, 0.4);
+    box-shadow: 0 4px 20px rgba(192, 192, 192, 0.6),
+      0 0 30px rgba(192, 192, 192, 0.4), 0 0 40px rgba(192, 192, 192, 0.3);
   }
 }
 
