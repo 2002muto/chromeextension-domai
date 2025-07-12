@@ -300,6 +300,25 @@ chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
   });
 });
 
+// ウィンドウフォーカス変更時にもアクティブタブを確認
+chrome.windows.onFocusChanged.addListener((windowId) => {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    return; // フォーカスが外れた
+  }
+  chrome.tabs.query({ active: true, windowId }, (tabs) => {
+    const tab = tabs && tabs[0];
+    if (!tab) return;
+    const url = tab.url || "";
+    if (!url.startsWith(EXTENSION_URL_PREFIX)) {
+      lastTab = tab.id;
+      chrome.storage.local.set({ [LAST_TAB_STORAGE_KEY]: lastTab });
+      console.log(`[BG] lastTab updated (window focus) to ${lastTab} (url: ${url})`);
+    } else {
+      console.log(`[BG] onFocusChanged ignored extension page: ${url}`);
+    }
+  });
+});
+
 // タブが閉じられたらlastTabを無効化
 chrome.tabs.onRemoved.addListener((tabId) => {
   if (tabId === lastTab) {
