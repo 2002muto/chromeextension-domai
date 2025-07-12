@@ -763,7 +763,9 @@ function convertYouTubeUrl(url) {
     }
 
     if (videoId) {
-      let embed = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
+      // 埋め込み用URLに変換（自動再生＆ミュート）
+      let embed =
+        `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&autoplay=1&mute=1`;
       if (start) embed += `&start=${parseInt(start, 10)}`;
       console.log(`[iframe] YouTube埋め込みURLに変換: ${embed}`);
       return embed;
@@ -1338,6 +1340,7 @@ function createFaviconWrapper(historyItem, index) {
         try {
           console.log(`[iframe] 🔥 エラー時のiframe表示試行: ${fullUrl}`);
           mainFrame.src = fullUrl;
+          console.log(`[iframe] mainFrame.src set to: ${fullUrl}`);
           updateStatus(`✅ iframe内で表示中: ${fullUrl}`, "success");
           updateOverlayIconVisibility();
         } catch (iframeError) {
