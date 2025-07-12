@@ -705,8 +705,8 @@
 }
 
 .icon-option[data-icon="iframe"].selected {
-  background: linear-gradient(135deg, #e95404, #a600cf);
-  border-color: #e95404;
+  background: linear-gradient(135deg, #c3c3c3, #363636);
+  border-color: #565656;
   animation: glowPulseIframe 2s ease-in-out infinite;
 }
 
@@ -757,10 +757,11 @@
 @keyframes glowPulseIframe {
   0%,
   100% {
-    box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
+    box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(233, 84, 4, 0.6), 0 0 30px rgba(233, 84, 4, 0.4);
+    box-shadow: 0 4px 20px rgba(192, 192, 192, 0.6),
+      0 0 30px rgba(192, 192, 192, 0.4);
   }
 }
 
