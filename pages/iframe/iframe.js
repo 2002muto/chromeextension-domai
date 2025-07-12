@@ -735,25 +735,41 @@ function getDomain(entry) {
 // YouTubeの視聴ページを埋め込み用URLに変換する関数
 // - 通常のwatch/shortsリンクを iframe 再生用に変換する
 // - 変換できない場合はそのまま返す
+// YouTubeのURLを iframe で再生できる形式に変換する
+// - watch や shorts, youtu.be 形式をサポート
+// - 変換できない場合は入力URLをそのまま返す
 function convertYouTubeUrl(url) {
   console.log(`[iframe] convertYouTubeUrl: ${url}`);
   try {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=)([\w-]+)/,
-      /(?:youtu\.be\/)([\w-]+)/,
-      /(?:youtube\.com\/shorts\/)([\w-]+)/,
-    ];
+    const u = new URL(url);
+    let videoId = null;
+    let start = null;
 
-    for (const p of patterns) {
-      const match = url.match(p);
-      if (match && match[1]) {
-        const embed = `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0`;
-        console.log(`[iframe] YouTube埋め込みURLに変換: ${embed}`);
-        return embed;
-      }
+    // youtu.be/<id>
+    if (u.hostname === "youtu.be") {
+      videoId = u.pathname.slice(1);
+      start = u.searchParams.get("t") || u.searchParams.get("start");
+    }
+
+    // youtube.com/watch?v=<id>
+    if (!videoId && u.hostname.includes("youtube.com") && u.pathname === "/watch") {
+      videoId = u.searchParams.get("v");
+      start = u.searchParams.get("t") || u.searchParams.get("start");
+    }
+
+    // youtube.com/shorts/<id>
+    if (!videoId && u.hostname.includes("youtube.com") && u.pathname.startsWith("/shorts/")) {
+      videoId = u.pathname.split("/")[2] || u.pathname.split("/")[1];
+    }
+
+    if (videoId) {
+      let embed = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
+      if (start) embed += `&start=${parseInt(start, 10)}`;
+      console.log(`[iframe] YouTube埋め込みURLに変換: ${embed}`);
+      return embed;
     }
   } catch (e) {
-    console.error('[iframe] convertYouTubeUrl error:', e);
+    console.error("[iframe] convertYouTubeUrl error:", e);
   }
   return url;
 }
