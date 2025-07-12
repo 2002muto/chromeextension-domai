@@ -74,6 +74,11 @@ function initializeElements() {
   if (statusBar) {
     statusBar.style.display = "none";
   }
+
+  // ★ 追加: オーバーレイアイコンを初期状態で表示
+  if (iframeOverlayIcon) {
+    iframeOverlayIcon.style.display = "flex";
+  }
 }
 
 // ログイン状態維持対応サイト
@@ -352,6 +357,7 @@ async function forceLoadIframe(url) {
   try {
     console.log(`[iframe] 🔥 段階1: 直接読み込み`);
     mainFrame.src = url;
+    updateOverlayIconVisibility();
 
     // 読み込み完了を待つ
     await new Promise((resolve) => {
@@ -392,6 +398,7 @@ async function forceLoadIframe(url) {
       console.log(`[iframe] 🔥 段階2-${i + 1}: プロキシ経由 (${proxies[i]})`);
       const proxyUrl = proxies[i] + encodeURIComponent(url);
       mainFrame.src = proxyUrl;
+      updateOverlayIconVisibility();
 
       await new Promise((resolve) => setTimeout(resolve, 2000));
       updateStatus(`✅ プロキシ経由で接続成功: ${url}`, "success");
@@ -415,6 +422,7 @@ async function forceLoadIframe(url) {
     mainFrame.setAttribute("credentialless", "false");
 
     mainFrame.src = url;
+    updateOverlayIconVisibility();
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
     updateStatus(`✅ 強制バイパスで接続成功: ${url}`, "success");
@@ -451,6 +459,7 @@ async function forceLoadIframe(url) {
 
     // グローバル参照を更新
     window.mainFrame = newFrame;
+    updateOverlayIconVisibility();
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
     updateStatus(`✅ 最終兵器で接続成功: ${url}`, "success");
@@ -1115,9 +1124,22 @@ function createFaviconWrapper(historyItem, index) {
       iframeContainer.classList.add("viewing");
       try {
         forceLoadIframe(fullUrl);
+        updateOverlayIconVisibility();
       } catch (error) {
         console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
         updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
+        iframeContainer.classList.remove("viewing");
+
+        // エラー時もiframe内で表示を試行
+        try {
+          console.log(`[iframe] 🔥 エラー時のiframe表示試行: ${fullUrl}`);
+          mainFrame.src = fullUrl;
+          updateStatus(`✅ iframe内で表示中: ${fullUrl}`, "success");
+          updateOverlayIconVisibility();
+        } catch (iframeError) {
+          console.error(`[iframe] 🔥 iframe表示エラー:`, iframeError);
+          updateStatus(`❌ iframe表示エラー: ${iframeError.message}`, "error");
+        }
       }
     } else {
       // Google検索
@@ -1131,12 +1153,24 @@ function createFaviconWrapper(historyItem, index) {
       try {
         updateStatus("Google検索中...", "info");
         mainFrame.src = searchUrl;
+        updateOverlayIconVisibility();
         setTimeout(() => {
           updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
         }, 1000);
       } catch (error) {
         console.error(`[iframe] 🔥 Google検索エラー:`, error);
         updateStatus(`❌ 検索エラー: ${error.message}`, "error");
+        iframeContainer.classList.remove("viewing");
+
+        // エラー時もiframe内で表示を試行
+        try {
+          mainFrame.src = searchUrl;
+          updateStatus(`✅ iframe内で検索中: ${cleanInput}`, "success");
+          updateOverlayIconVisibility();
+        } catch (iframeError) {
+          console.error(`[iframe] 🔥 iframe検索エラー:`, iframeError);
+          updateStatus(`❌ iframe検索エラー: ${iframeError.message}`, "error");
+        }
       }
     }
   });
@@ -1722,6 +1756,7 @@ async function handleInput(input, forceShow = false) {
       console.log(`[iframe] 🔥 forceLoadIframe(${fullUrl}) 開始`);
       await forceLoadIframe(fullUrl);
       console.log(`[iframe] 🔥 forceLoadIframe(${fullUrl}) 完了`);
+      updateOverlayIconVisibility();
     } catch (error) {
       console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
       updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
@@ -1732,6 +1767,7 @@ async function handleInput(input, forceShow = false) {
         console.log(`[iframe] 🔥 エラー時のiframe表示試行: ${fullUrl}`);
         mainFrame.src = fullUrl;
         updateStatus(`✅ iframe内で表示中: ${fullUrl}`, "success");
+        updateOverlayIconVisibility();
       } catch (iframeError) {
         console.error(`[iframe] 🔥 iframe表示エラー:`, iframeError);
         updateStatus(`❌ iframe表示エラー: ${iframeError.message}`, "error");
@@ -1754,6 +1790,7 @@ async function handleInput(input, forceShow = false) {
       console.log(`[iframe] 🔥 mainFrame.src = ${searchUrl} 実行前`);
       mainFrame.src = searchUrl;
       console.log(`[iframe] 🔥 mainFrame.src = ${searchUrl} 実行後`);
+      updateOverlayIconVisibility();
       setTimeout(() => {
         updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
       }, 1000);
@@ -1766,6 +1803,7 @@ async function handleInput(input, forceShow = false) {
       try {
         mainFrame.src = searchUrl;
         updateStatus(`✅ iframe内で検索中: ${cleanInput}`, "success");
+        updateOverlayIconVisibility();
       } catch (iframeError) {
         console.error(`[iframe] 🔥 iframe検索エラー:`, iframeError);
         updateStatus(`❌ iframe検索エラー: ${iframeError.message}`, "error");
@@ -1806,7 +1844,7 @@ function setupEventListeners() {
       // ログイン情報を非表示
       if (loginInfo) loginInfo.style.display = "none";
 
-      // オーバーレイアイコンを非表示
+      // オーバーレイアイコンを非表示（iframeが空になるため）
       if (iframeOverlayIcon) iframeOverlayIcon.style.display = "none";
 
       // ステータスを更新
@@ -1843,16 +1881,19 @@ function setupEventListeners() {
         iframeContainer.classList.remove("loading");
       }
 
-      // iframeに有効なページが表示されている場合、オーバーレイアイコンを表示
-      if (
-        iframeOverlayIcon &&
-        mainFrame.src &&
-        mainFrame.src !== "about:blank"
-      ) {
-        iframeOverlayIcon.style.display = "flex";
-      } else if (iframeOverlayIcon) {
-        iframeOverlayIcon.style.display = "none";
+      // IFRAMEが空・about:blank・非表示のときはアイコン非表示、それ以外は表示
+      if (iframeOverlayIcon) {
+        if (
+          !mainFrame.src ||
+          mainFrame.src === "about:blank" ||
+          mainFrame.style.display === "none"
+        ) {
+          iframeOverlayIcon.style.display = "none";
+        } else {
+          iframeOverlayIcon.style.display = "flex";
+        }
       }
+      updateOverlayIconVisibility();
     };
     mainFrame.onerror = () => {
       console.error("[iframe] iframe 読み込みエラー:", mainFrame.src);
@@ -2021,6 +2062,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 要素を初期化
   initializeElements();
 
+  // オーバーレイアイコンを初期状態で表示（IFRAME起動時は空なので非表示になる）
+  if (iframeOverlayIcon) {
+    iframeOverlayIcon.style.display = "flex";
+  }
+
   // 履歴を読み込んで表示
   const history = loadHistory();
   console.log("[iframe] 初期履歴データ:", history);
@@ -2110,6 +2156,19 @@ window.addEventListener("load", async () => {
     const history = loadHistory();
     await renderHistory();
   }
+
+  // オーバーレイアイコンの初期状態（フォールバック）
+  if (iframeOverlayIcon) {
+    if (
+      !mainFrame.src ||
+      mainFrame.src === "about:blank" ||
+      mainFrame.style.display === "none"
+    ) {
+      iframeOverlayIcon.style.display = "none";
+    } else {
+      iframeOverlayIcon.style.display = "flex";
+    }
+  }
 });
 
 // デバッグ用グローバル関数
@@ -2123,3 +2182,18 @@ window.debugIframe = () => {
 // 新しい検索ボタンのイベント（setupEventListeners関数内で設定されるため削除）
 
 console.log("[iframe] 🔥 無理矢理 iframe.js 初期化完了");
+
+// オーバーレイアイコンの表示制御関数
+function updateOverlayIconVisibility() {
+  if (
+    iframeOverlayIcon &&
+    mainFrame &&
+    mainFrame.src &&
+    mainFrame.src !== "about:blank" &&
+    mainFrame.style.display !== "none"
+  ) {
+    iframeOverlayIcon.style.display = "flex";
+  } else if (iframeOverlayIcon) {
+    iframeOverlayIcon.style.display = "none";
+  }
+}
