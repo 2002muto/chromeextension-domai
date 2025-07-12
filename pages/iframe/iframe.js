@@ -1278,8 +1278,15 @@ function setupEventListeners() {
 
   // メインページ読み込みボタンのイベント
   if (loadMainPageBtn) {
+    const btnLabel = loadMainPageBtn.querySelector("span");
+
     loadMainPageBtn.addEventListener("click", async () => {
       console.log("[iframe] loadMainPageBtn clicked");
+
+      if (btnLabel) {
+        btnLabel.textContent = "読み込み中...";
+      }
+
       // CSPを考慮しbackground.js経由でアクティブタブのURLを取得
       try {
         const response = await chrome.runtime.sendMessage({
@@ -1288,12 +1295,39 @@ function setupEventListeners() {
         console.log("[iframe] GET_ACTIVE_TAB_URL response", response);
         if (response && response.url) {
           console.log("[iframe] loading active tab URL", response.url);
+
+          const restoreText = () => {
+            if (btnLabel) {
+              btnLabel.textContent = "メインページを読み込む";
+            }
+            mainFrame.removeEventListener("load", restoreText);
+            mainFrame.removeEventListener("error", handleError);
+          };
+
+          const handleError = () => {
+            if (btnLabel) {
+              btnLabel.textContent = "エラーが発生しました";
+            }
+            console.error("[iframe] iframe load error for active tab", mainFrame.src);
+            mainFrame.removeEventListener("load", restoreText);
+            mainFrame.removeEventListener("error", handleError);
+          };
+
+          mainFrame.addEventListener("load", restoreText);
+          mainFrame.addEventListener("error", handleError);
+
           handleInput(response.url, true);
         } else {
+          if (btnLabel) {
+            btnLabel.textContent = "メインページを読み込む";
+          }
           updateStatus("メインページURLの取得に失敗しました", "error");
         }
       } catch (e) {
         console.error("[iframe] failed to get active tab URL", e);
+        if (btnLabel) {
+          btnLabel.textContent = "エラーが発生しました";
+        }
         updateStatus("メインページURLの取得に失敗しました", "error");
       }
     });
