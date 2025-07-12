@@ -267,14 +267,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
     return true; // 非同期レスポンスを許可
   }
 
-  if (msg.type === "GET_ACTIVE_TAB_URL") {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const url = tabs && tabs[0] ? tabs[0].url : null;
-      console.log(`[BG] GET_ACTIVE_TAB_URL → ${url}`);
-      sendRes({ url });
-    });
-    return true; // 非同期レスポンスを許可
-  }
+  // GET_ACTIVE_TAB_URL は下部のハンドラーで一元管理する
 
   // IFRAME制御メッセージ
   if (msg.type === "TOGGLE_IFRAME_RULES") {
@@ -363,13 +356,14 @@ let nextDynamicRuleId = 10000;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("[BG] 🔥 メッセージ受信:", request);
 
-  // GET_ACTIVE_TAB_URL は早期に処理して他のロジックを回避
+  // GET_ACTIVE_TAB_URL: アクティブタブのURLを即座に返す
   if (request.type === "GET_ACTIVE_TAB_URL") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const url = tabs && tabs[0] ? tabs[0].url : null;
       console.log(`[BG] GET_ACTIVE_TAB_URL -> ${url}`);
       sendResponse({ url });
     });
+    // これ以上の処理は不要
     return true; // 非同期レスポンスを許可
   }
 

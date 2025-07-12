@@ -1301,10 +1301,11 @@ function setupEventListeners() {
             urlObj.hash = "";
 
             // CSP対策として動的ルールを追加
-            await chrome.runtime.sendMessage({
+            const ruleRes = await chrome.runtime.sendMessage({
               type: "ADD_DYNAMIC_IFRAME_RULE",
               domain: domain,
             });
+            console.log("[iframe] ADD_DYNAMIC_IFRAME_RULE response:", ruleRes);
 
             console.log("[iframe] ルートURLを読み込み:", urlObj.href);
             handleInput(urlObj.href, true);
