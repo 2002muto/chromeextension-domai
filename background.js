@@ -267,6 +267,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendRes) => {
     return true; // 非同期レスポンスを許可
   }
 
+  // GET_ACTIVE_TAB_URL をここでも処理しておく（冗長だが確実性向上）
+  if (msg.type === "GET_ACTIVE_TAB_URL") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const url = tabs && tabs[0] ? tabs[0].url : null;
+      console.log(`[BG] early GET_ACTIVE_TAB_URL -> ${url}`);
+      sendRes({ url });
+    });
+    return true;
+  }
+
   // GET_ACTIVE_TAB_URL は下部のハンドラーで一元管理する
 
   // IFRAME制御メッセージ
