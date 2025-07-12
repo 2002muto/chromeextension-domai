@@ -791,6 +791,110 @@ function removeBookmark(id) {
   updateStatus("ブックマークを削除しました", "info");
 }
 
+// ───────────────────────────────────────
+// Drag & Drop handlers for BOOKMARKs
+// ───────────────────────────────────────
+let dragBookmarkIndex = null;
+
+function handleBookmarkDragStart(e) {
+  dragBookmarkIndex = +this.dataset.index;
+  console.log("[BOOKMARK D&D] drag start:", dragBookmarkIndex);
+  e.dataTransfer.effectAllowed = "move";
+}
+
+function handleBookmarkDragOver(e) {
+  e.preventDefault();
+
+  document.querySelectorAll(".bookmark-item.drop-indicator").forEach((el) => {
+    el.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
+  });
+
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+
+  this.classList.add("drop-indicator", "active");
+
+  if (mouseY < itemCenter) {
+    this.classList.add("drop-above");
+  } else {
+    this.classList.add("drop-below");
+  }
+}
+
+function handleBookmarkDragLeave() {
+  this.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
+}
+
+function handleBookmarkDragEnd() {
+  document
+    .querySelectorAll(".bookmark-item")
+    .forEach((el) =>
+      el.classList.remove(
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active"
+      )
+    );
+  dragBookmarkIndex = null;
+}
+
+async function handleBookmarkDrop(e) {
+  e.stopPropagation();
+  const dropIndex = +this.dataset.index;
+
+  console.log(`[BOOKMARK D&D] drop from ${dragBookmarkIndex} to ${dropIndex}`);
+  if (dragBookmarkIndex === null || dragBookmarkIndex === dropIndex) return;
+
+  const rect = this.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const itemCenter = rect.top + rect.height / 2;
+  const dropAbove = mouseY < itemCenter;
+
+  let bookmarks = loadBookmarks();
+  const [moved] = bookmarks.splice(dragBookmarkIndex, 1);
+
+  let actualToIndex = dropIndex;
+  if (dropAbove) {
+    bookmarks.splice(dropIndex, 0, moved);
+  } else {
+    actualToIndex = dropIndex + 1;
+    bookmarks.splice(actualToIndex, 0, moved);
+  }
+
+  console.log("[BOOKMARK D&D] 保存前のbookmarks配列:", bookmarks);
+  saveBookmarks(bookmarks);
+  console.log("[BOOKMARK D&D] 保存完了");
+
+  renderBookmarks();
+  showDragDropSuccessMessage(dragBookmarkIndex + 1, actualToIndex + 1);
+
+  dragBookmarkIndex = null;
+}
+
+/*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
+function showDragDropSuccessMessage(fromPosition, toPosition) {
+  const message = "順番を入れ替えました";
+  const toast = document.createElement("div");
+  toast.className = "drag-drop-toast";
+  toast.innerHTML = `
+    <i class="bi bi-check-circle-fill"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  }, 10);
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, 3000);
+}
+
 // ブックマーク描画
 function renderBookmarks() {
   console.log("[iframe] ブックマークを描画します");
@@ -829,6 +933,8 @@ function renderBookmarks() {
     bookmarkItem.href = "#"; // クリックでページ遷移しないように
     bookmarkItem.className = "bookmark-item";
     bookmarkItem.dataset.url = bookmark.url;
+    bookmarkItem.dataset.index = index;
+    bookmarkItem.draggable = true;
     bookmarkItem.title = bookmark.title;
 
     // img要素を生成しfaviconUrlがあればそれをsrcに、なければ地球儀
@@ -887,6 +993,13 @@ function renderBookmarks() {
       // handleInputで処理
       handleInput(bookmark.url);
     });
+
+    // Drag & Drop events
+    bookmarkItem.addEventListener("dragstart", handleBookmarkDragStart);
+    bookmarkItem.addEventListener("dragover", handleBookmarkDragOver);
+    bookmarkItem.addEventListener("dragleave", handleBookmarkDragLeave);
+    bookmarkItem.addEventListener("drop", handleBookmarkDrop);
+    bookmarkItem.addEventListener("dragend", handleBookmarkDragEnd);
 
     bookmarkList.appendChild(bookmarkItem);
   });
