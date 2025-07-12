@@ -1323,10 +1323,10 @@ function showDeleteHistoryDialog() {
       display: flex !important;
       flex-direction: row !important;
       align-items: center !important;
-      gap: 16px !important;
+      justify-content: center !important;
+      gap: 20px !important;
       padding: 28px 28px 20px !important;
       background: #23272f !important;
-      justify-content: center !important;
       text-align: center !important;
       border: none !important;
       width: 100% !important;
@@ -1346,7 +1346,7 @@ function showDeleteHistoryDialog() {
       background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
       box-shadow: none !important;
       flex-shrink: 0 !important;
-      margin: 0 12px 0 0 !important;
+      margin: 0 !important;
     `;
   }
 
@@ -1354,10 +1354,6 @@ function showDeleteHistoryDialog() {
   const titleWrapper = dialog.querySelector(".dialog-title-wrapper");
   if (titleWrapper) {
     titleWrapper.style.cssText = `
-      flex: 1 !important;
-      min-width: 0 !important;
-      text-align: left !important;
-      width: auto !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -1369,8 +1365,8 @@ function showDeleteHistoryDialog() {
   if (title) {
     title.style.cssText = `
       color: #ffffff !important;
-      font-size: 1.25rem !important;
-      font-weight: 700 !important;
+      font-size: 1.3rem !important;
+      font-weight: 800 !important;
       margin: 0 !important;
       line-height: 1.3 !important;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
