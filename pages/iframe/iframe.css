@@ -51,9 +51,9 @@ header {
 .iframe-overlay-icon {
   position: absolute;
   top: 20px;
-  right: 20px;
+  right: 32px;
   width: 40px;
-  height: 40px;
+  height: 16px;
   background: rgba(0, 0, 0, 0.8);
   color: white;
   border-radius: 50%;
@@ -62,7 +62,7 @@ header {
   justify-content: center;
   cursor: pointer;
   z-index: 1000;
-  font-size: 18px;
+  font-size: 40px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
