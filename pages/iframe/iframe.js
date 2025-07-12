@@ -730,11 +730,25 @@ function saveBookmarks(bookmarks) {
 }
 
 // ブックマーク追加
-function addBookmark(title, url) {
+async function addBookmark(title, url) {
   console.log(`[iframe] ブックマーク追加: ${title} (${url})`);
+  // URLバリデーション追加
+  if (!/^https?:\/\//.test(url)) {
+    updateStatus(
+      "有効なURL（http:// または https:// で始まる）を入力してください",
+      "error"
+    );
+    alert("有効なURL（http:// または https:// で始まる）を入力してください");
+    return;
+  }
   let bookmarks = loadBookmarks();
   if (!bookmarks.some((b) => b.url === url)) {
-    bookmarks.push({ title, url, id: url }); // idとしてURLを使用
+    // faviconUrlを取得
+    let faviconUrl = await getFaviconUrl(url);
+    if (!faviconUrl) {
+      faviconUrl = null;
+    }
+    bookmarks.push({ title, url, id: url, faviconUrl }); // faviconUrlも保存
     saveBookmarks(bookmarks);
     renderBookmarks();
     updateStatus(`「${title}」をブックマークに追加しました`, "success");
@@ -757,22 +771,77 @@ function removeBookmark(id) {
 function renderBookmarks() {
   console.log("[iframe] ブックマークを描画します");
   const bookmarks = loadBookmarks();
+  console.log("[iframe] 読み込んだブックマーク:", bookmarks);
+
+  // 無効なブックマークを自動削除
+  const validBookmarks = bookmarks.filter((bookmark) => {
+    if (
+      !bookmark.url ||
+      bookmark.url === "favicon" ||
+      bookmark.url.trim() === ""
+    ) {
+      console.log(`[iframe] 無効なブックマークを削除:`, bookmark);
+      return false;
+    }
+    return true;
+  });
+
+  // 無効なブックマークが削除された場合は保存
+  if (validBookmarks.length !== bookmarks.length) {
+    console.log(
+      `[iframe] 無効なブックマークを削除して保存: ${bookmarks.length} → ${validBookmarks.length}`
+    );
+    saveBookmarks(validBookmarks);
+  }
+
   bookmarkList.innerHTML = ""; // 既存のブックマークをクリア
 
-  bookmarks.forEach((bookmark) => {
+  validBookmarks.forEach((bookmark, index) => {
+    console.log(`[iframe] ブックマーク${index}:`, bookmark);
+    console.log(`[iframe] ブックマーク${index}のURL:`, bookmark.url);
+    console.log(`[iframe] ブックマーク${index}のタイトル:`, bookmark.title);
+
     const bookmarkItem = document.createElement("a");
     bookmarkItem.href = "#"; // クリックでページ遷移しないように
     bookmarkItem.className = "bookmark-item";
     bookmarkItem.dataset.url = bookmark.url;
     bookmarkItem.title = bookmark.title;
 
-    bookmarkItem.innerHTML = `
-      <div class="bookmark-icon">
-        <img src="https://www.google.com/s2/favicons?domain=${bookmark.url}&sz=32" alt="" width="32" height="32" style="border-radius: 4px;">
-      </div>
-      <span class="bookmark-title">${bookmark.title}</span>
-      <button class="bookmark-remove" title="削除">&times;</button>
-    `;
+    // img要素を生成しfaviconUrlがあればそれをsrcに、なければ地球儀
+    const iconDiv = document.createElement("div");
+    iconDiv.className = "bookmark-icon";
+    if (bookmark.faviconUrl) {
+      const img = document.createElement("img");
+      img.src = bookmark.faviconUrl;
+      img.alt = "favicon";
+      img.width = 32;
+      img.height = 32;
+      img.style.borderRadius = "4px";
+      img.onerror = function () {
+        this.style.display = "none";
+        this.parentNode.innerHTML = `<i class='bi bi-globe' style='font-size:28px;color:#bbb;'></i>`;
+      };
+      iconDiv.appendChild(img);
+    } else {
+      iconDiv.innerHTML = `<i class='bi bi-globe' style='font-size:28px;color:#bbb;'></i>`;
+    }
+
+    bookmarkItem.innerHTML = "";
+    bookmarkItem.appendChild(iconDiv);
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "bookmark-title";
+    titleSpan.textContent = bookmark.title;
+    bookmarkItem.appendChild(titleSpan);
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "bookmark-remove";
+    removeBtn.title = "削除";
+    removeBtn.innerHTML = "&times;";
+    removeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // ★重要: 親要素(aタグ)へのイベント伝播を停止
+      removeBookmark(bookmark.id);
+    });
+    bookmarkItem.appendChild(removeBtn);
 
     // ブックマーク本体のクリックイベント
     bookmarkItem.addEventListener("click", (e) => {
@@ -794,16 +863,6 @@ function renderBookmarks() {
       // handleInputで処理
       handleInput(bookmark.url);
     });
-
-    // 削除ボタンのクリックイベント
-    const removeBtn = bookmarkItem.querySelector(".bookmark-remove");
-    if (removeBtn) {
-      removeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // ★重要: 親要素(aタグ)へのイベント伝播を停止
-        removeBookmark(bookmark.id);
-      });
-    }
 
     bookmarkList.appendChild(bookmarkItem);
   });
@@ -1920,6 +1979,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("[iframe] 初期履歴データ:", history);
   console.log("[iframe] 履歴データ数:", history.length);
   console.log("[iframe] searchHistoryEl要素:", searchHistoryEl);
+
+  // ブックマークのfaviconUrl後付け初期化
+  let bookmarks = loadBookmarks();
+  let updated = false;
+  for (let b of bookmarks) {
+    if (!b.faviconUrl) {
+      b.faviconUrl = await getFaviconUrl(b.url);
+      updated = true;
+    }
+  }
+  if (updated) {
+    saveBookmarks(bookmarks);
+  }
 
   // テスト用の履歴データを追加（履歴が空の場合）
   if (history.length === 0) {
