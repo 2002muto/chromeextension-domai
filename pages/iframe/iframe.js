@@ -852,7 +852,7 @@ async function renderHistory() {
       <div class="history-container">
         <span class="text-muted">検索履歴はありません</span>
       </div>
-      <button class="new-search-btn" onclick="focusSearchInput()">
+      <button class="new-search-btn" id="newSearchBtn">
         <i class="bi bi-plus-circle"></i> 新しい検索
       </button>
     `;
@@ -875,7 +875,7 @@ async function renderHistory() {
       </div>
     </div>
     <div class="search-btns-wrapper">
-      <button class="new-search-btn" onclick="focusSearchInput()">
+      <button class="new-search-btn" id="newSearchBtn">
         <i class="bi bi-plus-circle"></i> 新しい検索
       </button>
       <button class="clear-history-btn" id="clearHistoryBtn" title="検索履歴を全削除">
@@ -955,6 +955,15 @@ async function renderHistory() {
     });
   }
   // --- 自動スクロール機能ここまで ---
+
+  // 新しい検索ボタンのイベント
+  const newSearchBtn = document.getElementById("newSearchBtn");
+  if (newSearchBtn) {
+    newSearchBtn.addEventListener("click", () => {
+      console.log("[iframe] 新しい検索ボタンクリック");
+      focusSearchInput();
+    });
+  }
 
   // 検索履歴全削除ボタンのイベント
   const clearBtn = document.getElementById("clearHistoryBtn");
@@ -1170,13 +1179,40 @@ function createFaviconWrapper(historyItem, index) {
   return wrapper;
 }
 
-// 検索入力にフォーカスする関数
+// 検索入力にフォーカスし、IFRAMEを初期状態に戻す関数
 function focusSearchInput() {
+  console.log("[iframe] 🔥 新しい検索ボタンクリック - 初期状態に戻す");
+
+  // URL入力欄をクリア
   if (urlInput) {
+    urlInput.value = "";
     urlInput.focus();
-    urlInput.select();
   }
+
+  // IFRAMEを初期状態に戻す
+  const iframeContainer = document.querySelector(".iframe-container");
+  if (iframeContainer) {
+    iframeContainer.classList.remove("viewing");
+    console.log("[iframe] 🔥 iframeContainer.viewingクラスを削除");
+  }
+
+  // mainFrameをクリア
+  if (mainFrame) {
+    mainFrame.src = "";
+    console.log("[iframe] 🔥 mainFrame.srcをクリア");
+  }
+
+  // 現在のURLをリセット
+  currentUrl = "";
+
+  // ステータスを更新
+  updateStatus("新しい検索の準備ができました", "info");
+
+  console.log("[iframe] 🔥 IFRAME初期状態に戻しました");
 }
+
+// グローバルスコープに公開（デバッグ用）
+window.focusSearchInput = focusSearchInput;
 
 // handleInputを修正: forceShow引数追加でiframe表示を必ず行う
 async function handleInput(input, forceShow = false) {
@@ -1290,11 +1326,28 @@ function setupEventListeners() {
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       console.log("[iframe] 🔥 クリアボタンクリック");
+
+      // URL入力欄をクリア
       urlInput.value = "";
+
+      // IFRAMEを初期状態に戻す
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.remove("viewing");
+        console.log("[iframe] 🔥 iframeContainer.viewingクラスを削除");
+      }
+
+      // mainFrameをクリア
       mainFrame.src = "";
       currentUrl = "";
+
+      // ログイン情報を非表示
       if (loginInfo) loginInfo.style.display = "none";
+
+      // ステータスを更新
       updateStatus("クリアしました", "info");
+
+      console.log("[iframe] 🔥 IFRAME初期状態に戻しました");
     });
   }
 
