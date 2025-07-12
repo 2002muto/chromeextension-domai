@@ -1174,3 +1174,8 @@ header {
   text-align: center;
   box-sizing: border-box;
 }
+
+/* ─── text-mutedクラスを白色に上書き ─── */
+.text-muted {
+  color: #ffffff !important;
+}
