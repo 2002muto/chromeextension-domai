@@ -74,7 +74,7 @@
     }
   },
   "side_panel": {
-    "default_path": "pages/sidepanel/sidepanel.html"
+    "default_path": "pages/memo/memo.html"
   },
   "icons": {
     "16": "icons/icon16.png",
