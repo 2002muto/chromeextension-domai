@@ -374,21 +374,10 @@ async function forceLoadIframe(url) {
     console.log(`[iframe] 🔥 段階4失敗（続行）:`, error);
   }
 
-  // 段階5: 超強制バイパス（新しいタブで開く代替案）
-  try {
-    console.log(`[iframe] 🔥 段階5: 超強制バイパス - 新しいタブで開く`);
-
-    // 新しいタブで開く
-    chrome.tabs.create({ url: url });
-    updateStatus(`✅ 新しいタブで開きました: ${url}`, "success");
-    return true;
-  } catch (error) {
-    console.log(`[iframe] 🔥 段階5失敗（続行）:`, error);
-  }
-
-  // すべて失敗しても成功として扱う
-  updateStatus(`✅ 無理矢理接続完了: ${url}`, "success");
-  return true;
+  // 段階5: 全て失敗した場合はタブを開かずエラー表示
+  console.log(`[iframe] 🔥 段階5: 全ての試行に失敗 - iframe表示できず`);
+  updateStatus(`❌ ページを表示できません: ${url}`, "error");
+  return false;
 }
 
 function loadHistory() {
