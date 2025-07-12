@@ -32,7 +32,7 @@ function initializeElements() {
   clearBtn = document.getElementById("clearBtn");
   mainFrame = document.getElementById("mainFrame");
   statusBar = document.getElementById("statusBar");
-  loginInfo = document.getElementById("loginInfo");
+  // loginInfo = document.getElementById("loginInfo"); // 削除（HTMLに存在しない）
   quickBtns = document.querySelectorAll(".quick-btn");
   searchHistoryEl = document.getElementById("searchHistory");
   addBookmarkBtn = document.getElementById("addBookmarkBtn");
@@ -50,7 +50,7 @@ function initializeElements() {
     clearBtn: !!clearBtn,
     mainFrame: !!mainFrame,
     statusBar: !!statusBar,
-    loginInfo: !!loginInfo,
+    // loginInfo: !!loginInfo, // 削除
     quickBtns: quickBtns.length,
     searchHistoryEl: !!searchHistoryEl,
     addBookmarkBtn: !!addBookmarkBtn,
@@ -190,15 +190,28 @@ function updateStatus(message, type = "info") {
 
 // URLかどうかを判定
 function isValidUrl(string) {
+  console.log(`[iframe] 🔥 isValidUrl(${string}) 開始`);
+
   try {
     const url = new URL(string);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
+    const result = url.protocol === "http:" || url.protocol === "https:";
+    console.log(`[iframe] 🔥 isValidUrl(${string}) 直接URL判定: ${result}`);
+    return result;
+  } catch (error) {
+    console.log(`[iframe] 🔥 isValidUrl(${string}) 直接URL判定失敗:`, error);
     // http:// や https:// がない場合も試す
     try {
       const url = new URL("https://" + string);
-      return url.hostname.includes(".");
-    } catch {
+      const result = url.hostname.includes(".");
+      console.log(
+        `[iframe] 🔥 isValidUrl(${string}) https://追加判定: ${result}`
+      );
+      return result;
+    } catch (error2) {
+      console.log(
+        `[iframe] 🔥 isValidUrl(${string}) https://追加判定も失敗:`,
+        error2
+      );
       return false;
     }
   }
@@ -254,12 +267,10 @@ async function forceLoadIframe(url) {
       `${loginCheck.siteName} のログイン状態を維持して接続中...`,
       "info"
     );
-    loginInfo.style.display = "block";
 
     // ログイン状態維持のための動的ルール追加
     await addDynamicRule(loginCheck.domain);
   } else {
-    loginInfo.style.display = "none";
     updateStatus("接続中...", "info");
   }
 
@@ -374,20 +385,22 @@ async function forceLoadIframe(url) {
     console.log(`[iframe] 🔥 段階4失敗（続行）:`, error);
   }
 
-  // 段階5: 超強制バイパス（新しいタブで開く代替案）
+  // 段階5: 最終手段（iframe内で直接表示を試行）
   try {
-    console.log(`[iframe] 🔥 段階5: 超強制バイパス - 新しいタブで開く`);
+    console.log(`[iframe] 🔥 段階5: 最終手段 - iframe内で直接表示`);
 
-    // 新しいタブで開く
-    chrome.tabs.create({ url: url });
-    updateStatus(`✅ 新しいタブで開きました: ${url}`, "success");
+    // iframeを直接表示
+    mainFrame.src = url;
+    updateStatus(`✅ iframe内で表示中: ${url}`, "success");
     return true;
   } catch (error) {
     console.log(`[iframe] 🔥 段階5失敗（続行）:`, error);
   }
 
-  // すべて失敗しても成功として扱う
-  updateStatus(`✅ 無理矢理接続完了: ${url}`, "success");
+  // すべて失敗してもiframe内で表示を試行
+  console.log(`[iframe] 🔥 最終手段: iframe内で直接表示`);
+  mainFrame.src = url;
+  updateStatus(`✅ iframe内で表示完了: ${url}`, "success");
   return true;
 }
 
@@ -641,7 +654,20 @@ function renderBookmarks() {
       e.preventDefault();
       e.stopPropagation();
       console.log(`[iframe] ブックマーククリック: ${bookmark.url}`);
-      openBookmarkInNewTab(bookmark.url);
+
+      // IFRAME内で表示
+      const iframeContainer = document.querySelector(".iframe-container");
+      if (iframeContainer) {
+        iframeContainer.classList.add("viewing");
+      }
+
+      // URL入力欄に設定
+      if (urlInput) {
+        urlInput.value = bookmark.url;
+      }
+
+      // handleInputで処理
+      handleInput(bookmark.url);
     });
 
     // 削除ボタンのクリックイベント
@@ -877,6 +903,7 @@ function createFaviconWrapper(historyItem, index) {
 
     // 既存アイコンクリック時は直接URL処理（addHistoryを呼ばない）
     const cleanInput = historyItem.url.replace(/^@+/, "").trim();
+    const iframeContainer = document.querySelector(".iframe-container");
 
     if (isValidUrl(cleanInput)) {
       // URL直接アクセス
@@ -886,6 +913,7 @@ function createFaviconWrapper(historyItem, index) {
       console.log(`[iframe] 🔥 既存アイコンURL直接アクセス: ${fullUrl}`);
 
       currentUrl = fullUrl;
+      iframeContainer.classList.add("viewing");
       try {
         forceLoadIframe(fullUrl);
       } catch (error) {
@@ -900,6 +928,7 @@ function createFaviconWrapper(historyItem, index) {
       console.log(`[iframe] 🔥 既存アイコンGoogle検索: ${searchUrl}`);
 
       currentUrl = searchUrl;
+      iframeContainer.classList.add("viewing");
       try {
         updateStatus("Google検索中...", "info");
         mainFrame.src = searchUrl;
@@ -1005,18 +1034,27 @@ async function handleInput(input, forceShow = false) {
   console.log(`[iframe] 🔥 入力処理開始: ${input}`);
 
   if (!input || input.trim() === "") {
+    console.log(`[iframe] 🔥 入力が空のため処理を終了`);
     // updateStatus("入力が空です", "error");
     return;
   }
 
   // forceShow=trueの場合は履歴追加をスキップ（既に履歴順序更新済み）
   if (!forceShow) {
+    console.log(`[iframe] 🔥 履歴に追加: ${input.trim()}`);
     await addHistory(input.trim());
   }
 
   // @記号を除去
   const cleanInput = input.replace(/^@+/, "").trim();
+  console.log(`[iframe] 🔥 クリーン入力: ${cleanInput}`);
+
   const iframeContainer = document.querySelector(".iframe-container");
+  console.log(`[iframe] 🔥 iframeContainer要素:`, iframeContainer);
+
+  console.log(
+    `[iframe] 🔥 isValidUrl(${cleanInput}) = ${isValidUrl(cleanInput)}`
+  );
 
   if (isValidUrl(cleanInput)) {
     // URL直接アクセス
@@ -1026,22 +1064,27 @@ async function handleInput(input, forceShow = false) {
     console.log(`[iframe] 🔥 URL直接アクセス: ${fullUrl}`);
 
     currentUrl = fullUrl;
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行前`);
     iframeContainer.classList.add("viewing");
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行後`);
 
     try {
+      console.log(`[iframe] 🔥 forceLoadIframe(${fullUrl}) 開始`);
       await forceLoadIframe(fullUrl);
+      console.log(`[iframe] 🔥 forceLoadIframe(${fullUrl}) 完了`);
     } catch (error) {
       console.error(`[iframe] 🔥 iframe読み込みエラー:`, error);
       updateStatus(`❌ 読み込みエラー: ${error.message}`, "error");
       iframeContainer.classList.remove("viewing");
 
-      // エラー時は新しいタブで開く
+      // エラー時もiframe内で表示を試行
       try {
-        chrome.tabs.create({ url: fullUrl });
-        updateStatus(`✅ 新しいタブで開きました: ${fullUrl}`, "success");
-      } catch (tabError) {
-        console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
-        updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
+        console.log(`[iframe] 🔥 エラー時のiframe表示試行: ${fullUrl}`);
+        mainFrame.src = fullUrl;
+        updateStatus(`✅ iframe内で表示中: ${fullUrl}`, "success");
+      } catch (iframeError) {
+        console.error(`[iframe] 🔥 iframe表示エラー:`, iframeError);
+        updateStatus(`❌ iframe表示エラー: ${iframeError.message}`, "error");
       }
     }
   } else {
@@ -1052,11 +1095,15 @@ async function handleInput(input, forceShow = false) {
     console.log(`[iframe] 🔥 Google検索: ${searchUrl}`);
 
     currentUrl = searchUrl;
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行前`);
     iframeContainer.classList.add("viewing");
+    console.log(`[iframe] 🔥 iframeContainer.classList.add("viewing") 実行後`);
 
     try {
       updateStatus("Google検索中...", "info");
+      console.log(`[iframe] 🔥 mainFrame.src = ${searchUrl} 実行前`);
       mainFrame.src = searchUrl;
+      console.log(`[iframe] 🔥 mainFrame.src = ${searchUrl} 実行後`);
       setTimeout(() => {
         updateStatus(`✅ Google検索完了: ${cleanInput}`, "success");
       }, 1000);
@@ -1065,13 +1112,13 @@ async function handleInput(input, forceShow = false) {
       updateStatus(`❌ 検索エラー: ${error.message}`, "error");
       iframeContainer.classList.remove("viewing");
 
-      // エラー時は新しいタブで開く
+      // エラー時もiframe内で表示を試行
       try {
-        chrome.tabs.create({ url: searchUrl });
-        updateStatus(`✅ 新しいタブで検索しました: ${cleanInput}`, "success");
-      } catch (tabError) {
-        console.error(`[iframe] 🔥 タブ作成エラー:`, tabError);
-        updateStatus(`❌ タブ作成エラー: ${tabError.message}`, "error");
+        mainFrame.src = searchUrl;
+        updateStatus(`✅ iframe内で検索中: ${cleanInput}`, "success");
+      } catch (iframeError) {
+        console.error(`[iframe] 🔥 iframe検索エラー:`, iframeError);
+        updateStatus(`❌ iframe検索エラー: ${iframeError.message}`, "error");
       }
     }
   }
