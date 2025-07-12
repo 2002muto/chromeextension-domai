@@ -794,100 +794,76 @@ function removeBookmark(id) {
 // ───────────────────────────────────────
 // Drag & Drop handlers for BOOKMARKs
 // ───────────────────────────────────────
+// ドラッグ開始元のインデックスを保持
 let dragBookmarkIndex = null;
 
+// ドラッグ開始時に呼び出される
 function handleBookmarkDragStart(e) {
   dragBookmarkIndex = +this.dataset.index;
   console.log("[BOOKMARK D&D] drag start:", dragBookmarkIndex);
   e.dataTransfer.effectAllowed = "move";
 }
 
+// ドラッグしている要素が他のブックマーク上にあるときの処理
 function handleBookmarkDragOver(e) {
   e.preventDefault();
 
   document.querySelectorAll(".bookmark-item.drop-indicator").forEach((el) => {
-    el.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
+    el.classList.remove("drop-indicator", "active");
   });
 
-  const rect = this.getBoundingClientRect();
-  const mouseY = e.clientY;
-  const itemCenter = rect.top + rect.height / 2;
+  console.log(`[BOOKMARK D&D] dragover on index ${this.dataset.index}`);
 
-  console.log(
-    `[BOOKMARK D&D] dragover on index ${this.dataset.index}, mouseY=${mouseY}, center=${itemCenter}`
-  );
-
+  // ハイライト表示のみ行う
   this.classList.add("drop-indicator", "active");
-
-  if (mouseY < itemCenter) {
-    this.classList.add("drop-above");
-  } else {
-    this.classList.add("drop-below");
-  }
 }
 
+// ドラッグしている要素が範囲外に出たときの処理
 function handleBookmarkDragLeave() {
-  this.classList.remove("drop-indicator", "drop-above", "drop-below", "active");
-  console.log(
-    `[BOOKMARK D&D] dragleave on index ${this.dataset.index}`
-  );
+  this.classList.remove("drop-indicator", "active");
+  console.log(`[BOOKMARK D&D] dragleave on index ${this.dataset.index}`);
 }
 
+// ドラッグ操作が終了したときの処理
 function handleBookmarkDragEnd() {
   document
     .querySelectorAll(".bookmark-item")
-    .forEach((el) =>
-      el.classList.remove(
-        "drop-indicator",
-        "drop-above",
-        "drop-below",
-        "active"
-      )
-    );
+    .forEach((el) => el.classList.remove("drop-indicator", "active"));
   dragBookmarkIndex = null;
   console.log("[BOOKMARK D&D] drag end");
 }
 
 async function handleBookmarkDrop(e) {
+  e.preventDefault();
   e.stopPropagation();
   const dropIndex = +this.dataset.index;
 
-  console.log(`[BOOKMARK D&D] drop from ${dragBookmarkIndex} to ${dropIndex}`);
+  console.log(
+    `[BOOKMARK D&D] drop from ${dragBookmarkIndex} onto ${dropIndex}`
+  );
   if (dragBookmarkIndex === null || dragBookmarkIndex === dropIndex) return;
 
-  const rect = this.getBoundingClientRect();
-  const mouseY = e.clientY;
-  const itemCenter = rect.top + rect.height / 2;
-  const dropAbove = mouseY < itemCenter;
-
-  console.log(
-    `[BOOKMARK D&D] drop position: ${dropAbove ? 'above' : 'below'}, dropIndex=${dropIndex}`
-  );
-
   let bookmarks = loadBookmarks();
-  const [moved] = bookmarks.splice(dragBookmarkIndex, 1);
 
-  let actualToIndex = dropIndex;
-  if (dropAbove) {
-    bookmarks.splice(dropIndex, 0, moved);
-  } else {
-    actualToIndex = dropIndex + 1;
-    bookmarks.splice(actualToIndex, 0, moved);
-  }
+  // ドラッグ元とドロップ先の要素を入れ替える
+  [
+    bookmarks[dragBookmarkIndex],
+    bookmarks[dropIndex],
+  ] = [bookmarks[dropIndex], bookmarks[dragBookmarkIndex]];
 
   console.log("[BOOKMARK D&D] 保存前のbookmarks配列:", bookmarks);
   saveBookmarks(bookmarks);
   console.log("[BOOKMARK D&D] 保存完了");
 
   renderBookmarks();
-  showDragDropSuccessMessage(dragBookmarkIndex + 1, actualToIndex + 1);
+  showDragDropSuccessMessage(dragBookmarkIndex + 1, dropIndex + 1);
 
   dragBookmarkIndex = null;
 }
 
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功メッセージ ━━━━━━━━━━*/
 function showDragDropSuccessMessage(fromPosition, toPosition) {
-  const message = "順番を入れ替えました";
+  const message = `${fromPosition}番目と${toPosition}番目を入れ替えました`;
   const toast = document.createElement("div");
   toast.className = "drag-drop-toast";
   toast.innerHTML = `
