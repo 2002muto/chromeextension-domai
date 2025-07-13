@@ -18,7 +18,9 @@ window.AppUtils.saveStorage = function (key, arr) {
 };
 
 /* ━━━━━━━━━━ 汎用保存確認ダイアログ ━━━━━━━━━━ */
-window.AppUtils.showSaveConfirmDialog = function (options = {}) {
+function showSaveConfirmDialog(options = {}) {
+  // 呼び出しログを出力してデバッグしやすくする
+  console.log("[UTILS] showSaveConfirmDialog invoked", options);
   const {
     title = "変更を保存しますか？",
     message = "編集内容に変更があります。<br>保存せずに戻ると変更が失われます。",
@@ -1942,7 +1944,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
 };
 
 /* ━━━━━━━━━━ アーカイブアニメーション機能 ━━━━━━━━━━ */
-window.AppUtils.animateArchiveItem = async function (element, onComplete) {
+async function animateArchiveItem(element, onComplete) {
   return new Promise((resolve) => {
     // ランダムに3つの方向から選択（33%ずつの確率）
     const random = Math.random();
@@ -2246,7 +2248,7 @@ window.AppUtils.animateArchiveItem = async function (element, onComplete) {
 };
 
 /* ━━━━━━━━━━ トースト通知機能 ━━━━━━━━━━ */
-window.AppUtils.showArchiveToast = function () {
+function showArchiveToast() {
   // 既存のトーストがあれば削除
   const existingToast = document.querySelector(".archive-toast");
   if (existingToast) {
@@ -2273,7 +2275,8 @@ window.AppUtils.showArchiveToast = function () {
       if (toast.parentNode) toast.parentNode.removeChild(toast);
     }, 300);
   }, 3000);
-};
+}
+
 
 /* ━━━━━━━━━━ 復元アニメーション機能 ━━━━━━━━━━ */
 
@@ -2310,6 +2313,9 @@ async function animateRestoreItem(item, callback) {
     }, 500);
   });
 }
+
+// グローバル関数としても利用できるように登録しておく
+window.showSaveConfirmDialog = showSaveConfirmDialog;
 
 // 共通トースト通知機能
 function showToast(message, type = "info") {
@@ -2436,15 +2442,16 @@ function showToast(message, type = "info") {
 
 console.log("[UTILS] AppUtils loaded successfully");
 
-// グローバルに公開
-window.AppUtils = {
+// 既存のAppUtilsにユーティリティ関数を追加
+Object.assign(window.AppUtils, {
   showConfirmDialog,
   showSaveConfirmDialog,
   showToast,
   showArchiveToast,
   animateArchiveItem,
   animateRestoreItem,
-};
+});
+console.log("[UTILS] showSaveConfirmDialog registered:", typeof window.AppUtils.showSaveConfirmDialog);
 
 // ダミー実装: showConfirmDialog
 function showConfirmDialog(options = {}) {

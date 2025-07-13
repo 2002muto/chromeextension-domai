@@ -14,6 +14,22 @@ let archiveType = null;
 // 現在編集中のメモID
 let currentEditingMemoId = null;
 
+// 文字数カウンター用インターバル（画面切替時に解除するためグローバルで保持）
+let charCountInterval = null;
+
+// インターバル解除のユーティリティ
+function clearCharCountIntervalFn() {
+  if (charCountInterval) {
+    clearInterval(charCountInterval);
+    charCountInterval = null;
+    console.log("[MEMO] charCountInterval cleared");
+  }
+}
+
+// デバッグ用にグローバルへ公開
+window.clearCharCountIntervalFn = clearCharCountIntervalFn;
+console.log("[MEMO] clearCharCountIntervalFn registered");
+
 // ───────────────────────────────────────
 // Promise-wrapped Chrome Storage API
 // ───────────────────────────────────────
@@ -379,6 +395,9 @@ function setFooter(mode) {
 async function renderListView() {
   console.log("renderListView: start");
 
+  // 編集画面で設定した文字数カウンターを解除
+  clearCharCountIntervalFn();
+
   // ページ状態を保存
   if (window.PageStateManager) {
     window.PageStateManager.savePageState("memo", {
@@ -701,6 +720,9 @@ async function renderListView() {
 async function renderInputForm(id) {
   console.log("renderInputForm: start, id=", id);
   memos = await loadStorage(MEMO_KEY);
+
+  // 既存の文字数カウンターインターバルを解除してリセット
+  clearCharCountIntervalFn();
 
   // ページ状態を保存
   if (window.PageStateManager) {
@@ -1153,6 +1175,9 @@ async function renderInputForm(id) {
   });
 
   // テキストの量に応じてボタンの表示/非表示を制御
+  // char-counterが一時的に見つからない場合の警告状態
+  let missingCounterWarned = false;
+
   function updateButtonVisibility() {
     const text = ta.value;
     const hasText = text.trim().length > 0;
@@ -1163,8 +1188,29 @@ async function renderInputForm(id) {
     const charCountWithoutNewlines = text.replace(/\n/g, "").length;
 
     // 文字数カウンターを更新
+    // 画面切替直後などで要素が存在しないケースに備える
     const charCounter = content.querySelector(".char-counter");
-    charCounter.textContent = `${charCountWithoutNewlines}文字`;
+    if (charCounter) {
+      // 改行を除いた文字数を表示
+      charCounter.textContent = `${charCountWithoutNewlines}文字`;
+      if (missingCounterWarned) {
+        console.log("[MEMO] char-counter element restored");
+        missingCounterWarned = false;
+      }
+      console.log("[MEMO] charCounter updated", charCountWithoutNewlines);
+    } else {
+      // 要素が見つからない場合はエラーを避けつつログを出力
+      if (!missingCounterWarned) {
+        console.warn(
+          `[MEMO] char-counter element missing when updating count ` +
+            `(updateButtonVisibility at ${new Date().toISOString()})`
+        );
+        missingCounterWarned = true;
+        // 編集画面を離れた可能性が高いのでインターバルを解除
+        clearCharCountIntervalFn();
+      }
+      return;
+    }
 
     // コピーボタン：テキストがある場合に表示
     copyBtn.style.display = hasText ? "flex" : "none";
@@ -1185,7 +1231,7 @@ async function renderInputForm(id) {
   });
 
   // 定期的な監視（最強の保険として）
-  const charCountInterval = setInterval(() => {
+  charCountInterval = setInterval(() => {
     const currentValue = ta.value;
     if (currentValue !== lastValue) {
       lastValue = currentValue;
@@ -1193,11 +1239,11 @@ async function renderInputForm(id) {
       console.log("文字数カウンター：定期監視で差分検出", currentValue.length);
     }
   }, 100); // 100msごとにチェック
+  console.log("[MEMO] charCountInterval started");
 
   // メモリリーク防止：ページ離脱時にインターバルをクリア
-  window.addEventListener("beforeunload", () => {
-    clearInterval(charCountInterval);
-  });
+  window.removeEventListener("beforeunload", clearCharCountIntervalFn);
+  window.addEventListener("beforeunload", clearCharCountIntervalFn);
 
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
@@ -1422,6 +1468,9 @@ async function renderInputForm(id) {
 function renderArchiveNav(type) {
   console.log("renderArchiveNav: start, type=", type);
   archiveType = type;
+
+  // 編集画面の文字数カウンターを解除
+  clearCharCountIntervalFn();
 
   // ページ状態を保存
   if (window.PageStateManager) {
