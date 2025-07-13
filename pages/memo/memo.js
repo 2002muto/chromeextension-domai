@@ -14,6 +14,17 @@ let archiveType = null;
 // 現在編集中のメモID
 let currentEditingMemoId = null;
 
+// 文字数カウンター用インターバル（画面切替時に解除するためグローバルで保持）
+let charCountInterval = null;
+
+// インターバル解除のユーティリティ
+function clearCharCountIntervalFn() {
+  if (charCountInterval) {
+    clearInterval(charCountInterval);
+    charCountInterval = null;
+  }
+}
+
 // ───────────────────────────────────────
 // Promise-wrapped Chrome Storage API
 // ───────────────────────────────────────
@@ -379,6 +390,9 @@ function setFooter(mode) {
 async function renderListView() {
   console.log("renderListView: start");
 
+  // 編集画面で設定した文字数カウンターを解除
+  clearCharCountIntervalFn();
+
   // ページ状態を保存
   if (window.PageStateManager) {
     window.PageStateManager.savePageState("memo", {
@@ -701,6 +715,9 @@ async function renderListView() {
 async function renderInputForm(id) {
   console.log("renderInputForm: start, id=", id);
   memos = await loadStorage(MEMO_KEY);
+
+  // 既存の文字数カウンターインターバルを解除してリセット
+  clearCharCountIntervalFn();
 
   // ページ状態を保存
   if (window.PageStateManager) {
@@ -1185,7 +1202,7 @@ async function renderInputForm(id) {
   });
 
   // 定期的な監視（最強の保険として）
-  const charCountInterval = setInterval(() => {
+  charCountInterval = setInterval(() => {
     const currentValue = ta.value;
     if (currentValue !== lastValue) {
       lastValue = currentValue;
@@ -1195,9 +1212,8 @@ async function renderInputForm(id) {
   }, 100); // 100msごとにチェック
 
   // メモリリーク防止：ページ離脱時にインターバルをクリア
-  window.addEventListener("beforeunload", () => {
-    clearInterval(charCountInterval);
-  });
+  window.removeEventListener("beforeunload", clearCharCountIntervalFn);
+  window.addEventListener("beforeunload", clearCharCountIntervalFn);
 
   // preload data when editing
   const starIcon = content.querySelector(".star-input");
@@ -1422,6 +1438,9 @@ async function renderInputForm(id) {
 function renderArchiveNav(type) {
   console.log("renderArchiveNav: start, type=", type);
   archiveType = type;
+
+  // 編集画面の文字数カウンターを解除
+  clearCharCountIntervalFn();
 
   // ページ状態を保存
   if (window.PageStateManager) {
