@@ -2277,8 +2277,6 @@ function showArchiveToast() {
   }, 3000);
 }
 
-// 公開用に登録
-window.AppUtils.showArchiveToast = showArchiveToast;
 
 /* ━━━━━━━━━━ 復元アニメーション機能 ━━━━━━━━━━ */
 
@@ -2316,11 +2314,6 @@ async function animateRestoreItem(item, callback) {
   });
 }
 
-// 公開用に登録
-window.AppUtils.animateArchiveItem = animateArchiveItem;
-
-// 公開用に登録
-window.AppUtils.showSaveConfirmDialog = showSaveConfirmDialog;
 // グローバル関数としても利用できるように登録しておく
 window.showSaveConfirmDialog = showSaveConfirmDialog;
 

@@ -26,6 +26,10 @@ function clearCharCountIntervalFn() {
   }
 }
 
+// デバッグ用にグローバルへ公開
+window.clearCharCountIntervalFn = clearCharCountIntervalFn;
+console.log("[MEMO] clearCharCountIntervalFn registered");
+
 // ───────────────────────────────────────
 // Promise-wrapped Chrome Storage API
 // ───────────────────────────────────────
