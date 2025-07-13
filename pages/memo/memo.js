@@ -197,22 +197,28 @@ function handleMemoHeaderClick(e) {
 // ───────────────────────────────────────
 // Drag & Drop handlers for MEMOs
 // ───────────────────────────────────────
-let dragSrcIndex = null;
+let dragSrcIndex = null; // memos配列上のインデックス
+let dragSrcId = null; // ドラッグ元メモのID
 let dragSrcStarred = null; // ドラッグ元の星状態を記録
 function handleDragStart(e) {
-  dragSrcIndex = +this.dataset.index;
-  const filteredMemos = memos.filter((m) => !m.archived);
-  dragSrcStarred = filteredMemos[dragSrcIndex]?.starred || false;
-  console.log("MEMO drag start:", dragSrcIndex, "starred:", dragSrcStarred);
+  // li要素からIDを取得し、memos配列上のインデックスを算出
+  dragSrcId = this.dataset.id;
+  dragSrcIndex = memos.findIndex((m) => String(m.id) === dragSrcId);
+  dragSrcStarred = memos[dragSrcIndex]?.starred || false;
+  console.log("MEMO drag start:", {
+    id: dragSrcId,
+    index: dragSrcIndex,
+    starred: dragSrcStarred,
+  });
   e.dataTransfer.effectAllowed = "move";
 }
 function handleDragOver(e) {
   e.preventDefault();
 
   // ドロップ先の星状態をチェック
-  const dropIndex = +this.dataset.index;
-  const filteredMemos = memos.filter((m) => !m.archived);
-  const dropTargetStarred = filteredMemos[dropIndex]?.starred || false;
+  const dropId = this.dataset.id;
+  const dropIndex = memos.findIndex((m) => String(m.id) === dropId);
+  const dropTargetStarred = memos[dropIndex]?.starred || false;
 
   // 異なるカテゴリ間のドロップを禁止
   if (dragSrcStarred !== dropTargetStarred) {
@@ -262,11 +268,11 @@ function handleDragLeave() {
 }
 async function handleDrop(e) {
   e.stopPropagation();
-  const dropIndex = +this.dataset.index;
+  const dropId = this.dataset.id;
+  const dropIndex = memos.findIndex((m) => String(m.id) === dropId);
 
   // カテゴリ間のドロップを再度チェック
-  const filteredMemos = memos.filter((m) => !m.archived);
-  const dropTargetStarred = filteredMemos[dropIndex]?.starred || false;
+  const dropTargetStarred = memos[dropIndex]?.starred || false;
 
   if (dragSrcStarred !== dropTargetStarred) {
     console.log("MEMO drop rejected: different categories");
@@ -284,16 +290,19 @@ async function handleDrop(e) {
 
   let actualToIndex = dropIndex;
 
-  // reorder in array
+  // 配列からドラッグ元要素を取り出す
   const [moved] = memos.splice(dragSrcIndex, 1);
 
   if (dropAbove) {
     // 要素の上に挿入
-    memos.splice(dropIndex, 0, moved);
-    console.log("[MEMO DND] 要素の上に挿入:", dragSrcIndex, "→", dropIndex);
+    if (dropIndex > dragSrcIndex) actualToIndex = dropIndex - 1;
+    else actualToIndex = dropIndex;
+    memos.splice(actualToIndex, 0, moved);
+    console.log("[MEMO DND] 要素の上に挿入:", dragSrcIndex, "→", actualToIndex);
   } else {
     // 要素の下に挿入
-    actualToIndex = dropIndex + 1;
+    if (dropIndex > dragSrcIndex) actualToIndex = dropIndex;
+    else actualToIndex = dropIndex + 1;
     memos.splice(actualToIndex, 0, moved);
     console.log("[MEMO DND] 要素の下に挿入:", dragSrcIndex, "→", actualToIndex);
   }
@@ -344,6 +353,7 @@ function handleDragEnd() {
       )
     );
   dragSrcIndex = null;
+  dragSrcId = null;
   dragSrcStarred = null;
 }
 
@@ -527,7 +537,9 @@ async function renderListView() {
       const li = document.createElement("li");
       li.className = "memo-item";
       li.draggable = true;
+      // 表示用インデックスと識別用IDをデータ属性に持たせる
       li.dataset.index = i;
+      li.dataset.id = m.id;
 
       // DnD handlers
       li.addEventListener("dragstart", handleDragStart);
