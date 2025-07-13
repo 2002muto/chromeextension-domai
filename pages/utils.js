@@ -2454,6 +2454,7 @@ Object.assign(window.AppUtils, {
   animateArchiveItem,
   animateRestoreItem,
 });
+console.log("[UTILS] showSaveConfirmDialog registered:", typeof window.AppUtils.showSaveConfirmDialog);
 
 // ダミー実装: showConfirmDialog
 function showConfirmDialog(options = {}) {

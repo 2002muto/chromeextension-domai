@@ -1171,6 +1171,9 @@ async function renderInputForm(id) {
   });
 
   // テキストの量に応じてボタンの表示/非表示を制御
+  // char-counterが一時的に見つからない場合の警告状態
+  let missingCounterWarned = false;
+
   function updateButtonVisibility() {
     const text = ta.value;
     const hasText = text.trim().length > 0;
@@ -1186,9 +1189,23 @@ async function renderInputForm(id) {
     if (charCounter) {
       // 改行を除いた文字数を表示
       charCounter.textContent = `${charCountWithoutNewlines}文字`;
+      if (missingCounterWarned) {
+        console.log("[MEMO] char-counter element restored");
+        missingCounterWarned = false;
+      }
+      console.log("[MEMO] charCounter updated", charCountWithoutNewlines);
     } else {
       // 要素が見つからない場合はエラーを避けつつログを出力
-      console.warn("[MEMO] char-counter element missing when updating count");
+      if (!missingCounterWarned) {
+        console.warn(
+          "[MEMO] char-counter element missing when updating count",
+          {
+            function: "updateButtonVisibility",
+            when: new Date().toISOString(),
+          }
+        );
+        missingCounterWarned = true;
+      }
     }
 
     // コピーボタン：テキストがある場合に表示
