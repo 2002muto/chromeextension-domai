@@ -205,8 +205,8 @@ function updateStatus(
     type === "success"
       ? "bi-check-circle"
       : type === "error"
-      ? "bi-exclamation-triangle"
-      : "bi-info-circle";
+        ? "bi-exclamation-triangle"
+        : "bi-info-circle";
 
   // drag-drop-toastスタイルで表示
   statusElement.innerHTML = `<i class="bi ${icon}"></i><span>${message}</span>`;

@@ -8,8 +8,9 @@ body {
   background-color: #242424; /* 背景色を#242424に統一 */
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   min-height: 100vh;
   color: #a9a9a9; /* 修正1: 全体の文字色を #A9A9A9 に変更 */
   overflow-x: hidden;
@@ -91,7 +92,9 @@ header {
   padding: 0 4px; /* 最小サイズのパディングを適用 */
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .iframe-empty-state-content.show {
@@ -925,6 +928,9 @@ header {
   transition: all 0.3s ease;
   text-decoration: none;
   color: #a9a9a9; /* 文字色を#A9A9A9に統一 */
+  opacity: 0;
+  transform: translateY(30px);
+  animation: bookmarkFadeInUp 0.6s ease-out forwards;
 }
 
 .bookmark-item:hover {
@@ -943,6 +949,63 @@ header {
   align-items: center;
   justify-content: center;
   font-size: 16px;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: bookmarkIconGather 0.8s ease-out forwards;
+}
+
+.bookmark-item:nth-child(1) .bookmark-icon {
+  animation-delay: 0.2s;
+}
+.bookmark-item:nth-child(2) .bookmark-icon {
+  animation-delay: 0.3s;
+}
+.bookmark-item:nth-child(3) .bookmark-icon {
+  animation-delay: 0.4s;
+}
+.bookmark-item:nth-child(4) .bookmark-icon {
+  animation-delay: 0.5s;
+}
+.bookmark-item:nth-child(5) .bookmark-icon {
+  animation-delay: 0.6s;
+}
+.bookmark-item:nth-child(6) .bookmark-icon {
+  animation-delay: 0.7s;
+}
+.bookmark-item:nth-child(7) .bookmark-icon {
+  animation-delay: 0.8s;
+}
+.bookmark-item:nth-child(8) .bookmark-icon {
+  animation-delay: 0.9s;
+}
+.bookmark-item:nth-child(9) .bookmark-icon {
+  animation-delay: 1s;
+}
+.bookmark-item:nth-child(10) .bookmark-icon {
+  animation-delay: 1.1s;
+}
+
+@keyframes bookmarkIconGather {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateX(-20px) translateY(-20px);
+  }
+  25% {
+    opacity: 0.5;
+    transform: scale(0.7) translateX(-10px) translateY(-10px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.9) translateX(-5px) translateY(-5px);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(0.95) translateX(-2px) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateX(0) translateY(0);
+  }
 }
 
 .bookmark-item .bookmark-title {
@@ -999,6 +1062,10 @@ header {
   align-items: center;
   justify-content: center;
   font-size: 24px;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: bookmarkFadeInUp 0.6s ease-out forwards;
+  animation-delay: 1.1s;
 }
 
 .add-bookmark-btn:hover {
@@ -1011,6 +1078,10 @@ header {
 
 .add-bookmark-btn i {
   font-size: 16px;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: bookmarkIconGather 0.8s ease-out forwards;
+  animation-delay: 1.2s;
 }
 
 /* ステータスバー（drag-drop-toastスタイル） */
@@ -1092,6 +1163,49 @@ header {
 .bookmark-item.dragging {
   opacity: 0.5;
   transform: scale(0.95);
+}
+
+/* ─── BOOKMARK Fade In Animation ━━━━━━━━━━*/
+.bookmark-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.bookmark-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.bookmark-item:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.bookmark-item:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.bookmark-item:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.bookmark-item:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.bookmark-item:nth-child(7) {
+  animation-delay: 0.7s;
+}
+.bookmark-item:nth-child(8) {
+  animation-delay: 0.8s;
+}
+.bookmark-item:nth-child(9) {
+  animation-delay: 0.9s;
+}
+.bookmark-item:nth-child(10) {
+  animation-delay: 1s;
+}
+
+@keyframes bookmarkFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .drag-drop-toast {
