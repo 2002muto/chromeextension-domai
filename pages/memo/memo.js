@@ -1096,7 +1096,12 @@ async function renderInputForm(id) {
   // コピーボタンの機能を追加
   const copyBtn = content.querySelector(".copy-text-btn");
   copyBtn.addEventListener("click", async () => {
-    const textToCopy = ta.value;
+    // テキスト末尾の空白を除去してコピーする
+    const textToCopy = ta.value.trimEnd();
+    console.log("[Memo] copy requested", {
+      originalLength: ta.value.length,
+      trimmedLength: textToCopy.length,
+    });
 
     if (textToCopy.trim() === "") {
       console.log("No text to copy");
