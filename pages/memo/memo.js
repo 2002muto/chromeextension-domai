@@ -1206,7 +1206,10 @@ async function renderInputForm(id) {
             `(updateButtonVisibility at ${new Date().toISOString()})`
         );
         missingCounterWarned = true;
+        // 編集画面を離れた可能性が高いのでインターバルを解除
+        clearCharCountIntervalFn();
       }
+      return;
     }
 
     // コピーボタン：テキストがある場合に表示
