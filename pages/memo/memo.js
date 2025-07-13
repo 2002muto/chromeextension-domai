@@ -1180,8 +1180,15 @@ async function renderInputForm(id) {
     const charCountWithoutNewlines = text.replace(/\n/g, "").length;
 
     // 文字数カウンターを更新
+    // 画面切替直後などで要素が存在しないケースに備える
     const charCounter = content.querySelector(".char-counter");
-    charCounter.textContent = `${charCountWithoutNewlines}文字`;
+    if (charCounter) {
+      // 改行を除いた文字数を表示
+      charCounter.textContent = `${charCountWithoutNewlines}文字`;
+    } else {
+      // 要素が見つからない場合はエラーを避けつつログを出力
+      console.warn("[MEMO] char-counter element missing when updating count");
+    }
 
     // コピーボタン：テキストがある場合に表示
     copyBtn.style.display = hasText ? "flex" : "none";
