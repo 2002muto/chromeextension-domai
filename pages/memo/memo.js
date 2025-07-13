@@ -22,6 +22,7 @@ function clearCharCountIntervalFn() {
   if (charCountInterval) {
     clearInterval(charCountInterval);
     charCountInterval = null;
+    console.log("[MEMO] charCountInterval cleared");
   }
 }
 
@@ -1217,6 +1218,7 @@ async function renderInputForm(id) {
       console.log("文字数カウンター：定期監視で差分検出", currentValue.length);
     }
   }, 100); // 100msごとにチェック
+  console.log("[MEMO] charCountInterval started");
 
   // メモリリーク防止：ページ離脱時にインターバルをクリア
   window.removeEventListener("beforeunload", clearCharCountIntervalFn);
