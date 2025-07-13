@@ -783,8 +783,7 @@ function convertYouTubeUrl(url) {
 
     if (videoId) {
       // 埋め込み用URLに変換（自動再生＆ミュート）
-      let embed =
-        `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&autoplay=1&mute=1`;
+      let embed = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&autoplay=1&mute=1`;
       if (start) embed += `&start=${parseInt(start, 10)}`;
       console.log(`[iframe] YouTube埋め込みURLに変換: ${embed}`);
       return embed;
@@ -2412,15 +2411,7 @@ window.addEventListener("load", async () => {
 
   // オーバーレイアイコンの初期状態（フォールバック）
   if (iframeOverlayIcon) {
-    if (
-      !mainFrame.src ||
-      mainFrame.src === "about:blank" ||
-      mainFrame.style.display === "none"
-    ) {
-      iframeOverlayIcon.style.display = "none";
-    } else {
-      iframeOverlayIcon.style.display = "flex";
-    }
+    iframeOverlayIcon.style.display = "none";
   }
 });
 
@@ -2449,15 +2440,8 @@ console.log("[iframe] 🔥 無理矢理 iframe.js 初期化完了");
 
 // オーバーレイアイコンの表示制御関数
 function updateOverlayIconVisibility() {
-  if (
-    iframeOverlayIcon &&
-    mainFrame &&
-    mainFrame.src &&
-    mainFrame.src !== "about:blank" &&
-    mainFrame.style.display !== "none"
-  ) {
-    iframeOverlayIcon.style.display = "flex";
-  } else if (iframeOverlayIcon) {
+  // 起動時は絶対に表示しない
+  if (iframeOverlayIcon) {
     iframeOverlayIcon.style.display = "none";
   }
 }
