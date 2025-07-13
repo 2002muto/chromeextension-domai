@@ -19,6 +19,8 @@ window.AppUtils.saveStorage = function (key, arr) {
 
 /* ━━━━━━━━━━ 汎用保存確認ダイアログ ━━━━━━━━━━ */
 function showSaveConfirmDialog(options = {}) {
+  // 呼び出しログを出力してデバッグしやすくする
+  console.log("[UTILS] showSaveConfirmDialog invoked", options);
   const {
     title = "変更を保存しますか？",
     message = "編集内容に変更があります。<br>保存せずに戻ると変更が失われます。",
