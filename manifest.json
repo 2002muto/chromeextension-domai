@@ -49,7 +49,9 @@
     "http://*/*",
     "https://*/*",
     "file://*/*",
-    "https://icons.duckduckgo.com/*"
+    "https://icons.duckduckgo.com/*",
+    "https://www.youtube.com/*",
+    "https://www.youtube-nocookie.com/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -110,7 +112,7 @@
     "ids": ["*"]
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-hashes' data:; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' *; frame-src 'self' *; child-src 'self' *; worker-src 'self'; manifest-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-hashes' data:; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' *; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com *; child-src 'self' *; worker-src 'self'; manifest-src 'self';"
   },
   "minimum_chrome_version": "88",
   "offline_enabled": true,
