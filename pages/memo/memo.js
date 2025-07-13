@@ -1198,11 +1198,8 @@ async function renderInputForm(id) {
       // 要素が見つからない場合はエラーを避けつつログを出力
       if (!missingCounterWarned) {
         console.warn(
-          "[MEMO] char-counter element missing when updating count",
-          {
-            function: "updateButtonVisibility",
-            when: new Date().toISOString(),
-          }
+          `[MEMO] char-counter element missing when updating count ` +
+            `(updateButtonVisibility at ${new Date().toISOString()})`
         );
         missingCounterWarned = true;
       }

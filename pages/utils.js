@@ -2319,6 +2319,8 @@ window.AppUtils.animateArchiveItem = animateArchiveItem;
 
 // 公開用に登録
 window.AppUtils.showSaveConfirmDialog = showSaveConfirmDialog;
+// グローバル関数としても利用できるように登録しておく
+window.showSaveConfirmDialog = showSaveConfirmDialog;
 
 // 共通トースト通知機能
 function showToast(message, type = "info") {
