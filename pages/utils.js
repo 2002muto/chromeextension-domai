@@ -2436,15 +2436,15 @@ function showToast(message, type = "info") {
 
 console.log("[UTILS] AppUtils loaded successfully");
 
-// グローバルに公開
-window.AppUtils = {
+// 既存のAppUtilsにユーティリティ関数を追加
+Object.assign(window.AppUtils, {
   showConfirmDialog,
-  showSaveConfirmDialog,
+  showSaveConfirmDialog: window.AppUtils.showSaveConfirmDialog,
   showToast,
-  showArchiveToast,
-  animateArchiveItem,
+  showArchiveToast: window.AppUtils.showArchiveToast,
+  animateArchiveItem: window.AppUtils.animateArchiveItem,
   animateRestoreItem,
-};
+});
 
 // ダミー実装: showConfirmDialog
 function showConfirmDialog(options = {}) {
