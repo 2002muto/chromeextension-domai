@@ -1,7 +1,4 @@
 /* File: pages/iframe/iframe.css */
-/* =============================
-   🔥 無理矢理 IFRAME スタイル
-   ============================= */
 
 /* ─── ベース設定 ─── */
 body {
@@ -20,9 +17,6 @@ body {
 header {
   background-color: #242424;
 }
-
-/* ─── ヘッダー（非表示） ─── */
-/* .iframe-header { background: #314559 !important; } */
 
 /* ─── メインコンテンツエリア ─── */
 .iframe-content {
@@ -143,6 +137,36 @@ header {
   align-items: center;
   color: #a9a9a9; /* 修正1 */
   font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.input-group-text:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* Googleカラー定義 */
+.google-blue {
+  color: #4285f4;
+}
+.google-red {
+  color: #ea4335;
+}
+.google-yellow {
+  color: #fbbc05;
+}
+.google-green {
+  color: #34a853;
+}
+
+/* プライベートモードアイコン */
+.privacy-icon-private {
+  color: #000000 !important;
+}
+
+.privacy-icon-public {
+  color: #4285f4 !important;
 }
 
 #urlInput {
