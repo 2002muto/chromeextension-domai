@@ -21,8 +21,11 @@ let urlInput,
   bookmarkTitleInput,
   loadMainPageBtn, // 追加
   iframeOverlayIcon, // 追加
-  expandToggleBtn; // 追加
+  expandToggleBtn, // 追加
+  privacyToggle, // プライベートモード切り替え
+  privacyIcon; // プライベートモードアイコン
 let isExpanded = false; // 拡大状態フラグ
+let isPrivateMode = false; // プライベートモード状態
 const HISTORY_KEY = "iframeSearchHistory";
 const BOOKMARK_KEY = "iframeBookmarks";
 
@@ -48,6 +51,8 @@ function initializeElements() {
   loadMainPageBtn = document.getElementById("loadMainPageBtn"); // 追加
   iframeOverlayIcon = document.getElementById("iframeOverlayIcon"); // 追加
   expandToggleBtn = document.getElementById("expandToggle"); // 追加
+  privacyToggle = document.getElementById("privacyToggle"); // プライベートモード切り替え
+  privacyIcon = document.getElementById("privacyIcon"); // プライベートモードアイコン
 
   console.log("[iframe] 要素取得結果:", {
     urlInput: !!urlInput,
@@ -68,6 +73,8 @@ function initializeElements() {
     loadMainPageBtn: !!loadMainPageBtn,
     iframeOverlayIcon: !!iframeOverlayIcon,
     expandToggleBtn: !!expandToggleBtn,
+    privacyToggle: !!privacyToggle,
+    privacyIcon: !!privacyIcon,
   });
 
   if (!searchHistoryEl) {
@@ -1947,10 +1954,14 @@ async function handleInput(input, forceShow = false) {
     return;
   }
 
-  // forceShow=trueの場合は履歴追加をスキップ（既に履歴順序更新済み）
-  if (!forceShow) {
+  // forceShow=trueまたはプライベートモードの場合は履歴追加をスキップ
+  if (!forceShow && !isPrivateMode) {
     console.log(`[iframe] 🔥 履歴に追加: ${input.trim()}`);
     await addHistory(input.trim());
+  } else if (isPrivateMode) {
+    console.log(
+      `[iframe] 🔥 プライベートモードのため履歴保存をスキップ: ${input.trim()}`
+    );
   }
 
   // @記号を除去
@@ -2092,6 +2103,14 @@ function setupEventListeners() {
         console.log("[iframe] 🔥 Enterキー押下");
         handleInput(urlInput.value);
       }
+    });
+  }
+
+  // プライベートモード切り替えイベント
+  if (privacyToggle) {
+    privacyToggle.addEventListener("click", () => {
+      console.log("[iframe] 🔥 プライベートモード切り替えボタンクリック");
+      togglePrivateMode();
     });
   }
 
@@ -2299,6 +2318,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     iframeOverlayIcon.style.display = "none";
   }
 
+  // プライベートモードの初期状態を設定
+  if (privacyIcon) {
+    const randomColor = getRandomGoogleColor();
+    privacyIcon.className = `bi bi-google ${randomColor}`;
+    privacyToggle.title = "プライベートモード: OFF (履歴を保存します)";
+  }
+
   // ステータスバーも初期は非表示を強制
   if (statusBar) {
     statusBar.style.display = "none";
@@ -2437,6 +2463,38 @@ function toggleExpand() {
 // 新しい検索ボタンのイベント（setupEventListeners関数内で設定されるため削除）
 
 console.log("[iframe] 🔥 無理矢理 iframe.js 初期化完了");
+
+// ランダムGoogleカラー選択関数
+function getRandomGoogleColor() {
+  const googleColors = [
+    "google-blue",
+    "google-red",
+    "google-yellow",
+    "google-green",
+  ];
+  const randomIndex = Math.floor(Math.random() * googleColors.length);
+  return googleColors[randomIndex];
+}
+
+// プライベートモード切り替え関数
+function togglePrivateMode() {
+  isPrivateMode = !isPrivateMode;
+
+  if (privacyIcon) {
+    if (isPrivateMode) {
+      privacyIcon.className = "bi bi-google privacy-icon-private";
+      privacyToggle.title = "プライベートモード: ON (履歴を保存しません)";
+      updateStatus("🔒 プライベートモード: ON", "info");
+    } else {
+      const randomColor = getRandomGoogleColor();
+      privacyIcon.className = `bi bi-google ${randomColor}`;
+      privacyToggle.title = "プライベートモード: OFF (履歴を保存します)";
+      updateStatus("🌐 通常モード: ON", "info");
+    }
+  }
+
+  console.log(`[iframe] プライベートモード切り替え: ${isPrivateMode}`);
+}
 
 // オーバーレイアイコンの表示制御関数
 function updateOverlayIconVisibility() {

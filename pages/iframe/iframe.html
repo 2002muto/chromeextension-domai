@@ -1,5 +1,5 @@
 <!-- File: pages/iframe/iframe.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -66,8 +66,12 @@
           <!-- 検索・URL入力エリア -->
           <div class="search-section">
             <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-google"></i>
+              <span
+                class="input-group-text"
+                id="privacyToggle"
+                title="プライベートモード切り替え"
+              >
+                <i class="bi bi-google" id="privacyIcon"></i>
               </span>
               <input
                 id="urlInput"
