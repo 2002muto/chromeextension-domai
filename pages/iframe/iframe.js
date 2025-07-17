@@ -1607,8 +1607,8 @@ function showDeleteHistoryDialog() {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     box-sizing: border-box !important;
   `;
 

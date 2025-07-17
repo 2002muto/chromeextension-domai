@@ -114,8 +114,8 @@ function showSaveConfirmDialog(options = {}) {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         margin: 0 !important;
         padding: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        width: 100% !important;
+        height: 100% !important;
         box-sizing: border-box !important;
       }
       
@@ -336,8 +336,8 @@ function showSaveConfirmDialog(options = {}) {
     pointer-events: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     box-sizing: border-box !important;
   `;
 
@@ -776,8 +776,8 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         margin: 0 !important;
         padding: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        width: 100% !important;
+        height: 100% !important;
         box-sizing: border-box !important;
       }
       
@@ -1000,8 +1000,8 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
     pointer-events: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     box-sizing: border-box !important;
   `;
 
@@ -1357,8 +1357,8 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         margin: 0 !important;
         padding: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        width: 100% !important;
+        height: 100% !important;
         box-sizing: border-box !important;
       }
       
@@ -1574,8 +1574,8 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
     pointer-events: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     box-sizing: border-box !important;
   `;
 
