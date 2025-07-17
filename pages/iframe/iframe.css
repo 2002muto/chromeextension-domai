@@ -36,7 +36,8 @@ header {
 .iframe-content {
   padding: 0;
   min-height: 0;
-  height: calc(100vh - 80px); /* フッター分を引く */
+  margin-top: 16px; /* ヘッダーとの間隔を常に確保 */
+  height: calc(100vh - 80px - 16px); /* フッター分とマージン分を引く */
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
