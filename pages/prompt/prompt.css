@@ -476,6 +476,32 @@ textarea.field-text,
   height: 32px; /* 高さを統一 */
 }
 
+/* ドラッグハンドル */
+.prompt-drag-handle {
+  background: transparent;
+  border: none;
+  box-sizing: border-box;
+  padding: 8px;
+  border-radius: 4px;
+  color: #999999;
+  cursor: move;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prompt-drag-handle i {
+  font-size: 1.2rem;
+}
+
+.prompt-drag-handle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
 /* フォームスイッチの高さ統一 - 内部要素も含めて完全に中央揃え */
 .prompt-field .form-switch {
   height: 32px; /* 高さを統一 */

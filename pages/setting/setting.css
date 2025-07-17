@@ -460,6 +460,8 @@
   .icon-selector {
     gap: 12px;
     justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
 
   .icon-option {
@@ -477,6 +479,8 @@
 
   .coming-soon-selector {
     gap: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
 
   .icon-option.coming-soon {
@@ -537,6 +541,8 @@
   .icon-selector {
     gap: 8px;
     justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
 
   .icon-option {
@@ -554,6 +560,8 @@
 
   .coming-soon-selector {
     gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
 
   .icon-option.coming-soon {
@@ -611,11 +619,12 @@
 /* ─── アイコン選択機能 ─── */
 .icon-selector {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* show in a single row */
   gap: 16px;
   margin-top: 8px;
   justify-content: flex-start;
   align-items: center;
+  overflow-x: auto; /* allow horizontal scroll when needed */
 }
 
 .icon-option {
@@ -831,6 +840,8 @@
   gap: 16px;
   justify-content: flex-start;
   align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .icon-option.coming-soon {

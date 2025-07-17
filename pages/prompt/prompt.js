@@ -1670,19 +1670,11 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    row.draggable = true;
+    row.draggable = false; // use handle for dragging
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
-
-    row.addEventListener("dragstart", (e) => {
-      console.log("[DND] ドラッグ開始");
-      dragStartIndex = [...wrap.children].indexOf(row);
-      e.dataTransfer.setData("text/plain", dragStartIndex.toString());
-      e.dataTransfer.effectAllowed = "move";
-      row.classList.add("dragging");
-      console.log("[DND] ドラッグ開始インデックス:", dragStartIndex);
-    });
+    let dragHandle;
 
     row.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -1796,21 +1788,6 @@ function renderEdit(idx, isNew = false) {
       );
     });
 
-    row.addEventListener("dragend", (e) => {
-      console.log("[DND] ドラッグ終了");
-      row.classList.remove("dragging");
-      dragStartIndex = null;
-
-      // 他の要素のドロップインジケーターも削除
-      wrap.querySelectorAll(".drop-indicator").forEach((el) => {
-        el.classList.remove(
-          "drop-indicator",
-          "drop-above",
-          "drop-below",
-          "active"
-        );
-      });
-    });
 
     /* --- 行 HTML --- */
     row.innerHTML = `
@@ -1828,7 +1805,10 @@ function renderEdit(idx, isNew = false) {
             ${enabled ? "表示" : "非表示"}
           </label>
         </div>
-                    <button class="btn-remove-field">
+        <div class="prompt-drag-handle" draggable="true">
+          <i class="bi bi-grip-vertical"></i>
+        </div>
+        <button class="btn-remove-field">
           <i class="bi bi-trash"></i>
         </button>
       </div>
@@ -1839,6 +1819,35 @@ function renderEdit(idx, isNew = false) {
                     rows="4">${text}</textarea>
         </div>
       </div>`;
+
+    // ハンドル要素を取得してイベントを設定
+    dragHandle = row.querySelector(".prompt-drag-handle");
+    if (dragHandle) {
+      dragHandle.addEventListener("dragstart", (e) => {
+        console.log("[DND] ドラッグ開始");
+        dragStartIndex = [...wrap.children].indexOf(row);
+        e.dataTransfer.setData("text/plain", dragStartIndex.toString());
+        e.dataTransfer.effectAllowed = "move";
+        row.classList.add("dragging");
+        console.log("[DND] ドラッグ開始インデックス:", dragStartIndex);
+      });
+
+      dragHandle.addEventListener("dragend", (e) => {
+        console.log("[DND] ドラッグ終了");
+        row.classList.remove("dragging");
+        dragStartIndex = null;
+
+        wrap.querySelectorAll(".drop-indicator").forEach((el) => {
+          el.classList.remove(
+            "drop-indicator",
+            "drop-above",
+            "drop-below",
+            "active"
+          );
+        });
+      });
+    }
+
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
 

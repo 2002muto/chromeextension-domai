@@ -224,7 +224,8 @@ body::-webkit-scrollbar,
   white-space: normal; /* show entire title */
 }
 
-/* フッターのnav-btnホバー時はテキストを非表示にし、アニメーションも無効化する */
+/* --- footer nav-btn hover behavior unified with header --- */
+/*
 footer .nav-btn:hover .nav-text {
   display: none;
   opacity: 0;
@@ -232,7 +233,6 @@ footer .nav-btn:hover .nav-text {
   margin-left: 0;
 }
 
-/* フッターのnav-btnホバー時のアニメーションを完全無効化 */
 footer .nav-btn:hover {
   filter: none !important;
   transform: none !important;
@@ -241,6 +241,7 @@ footer .nav-btn:hover {
   padding: 0 !important;
   justify-content: center !important;
 }
+*/
 
 /* ホバー時の❌ボタン表示（一時的に無効化） */
 /*
