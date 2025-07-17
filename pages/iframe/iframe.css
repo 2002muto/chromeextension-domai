@@ -486,7 +486,7 @@ header {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px; /* メインページ読み込みボタンとの間隔に合わせる */
 }
 
 .info-card {
@@ -766,6 +766,8 @@ header {
   .iframe-content {
     padding: 12px;
     padding-bottom: 80px;
+    margin-top: 16px; /* ヘッダーとの間隔を維持 */
+    height: calc(100vh - 80px - 16px); /* フッター分とマージン分を引く */
   }
 
   .quick-access .btn {
