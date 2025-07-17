@@ -1632,15 +1632,21 @@ function renderEdit(idx, isNew = false) {
 
     // 3. プロンプトフィールドを順次フェードイン
     promptFields.forEach((field, index) => {
-      setTimeout(() => {
-        field.classList.add("show");
-      }, 250 + index * 100); // 各フィールド100ms間隔
+      setTimeout(
+        () => {
+          field.classList.add("show");
+        },
+        250 + index * 100
+      ); // 各フィールド100ms間隔
     });
 
     // 4. 追加ボタンをフェードイン
-    setTimeout(() => {
-      addFieldBtn.classList.add("show");
-    }, 350 + promptFields.length * 100);
+    setTimeout(
+      () => {
+        addFieldBtn.classList.add("show");
+      },
+      350 + promptFields.length * 100
+    );
   }, 50);
 
   // 既存のプロンプトフィールドのドラッグ＆ドロップを確実に初期化
@@ -2328,8 +2334,8 @@ function renderRun(idx) {
             .filter(Boolean)
             .join("\n\n")
         : obj.fields[index].on && obj.fields[index].text.trim()
-        ? `${obj.fields[index].text}\n${extras[index]}`.trim()
-        : "";
+          ? `${obj.fields[index].text}\n${extras[index]}`.trim()
+          : "";
 
     if (!payload.trim()) {
       console.warn("[EXECUTION] 送信対象のプロンプトがありません");
@@ -2563,16 +2569,98 @@ function sendToFocused(text) {
                   (n instanceof HTMLInputElement &&
                     /^(text|search|url|email|number|tel|password)$/i.test(
                       n.type
-                    )));
+                    )) ||
+                  // Google Chatの特定の入力欄も編集可能とみなす
+                  (n.getAttribute &&
+                    n.getAttribute("aria-label") === "返信" &&
+                    n.isContentEditable));
 
               /* b) 無ければ入力候補を探して focus */
               if (!isEditable(el)) {
+                // Google Chat用のセレクターを追加（ユーザー指定のセレクターを最優先）
                 el = document.querySelector(
-                  'div[contenteditable="true"][role="textbox"], textarea, input[type="text"]'
+                  'div[contenteditable="true"][aria-label="返信"], ' +
+                    'div[contenteditable="true"][role="textbox"], ' +
+                    'div[contenteditable="true"][data-placeholder], ' +
+                    'div[contenteditable="true"][aria-label*="message"], ' +
+                    'div[contenteditable="true"][aria-label*="Message"], ' +
+                    'div[contenteditable="true"][data-testid*="input"], ' +
+                    'div[contenteditable="true"][data-testid*="composer"], ' +
+                    'div[contenteditable="true"][class*="input"], ' +
+                    'div[contenteditable="true"][class*="composer"], ' +
+                    'div[contenteditable="true"][class*="editor"], ' +
+                    'div[contenteditable="true"][data-placeholder*="Send a message"], ' +
+                    'div[contenteditable="true"][data-placeholder*="send a message"], ' +
+                    'div[contenteditable="true"][data-placeholder*="Type a message"], ' +
+                    'div[contenteditable="true"][data-placeholder*="type a message"], ' +
+                    'div[contenteditable="true"][aria-label*="Send a message"], ' +
+                    'div[contenteditable="true"][aria-label*="send a message"], ' +
+                    'div[contenteditable="true"][aria-label*="Type a message"], ' +
+                    'div[contenteditable="true"][aria-label*="type a message"], ' +
+                    'div[contenteditable="true"][class*="chat"], ' +
+                    'div[contenteditable="true"][class*="Chat"], ' +
+                    'div[contenteditable="true"][class*="message"], ' +
+                    'div[contenteditable="true"][class*="Message"], ' +
+                    'div[contenteditable="true"][class*="compose"], ' +
+                    'div[contenteditable="true"][class*="Compose"], ' +
+                    'div[contenteditable="true"][class*="textbox"], ' +
+                    'div[contenteditable="true"][class*="Textbox"], ' +
+                    'div[contenteditable="true"][class*="textarea"], ' +
+                    'div[contenteditable="true"][class*="Textarea"], ' +
+                    "textarea, " +
+                    'input[type="text"], ' +
+                    'input[type="search"], ' +
+                    'input[placeholder*="message"], ' +
+                    'input[placeholder*="Message"], ' +
+                    'input[aria-label*="message"], ' +
+                    'input[aria-label*="Message"], ' +
+                    'input[placeholder*="Send a message"], ' +
+                    'input[placeholder*="send a message"], ' +
+                    'input[placeholder*="Type a message"], ' +
+                    'input[placeholder*="type a message"], ' +
+                    'input[aria-label*="Send a message"], ' +
+                    'input[aria-label*="send a message"], ' +
+                    'input[aria-label*="Type a message"], ' +
+                    'input[aria-label*="type a message"]'
                 );
-                if (el) el.focus();
+                if (el) {
+                  console.log(`[sendToFocused] 要素発見:`, {
+                    element: el,
+                    tagName: el.tagName,
+                    className: el.className,
+                    "aria-label": el.getAttribute("aria-label"),
+                    "data-placeholder": el.getAttribute("data-placeholder"),
+                    contenteditable: el.getAttribute("contenteditable"),
+                    role: el.getAttribute("role"),
+                    isEditable: isEditable(el),
+                  });
+                  el.focus();
+                } else {
+                  console.log(`[sendToFocused] 要素が見つかりませんでした`);
+                }
               }
-              if (!isEditable(el)) throw "no-editable-element";
+              if (!isEditable(el)) {
+                console.warn(
+                  "[sendToFocused] 編集可能な要素が見つかりませんでした"
+                );
+                console.log(
+                  "[sendToFocused] 現在のactiveElement:",
+                  document.activeElement
+                );
+                console.log(
+                  "[sendToFocused] ページ内のcontenteditable要素:",
+                  document.querySelectorAll('[contenteditable="true"]').length
+                );
+                console.log(
+                  "[sendToFocused] ページ内のtextarea要素:",
+                  document.querySelectorAll("textarea").length
+                );
+                console.log(
+                  "[sendToFocused] ページ内のinput要素:",
+                  document.querySelectorAll("input").length
+                );
+                throw "no-editable-element";
+              }
 
               /* c) 挿入 */
               if (el.isContentEditable) {
