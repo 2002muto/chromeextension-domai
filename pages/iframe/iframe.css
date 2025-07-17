@@ -23,6 +23,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-size: 14px; /* Windows環境でのフォントサイズ統一 */
+  line-height: 1.4; /* 行間の統一 */
 }
 
 /* ─── 共通ヘッダー ─── */
@@ -154,12 +156,17 @@ header {
   background: transparent;
   border: none;
   padding: 12px 16px;
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
   align-items: center;
   color: #a9a9a9; /* 修正1 */
-  font-size: 18px;
+  font-size: 16px; /* Windows環境でのサイズ調整 */
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 44px; /* Windows環境での最小高さ */
 }
 
 .input-group-text:hover {
@@ -198,7 +205,13 @@ header {
   outline: none;
   background: #fff;
   transition: all 0.3s ease;
+  -webkit-flex: 1;
+  -ms-flex: 1;
   flex: 1;
+  min-height: 44px; /* Windows環境での最小高さ */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 #urlInput:focus {
@@ -236,7 +249,11 @@ header {
   color: #a9a9a9; /* 修正1 */
   transition: all 0.3s ease;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px; /* Windows環境でのサイズ調整 */
+  min-height: 44px; /* Windows環境での最小高さ */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 #clearBtn:hover {
@@ -419,8 +436,14 @@ header {
 
 /* メインページ読み込みセクション */
 .main-page-load-section {
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
   align-items: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
   justify-content: center;
   gap: 12px;
   padding: 14px 28px;
@@ -428,7 +451,7 @@ header {
   background: #242424;
   border: 1px solid #a9a9a9;
   color: #a9a9a9;
-  font-size: 18px;
+  font-size: 16px; /* Windows環境でのサイズ調整 */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -437,6 +460,7 @@ header {
   margin-right: auto;
   max-width: 340px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-height: 48px; /* Windows環境での最小高さ */
 }
 
 .main-page-load-section:hover {
@@ -959,8 +983,14 @@ header {
 
 .bookmark-item {
   position: relative;
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
   flex-direction: column;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
   align-items: center;
   gap: 12px; /* アイコンとの間隔を調整 */
   width: 96px; /* サイズを大きくする */
@@ -976,6 +1006,9 @@ header {
   opacity: 0;
   transform: translateY(30px);
   animation: bookmarkFadeInUp 0.6s ease-out forwards;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .bookmark-item:hover {
@@ -1314,6 +1347,34 @@ header {
   }
 
   /* ブックマークアイテムのレスポンシブサイズ指定を削除し、デフォルトの96pxを維持 */
+}
+
+/* Windows環境専用の調整 */
+@media screen and (-webkit-min-device-pixel-ratio: 1.25),
+  screen and (min-resolution: 120dpi) {
+  body {
+    font-size: 13px;
+  }
+
+  .input-group-text {
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  #urlInput {
+    font-size: 13px;
+    min-height: 40px;
+  }
+
+  #clearBtn {
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  .main-page-load-section {
+    font-size: 14px;
+    min-height: 44px;
+  }
 }
 
 /* ─── ブックマーク追加モーダル ─── */
