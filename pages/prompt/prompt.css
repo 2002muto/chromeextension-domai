@@ -432,7 +432,6 @@ textarea.field-text,
   position: relative;
   padding: 12px 0 10px 0; /* 上12px、下10px - 行間をさらに狭く調整してUI/UXを改善 */
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* タイトルセクションと完全統一 */
-  cursor: grab; /* 実行画面と統一 */
 }
 
 .prompt-field:last-of-type {
@@ -461,7 +460,7 @@ textarea.field-text,
 .prompt-field .prompt-header-row {
   display: flex;
   align-items: center; /* 中央揃えを確実に適用 */
-  justify-content: space-between; /* 左右に分散配置 */
+  justify-content: flex-start; /* ラベルとハンドルを左側に配置 */
   gap: 12px;
   margin-bottom: 8px; /* 12px→8px に変更して行間を狭く */
   min-height: 32px; /* 最小高さを設定して統一 */
@@ -474,6 +473,7 @@ textarea.field-text,
   gap: 12px;
   flex-shrink: 0; /* アクション部分が縮まないように固定 */
   height: 32px; /* 高さを統一 */
+  margin-left: auto; /* ヘッダー内の右端に配置 */
 }
 
 /* フォームスイッチの高さ統一 - 内部要素も含めて完全に中央揃え */
@@ -542,6 +542,37 @@ textarea.field-text,
 .btn-remove-field:hover {
   background: #c82333;
   transform: scale(1.1);
+}
+
+/* ドラッグハンドル */
+.prompt-drag-handle {
+  background: transparent;
+  border: none;
+  box-sizing: border-box;
+  padding: 8px;
+  border-radius: 4px;
+  color: #999999;
+  cursor: grab;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.prompt-drag-handle:active {
+  cursor: grabbing;
+}
+
+.prompt-drag-handle i {
+  font-size: 1.2rem;
+}
+
+.prompt-drag-handle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 /* ⑤ ＋ プロンプトを追加ボタン - 実行画面の一括入力ボタンと統一（カラーコードは元のまま） */
@@ -681,14 +712,13 @@ textarea.field-text,
 }
 
 /* 掴めるカーソル */
-.prompt-item,
-.prompt-field {
+
+.prompt-item {
   cursor: grab;
   transition: all 0.2s ease;
 }
 
-.prompt-item:active,
-.prompt-field:active {
+.prompt-item:active {
   cursor: grabbing;
 }
 
