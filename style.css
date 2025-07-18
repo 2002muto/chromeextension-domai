@@ -1,5 +1,11 @@
 /* File: style.css */
 
+/* windows-fix START */
+* {
+  box-sizing: border-box;
+}
+/* windows-fix END */
+
 /* ① ヘッダー全体の上下 padding を少し増やす */
 header {
   display: flex;
@@ -52,6 +58,12 @@ body::-webkit-scrollbar,
   flex: none; /* フレックス解除 */
   overflow: visible; /* ❌ボタンが表示されるように変更 */
   transform-origin: center center; /* 中心を基点に */
+  /* windows-fix START */
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  /* windows-fix END */
 }
 
 .nav-btn i {
