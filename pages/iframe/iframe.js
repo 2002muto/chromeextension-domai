@@ -2421,6 +2421,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 初期化完了後は元のupdateStatus関数に戻す
   updateStatus = originalUpdateStatus;
+
+  // リサイズ時のデバッグ情報
+  window.addEventListener("resize", () => {
+    const headerEl = document.querySelector("header");
+    const contentEl = document.querySelector(".iframe-content");
+    const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+    const marginTop = contentEl
+      ? window.getComputedStyle(contentEl).marginTop
+      : "0px";
+    console.log(
+      `[iframe] resize - headerHeight: ${headerHeight}px, iframe-content margin-top: ${marginTop}`
+    );
+  });
 });
 
 // ページ読み込み完了後にも実行（フォールバック）
