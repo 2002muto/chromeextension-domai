@@ -6,6 +6,39 @@
 }
 /* windows-fix END */
 
+/* windows-fix START */
+:root {
+  --sb-width: 6px;
+  --sb-thumb: #9e9e9e;
+  --sb-thumb-hover: #7b7b7b;
+  --sb-track: #f0f0f0;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+*::-webkit-scrollbar {
+  width: var(--sb-width);
+  height: var(--sb-width);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
+}
+/* windows-fix END */
+
 /* ① ヘッダー全体の上下 padding を少し増やす */
 header {
   display: flex;

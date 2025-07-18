@@ -34,28 +34,28 @@
   overflow-x: hidden;
   /* スクロールバーのスタイル */
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
   min-height: 0; /* flexアイテムが縮まるようにする */
   max-height: 100%; /* 親要素の高さを超えないようにする */
 }
 
 /* status-list専用スクロールバー */
 .status-list::-webkit-scrollbar {
-  width: 8px;
+  width: var(--sb-width);
 }
 
 .status-list::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
+  background: var(--sb-track);
   border-radius: 4px;
 }
 
 .status-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sb-thumb);
   border-radius: 4px;
 }
 
 .status-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sb-thumb-hover);
 }
 
 /* ─── ステータスアイテム ─── */
