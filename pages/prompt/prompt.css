@@ -102,26 +102,26 @@
   overflow-x: hidden;
   /* スクロールバーのスタイル */
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
 }
 
 /* prompt-list専用スクロールバー */
 .prompt-list::-webkit-scrollbar {
-  width: 8px;
+  width: var(--sb-width);
 }
 
 .prompt-list::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
+  background: var(--sb-track);
   border-radius: 4px;
 }
 
 .prompt-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sb-thumb);
   border-radius: 4px;
 }
 
 .prompt-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sb-thumb-hover);
 }
 .prompt-item {
   display: grid;
@@ -337,9 +337,9 @@
   transform: translateY(20px);
   transition: opacity 0.5s, transform 0.5s;
 
-  /* スクロールバーのスタイル（MEMOページと統一） */
+  /* スクロールバーのスタイル（共通設定） */
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
 }
 
 .memo-input-form.show {
@@ -353,21 +353,21 @@
 
 /* memo-input-form専用スクロールバー（MEMOページと統一） */
 .memo-input-form::-webkit-scrollbar {
-  width: 8px;
+  width: var(--sb-width);
 }
 
 .memo-input-form::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
+  background: var(--sb-track);
   border-radius: 4px;
 }
 
 .memo-input-form::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sb-thumb);
   border-radius: 4px;
 }
 
 .memo-input-form::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sb-thumb-hover);
 }
 
 /* タイトルセクション - 視覚的に上下の余白を均等に調整 */
@@ -1136,25 +1136,25 @@ textarea.field-text,
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
 }
 
 .archive-list::-webkit-scrollbar {
-  width: 8px;
+  width: var(--sb-width);
 }
 
 .archive-list::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
+  background: var(--sb-track);
   border-radius: 4px;
 }
 
 .archive-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sb-thumb);
   border-radius: 4px;
 }
 
 .archive-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sb-thumb-hover);
 }
 
 .archive-item {
@@ -1243,26 +1243,26 @@ textarea.field-text,
   overflow-x: hidden; /* 横スクロールは無効 */
   /* スクロールバーのスタイル（編集画面と統一） */
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
 }
 
 /* prompt-run-box専用スクロールバー（編集画面と統一） */
 .prompt-run-box::-webkit-scrollbar {
-  width: 8px;
+  width: var(--sb-width);
 }
 
 .prompt-run-box::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
+  background: var(--sb-track);
   border-radius: 4px;
 }
 
 .prompt-run-box::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sb-thumb);
   border-radius: 4px;
 }
 
 .prompt-run-box::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sb-thumb-hover);
 }
 
 /* プロンプトブロック（MEMOページのボーダーライン使用） */

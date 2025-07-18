@@ -111,7 +111,7 @@ function showSaveConfirmDialog(options = {}) {
         align-items: center !important;
         justify-content: center !important;
         pointer-events: auto !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'Segoe UI', 'Noto Sans JP', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         margin: 0 !important;
         padding: 0 !important;
         width: 100vw !important;
@@ -773,7 +773,7 @@ window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
         align-items: center !important;
         justify-content: center !important;
         pointer-events: auto !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'Segoe UI', 'Noto Sans JP', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         margin: 0 !important;
         padding: 0 !important;
         width: 100vw !important;
@@ -1354,7 +1354,7 @@ window.AppUtils.showConfirmDialog = function (options = {}) {
         align-items: center !important;
         justify-content: center !important;
         pointer-events: auto !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'Segoe UI', 'Noto Sans JP', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
         margin: 0 !important;
         padding: 0 !important;
         width: 100vw !important;
