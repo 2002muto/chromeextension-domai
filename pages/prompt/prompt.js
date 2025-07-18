@@ -1643,6 +1643,160 @@ function renderEdit(idx, isNew = false) {
   obj.fields.forEach((f) => addField(f.text, f.on));
   $(".btn-add-field").onclick = () => addField("", true);
 
+  // 既存フィールドにドラッグ&ドロップ機能を適用
+  applyDragAndDropToExistingFields();
+
+  // 既存フィールドにドラッグ&ドロップ機能を適用する関数
+  function applyDragAndDropToExistingFields() {
+    const existingFields = wrap.querySelectorAll(".prompt-field");
+    console.log(
+      "[DND] 既存フィールドにドラッグ&ドロップ機能を適用:",
+      existingFields.length
+    );
+
+    existingFields.forEach((field, index) => {
+      setupDragAndDropForField(field);
+    });
+  }
+
+  // 統一されたドラッグ&ドロップイベントハンドラー
+  function setupDragAndDropForField(field) {
+    // フィールド全体はドラッグ不可に設定
+    field.draggable = false;
+
+    // ドラッグハンドルを取得
+    const dragHandle = field.querySelector(".prompt-drag-handle");
+    if (dragHandle) {
+      dragHandle.draggable = true;
+      dragHandle.title = "ドラッグして並び替え";
+
+      // 既存のイベントリスナーを削除
+      dragHandle.removeEventListener("dragstart", handleDragStart);
+      dragHandle.removeEventListener("dragend", handleDragEnd);
+
+      // 新しいイベントリスナーを追加
+      dragHandle.addEventListener("dragstart", handleDragStart);
+      dragHandle.addEventListener("dragend", handleDragEnd);
+
+      // ドラッグハンドルのクリックイベントを無効化（ドラッグ専用）
+      dragHandle.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    }
+
+    // フィールド全体にドロップイベントを設定
+    field.removeEventListener("dragover", handleDragOver);
+    field.removeEventListener("dragleave", handleDragLeave);
+    field.removeEventListener("drop", handleDrop);
+
+    field.addEventListener("dragover", handleDragOver);
+    field.addEventListener("dragleave", handleDragLeave);
+    field.addEventListener("drop", handleDrop);
+  }
+
+  // 統一されたドラッグ&ドロップイベントハンドラー
+  let draggedItem = null;
+
+  function handleDragStart(e) {
+    const field = e.target.closest(".prompt-field");
+    if (!field) return;
+    draggedItem = field;
+
+    const dragStartIndex = [...wrap.children].indexOf(field);
+    e.dataTransfer.setData("text/plain", dragStartIndex.toString());
+    e.dataTransfer.effectAllowed = "move";
+
+    // Use a timeout to ensure the browser has time to create the drag ghost
+    setTimeout(() => {
+        field.classList.add("dragging");
+    }, 0);
+    console.log("[DND] ドラッグ開始インデックス:", dragStartIndex);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault(); // Necessary to allow dropping.
+    const dropTarget = e.currentTarget;
+    if (dropTarget === draggedItem) return;
+    console.log("[DND] dragover on field " + dropTarget.querySelector('.prompt-num').textContent);
+
+    const rect = dropTarget.getBoundingClientRect();
+    const isAbove = e.clientY < rect.top + rect.height / 2;
+
+    // Toggling classes is more efficient than removing from all and adding to one
+    if (isAbove) {
+        dropTarget.classList.add('drop-above');
+        dropTarget.classList.remove('drop-below');
+    } else {
+        dropTarget.classList.add('drop-below');
+        dropTarget.classList.remove('drop-above');
+    }
+  }
+
+  function handleDragLeave(e) {
+    console.log("[DND] dragleave from field " + e.currentTarget.querySelector('.prompt-num').textContent);
+    e.currentTarget.classList.remove('drop-above', 'drop-below');
+  }
+
+  async function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const dropTarget = e.currentTarget;
+    if (!dropTarget || dropTarget === draggedItem) return;
+    console.log("[DND] ドロップ処理開始");
+
+    const fromIndex = parseInt(e.dataTransfer.getData("text/plain"));
+    let toIndex = [...wrap.children].indexOf(dropTarget);
+
+    if (fromIndex === toIndex) return;
+
+    try {
+      // 1. Get current data from DOM
+      const currentFieldsData = [...wrap.children].map((w) => ({
+        text: w.querySelector(".prompt-field-textarea").value,
+        on: w.querySelector(".field-toggle").checked,
+      }));
+
+      // 2. Reorder the data array
+      const [movedItem] = currentFieldsData.splice(fromIndex, 1);
+      const rect = dropTarget.getBoundingClientRect();
+      const isAbove = e.clientY < rect.top + rect.height / 2;
+      if (!isAbove) {
+        toIndex++;
+      }
+      currentFieldsData.splice(toIndex, 0, movedItem);
+
+      // 3. Re-render all fields from the new data order
+      wrap.innerHTML = "";
+      currentFieldsData.forEach((fieldData) => {
+        addField(fieldData.text, fieldData.on);
+      });
+      console.log("[DND] ドロップ処理完了、フィールドを再生成しました");
+
+      // 4. Update and save the main prompts object
+      const titleValue = $(".title-input").value.trim() || "(無題)";
+      const obj = prompts[currentPromptIndex];
+      obj.title = titleValue;
+      obj.fields = currentFieldsData;
+      await save(PROMPT_KEY, prompts);
+      console.log("[DND] ストレージに保存完了");
+
+      showDragDropSuccessMessage(fromIndex + 1, toIndex + 1);
+    } catch (error) {
+      console.error("[DND] ドロップ処理中にエラー:", error);
+    }
+  }
+
+  function handleDragEnd(e) {
+    console.log("[DND] ドラッグ終了");
+    // Clean up all classes and styles
+    wrap.querySelectorAll(".prompt-field").forEach((f) => {
+      f.classList.remove("dragging", "drop-above", "drop-below");
+    });
+    draggedItem = null;
+  }
+
   /*━━━━━━━━━━ 5. 保存 / 戻る ━━━━━━━━━━*/
   $(".save-btn").onclick = async () => {
     obj.title = $(".title-input").value.trim() || "(無題)";
@@ -1838,122 +1992,9 @@ function renderEdit(idx, isNew = false) {
     const row = ce("div", "prompt-field");
     row.draggable = false; // ハンドルのみドラッグ可能に変更
 
-    /* --- 改善されたDnD handlers --- */
-    let dragStartIndex = null;
-
-
-    row.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-
-      // 他の要素のドロップインジケーターをクリア
-      wrap.querySelectorAll(".drop-indicator").forEach((el) => {
-        el.classList.remove(
-          "drop-indicator",
-          "drop-above",
-          "drop-below",
-          "active"
-        );
-      });
-
-      // マウスの位置に基づいてドロップ位置を判定
-      const rect = row.getBoundingClientRect();
-      const mouseY = e.clientY;
-      const rowCenter = rect.top + rect.height / 2;
-
-      // ドロップ位置のインジケーターを表示
-      row.classList.add("drop-indicator", "active");
-
-      if (mouseY < rowCenter) {
-        // マウスが要素の上半分にある場合、要素の上に挿入
-        row.classList.add("drop-above");
-        console.log("[DND] ドロップ位置: 上に挿入");
-      } else {
-        // マウスが要素の下半分にある場合、要素の下に挿入
-        row.classList.add("drop-below");
-        console.log("[DND] ドロップ位置: 下に挿入");
-      }
-    });
-
-    row.addEventListener("dragleave", (e) => {
-      // 子要素にドラッグが入った場合はドロップインジケーターを維持
-      if (!row.contains(e.relatedTarget)) {
-        row.classList.remove(
-          "drop-indicator",
-          "drop-above",
-          "drop-below",
-          "active"
-        );
-      }
-    });
-
-    row.addEventListener("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const fromIndex = parseInt(e.dataTransfer.getData("text/plain"));
-      const toIndex = [...wrap.children].indexOf(row);
-
-      console.log("[DND] ドロップ処理:", { fromIndex, toIndex });
-
-      if (fromIndex === toIndex || fromIndex === -1 || toIndex === -1) {
-        console.log("[DND] 無効なドロップ - 処理をスキップ");
-        row.classList.remove(
-          "drop-indicator",
-          "drop-above",
-          "drop-below",
-          "active"
-        );
-        return;
-      }
-
-      try {
-        // DOM操作
-        const nodes = [...wrap.children];
-        const movedNode = nodes[fromIndex];
-
-        if (movedNode) {
-          // ドロップ位置を判定
-          const rect = row.getBoundingClientRect();
-          const mouseY = e.clientY;
-          const rowCenter = rect.top + rect.height / 2;
-          const dropAbove = mouseY < rowCenter;
-
-          let actualToIndex = toIndex;
-
-          if (dropAbove) {
-            // 要素の上に挿入
-            wrap.insertBefore(movedNode, nodes[toIndex]);
-            console.log("[DND] 要素の上に挿入:", fromIndex, "→", toIndex);
-          } else {
-            // 要素の下に挿入
-            if (toIndex + 1 < nodes.length) {
-              wrap.insertBefore(movedNode, nodes[toIndex + 1]);
-            } else {
-              wrap.appendChild(movedNode);
-            }
-            actualToIndex = toIndex + 1;
-            console.log("[DND] 要素の下に挿入:", fromIndex, "→", actualToIndex);
-          }
-
-          console.log("[DND] ドロップ処理完了");
-          renumber(); // 番号を再採番
-
-          // ドラッグ＆ドロップ成功メッセージを表示
-          showDragDropSuccessMessage(fromIndex + 1, actualToIndex + 1);
-        }
-      } catch (error) {
-        console.error("[DND] ドロップ処理中にエラー:", error);
-      }
-
-      row.classList.remove(
-        "drop-indicator",
-        "drop-above",
-        "drop-below",
-        "active"
-      );
-    });
-
+    /* --- 新規フィールド用のドラッグ&ドロップ設定 --- */
+    // 新規フィールドにも統一されたドラッグ&ドロップ機能を適用
+    setupDragAndDropForField(row);
 
     /* --- 行 HTML --- */
     row.innerHTML = `
@@ -1986,30 +2027,8 @@ function renderEdit(idx, isNew = false) {
         </div>
       </div>`;
 
-    const dragHandle = row.querySelector(".prompt-drag-handle");
-    if (dragHandle) {
-      dragHandle.addEventListener("dragstart", (e) => {
-        console.log("[DND] ドラッグ開始");
-        dragStartIndex = [...wrap.children].indexOf(row);
-        e.dataTransfer.setData("text/plain", dragStartIndex.toString());
-        e.dataTransfer.effectAllowed = "move";
-        row.classList.add("dragging");
-        console.log("[DND] ドラッグ開始インデックス:", dragStartIndex);
-      });
-      dragHandle.addEventListener("dragend", (e) => {
-        console.log("[DND] ドラッグ終了");
-        row.classList.remove("dragging");
-        dragStartIndex = null;
-        wrap.querySelectorAll(".drop-indicator").forEach((el) => {
-          el.classList.remove(
-            "drop-indicator",
-            "drop-above",
-            "drop-below",
-            "active"
-          );
-        });
-      });
-    }
+    // ドラッグハンドルのイベントリスナーは統一された関数で設定されるため、
+    // ここでは個別に設定しない（setupDragAndDropForFieldで処理される）
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
 
@@ -2126,9 +2145,7 @@ function renderEdit(idx, isNew = false) {
       }
 
       // ドラッグ＆ドロップの初期化を確実に行う
-      if (row.draggable) {
-        console.log("[DND] 新しいフィールドのドラッグ＆ドロップを初期化:", row);
-      }
+      console.log("[DND] 新しいフィールドのドラッグ＆ドロップを初期化:", row);
     }, 50);
   }
 
