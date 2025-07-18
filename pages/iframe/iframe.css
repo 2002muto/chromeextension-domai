@@ -10,13 +10,7 @@ body {
   background-color: #242424; /* 背景色を#242424に統一 */
   margin: 0;
   padding: 0;
-  font-family:
-    "Segoe UI",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: "Segoe UI", "Noto Sans JP", "Roboto", "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
   color: #a9a9a9; /* 修正1: 全体の文字色を #A9A9A9 に変更 */
   overflow-x: hidden;

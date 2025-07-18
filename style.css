@@ -16,6 +16,7 @@ header {
 body {
   background-color: #314559;
   margin: 0; /* 余白リセット */
+  font-family: "Segoe UI", "Noto Sans JP", "Roboto", "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh; /* コンテンツ長に合わせて伸びる */
 }
 
