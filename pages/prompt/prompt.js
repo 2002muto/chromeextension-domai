@@ -1723,19 +1723,26 @@ function renderEdit(idx, isNew = false) {
     const rect = dropTarget.getBoundingClientRect();
     const isAbove = e.clientY < rect.top + rect.height / 2;
 
-    // Toggling classes is more efficient than removing from all and adding to one
+    // 既存のインジケーターをクリア
+    wrap.querySelectorAll('.prompt-field.drop-indicator').forEach((el) => {
+      el.classList.remove('drop-indicator', 'drop-above', 'drop-below', 'active');
+    });
+
+    // ドロップ候補にインジケータークラスを追加
+    dropTarget.classList.add('drop-indicator', 'active');
+
     if (isAbove) {
-        dropTarget.classList.add('drop-above');
-        dropTarget.classList.remove('drop-below');
+      dropTarget.classList.add('drop-above');
+      dropTarget.classList.remove('drop-below');
     } else {
-        dropTarget.classList.add('drop-below');
-        dropTarget.classList.remove('drop-above');
+      dropTarget.classList.add('drop-below');
+      dropTarget.classList.remove('drop-above');
     }
   }
 
   function handleDragLeave(e) {
     console.log("[DND] dragleave from field " + e.currentTarget.querySelector('.prompt-num').textContent);
-    e.currentTarget.classList.remove('drop-above', 'drop-below');
+    e.currentTarget.classList.remove('drop-indicator', 'drop-above', 'drop-below', 'active');
   }
 
   async function handleDrop(e) {
@@ -1783,6 +1790,10 @@ function renderEdit(idx, isNew = false) {
       console.log("[DND] ストレージに保存完了");
 
       showDragDropSuccessMessage(fromIndex + 1, toIndex + 1);
+      // ドロップ後にインジケーターをリセット
+      wrap.querySelectorAll('.prompt-field').forEach((f) =>
+        f.classList.remove('drop-indicator', 'drop-above', 'drop-below', 'active')
+      );
     } catch (error) {
       console.error("[DND] ドロップ処理中にエラー:", error);
     }
@@ -1792,7 +1803,13 @@ function renderEdit(idx, isNew = false) {
     console.log("[DND] ドラッグ終了");
     // Clean up all classes and styles
     wrap.querySelectorAll(".prompt-field").forEach((f) => {
-      f.classList.remove("dragging", "drop-above", "drop-below");
+      f.classList.remove(
+        "dragging",
+        "drop-indicator",
+        "drop-above",
+        "drop-below",
+        "active"
+      );
     });
     draggedItem = null;
   }
