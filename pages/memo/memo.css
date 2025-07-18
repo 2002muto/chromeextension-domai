@@ -45,7 +45,7 @@ body {
   transition: opacity 0.5s, transform 0.5s;
   /* Firefox用スクロールバー */
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
   margin: 32px 16px 16px 16px;
   padding: 0;
   height: calc(100vh - 168px) !important;
@@ -103,21 +103,21 @@ body {
 }
 /* ─── スクロールバーのスタイル ─── */
 .memo-content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--sb-width);
 }
 
 .memo-content::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
+  background: var(--sb-track);
   border-radius: 4px;
 }
 
 .memo-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sb-thumb);
   border-radius: 4px;
 }
 
 .memo-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sb-thumb-hover);
 }
 
 /* ─── フッター：画面下部に完全固定 ─── */
@@ -297,7 +297,7 @@ body {
   overflow-x: hidden;
   /* スクロールバーのスタイル */
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
   /* SPA環境での追加設定 */
   min-height: 0; /* flexアイテムが縮まるようにする */
   max-height: 100%; /* 親要素の高さを超えないようにする */
@@ -305,21 +305,21 @@ body {
 
 /* memo-list専用スクロールバー */
 .memo-list::-webkit-scrollbar {
-  width: 8px;
+  width: var(--sb-width);
 }
 
 .memo-list::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
+  background: var(--sb-track);
   border-radius: 4px;
 }
 
 .memo-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sb-thumb);
   border-radius: 4px;
 }
 
 .memo-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sb-thumb-hover);
 }
 .memo-item {
   cursor: move;

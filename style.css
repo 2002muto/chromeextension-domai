@@ -1,5 +1,44 @@
 /* File: style.css */
 
+/* windows-fix START */
+* {
+  box-sizing: border-box;
+}
+/* windows-fix END */
+
+/* windows-fix START */
+:root {
+  --sb-width: 6px;
+  --sb-thumb: #9e9e9e;
+  --sb-thumb-hover: #7b7b7b;
+  --sb-track: #f0f0f0;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+*::-webkit-scrollbar {
+  width: var(--sb-width);
+  height: var(--sb-width);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
+}
+/* windows-fix END */
+
 /* ① ヘッダー全体の上下 padding を少し増やす */
 header {
   display: flex;
@@ -16,6 +55,7 @@ header {
 body {
   background-color: #314559;
   margin: 0; /* 余白リセット */
+  font-family: "Segoe UI", "Noto Sans JP", "Roboto", "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh; /* コンテンツ長に合わせて伸びる */
 }
 
@@ -51,6 +91,12 @@ body::-webkit-scrollbar,
   flex: none; /* フレックス解除 */
   overflow: visible; /* ❌ボタンが表示されるように変更 */
   transform-origin: center center; /* 中心を基点に */
+  /* windows-fix START */
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  /* windows-fix END */
 }
 
 .nav-btn i {
@@ -989,3 +1035,24 @@ header.updating .nav-btn {
   color: #ff0000;
   font-weight: bold;
 }
+
+/* hidpi-fix START */
+@media (min-resolution: 1.25dppx) {
+  .nav-btn {
+    padding-inline: 0.6rem;
+  }
+
+  .open-side-panel-btn {
+    right: 24px;
+  }
+
+  .btn-open-side-panel {
+    padding: 14px 20px;
+  }
+
+  .memo-divider {
+    border: none;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  }
+}
+/* hidpi-fix END */

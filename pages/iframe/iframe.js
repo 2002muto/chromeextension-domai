@@ -1604,7 +1604,7 @@ function showDeleteHistoryDialog() {
     align-items: center !important;
     justify-content: center !important;
     pointer-events: auto !important;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-family: 'Segoe UI', 'Noto Sans JP', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100vw !important;
@@ -2421,6 +2421,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 初期化完了後は元のupdateStatus関数に戻す
   updateStatus = originalUpdateStatus;
+
+  // リサイズ時のデバッグ情報
+  window.addEventListener("resize", () => {
+    const headerEl = document.querySelector("header");
+    const contentEl = document.querySelector(".iframe-content");
+    const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+    const marginTop = contentEl
+      ? window.getComputedStyle(contentEl).marginTop
+      : "0px";
+    console.log(
+      `[iframe] resize - headerHeight: ${headerHeight}px, iframe-content margin-top: ${marginTop}`
+    );
+  });
 });
 
 // ページ読み込み完了後にも実行（フォールバック）
