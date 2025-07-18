@@ -5,6 +5,7 @@
  * ▸ 重複していた sendToFocused / click ハンドラを完全に統合
  * ▸ COPY／一括入力ボタンに 120 ms デバウンスを追加
  * ▸ コメントで変更点を明示
+ * ▸ 2025-01-XX: headerクリック時のアイコンアニメーション修正
  ****************************************************************************************/
 
 /* ━━━━━━━━━ 0. 共通ユーティリティ ━━━━━━━━━ */
@@ -107,6 +108,160 @@ async function handleScreenTransition(
       `[SCREEN TRANSITION] ${saveContext} - トグルオンのためドラフトを保持します`
     );
   }
+}
+
+/* ━━━━━━━━━ PROMPT headerクリック処理 ━━━━━━━━━ */
+function handlePromptHeaderClick(e) {
+  e.preventDefault(); // デフォルトのリンク動作を防ぐ
+  e.stopPropagation(); // イベントの伝播を停止
+  console.log("PROMPTヘッダーアイコンがクリックされました");
+
+  // デバッグ情報を追加
+  const promptContent = document.querySelector(".memo-content");
+  const isEditMode =
+    promptContent && promptContent.classList.contains("edit-mode");
+  const isRunMode =
+    promptContent && promptContent.classList.contains("run-mode");
+  console.log("PROMPTデバッグ情報:", {
+    promptContent: !!promptContent,
+    isEditMode: isEditMode,
+    isRunMode: isRunMode,
+    currentPromptIndex: currentPromptIndex,
+    prompts: prompts ? prompts.length : 0,
+  });
+
+  // 編集画面で未保存の変更がある場合は保存確認ダイアログを表示
+  if (isEditMode) {
+    const isNew = currentPromptIndex >= prompts.length;
+    const originalPrompt = prompts[currentPromptIndex];
+    const hasUnsavedChanges = checkForUnsavedChanges(originalPrompt, isNew);
+
+    console.log("PROMPT保存確認チェック:", {
+      isNew: isNew,
+      originalPrompt: originalPrompt,
+      hasUnsavedChanges: hasUnsavedChanges,
+      AppUtils: !!window.AppUtils,
+      showSaveConfirmDialog: !!(
+        window.AppUtils && window.AppUtils.showSaveConfirmDialog
+      ),
+    });
+
+    if (hasUnsavedChanges) {
+      console.log("未保存の変更があります。保存確認ダイアログを表示します。");
+      // AppUtilsの保存確認ダイアログを使用
+      if (window.AppUtils && window.AppUtils.showSaveConfirmDialog) {
+        window.AppUtils.showSaveConfirmDialog({
+          title: "変更を保存しますか？",
+          message:
+            "プロンプト内容に変更があります。<br>保存せずに戻ると変更が失われます。",
+          onSave: async () => {
+            // 保存して戻る
+            console.log("[PROMPT] 変更を保存して一覧画面に遷移");
+            await saveAndGoBack();
+          },
+          onDiscard: () => {
+            // 破棄して戻る
+            console.log("[PROMPT] 変更を破棄して一覧画面に遷移");
+            discardAndGoBack();
+          },
+        });
+      } else {
+        // AppUtilsが利用できない場合は何もせず中断
+        return;
+      }
+      return;
+    }
+  }
+
+  // 実行画面の場合も一覧に戻る
+  if (isRunMode) {
+    console.log("実行画面から一覧画面に遷移します");
+  }
+
+  console.log("現在のページ状態:", {
+    archiveType: archiveType,
+    currentMode: document
+      .querySelector(".memo-content")
+      .classList.contains("archive")
+      ? "archive"
+      : "main",
+  });
+
+  // ヘッダーのform-headerを削除（編集・実行画面で追加されたもの）
+  document.querySelector(".form-header")?.remove();
+
+  // 一覧画面に遷移
+  renderList();
+}
+
+// 保存して戻る処理
+async function saveAndGoBack() {
+  const body = $(".memo-content");
+  const wrap = $("#field-wrap");
+
+  if (wrap) {
+    const obj = prompts[currentPromptIndex] || {
+      id: Date.now(),
+      title: "",
+      star: false,
+      fields: [],
+      archived: false,
+    };
+
+    obj.title = $(".title-input")?.value?.trim() || "(無題)";
+    obj.fields = [...wrap.children].map((w) => ({
+      text: w.querySelector(".prompt-field-textarea").value,
+      on: w.querySelector(".field-toggle").checked,
+    }));
+
+    // 新規作成の場合はpromptsに追加
+    if (currentPromptIndex >= prompts.length) {
+      prompts.push(obj);
+      console.log("[PROMPT] 新規プロンプトを保存して追加:", obj);
+    } else {
+      prompts[currentPromptIndex] = obj;
+      console.log("[PROMPT] 既存プロンプトを保存して更新:", obj);
+    }
+
+    await save(PROMPT_KEY, prompts);
+    console.log("[PROMPT] 変更を保存して一覧画面に遷移しました");
+  }
+
+  // ヘッダーのform-headerを削除
+  document.querySelector(".form-header")?.remove();
+
+  // 一覧画面に遷移
+  renderList();
+}
+
+// 保存せずに戻る処理
+async function discardAndGoBack() {
+  const isNew = currentPromptIndex >= prompts.length;
+
+  if (isNew && currentPromptIndex < prompts.length) {
+    // 既にpromptsに追加されている新規作成の場合のみ削除
+    const titleEmpty = $(".title-input")?.value?.trim() === "";
+    const wrap = $("#field-wrap");
+    const allEmpty = wrap
+      ? [...wrap.querySelectorAll(".prompt-field-textarea")].every(
+          (t) => t.value.trim() === ""
+        )
+      : true;
+
+    if (titleEmpty && allEmpty) {
+      prompts.splice(currentPromptIndex, 1);
+      await save(PROMPT_KEY, prompts);
+      console.log("[PROMPT] 空カードを削除");
+    }
+  }
+
+  console.log("[PROMPT] 変更を破棄して一覧画面に遷移しました");
+
+  // ヘッダーのform-headerを削除
+  document.querySelector(".form-header")?.remove();
+
+  // 一覧画面に遷移
+  renderList();
 }
 
 /* ━━━━━━━━━ 1. グローバル状態 ━━━━━━━━━ */
@@ -867,6 +1022,17 @@ async function renderList() {
 
   currentPromptIndex = -1; // 一覧画面に戻ったのでリセット
   console.log("[renderList] end");
+
+  // PROMPT headerアイコンのイベントリスナーを設定
+  const promptBtn = document.getElementById("btn-prompt");
+  if (promptBtn) {
+    // 既存のイベントリスナーを削除してから追加
+    promptBtn.removeEventListener("click", handlePromptHeaderClick);
+    promptBtn.addEventListener("click", handlePromptHeaderClick);
+    console.log("[PROMPT] headerアイコンのイベントリスナーを設定しました");
+  } else {
+    console.warn("[PROMPT] headerアイコンが見つかりません");
+  }
 
   // リストの最後にデバッグ情報を追加
   setTimeout(() => {
@@ -2038,6 +2204,19 @@ function renderEdit(idx, isNew = false) {
     head.remove();
     renderList();
     console.log("[DUP] 複製完了 →", clone.title);
+  }
+
+  // PROMPT headerアイコンのイベントリスナーを設定
+  const promptBtn = document.getElementById("btn-prompt");
+  if (promptBtn) {
+    // 既存のイベントリスナーを削除してから追加
+    promptBtn.removeEventListener("click", handlePromptHeaderClick);
+    promptBtn.addEventListener("click", handlePromptHeaderClick);
+    console.log(
+      "[PROMPT] 編集画面でheaderアイコンのイベントリスナーを設定しました"
+    );
+  } else {
+    console.warn("[PROMPT] 編集画面でheaderアイコンが見つかりません");
   }
 }
 
