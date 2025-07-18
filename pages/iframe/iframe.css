@@ -151,6 +151,7 @@ header {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
+  margin-bottom: 18px;
 }
 
 .input-group-text {
@@ -496,6 +497,7 @@ header {
   padding: 20px;
   text-align: center;
   color: #a9a9a9; /* 修正1 */
+  margin-bottom: 18px;
 }
 
 .info-card i {
