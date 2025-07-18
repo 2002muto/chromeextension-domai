@@ -564,6 +564,16 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      // 展開アニメーションを即座に開始して操作感を向上
+      button.classList.add("expanded");
+      if (button.hasAttribute("data-click-tooltip")) {
+        button.classList.add("clicked");
+      }
+      setTimeout(() => {
+        button.classList.remove("expanded");
+        button.classList.remove("clicked");
+      }, 2000);
+
       // 現在のページへのリンクの場合はページ遷移を防ぐ
       if (button.classList.contains("active")) {
         e.preventDefault();
@@ -1099,19 +1109,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      // 展開状態のクラスを追加
-      button.classList.add("expanded");
-
-      // data-click-tooltip属性がある場合（AI専用メッセージ）
-      if (button.hasAttribute("data-click-tooltip")) {
-        button.classList.add("clicked");
-      }
-
-      // 2秒後にクラスを削除
-      setTimeout(() => {
-        button.classList.remove("expanded");
-        button.classList.remove("clicked");
-      }, 2000);
     });
   }
 });
