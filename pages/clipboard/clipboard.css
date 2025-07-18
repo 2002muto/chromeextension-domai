@@ -54,7 +54,7 @@
 }
 
 .clip-item {
-  cursor: move;
+  cursor: grab;
   display: grid;
   grid-template-columns: auto 1fr auto; /* 挿入ボタン, textarea, アクションボタン群 */
   align-items: center; /* 垂直方向中央揃え（テキストエリアが長くなってもボタンは中央） */
@@ -71,6 +71,10 @@
   /* 挿入ボタンサイズとアクセント幅を変数化 */
   --insert-size: 36px; /* 挿入ボタンの基準サイズ */
   --accent-width: 48px; /* ボタン+ギャップの幅 */
+}
+
+.clip-item:active {
+  cursor: grabbing;
 }
 
 /* 挿入ボタン部分のみを彩るアクセントカラー */
@@ -224,13 +228,17 @@
   padding: 8px;
   border-radius: 4px;
   color: #999999;
-  cursor: move;
+  cursor: grab;
   transition: all 0.2s ease;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.clipboard-drag-handle:active {
+  cursor: grabbing;
 }
 
 .clipboard-drag-handle i {
@@ -1035,6 +1043,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   position: relative;
+}
+.clip-item.dragging .clipboard-drag-handle {
+  cursor: grabbing !important;
 }
 
 .clip-item.drag-over {
