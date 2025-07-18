@@ -556,9 +556,6 @@ document.addEventListener("DOMContentLoaded", function () {
       // PROMPT編集中の場合は未保存チェック
       if (confirmPromptNavigation(e, button)) return;
 
-      // すでにアクティブなページなら何もしない
-      if (button.classList.contains("active")) return;
-
       // ドラッグ中の場合はクリックイベントを無効化
       if (window.isDraggingNavigation) {
         console.log("[Navigation] ドラッグ中のためクリックイベントを無効化");
