@@ -67,6 +67,21 @@
   position: relative;
 }
 
+/* 左側の緑色エリア */
+.clip-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60px; /* 左側の緑色エリアの幅 */
+  background: #00e344; /* 緑色の背景 */
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  pointer-events: none; /* クリックイベントを妨げない */
+  z-index: 0;
+}
+
 /* ホバー効果（MEMOページと統一） */
 .clip-item:hover {
   filter: brightness(1.05);
@@ -79,14 +94,14 @@
   /* flexレイアウトで自動調整される */
 }
 
-/* 左側の戻るボタン（緑色の丸いボタン） */
+/* 左側の白い丸いボタン */
 .clipboard-insert {
-  background: #00e344; /* 緑色の背景 */
-  border: none;
+  background: #ffffff; /* 白色の背景 */
+  border: 2px solid #ffffff; /* 白色のボーダー */
   box-sizing: border-box;
   padding: 8px;
   border-radius: 50%; /* 丸いボタン */
-  color: #ffffff;
+  color: #00e344; /* アイコンは緑色 */
   cursor: pointer;
   transition: all 0.2s ease;
   width: 36px;
@@ -95,18 +110,21 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0; /* サイズ固定 */
+  position: relative;
+  z-index: 1;
 }
 
 .clipboard-insert i {
   font-size: 1.3rem;
-  color: #ffffff; /* アイコンは常に白色 */
+  color: #00e344; /* アイコンは緑色 */
 }
 
 /* ホバー時の効果 */
 .clipboard-insert:hover {
-  background: #00b0cf; /* ホバー時は少し暗い緑 */
+  background: #f8f9fa; /* ホバー時は少し暗い白 */
+  border-color: #e9ecef;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 227, 68, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 中央のテキストエリア */
