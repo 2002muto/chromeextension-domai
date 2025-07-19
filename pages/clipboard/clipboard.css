@@ -54,7 +54,7 @@
 }
 
 .clip-item {
-  cursor: move;
+  cursor: grab;
   display: grid;
   grid-template-columns: auto 1fr auto; /* 挿入ボタン, textarea, アクションボタン群 */
   align-items: center; /* 垂直方向中央揃え（テキストエリアが長くなってもボタンは中央） */
@@ -224,7 +224,7 @@
   padding: 8px;
   border-radius: 4px;
   color: #999999;
-  cursor: move;
+  cursor: grab;
   transition: all 0.2s ease;
   width: 36px;
   height: 36px;
@@ -240,6 +240,11 @@
 .clipboard-drag-handle:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
+  cursor: grab;
+}
+
+.clipboard-drag-handle:active {
+  cursor: grabbing;
 }
 
 /* アーカイブボタン */
@@ -549,7 +554,9 @@
   max-width: 350px;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .clipboard-empty-state-content.show {
@@ -1207,7 +1214,10 @@
   margin-left: 0;
   opacity: 0;
   white-space: nowrap;
-  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease,
+    margin-left 0.3s ease;
 }
 .memo-footer .archive-toggle:hover .nav-text,
 .memo-footer .encrypt-btn:hover .nav-text {
@@ -1218,7 +1228,10 @@
   font-weight: bold;
   text-transform: uppercase;
   vertical-align: middle;
-  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease,
+    margin-left 0.3s ease;
 }
 .memo-footer .archive-toggle i,
 .memo-footer .encrypt-btn i {
