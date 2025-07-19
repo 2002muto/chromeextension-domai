@@ -55,6 +55,8 @@ async function handleScreenTransition(
   saveContext,
   shouldSaveHistory = false
 ) {
+  // グローバルに公開
+  window.handleScreenTransition = handleScreenTransition;
   console.log(
     `[SCREEN TRANSITION] ${saveContext} - 処理開始 (履歴保存: ${
       shouldSaveHistory ? "オン" : "オフ"
@@ -137,7 +139,7 @@ async function handleScreenTransition(
 }
 
 /* ━━━━━━━━━ PROMPT headerクリック処理 ━━━━━━━━━ */
-function handlePromptHeaderClick(e) {
+async function handlePromptHeaderClick(e) {
   e.preventDefault(); // デフォルトのリンク動作を防ぐ
   e.stopPropagation(); // イベントの伝播を停止
   console.log("PROMPTヘッダーアイコンがクリックされました");
@@ -204,6 +206,26 @@ function handlePromptHeaderClick(e) {
   // 実行画面の場合も一覧に戻る
   if (isRunMode) {
     console.log("実行画面から一覧画面に遷移します");
+
+    // 実行画面からの遷移時：トグルオフなら削除、オンなら保持
+    const histToggleChecked = $("#hist-sw")?.checked;
+    console.log(
+      `[ヘッダーアイコン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+    );
+
+    const extras = [...document.querySelectorAll(".extra")].map((t) => t.value);
+    console.log(`[ヘッダーアイコン] 追加入力内容:`, extras);
+
+    // 現在のプロンプトオブジェクトを取得
+    const currentObj = prompts[currentPromptIndex];
+    if (currentObj) {
+      await handleScreenTransition(
+        currentObj,
+        extras,
+        "ヘッダーアイコンクリック時",
+        histToggleChecked
+      );
+    }
   }
 
   console.log("現在のページ状態:", {
@@ -224,6 +246,8 @@ function handlePromptHeaderClick(e) {
 
 // 保存して戻る処理
 async function saveAndGoBack() {
+  // グローバルに公開
+  window.saveAndGoBack = saveAndGoBack;
   const body = $(".memo-content");
   const wrap = $("#field-wrap");
 
@@ -270,6 +294,8 @@ async function saveAndGoBack() {
 
 // 保存せずに戻る処理
 async function discardAndGoBack() {
+  // グローバルに公開
+  window.discardAndGoBack = discardAndGoBack;
   const isNew = currentPromptIndex >= prompts.length;
 
   if (isNew && currentPromptIndex < prompts.length) {
@@ -2299,6 +2325,7 @@ function showDragDropSuccessMessage(fromPosition, toPosition) {
 ══════════════════════════════════════════════════════ */
 function renderRun(idx) {
   console.log("[renderRun] idx =", idx);
+  console.log("[DEBUG] renderRun関数開始");
   currentPromptIndex = idx; // 現在のプロンプトインデックスを設定
 
   // 実行画面初期化時のhist-swの状態を確認
@@ -2334,7 +2361,22 @@ function renderRun(idx) {
        <i class="bi bi-pencil-fill me-1"></i> 編集
      </button>`
   );
-  header.querySelector("button").onclick = () => {
+  header.querySelector("button").onclick = async () => {
+    // 画面遷移時：トグルオフなら削除、オンなら保持
+    const histToggleChecked = $("#hist-sw")?.checked;
+    console.log(
+      `[編集ボタン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+    );
+
+    const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+    console.log(`[編集ボタン] 追加入力内容:`, extras);
+    await handleScreenTransition(
+      obj,
+      extras,
+      "編集ボタンクリック時",
+      histToggleChecked
+    );
+
     header.remove();
     renderEdit(idx);
   };
@@ -2394,12 +2436,28 @@ function renderRun(idx) {
       </div>`;
 
     // プロンプト追加ボタンのクリックイベント
-    body.querySelector(".btn-add-first-prompt").onclick = () => {
+    body.querySelector(".btn-add-first-prompt").onclick = async () => {
+      // 画面遷移時：トグルオフなら削除、オンなら保持
+      const histToggleChecked = $("#hist-sw")?.checked;
+      console.log(
+        `[プロンプト追加ボタン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+      );
+
+      const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+      console.log(`[プロンプト追加ボタン] 追加入力内容:`, extras);
+      await handleScreenTransition(
+        obj,
+        extras,
+        "プロンプト追加ボタンクリック時",
+        histToggleChecked
+      );
+
       header.remove();
       renderEdit(idx);
     };
   } else {
     // 通常のプロンプト実行画面
+    console.log("[DEBUG] プロンプト実行画面のHTMLを生成します");
     body.innerHTML = `
     <div class="prompt-run-box">
         ${enabledFields
@@ -2414,6 +2472,7 @@ function renderRun(idx) {
         <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
       </div>
     </div>`;
+    console.log("[DEBUG] プロンプト実行画面のHTML生成完了");
   }
 
   // MEMOページと同じアニメーション処理を追加
@@ -2514,6 +2573,9 @@ function renderRun(idx) {
   });
 
   /* ── ドラッグ&ドロップイベントハンドラー ── */
+  const promptBlocks = body.querySelectorAll(".prompt-block");
+  console.log("[DEBUG] promptBlocks要素数:", promptBlocks.length);
+
   promptBlocks.forEach((block) => {
     block.addEventListener("dragstart", handleRunDragStart);
     block.addEventListener("dragover", handleRunDragOver);
@@ -2570,15 +2632,64 @@ function renderRun(idx) {
 
   // hist-swの状態変更を監視して保存
   const histSwitch = $("#hist-sw");
+  console.log("[DEBUG] hist-sw要素の検索結果:", {
+    histSwitchExists: !!histSwitch,
+    histSwitchElement: histSwitch,
+    currentChecked: histSwitch?.checked,
+  });
+
   if (histSwitch) {
+    console.log("[DEBUG] hist-swのイベントリスナーを設定します");
     histSwitch.addEventListener("change", () => {
+      console.log("[DEBUG] hist-swのchangeイベントが発火しました");
       const histSwKey = `hist_sw_${obj.id}`;
       const newState = histSwitch.checked;
+      const previousState = !newState; // 切り替え前の状態
+
+      console.log("[履歴保存切り替え] 状態が変更されました:", {
+        previousState: previousState ? "オン" : "オフ",
+        newState: newState ? "オン" : "オフ",
+        promptId: obj.id,
+        promptTitle: obj.title,
+        histSwKey: histSwKey,
+      });
+
       chrome.storage.local.set({ [histSwKey]: newState });
       console.log("[HIST-SW DEBUG] hist-swの状態を保存しました:", {
         newState,
         histSwKey,
       });
+
+      // 履歴保存をオフにした場合はドラフトをクリア
+      if (!newState) {
+        console.log(
+          "[履歴保存切り替え] 履歴保存をオフにしたため、ドラフトをクリアします"
+        );
+        textareas.forEach((ta) => {
+          const originalIndex = parseInt(ta.dataset.originalIndex, 10);
+          if (isNaN(originalIndex)) return;
+
+          const currentValue = ta.value;
+          ta.value = "";
+          chrome.storage.local.remove(draftKey(obj.id, originalIndex));
+          autoResize(ta);
+
+          console.log(
+            `[履歴保存切り替え] 追加入力${originalIndex + 1}をクリアしました:`,
+            {
+              previousValue: currentValue,
+              cleared: true,
+            }
+          );
+        });
+        console.log(
+          "[HIST-SW] 履歴保存をオフにしたため、ドラフトをクリアしました"
+        );
+      } else {
+        console.log(
+          "[履歴保存切り替え] 履歴保存をオンにしました。今後の入力が保存されます。"
+        );
+      }
     });
   }
 
@@ -2813,6 +2924,7 @@ function renderRun(idx) {
 
   /* ── ブロック生成 ── */
   function block(no, f, index) {
+    console.log("[DEBUG] renderRun関数の処理完了");
     return `<div class="prompt-block" draggable="true" data-index="${index}">
       <div class="prompt-header">
         <strong class="prompt-label">プロンプト${no}</strong>

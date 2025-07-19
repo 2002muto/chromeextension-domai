@@ -548,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (header) {
     // ヘッダー全体でクリックを監視し、ボタンを判定する
-    header.addEventListener("click", function (e) {
+    header.addEventListener("click", async function (e) {
       const button = e.target.closest(".nav-btn");
       if (!button) return;
 
@@ -692,6 +692,38 @@ document.addEventListener("DOMContentLoaded", function () {
         ) {
           // PROMPTページでPROMPTボタンがクリックされた場合
           console.log("PROMPTヘッダーアイコンがクリックされました");
+
+          // 実行画面からの遷移時：トグルオフなら削除、オンなら保持
+          const isRunMode = document.querySelector(".memo-content.run-mode");
+          if (isRunMode) {
+            console.log("実行画面から一覧画面に遷移します");
+
+            const histToggleChecked =
+              document.querySelector("#hist-sw")?.checked;
+            console.log(
+              `[ヘッダーアイコン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+            );
+
+            const extras = [...document.querySelectorAll(".extra")].map(
+              (t) => t.value
+            );
+            console.log(`[ヘッダーアイコン] 追加入力内容:`, extras);
+
+            // 現在のプロンプトオブジェクトを取得
+            const currentObj =
+              window.prompts && window.getCurrentPromptIndex
+                ? window.prompts[window.getCurrentPromptIndex()]
+                : null;
+
+            if (currentObj && window.handleScreenTransition) {
+              await window.handleScreenTransition(
+                currentObj,
+                extras,
+                "ヘッダーアイコンクリック時",
+                histToggleChecked
+              );
+            }
+          }
 
           // 編集画面での未保存変更をチェック
           const isEditMode = document.querySelector(".memo-content.edit-mode");
