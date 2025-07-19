@@ -1337,14 +1337,30 @@ function showExportSuccessMessage(fileName) {
   console.log("[CLIPBOARD] showExportSuccessMessage呼び出し:", {
     fileName: fileName,
     AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
   });
+
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[CLIPBOARD] エクスポート成功トーストを表示");
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+  } else {
+    console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
   console.log("[CLIPBOARD] showExportErrorMessage呼び出し:", {
     AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
   });
+
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[CLIPBOARD] エクスポートエラートーストを表示");
+    window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  } else {
+    console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートボタンとアーカイブボタンの状態を更新

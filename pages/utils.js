@@ -2335,11 +2335,43 @@ function showToast(message, type = "info") {
     existingToast.remove();
   }
 
-  // アイコンと色をtypeで切り替え
+  // 現在のページを判定してアイコンカラーを決定
+  let pageColor = "#3b82f6"; // デフォルト: 青色
+
+  // 現在のページのURLからページを判定
+  const currentPath = window.location.pathname;
+  if (currentPath.includes("/memo/")) {
+    pageColor = "#078ab9"; // MEMO: 青色
+  } else if (currentPath.includes("/clipboard/")) {
+    pageColor = "#04e949"; // CLIPBOARD: 緑色
+  } else if (currentPath.includes("/prompt/")) {
+    pageColor = "#667eea"; // PROMPT: 紫青色
+  } else if (currentPath.includes("/iframe/")) {
+    pageColor = "#c3c3c3"; // IFRAME: グレー
+  } else if (currentPath.includes("/status/")) {
+    pageColor = "#10b981"; // STATUS: 緑色
+  } else if (currentPath.includes("/setting/")) {
+    pageColor = "#fff04b"; // SETTING: 黄色
+  }
+
+  // アイコンと色をtypeで切り替え（ページカラーを優先）
   let icon = "";
-  let borderColor = "#3b82f6"; // info: 青
-  let bgColor = "rgba(59, 130, 246, 0.1)";
-  let iconColor = "#3b82f6";
+  let borderColor = pageColor; // ページカラーを使用
+  let bgColor = "";
+  let iconColor = pageColor;
+
+  // ページカラーをRGBに変換する関数
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null;
+  };
+
   if (type === "success") {
     icon = '<i class="bi bi-check-circle"></i>';
     borderColor = "#10b981";
@@ -2352,9 +2384,16 @@ function showToast(message, type = "info") {
     iconColor = "#ef4444";
   } else if (type === "info") {
     icon = '<i class="bi bi-info-circle"></i>';
-    borderColor = "#3b82f6";
-    bgColor = "rgba(59, 130, 246, 0.1)";
-    iconColor = "#3b82f6";
+    // ページカラーを使用
+    borderColor = pageColor;
+    iconColor = pageColor;
+    // ページカラーをRGBに変換して背景色を作成
+    const rgb = hexToRgb(pageColor);
+    if (rgb) {
+      bgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+    } else {
+      bgColor = "rgba(59, 130, 246, 0.1)"; // フォールバック
+    }
   } else if (type === "warn" || type === "warning") {
     icon = '<i class="bi bi-exclamation-circle"></i>';
     borderColor = "#f59e0b";
@@ -2367,6 +2406,10 @@ function showToast(message, type = "info") {
     borderColor,
     bgColor,
     iconColor,
+    pageColor,
+    currentPath,
+    type,
+    rgb: hexToRgb(pageColor),
   });
 
   // トーストHTML（インラインスタイル付き）
