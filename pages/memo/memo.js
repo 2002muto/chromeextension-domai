@@ -451,7 +451,43 @@ async function renderListView() {
   // エクスポート機能の追加
   const exportBtn = document.querySelector(".encrypt-btn");
   if (exportBtn) {
-    exportBtn.addEventListener("click", exportAllMemos);
+    // 既存のイベントリスナーを削除
+    exportBtn.removeEventListener("click", exportAllMemos);
+
+    // 新しいイベントリスナーを追加（即座にトースト表示）
+    exportBtn.addEventListener("click", async (e) => {
+      console.log("[MEMO] バックアップボタンがクリックされました");
+
+      // デバッグ情報を出力
+      console.log("[MEMO] AppUtils デバッグ情報:", {
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+        showToastType: typeof window.AppUtils?.showToast,
+        AppUtilsKeys: window.AppUtils ? Object.keys(window.AppUtils) : [],
+      });
+
+      // 即座にトーストメッセージを表示
+      if (window.AppUtils && window.AppUtils.showToast) {
+        console.log("[MEMO] showToast関数を呼び出します");
+        window.AppUtils.showToast("バックアップを開始しています...", "info");
+      } else {
+        console.error("[MEMO] AppUtils.showToastが利用できません");
+        // フォールバック: 直接showToast関数を呼び出し
+        if (typeof showToast === "function") {
+          console.log("[MEMO] 直接showToast関数を呼び出します");
+          showToast("バックアップを開始しています...", "info");
+        } else {
+          console.error("[MEMO] showToast関数も見つかりません");
+          // 最後の手段: alert
+          alert("バックアップを開始しています...");
+        }
+      }
+
+      // 少し遅延させてから実際のエクスポート処理を実行
+      setTimeout(async () => {
+        await exportAllMemos();
+      }, 100);
+    });
   }
 
   // ボタンの状態を更新

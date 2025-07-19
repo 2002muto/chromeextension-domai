@@ -698,7 +698,7 @@ function showSaveConfirmDialog(options = {}) {
     span.style.fontWeight = "600";
     span.style.letterSpacing = "0.01em";
   });
-};
+}
 
 /* ━━━━━━━━━━ 汎用削除確認ダイアログ ━━━━━━━━━━ */
 window.AppUtils.showDeleteConfirmDialog = function (options = {}) {
@@ -1966,8 +1966,8 @@ async function animateArchiveItem(element, onComplete) {
         animationType === "left"
           ? "左"
           : animationType === "right"
-          ? "右"
-          : "下"
+            ? "右"
+            : "下"
       }にアニメーション`
     );
 
@@ -2245,7 +2245,7 @@ async function animateArchiveItem(element, onComplete) {
       }
     }, 1000); // 800ms → 1000ms に延長
   });
-};
+}
 
 /* ━━━━━━━━━━ トースト通知機能 ━━━━━━━━━━ */
 function showArchiveToast() {
@@ -2276,7 +2276,6 @@ function showArchiveToast() {
     }, 300);
   }, 3000);
 }
-
 
 /* ━━━━━━━━━━ 復元アニメーション機能 ━━━━━━━━━━ */
 
@@ -2316,10 +2315,18 @@ async function animateRestoreItem(item, callback) {
 
 // グローバル関数としても利用できるように登録しておく
 window.showSaveConfirmDialog = showSaveConfirmDialog;
+window.showToast = showToast; // グローバルに公開
 
 // 共通トースト通知機能
 function showToast(message, type = "info") {
   console.log("[UTILS] showToast呼び出し:", { message, type });
+
+  // メッセージの長さを制限（1行に収まるように）
+  const maxLength = 30; // 最大文字数
+  const displayMessage =
+    message.length > maxLength
+      ? message.substring(0, maxLength) + "..."
+      : message;
 
   // 既存のトーストがあれば削除
   const existingToast = document.querySelector(".common-toast-message");
@@ -2362,62 +2369,42 @@ function showToast(message, type = "info") {
     iconColor,
   });
 
-  // トーストHTML
+  // トーストHTML（インラインスタイル付き）
   const toast = document.createElement("div");
   toast.className = "common-toast-message";
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${bgColor};
+    border-left: 4px solid ${borderColor};
+    color: #ffffff;
+    padding: 14px 22px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    max-width: 340px;
+    min-width: 180px;
+    word-break: break-all;
+    font-family: 'Segoe UI', 'Noto Sans JP', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+  `;
+
   toast.innerHTML = `
-    <span class="toast-icon" style="color: ${iconColor}">${icon}</span>
-    <span class="toast-text">${message}</span>
+    <span class="toast-icon" style="color: ${iconColor}; font-size: 1.3rem; flex-shrink: 0;">${icon}</span>
+    <span class="toast-text" style="flex: 1; color: ${iconColor}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayMessage}</span>
   `;
 
   console.log("[UTILS] トースト要素作成:", toast);
-
-  // スタイルを動的に追加（初回のみ）
-  if (!document.querySelector("#common-toast-styles")) {
-    console.log("[UTILS] トーストスタイルを追加");
-    const styles = document.createElement("style");
-    styles.id = "common-toast-styles";
-    styles.textContent = `
-      .common-toast-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${bgColor};
-        border-left: 4px solid ${borderColor};
-        color: #ffffff;
-        padding: 14px 22px;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 1rem;
-        font-weight: 500;
-        z-index: 10000;
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
-        max-width: 340px;
-        min-width: 180px;
-        word-break: break-all;
-      }
-      .common-toast-message.show {
-        opacity: 1;
-        transform: translateX(0);
-      }
-      .common-toast-message .toast-icon {
-        font-size: 1.3rem;
-        flex-shrink: 0;
-      }
-      .common-toast-message .toast-text {
-        flex: 1;
-        color: #fff;
-        word-break: break-word;
-      }
-    `;
-    document.head.appendChild(styles);
-    console.log("[UTILS] トーストスタイル追加完了");
-  }
 
   // bodyに追加
   document.body.appendChild(toast);
@@ -2425,17 +2412,21 @@ function showToast(message, type = "info") {
 
   // アニメーションで表示
   setTimeout(() => {
-    toast.classList.add("show");
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
     console.log("[UTILS] トースト表示アニメーション開始");
   }, 50);
 
   // 2秒後にフェードアウト
   setTimeout(() => {
-    toast.classList.remove("show");
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(100%)";
     console.log("[UTILS] トースト非表示アニメーション開始");
     setTimeout(() => {
-      toast.remove();
-      console.log("[UTILS] トースト要素を削除");
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+        console.log("[UTILS] トースト要素を削除");
+      }
     }, 300);
   }, 2000);
 }
@@ -2451,7 +2442,10 @@ Object.assign(window.AppUtils, {
   animateArchiveItem,
   animateRestoreItem,
 });
-console.log("[UTILS] showSaveConfirmDialog registered:", typeof window.AppUtils.showSaveConfirmDialog);
+console.log(
+  "[UTILS] showSaveConfirmDialog registered:",
+  typeof window.AppUtils.showSaveConfirmDialog
+);
 
 // ダミー実装: showConfirmDialog
 function showConfirmDialog(options = {}) {

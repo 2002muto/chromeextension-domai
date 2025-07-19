@@ -204,8 +204,88 @@ async function renderClipboardView() {
 
   // エクスポート機能の追加
   const exportBtn = document.querySelector(".encrypt-btn");
+  console.log("[CLIPBOARD] バックアップボタン検索結果:", {
+    found: !!exportBtn,
+    element: exportBtn,
+    allEncryptBtns: document.querySelectorAll(".encrypt-btn").length,
+  });
+
   if (exportBtn) {
-    exportBtn.addEventListener("click", exportAllClips);
+    // 既存のイベントリスナーを削除
+    exportBtn.removeEventListener("click", exportAllClips);
+
+    // 新しいイベントリスナーを追加（即座にトースト表示）
+    exportBtn.addEventListener("click", async (e) => {
+      console.log("[CLIPBOARD] バックアップボタンがクリックされました");
+
+      // デバッグ情報を出力
+      console.log("[CLIPBOARD] AppUtils デバッグ情報:", {
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+        showToastType: typeof window.AppUtils?.showToast,
+        AppUtilsKeys: window.AppUtils ? Object.keys(window.AppUtils) : [],
+      });
+
+      // 即座にトーストメッセージを表示
+      if (window.AppUtils && window.AppUtils.showToast) {
+        console.log("[CLIPBOARD] showToast関数を呼び出します");
+        window.AppUtils.showToast("バックアップを開始しています...", "info");
+      } else {
+        console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+        // フォールバック: 直接showToast関数を呼び出し
+        if (typeof showToast === "function") {
+          console.log("[CLIPBOARD] 直接showToast関数を呼び出します");
+          showToast("バックアップを開始しています...", "info");
+        } else {
+          console.error("[CLIPBOARD] showToast関数も見つかりません");
+          // 最後の手段: alert
+          alert("バックアップを開始しています...");
+        }
+      }
+
+      // 少し遅延させてから実際のエクスポート処理を実行
+      setTimeout(async () => {
+        await exportAllClips();
+      }, 100);
+    });
+  } else {
+    console.error(
+      "[CLIPBOARD] バックアップボタン（.encrypt-btn）が見つかりません"
+    );
+    // 代替手段: footer内のボタンを探す
+    const footer = document.querySelector("footer");
+    if (footer) {
+      const footerBtns = footer.querySelectorAll("button");
+      console.log("[CLIPBOARD] footer内のボタン:", footerBtns);
+    }
+
+    // 遅延して再度試行
+    setTimeout(() => {
+      const retryExportBtn = document.querySelector(".encrypt-btn");
+      if (retryExportBtn) {
+        console.log("[CLIPBOARD] 遅延実行でバックアップボタンを発見");
+        retryExportBtn.addEventListener("click", async (e) => {
+          console.log(
+            "[CLIPBOARD] バックアップボタンがクリックされました（遅延実行）"
+          );
+
+          if (window.AppUtils && window.AppUtils.showToast) {
+            window.AppUtils.showToast(
+              "バックアップを開始しています...",
+              "info"
+            );
+          } else if (typeof showToast === "function") {
+            showToast("バックアップを開始しています...", "info");
+          } else {
+            alert("バックアップを開始しています...");
+          }
+
+          setTimeout(async () => {
+            await exportAllClips();
+          }, 100);
+        });
+      }
+    }, 100);
   }
 
   // ボタンの状態を更新
@@ -1492,7 +1572,45 @@ function renderMainFooter() {
   // エクスポートボタンのイベントリスナー
   const exportBtn = footer.querySelector(".encrypt-btn");
   if (exportBtn) {
-    exportBtn.addEventListener("click", exportAllClips);
+    // 既存のイベントリスナーを削除
+    exportBtn.removeEventListener("click", exportAllClips);
+
+    // 新しいイベントリスナーを追加（即座にトースト表示）
+    exportBtn.addEventListener("click", async (e) => {
+      console.log(
+        "[CLIPBOARD] バックアップボタンがクリックされました（renderMainFooter）"
+      );
+
+      // デバッグ情報を出力
+      console.log("[CLIPBOARD] AppUtils デバッグ情報:", {
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+        showToastType: typeof window.AppUtils?.showToast,
+        AppUtilsKeys: window.AppUtils ? Object.keys(window.AppUtils) : [],
+      });
+
+      // 即座にトーストメッセージを表示
+      if (window.AppUtils && window.AppUtils.showToast) {
+        console.log("[CLIPBOARD] showToast関数を呼び出します");
+        window.AppUtils.showToast("バックアップを開始しています...", "info");
+      } else {
+        console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+        // フォールバック: 直接showToast関数を呼び出し
+        if (typeof showToast === "function") {
+          console.log("[CLIPBOARD] 直接showToast関数を呼び出します");
+          showToast("バックアップを開始しています...", "info");
+        } else {
+          console.error("[CLIPBOARD] showToast関数も見つかりません");
+          // 最後の手段: alert
+          alert("バックアップを開始しています...");
+        }
+      }
+
+      // 少し遅延させてから実際のエクスポート処理を実行
+      setTimeout(async () => {
+        await exportAllClips();
+      }, 100);
+    });
     console.log(
       "メイン画面: エクスポートボタンにイベントリスナーを設定しました"
     );
