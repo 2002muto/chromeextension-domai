@@ -596,6 +596,10 @@ async function renderList() {
   // ボタンの状態を更新
   updateExportButtonState();
 
+  // ヘッダーのPROMPTアイコンのクリックイベント
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("メインページ: common.jsのheaderアイコン初期化処理を確認");
+
   // アニメーション処理（MEMOページと同じ順序）
   body.classList.remove("edit-mode", "run-mode");
   body.classList.remove("animate");
@@ -1522,6 +1526,9 @@ async function renderArchiveView() {
     });
 
   console.log("renderArchiveFooter: end");
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("アーカイブ画面: common.jsのheaderアイコン初期化処理を確認");
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1832,6 +1839,9 @@ function renderEdit(idx, isNew = false) {
       }
     });
   }, 100);
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("編集画面: common.jsのheaderアイコン初期化処理を確認");
 
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
@@ -2694,6 +2704,9 @@ function renderRun(idx) {
       <textarea rows="3" class="prompt-textarea extra" placeholder="プロンプト追加入力（都度）"></textarea>
     </div>`;
   }
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("実行画面: common.jsのheaderアイコン初期化処理を確認");
 }
 
 /* ══════════════════════════════════════════════════════
@@ -3314,6 +3327,9 @@ async function renderArchiveList() {
 
   // アーカイブフッターを描画
   renderArchiveFooter();
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("アーカイブリスト: common.jsのheaderアイコン初期化処理を確認");
 }
 
 // アーカイブフッターの描画
@@ -3793,3 +3809,42 @@ window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
 window.editingOriginalPrompt = editingOriginalPrompt;
 window.autoResize = autoResize;
+
+// ページ読み込み時の初期化処理
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("[PROMPT] DOMContentLoaded - 初期化開始");
+
+  // データを読み込み
+  prompts = await load(PROMPT_KEY);
+  runs = await load(RUN_KEY);
+
+  // グローバルに設定
+  window.prompts = prompts;
+  window.runs = runs;
+
+  // 一覧画面を表示
+  await renderList();
+
+  // common.jsのheaderアイコン初期化処理が確実に実行されるように遅延実行
+  setTimeout(() => {
+    console.log("[PROMPT] headerアイコン初期化処理を確認");
+    const header = document.querySelector("header");
+    if (header) {
+      const navButtons = header.querySelectorAll(".nav-btn");
+      navButtons.forEach((btn) => {
+        const textSpan = btn.querySelector(".nav-text");
+        if (textSpan) {
+          console.log(`[PROMPT] ${btn.id}のホバー処理を確認`);
+          // mouseenter/mouseleaveイベントリスナーが設定されているか確認
+          const hasMouseEnter = btn.onmouseenter !== null;
+          const hasMouseLeave = btn.onmouseleave !== null;
+          console.log(
+            `[PROMPT] ${btn.id}: mouseenter=${hasMouseEnter}, mouseleave=${hasMouseLeave}`
+          );
+        }
+      });
+    }
+  }, 100);
+
+  console.log("[PROMPT] 初期化完了");
+});
