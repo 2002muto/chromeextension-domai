@@ -149,7 +149,7 @@
   border-radius: 4px;
   font-size: 0.9rem;
   transition: height 0.2s ease;
-  margin: 12px 12px 12px 0; /* 右側と下側の余白を追加 */
+  margin: 12px -2px 12px 0; /* 右側と下側の余白を追加 */
 }
 
 /* スクロールが必要な場合のスタイル */
