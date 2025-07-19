@@ -48,27 +48,69 @@ window.autoResize = autoResize;
 /* ━━━━━━━━━ ヘルパー関数 ━━━━━━━━━ */
 const getCurrentPromptIndex = () => currentPromptIndex;
 
-// 画面遷移時の処理：履歴保存のみ、ドラフトは保持
+// 画面遷移時の処理：履歴保存とドラフト管理を修正
 async function handleScreenTransition(
   obj,
   extras,
   saveContext,
   shouldSaveHistory = false
 ) {
+  // グローバルに公開
+  window.handleScreenTransition = handleScreenTransition;
   console.log(
     `[SCREEN TRANSITION] ${saveContext} - 処理開始 (履歴保存: ${
       shouldSaveHistory ? "オン" : "オフ"
     })`
   );
 
+  // 表示されているフィールド（'on'のもの）の元のインデックスを取得
+  const visibleFieldIndices = [];
+  obj.fields.forEach((field, index) => {
+    if (field.on) {
+      visibleFieldIndices.push(index);
+    }
+  });
+
+  // --- ドラフト処理 ---
+  if (shouldSaveHistory) {
+    // トグルがオンの場合、現在の追加入力をドラフトとして保存
+    console.log(
+      "[SCREEN TRANSITION] トグルオンのため、現在の追加入力をドラフトとして保存します。"
+    );
+    extras.forEach((extraValue, extraIndex) => {
+      const originalFieldIndex = visibleFieldIndices[extraIndex];
+      if (originalFieldIndex !== undefined) {
+        const draftId = draftKey(obj.id, originalFieldIndex);
+        // 空の値も保存することで、入力がクリアされたことを反映
+        chrome.storage.local.set({ [draftId]: extraValue });
+      }
+    });
+  } else {
+    // トグルがオフの場合、関連するドラフトをすべて削除
+    console.log(
+      `[SCREEN TRANSITION] ${saveContext} - トグルオフのためドラフトを削除しました`
+    );
+    obj.fields.forEach((_, i) => {
+      chrome.storage.local.remove(draftKey(obj.id, i));
+    });
+  }
+
+  // --- 履歴保存処理 ---
   const hasExtraContent = extras.some((extra) => extra.trim() !== "");
   console.log(`[SCREEN TRANSITION] 追加入力内容の有無: ${hasExtraContent}`);
 
-  // 履歴保存（トグルボタンがオンで内容がある場合のみ）
   if (shouldSaveHistory && hasExtraContent) {
-    // 有効なフィールドのみでペイロード作成
+    // extras 配列と 'on' のフィールドを正しくマッピングしてペイロードを作成
+    let extraIndex = 0;
     const payload = obj.fields
-      .map((f, i) => (f.on ? `${f.text}\n${extras[i]}`.trim() : ""))
+      .map((f) => {
+        if (f.on) {
+          const content = `${f.text}\n${extras[extraIndex] || ""}`.trim();
+          extraIndex++;
+          return content;
+        }
+        return "";
+      })
       .filter(Boolean)
       .join("\n\n");
 
@@ -94,24 +136,10 @@ async function handleScreenTransition(
       `[SCREEN TRANSITION] ${saveContext} - 履歴保存はオフのためスキップ`
     );
   }
-
-  // ドラフト処理：トグルボタンがオフの時のみ削除
-  if (!shouldSaveHistory) {
-    obj.fields.forEach((_, i) =>
-      chrome.storage.local.remove(draftKey(obj.id, i))
-    );
-    console.log(
-      `[SCREEN TRANSITION] ${saveContext} - トグルオフのためドラフトを削除しました`
-    );
-  } else {
-    console.log(
-      `[SCREEN TRANSITION] ${saveContext} - トグルオンのためドラフトを保持します`
-    );
-  }
 }
 
 /* ━━━━━━━━━ PROMPT headerクリック処理 ━━━━━━━━━ */
-function handlePromptHeaderClick(e) {
+async function handlePromptHeaderClick(e) {
   e.preventDefault(); // デフォルトのリンク動作を防ぐ
   e.stopPropagation(); // イベントの伝播を停止
   console.log("PROMPTヘッダーアイコンがクリックされました");
@@ -158,6 +186,8 @@ function handlePromptHeaderClick(e) {
             // 保存して戻る
             console.log("[PROMPT] 変更を保存して一覧画面に遷移");
             await saveAndGoBack();
+            // ★ 修正：保存後に一覧画面へ遷移する
+            await renderList();
           },
           onDiscard: () => {
             // 破棄して戻る
@@ -176,6 +206,26 @@ function handlePromptHeaderClick(e) {
   // 実行画面の場合も一覧に戻る
   if (isRunMode) {
     console.log("実行画面から一覧画面に遷移します");
+
+    // 実行画面からの遷移時：トグルオフなら削除、オンなら保持
+    const histToggleChecked = $("#hist-sw")?.checked;
+    console.log(
+      `[ヘッダーアイコン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+    );
+
+    const extras = [...document.querySelectorAll(".extra")].map((t) => t.value);
+    console.log(`[ヘッダーアイコン] 追加入力内容:`, extras);
+
+    // 現在のプロンプトオブジェクトを取得
+    const currentObj = prompts[currentPromptIndex];
+    if (currentObj) {
+      await handleScreenTransition(
+        currentObj,
+        extras,
+        "ヘッダーアイコンクリック時",
+        histToggleChecked
+      );
+    }
   }
 
   console.log("現在のページ状態:", {
@@ -196,6 +246,8 @@ function handlePromptHeaderClick(e) {
 
 // 保存して戻る処理
 async function saveAndGoBack() {
+  // グローバルに公開
+  window.saveAndGoBack = saveAndGoBack;
   const body = $(".memo-content");
   const wrap = $("#field-wrap");
 
@@ -224,18 +276,26 @@ async function saveAndGoBack() {
     }
 
     await save(PROMPT_KEY, prompts);
-    console.log("[PROMPT] 変更を保存して一覧画面に遷移しました");
+    console.log("[PROMPT] 変更を保存しました");
   }
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
+  console.log("[PROMPT] window.promptsを更新:", window.prompts);
 
   // ヘッダーのform-headerを削除
   document.querySelector(".form-header")?.remove();
 
-  // 一覧画面に遷移
-  renderList();
+  // ★ 修正：一覧画面への遷移は呼び出し元で行うため、ここでは削除
+  // console.log("[PROMPT] 一覧画面に遷移開始");
+  // await renderList();
+  // console.log("[PROMPT] 一覧画面に遷移完了");
 }
 
 // 保存せずに戻る処理
 async function discardAndGoBack() {
+  // グローバルに公開
+  window.discardAndGoBack = discardAndGoBack;
   const isNew = currentPromptIndex >= prompts.length;
 
   if (isNew && currentPromptIndex < prompts.length) {
@@ -255,13 +315,19 @@ async function discardAndGoBack() {
     }
   }
 
-  console.log("[PROMPT] 変更を破棄して一覧画面に遷移しました");
+  console.log("[PROMPT] 変更を破棄しました");
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
+  console.log("[PROMPT] window.promptsを更新:", window.prompts);
 
   // ヘッダーのform-headerを削除
   document.querySelector(".form-header")?.remove();
 
   // 一覧画面に遷移
-  renderList();
+  console.log("[PROMPT] 一覧画面に遷移開始");
+  await renderList();
+  console.log("[PROMPT] 一覧画面に遷移完了");
 }
 
 /* ━━━━━━━━━ 1. グローバル状態 ━━━━━━━━━ */
@@ -595,6 +661,9 @@ async function renderList() {
 
   // ボタンの状態を更新
   updateExportButtonState();
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("メインページ: common.jsのheaderアイコン初期化処理を確認");
 
   // アニメーション処理（MEMOページと同じ順序）
   body.classList.remove("edit-mode", "run-mode");
@@ -1522,6 +1591,9 @@ async function renderArchiveView() {
     });
 
   console.log("renderArchiveFooter: end");
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("アーカイブ画面: common.jsのheaderアイコン初期化処理を確認");
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1832,6 +1904,9 @@ function renderEdit(idx, isNew = false) {
       }
     });
   }, 100);
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("編集画面: common.jsのheaderアイコン初期化処理を確認");
 
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
@@ -2250,7 +2325,17 @@ function showDragDropSuccessMessage(fromPosition, toPosition) {
 ══════════════════════════════════════════════════════ */
 function renderRun(idx) {
   console.log("[renderRun] idx =", idx);
+  console.log("[DEBUG] renderRun関数開始");
   currentPromptIndex = idx; // 現在のプロンプトインデックスを設定
+
+  // 実行画面初期化時のhist-swの状態を確認
+  setTimeout(() => {
+    const histSwitch = $("#hist-sw");
+    console.log("[HIST-SW DEBUG] 実行画面初期化時のhist-sw状態:", {
+      histSwitchExists: !!histSwitch,
+      histSwState: histSwitch?.checked,
+    });
+  }, 100);
 
   // ページ状態を保存
   if (window.PageStateManager) {
@@ -2276,7 +2361,22 @@ function renderRun(idx) {
        <i class="bi bi-pencil-fill me-1"></i> 編集
      </button>`
   );
-  header.querySelector("button").onclick = () => {
+  header.querySelector("button").onclick = async () => {
+    // 画面遷移時：トグルオフなら削除、オンなら保持
+    const histToggleChecked = $("#hist-sw")?.checked;
+    console.log(
+      `[編集ボタン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+    );
+
+    const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+    console.log(`[編集ボタン] 追加入力内容:`, extras);
+    await handleScreenTransition(
+      obj,
+      extras,
+      "編集ボタンクリック時",
+      histToggleChecked
+    );
+
     header.remove();
     renderEdit(idx);
   };
@@ -2336,12 +2436,28 @@ function renderRun(idx) {
       </div>`;
 
     // プロンプト追加ボタンのクリックイベント
-    body.querySelector(".btn-add-first-prompt").onclick = () => {
+    body.querySelector(".btn-add-first-prompt").onclick = async () => {
+      // 画面遷移時：トグルオフなら削除、オンなら保持
+      const histToggleChecked = $("#hist-sw")?.checked;
+      console.log(
+        `[プロンプト追加ボタン] トグルボタンの状態: ${histToggleChecked ? "オン" : "オフ"}`
+      );
+
+      const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+      console.log(`[プロンプト追加ボタン] 追加入力内容:`, extras);
+      await handleScreenTransition(
+        obj,
+        extras,
+        "プロンプト追加ボタンクリック時",
+        histToggleChecked
+      );
+
       header.remove();
       renderEdit(idx);
     };
   } else {
     // 通常のプロンプト実行画面
+    console.log("[DEBUG] プロンプト実行画面のHTMLを生成します");
     body.innerHTML = `
     <div class="prompt-run-box">
         ${enabledFields
@@ -2356,6 +2472,7 @@ function renderRun(idx) {
         <label for="hist-sw" class="form-check-label text-success">履歴を保存</label>
       </div>
     </div>`;
+    console.log("[DEBUG] プロンプト実行画面のHTML生成完了");
   }
 
   // MEMOページと同じアニメーション処理を追加
@@ -2456,6 +2573,9 @@ function renderRun(idx) {
   });
 
   /* ── ドラッグ&ドロップイベントハンドラー ── */
+  const promptBlocks = body.querySelectorAll(".prompt-block");
+  console.log("[DEBUG] promptBlocks要素数:", promptBlocks.length);
+
   promptBlocks.forEach((block) => {
     block.addEventListener("dragstart", handleRunDragStart);
     block.addEventListener("dragover", handleRunDragOver);
@@ -2468,13 +2588,20 @@ function renderRun(idx) {
   const textareas = body.querySelectorAll("textarea.extra");
   const draftPromises = [];
 
-  textareas.forEach((ta, i) => {
+  textareas.forEach((ta) => {
+    const originalIndex = parseInt(ta.dataset.originalIndex, 10);
+    if (isNaN(originalIndex)) return;
+
     // ドラフト復元のPromiseを作成
     const draftPromise = new Promise((resolve) => {
-      chrome.storage.local.get(draftKey(obj.id, i), (res) => {
-        const draftContent = res[draftKey(obj.id, i)] || "";
+      chrome.storage.local.get(draftKey(obj.id, originalIndex), (res) => {
+        const draftContent = res[draftKey(obj.id, originalIndex)] || "";
         if (draftContent) {
           ta.value = draftContent;
+          console.log(
+            `[復元] 追加入力${originalIndex + 1}を復元しました:`,
+            draftContent
+          );
           // 復元後に自動リサイズ実行
           autoResize(ta);
         }
@@ -2484,7 +2611,17 @@ function renderRun(idx) {
     draftPromises.push(draftPromise);
 
     ta.addEventListener("input", () => {
-      chrome.storage.local.set({ [draftKey(obj.id, i)]: ta.value });
+      // 履歴保存がオンの場合のみドラフト保存
+      const histToggleChecked = $("#hist-sw")?.checked;
+      if (histToggleChecked) {
+        chrome.storage.local.set({
+          [draftKey(obj.id, originalIndex)]: ta.value,
+        });
+        console.log(
+          `[保存] 追加入力${originalIndex + 1}をドラフト保存しました:`,
+          ta.value
+        );
+      }
       // 入力時に自動リサイズ実行
       autoResize(ta);
     });
@@ -2493,15 +2630,119 @@ function renderRun(idx) {
     autoResize(ta);
   });
 
+  // hist-swの状態変更を監視して保存
+  const histSwitch = $("#hist-sw");
+  console.log("[DEBUG] hist-sw要素の検索結果:", {
+    histSwitchExists: !!histSwitch,
+    histSwitchElement: histSwitch,
+    currentChecked: histSwitch?.checked,
+  });
+
+  if (histSwitch) {
+    console.log("[DEBUG] hist-swのイベントリスナーを設定します");
+    histSwitch.addEventListener("change", () => {
+      console.log("[DEBUG] hist-swのchangeイベントが発火しました");
+      const histSwKey = `hist_sw_${obj.id}`;
+      const newState = histSwitch.checked;
+      const previousState = !newState; // 切り替え前の状態
+
+      console.log("[履歴保存切り替え] 状態が変更されました:", {
+        previousState: previousState ? "オン" : "オフ",
+        newState: newState ? "オン" : "オフ",
+        promptId: obj.id,
+        promptTitle: obj.title,
+        histSwKey: histSwKey,
+      });
+
+      chrome.storage.local.set({ [histSwKey]: newState });
+      console.log("[HIST-SW DEBUG] hist-swの状態を保存しました:", {
+        newState,
+        histSwKey,
+      });
+
+      // 履歴保存をオフにした場合はドラフトをクリア
+      if (!newState) {
+        console.log(
+          "[履歴保存切り替え] 履歴保存をオフにしたため、ドラフトをクリアします"
+        );
+        textareas.forEach((ta) => {
+          const originalIndex = parseInt(ta.dataset.originalIndex, 10);
+          if (isNaN(originalIndex)) return;
+
+          const currentValue = ta.value;
+          ta.value = "";
+          chrome.storage.local.remove(draftKey(obj.id, originalIndex));
+          autoResize(ta);
+
+          console.log(
+            `[履歴保存切り替え] 追加入力${originalIndex + 1}をクリアしました:`,
+            {
+              previousValue: currentValue,
+              cleared: true,
+            }
+          );
+        });
+        console.log(
+          "[HIST-SW] 履歴保存をオフにしたため、ドラフトをクリアしました"
+        );
+      } else {
+        console.log(
+          "[履歴保存切り替え] 履歴保存をオンにしました。今後の入力が保存されます。"
+        );
+      }
+    });
+  }
+
   // 全てのドラフト読み込み完了後にトグルボタンの状態を設定
   Promise.all(draftPromises).then((hasContentArray) => {
     const hasAnyDraftContent = hasContentArray.some((hasContent) => hasContent);
     const histSwitch = $("#hist-sw");
 
-    if (hasAnyDraftContent && histSwitch) {
-      histSwitch.checked = true;
-      console.log("[AUTO] ドラフト内容があるため履歴保存をオンにしました");
-    }
+    console.log("[HIST-SW DEBUG] ドラフト復元処理開始:", {
+      hasAnyDraftContent,
+      histSwitchExists: !!histSwitch,
+      currentHistSwState: histSwitch?.checked,
+    });
+
+    // hist-swの状態を復元（保存されていれば）
+    const histSwKey = `hist_sw_${obj.id}`;
+    chrome.storage.local.get([histSwKey], (result) => {
+      const savedHistSwState = result[histSwKey];
+      console.log("[HIST-SW DEBUG] 保存されたhist-swの状態:", {
+        savedHistSwState,
+        histSwKey,
+      });
+
+      if (savedHistSwState !== undefined && histSwitch) {
+        histSwitch.checked = savedHistSwState;
+        console.log("[HIST-SW DEBUG] 保存された状態を復元しました:", {
+          restoredState: histSwitch.checked,
+        });
+      } else if (hasAnyDraftContent && histSwitch) {
+        // ドラフト内容がある場合は自動的にオンにする
+        const previousState = histSwitch.checked;
+        histSwitch.checked = true;
+        console.log("[AUTO] ドラフト内容があるため履歴保存をオンにしました", {
+          previousState,
+          newState: histSwitch.checked,
+        });
+      }
+
+      // 履歴保存の状態を確認して、ドラフトの有無をチェック
+      const histToggleChecked = histSwitch?.checked;
+      console.log("[HIST-SW DEBUG] 最終的なhist-swの状態:", {
+        histToggleChecked,
+        hasAnyDraftContent,
+      });
+
+      if (histToggleChecked) {
+        console.log("[復元] 履歴保存がオンのため、ドラフトの復元を実行します");
+      } else {
+        console.log(
+          "[復元] 履歴保存がオフのため、ドラフトの復元をスキップします"
+        );
+      }
+    });
   });
 
   /* ── 内部 send() ── */
@@ -2683,6 +2924,7 @@ function renderRun(idx) {
 
   /* ── ブロック生成 ── */
   function block(no, f, index) {
+    console.log("[DEBUG] renderRun関数の処理完了");
     return `<div class="prompt-block" draggable="true" data-index="${index}">
       <div class="prompt-header">
         <strong class="prompt-label">プロンプト${no}</strong>
@@ -2691,9 +2933,12 @@ function renderRun(idx) {
         </button>
       </div>
       <div class="prompt-content">${f.text}</div>
-      <textarea rows="3" class="prompt-textarea extra" placeholder="プロンプト追加入力（都度）"></textarea>
+      <textarea rows="3" class="prompt-textarea extra" placeholder="プロンプト追加入力（都度）" data-original-index="${index}"></textarea>
     </div>`;
   }
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("実行画面: common.jsのheaderアイコン初期化処理を確認");
 }
 
 /* ══════════════════════════════════════════════════════
@@ -3314,6 +3559,9 @@ async function renderArchiveList() {
 
   // アーカイブフッターを描画
   renderArchiveFooter();
+
+  // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
+  console.log("アーカイブリスト: common.jsのheaderアイコン初期化処理を確認");
 }
 
 // アーカイブフッターの描画
@@ -3793,3 +4041,67 @@ window.save = save;
 window.getCurrentPromptIndex = getCurrentPromptIndex;
 window.editingOriginalPrompt = editingOriginalPrompt;
 window.autoResize = autoResize;
+
+// ページ読み込み時の初期化処理
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("[PROMPT] DOMContentLoaded - 初期化開始");
+
+  // データを読み込み
+  prompts = await load(PROMPT_KEY);
+  runs = await load(RUN_KEY);
+
+  // グローバルに設定
+  window.prompts = prompts;
+  window.runs = runs;
+
+  // 一覧画面を表示
+  await renderList();
+
+  // common.jsのheaderアイコン初期化処理が確実に実行されるように遅延実行
+  setTimeout(() => {
+    console.log("[PROMPT] headerアイコン初期化処理を確認");
+    const header = document.querySelector("header");
+    if (header) {
+      const navButtons = header.querySelectorAll(".nav-btn");
+      navButtons.forEach((btn) => {
+        const textSpan = btn.querySelector(".nav-text");
+        if (textSpan) {
+          console.log(`[PROMPT] ${btn.id}のホバー処理を確認`);
+          // mouseenter/mouseleaveイベントリスナーが設定されているか確認
+          const hasMouseEnter = btn.onmouseenter !== null;
+          const hasMouseLeave = btn.onmouseleave !== null;
+          console.log(
+            `[PROMPT] ${btn.id}: mouseenter=${hasMouseEnter}, mouseleave=${hasMouseLeave}`
+          );
+
+          // イベントリスナーが設定されていない場合は手動で設定
+          if (!hasMouseEnter || !hasMouseLeave) {
+            console.log(`[PROMPT] ${btn.id}にホバー処理を手動で設定`);
+            btn.addEventListener("mouseenter", () => {
+              const state = btn.classList.contains("active")
+                ? "active"
+                : "inactive";
+              const textWidth = textSpan.scrollWidth;
+              btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+              btn.classList.add("show-text");
+              console.log("[PROMPT] hover start:", btn.id, state, {
+                btnWidth: btn.offsetWidth,
+                textWidth,
+              });
+            });
+
+            btn.addEventListener("mouseleave", () => {
+              btn.classList.remove("show-text");
+              btn.style.removeProperty("--nav-text-max");
+              console.log("[PROMPT] hover end:", btn.id, {
+                btnWidth: btn.offsetWidth,
+              });
+            });
+          }
+        }
+      });
+    }
+  }, 100);
+
+  console.log("[PROMPT] 初期化完了");
+});
