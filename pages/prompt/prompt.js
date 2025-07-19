@@ -48,7 +48,7 @@ window.autoResize = autoResize;
 /* ━━━━━━━━━ ヘルパー関数 ━━━━━━━━━ */
 const getCurrentPromptIndex = () => currentPromptIndex;
 
-// 画面遷移時の処理：履歴保存のみ、ドラフトは保持
+// 画面遷移時の処理：履歴保存とドラフト管理を修正
 async function handleScreenTransition(
   obj,
   extras,
@@ -61,14 +61,54 @@ async function handleScreenTransition(
     })`
   );
 
+  // 表示されているフィールド（'on'のもの）の元のインデックスを取得
+  const visibleFieldIndices = [];
+  obj.fields.forEach((field, index) => {
+    if (field.on) {
+      visibleFieldIndices.push(index);
+    }
+  });
+
+  // --- ドラフト処理 ---
+  if (shouldSaveHistory) {
+    // トグルがオンの場合、現在の追加入力をドラフトとして保存
+    console.log(
+      "[SCREEN TRANSITION] トグルオンのため、現在の追加入力をドラフトとして保存します。"
+    );
+    extras.forEach((extraValue, extraIndex) => {
+      const originalFieldIndex = visibleFieldIndices[extraIndex];
+      if (originalFieldIndex !== undefined) {
+        const draftId = draftKey(obj.id, originalFieldIndex);
+        // 空の値も保存することで、入力がクリアされたことを反映
+        chrome.storage.local.set({ [draftId]: extraValue });
+      }
+    });
+  } else {
+    // トグルがオフの場合、関連するドラフトをすべて削除
+    console.log(
+      `[SCREEN TRANSITION] ${saveContext} - トグルオフのためドラフトを削除しました`
+    );
+    obj.fields.forEach((_, i) => {
+      chrome.storage.local.remove(draftKey(obj.id, i));
+    });
+  }
+
+  // --- 履歴保存処理 ---
   const hasExtraContent = extras.some((extra) => extra.trim() !== "");
   console.log(`[SCREEN TRANSITION] 追加入力内容の有無: ${hasExtraContent}`);
 
-  // 履歴保存（トグルボタンがオンで内容がある場合のみ）
   if (shouldSaveHistory && hasExtraContent) {
-    // 有効なフィールドのみでペイロード作成
+    // extras 配列と 'on' のフィールドを正しくマッピングしてペイロードを作成
+    let extraIndex = 0;
     const payload = obj.fields
-      .map((f, i) => (f.on ? `${f.text}\n${extras[i]}`.trim() : ""))
+      .map((f) => {
+        if (f.on) {
+          const content = `${f.text}\n${extras[extraIndex] || ""}`.trim();
+          extraIndex++;
+          return content;
+        }
+        return "";
+      })
       .filter(Boolean)
       .join("\n\n");
 
@@ -92,20 +132,6 @@ async function handleScreenTransition(
   } else {
     console.log(
       `[SCREEN TRANSITION] ${saveContext} - 履歴保存はオフのためスキップ`
-    );
-  }
-
-  // ドラフト処理：トグルボタンがオフの時のみ削除
-  if (!shouldSaveHistory) {
-    obj.fields.forEach((_, i) =>
-      chrome.storage.local.remove(draftKey(obj.id, i))
-    );
-    console.log(
-      `[SCREEN TRANSITION] ${saveContext} - トグルオフのためドラフトを削除しました`
-    );
-  } else {
-    console.log(
-      `[SCREEN TRANSITION] ${saveContext} - トグルオンのためドラフトを保持します`
     );
   }
 }
@@ -2275,6 +2301,15 @@ function renderRun(idx) {
   console.log("[renderRun] idx =", idx);
   currentPromptIndex = idx; // 現在のプロンプトインデックスを設定
 
+  // 実行画面初期化時のhist-swの状態を確認
+  setTimeout(() => {
+    const histSwitch = $("#hist-sw");
+    console.log("[HIST-SW DEBUG] 実行画面初期化時のhist-sw状態:", {
+      histSwitchExists: !!histSwitch,
+      histSwState: histSwitch?.checked,
+    });
+  }, 100);
+
   // ページ状態を保存
   if (window.PageStateManager) {
     window.PageStateManager.savePageState("prompt", {
@@ -2491,13 +2526,20 @@ function renderRun(idx) {
   const textareas = body.querySelectorAll("textarea.extra");
   const draftPromises = [];
 
-  textareas.forEach((ta, i) => {
+  textareas.forEach((ta) => {
+    const originalIndex = parseInt(ta.dataset.originalIndex, 10);
+    if (isNaN(originalIndex)) return;
+
     // ドラフト復元のPromiseを作成
     const draftPromise = new Promise((resolve) => {
-      chrome.storage.local.get(draftKey(obj.id, i), (res) => {
-        const draftContent = res[draftKey(obj.id, i)] || "";
+      chrome.storage.local.get(draftKey(obj.id, originalIndex), (res) => {
+        const draftContent = res[draftKey(obj.id, originalIndex)] || "";
         if (draftContent) {
           ta.value = draftContent;
+          console.log(
+            `[復元] 追加入力${originalIndex + 1}を復元しました:`,
+            draftContent
+          );
           // 復元後に自動リサイズ実行
           autoResize(ta);
         }
@@ -2507,7 +2549,17 @@ function renderRun(idx) {
     draftPromises.push(draftPromise);
 
     ta.addEventListener("input", () => {
-      chrome.storage.local.set({ [draftKey(obj.id, i)]: ta.value });
+      // 履歴保存がオンの場合のみドラフト保存
+      const histToggleChecked = $("#hist-sw")?.checked;
+      if (histToggleChecked) {
+        chrome.storage.local.set({
+          [draftKey(obj.id, originalIndex)]: ta.value,
+        });
+        console.log(
+          `[保存] 追加入力${originalIndex + 1}をドラフト保存しました:`,
+          ta.value
+        );
+      }
       // 入力時に自動リサイズ実行
       autoResize(ta);
     });
@@ -2516,15 +2568,70 @@ function renderRun(idx) {
     autoResize(ta);
   });
 
+  // hist-swの状態変更を監視して保存
+  const histSwitch = $("#hist-sw");
+  if (histSwitch) {
+    histSwitch.addEventListener("change", () => {
+      const histSwKey = `hist_sw_${obj.id}`;
+      const newState = histSwitch.checked;
+      chrome.storage.local.set({ [histSwKey]: newState });
+      console.log("[HIST-SW DEBUG] hist-swの状態を保存しました:", {
+        newState,
+        histSwKey,
+      });
+    });
+  }
+
   // 全てのドラフト読み込み完了後にトグルボタンの状態を設定
   Promise.all(draftPromises).then((hasContentArray) => {
     const hasAnyDraftContent = hasContentArray.some((hasContent) => hasContent);
     const histSwitch = $("#hist-sw");
 
-    if (hasAnyDraftContent && histSwitch) {
-      histSwitch.checked = true;
-      console.log("[AUTO] ドラフト内容があるため履歴保存をオンにしました");
-    }
+    console.log("[HIST-SW DEBUG] ドラフト復元処理開始:", {
+      hasAnyDraftContent,
+      histSwitchExists: !!histSwitch,
+      currentHistSwState: histSwitch?.checked,
+    });
+
+    // hist-swの状態を復元（保存されていれば）
+    const histSwKey = `hist_sw_${obj.id}`;
+    chrome.storage.local.get([histSwKey], (result) => {
+      const savedHistSwState = result[histSwKey];
+      console.log("[HIST-SW DEBUG] 保存されたhist-swの状態:", {
+        savedHistSwState,
+        histSwKey,
+      });
+
+      if (savedHistSwState !== undefined && histSwitch) {
+        histSwitch.checked = savedHistSwState;
+        console.log("[HIST-SW DEBUG] 保存された状態を復元しました:", {
+          restoredState: histSwitch.checked,
+        });
+      } else if (hasAnyDraftContent && histSwitch) {
+        // ドラフト内容がある場合は自動的にオンにする
+        const previousState = histSwitch.checked;
+        histSwitch.checked = true;
+        console.log("[AUTO] ドラフト内容があるため履歴保存をオンにしました", {
+          previousState,
+          newState: histSwitch.checked,
+        });
+      }
+
+      // 履歴保存の状態を確認して、ドラフトの有無をチェック
+      const histToggleChecked = histSwitch?.checked;
+      console.log("[HIST-SW DEBUG] 最終的なhist-swの状態:", {
+        histToggleChecked,
+        hasAnyDraftContent,
+      });
+
+      if (histToggleChecked) {
+        console.log("[復元] 履歴保存がオンのため、ドラフトの復元を実行します");
+      } else {
+        console.log(
+          "[復元] 履歴保存がオフのため、ドラフトの復元をスキップします"
+        );
+      }
+    });
   });
 
   /* ── 内部 send() ── */
@@ -2714,7 +2821,7 @@ function renderRun(idx) {
         </button>
       </div>
       <div class="prompt-content">${f.text}</div>
-      <textarea rows="3" class="prompt-textarea extra" placeholder="プロンプト追加入力（都度）"></textarea>
+      <textarea rows="3" class="prompt-textarea extra" placeholder="プロンプト追加入力（都度）" data-original-index="${index}"></textarea>
     </div>`;
   }
 
