@@ -15,8 +15,6 @@
   overflow: hidden; /* memo-content自体のスクロールを無効 */
 }
 
-/* アニメーションを削除 */
-
 /* ─── clipboard ─── */
 
 .clipboard-list {
@@ -54,46 +52,34 @@
 }
 
 .clip-item {
-  cursor: move;
-  display: grid;
-  grid-template-columns: auto 1fr auto; /* 挿入ボタン, textarea, アクションボタン群 */
-  align-items: center; /* 垂直方向中央揃え（テキストエリアが長くなってもボタンは中央） */
-  gap: 12px;
+  cursor: grab;
+  display: flex; /* グリッドからflexに変更 */
+  align-items: center; /* 垂直方向中央揃え */
+  gap: 0; /* ギャップを0にして手動で制御 */
   /* 背景は既存のグラデーションを維持 */
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
-  padding: 10px;
+  padding: 0; /* パディングを0にして手動で制御 */
   border-radius: 6px;
   min-height: 64px;
   line-height: 1.2;
   overflow: visible;
   transition: all 0.3s ease;
   position: relative;
-  /* 挿入ボタンサイズとアクセント幅を変数化 */
-  --insert-size: 36px; /* 挿入ボタンの基準サイズ */
-  --accent-width: 48px; /* ボタン+ギャップの幅 */
 }
 
-/* 挿入ボタン部分のみを彩るアクセントカラー */
+/* 左側の緑色エリア */
 .clip-item::before {
-  /* 左のアクセント領域とアイコンを描画 */
-  content: "\f12a"; /* bi-arrow-left-circle */
-  font-family: "bootstrap-icons";
+  content: "";
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
-  /* アクセント幅を変数で制御 */
-  width: var(--accent-width);
-  background: #00e344;
+  width: 40px; /* 左側の緑色エリアの幅 */
+  background: #00e344; /* 緑色の背景 */
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
   pointer-events: none; /* クリックイベントを妨げない */
   z-index: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff; /* アイコンは常に白色 */
-  font-size: 1.3rem; /* 他のアイコンと揃える */
 }
 
 /* ホバー効果（MEMOページと統一） */
@@ -105,76 +91,91 @@
 
 /* 拡張状態のclip-item */
 .clip-item.expanded {
-  /* gridレイアウトで自動調整される */
+  /* flexレイアウトで自動調整される */
 }
 
-/* 左側：挿入ボタンのホバー時の視覚的フィードバック */
-.clip-item .clipboard-insert {
-  position: relative;
-  z-index: 1;
-}
-
-.clip-item .clipboard-insert::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: currentColor;
-  opacity: 0;
-  border-radius: inherit;
-  transition: opacity 0.2s ease;
-  z-index: -1;
-}
-
-.clip-item .clipboard-insert:hover::before {
-  opacity: 0.1;
-}
-
+/* 左側の白い丸いボタン */
 .clipboard-insert {
-  background: transparent;
-  border: none;
-  box-sizing: border-box;
+  background: transparent; /* 背景を透明に */
+  border: 3px solid #ffffff; /* 白色のボーダーを太く */
   box-sizing: border-box;
   padding: 8px;
-  border-radius: 4px;
-  color: #04e949;
+  border-radius: 50%; /* 丸いボタン */
+  color: #ffffff; /* アイコンは白色 */
   cursor: pointer;
-  transition: all 0.2s ease;
-  width: var(--insert-size); /* サイズを変数化 */
-  height: var(--insert-size);
-  /* アクセント(#00E344)の幅に対してアイコンを中央に配置 */
-  margin-left: calc((var(--accent-width) - var(--insert-size)) / 2);
+  transition: none; /* ホバーアニメーションを無効化 */
+  width: 40px; /* ボタンサイズを少し大きく */
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  place-self: center; /* グリッド内で中央配置 */
+  flex-shrink: 0; /* サイズ固定 */
+  position: relative;
+  z-index: 1;
+  margin: auto 0; /* 中央に配置 */
 }
 
 .clipboard-insert i {
-  font-size: 1.3rem; /* アーカイブアイコンと同じサイズ */
-  color: #ffffff; /* 挿入アイコンを常に白色で表示 */
+  font-size: 1.4rem; /* アイコンサイズを少し大きく */
+  color: #ffffff; /* アイコンは白色 */
 }
 
-/* ホバー時もアイコンの白色を維持 */
-.clipboard-insert:hover i {
-  color: #ffffff;
-}
-
+/* ホバー時の効果を削除 */
 .clipboard-insert:hover {
-  background: transparent;
-  color: #00b0cf;
-  transform: translateY(-1px);
-  box-shadow: none;
+  background: transparent; /* ホバー時も透明を維持 */
+  border-color: #ffffff; /* ボーダー色を維持 */
+  transform: none; /* アニメーションを無効化 */
+  box-shadow: none; /* シャドウを削除 */
 }
 
-/* 右側：アクションボタン群 */
+/* 中央のテキストエリア */
+.clipboard-textarea {
+  flex: 1; /* 残りの幅を使用 */
+  min-width: 0; /* 親幅内で縮む */
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 12px 16px;
+  line-height: 24px;
+  white-space: pre-wrap;
+  overflow-x: hidden;
+  overflow-y: hidden; /* 初期状態では縦スクロールを非表示（JSで制御） */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  resize: none;
+  background: #3a3f4a;
+  color: #e2e8f0;
+  border: none;
+  box-sizing: border-box;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: height 0.2s ease;
+  margin: 12px -2px 12px 0; /* 右側と下側の余白を追加 */
+}
+
+/* スクロールが必要な場合のスタイル */
+.clipboard-textarea.scrollable {
+  overflow-y: auto !important;
+}
+
+/* プレースホルダーテキストのスタイル */
+.clipboard-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: left; /* プレースホルダーテキストを左揃えに変更 */
+  line-height: 24px; /* テキストを垂直方向中央に */
+}
+
+/* Chrome/Safari/Opera のスクロールバー非表示 */
+.clipboard-textarea::-webkit-scrollbar {
+  display: none;
+}
+
+/* 右側のアクションボタン群 */
 .clipboard-actions {
   display: flex;
   align-items: center;
-  gap: 2px; /* ボタン間をよりコンパクトに */
-  place-self: center; /* グリッド内で中央配置 */
+  gap: 4px; /* ボタン間の間隔を少し広げる */
+  flex-shrink: 0; /* サイズ固定 */
+  margin: 12px 12px 12px 0; /* 右側と下側の余白を追加 */
 }
 
 /* コピーボタン */
@@ -200,6 +201,7 @@
 
 .clipboard-copy:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.1); /* ホバー時に背景色を追加 */
   transform: translateY(-2px);
 }
 
@@ -224,7 +226,7 @@
   padding: 8px;
   border-radius: 4px;
   color: #999999;
-  cursor: move;
+  cursor: grab;
   transition: all 0.2s ease;
   width: 36px;
   height: 36px;
@@ -240,6 +242,11 @@
 .clipboard-drag-handle:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
+  cursor: grab;
+}
+
+.clipboard-drag-handle:active {
+  cursor: grabbing;
 }
 
 /* アーカイブボタン */
@@ -268,250 +275,7 @@
   transform: scale(1.1);
 }
 
-/* ─── エクスポートメッセージ ─── */
-.export-message {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #2d2d2d;
-  color: #ffffff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  z-index: 1000;
-  opacity: 0;
-  transform: translateX(100%);
-  transition: all 0.3s ease;
-  max-width: 300px;
-  word-wrap: break-word;
-}
-
-.export-message.show {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.export-message.success {
-  border-left: 4px solid #04e949;
-}
-
-.export-message.success i {
-  color: #04e949;
-}
-
-.export-message.error {
-  border-left: 4px solid #ff6b6b;
-}
-
-.export-message.error i {
-  color: #ff6b6b;
-}
-
-/* フッターボタンの無効化スタイル */
-.memo-footer .nav-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.memo-footer .nav-btn:disabled:hover {
-  transform: none;
-  background: transparent;
-}
-
-/* アーカイブボタンが無効化された時のスタイル */
-.memo-footer .nav-btn:disabled .nav-text {
-  opacity: 0.3;
-}
-
-/* アーカイブボタンが無効化された時でもホバーテキストは表示 */
-.memo-footer .nav-btn:disabled:hover .nav-text {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* ─── フッター基本設定（MEMOページと完全統一） ─── */
-.memo-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: 0;
-  padding: 0px 16px 16px 16px;
-  display: flex;
-  gap: 12px;
-  background: rgba(49, 69, 89, 0.95); /* 背景を半透明に */
-  backdrop-filter: blur(10px); /* ぼかし効果 */
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: flex-start;
-  z-index: 1000; /* 他の要素より前面に */
-}
-
-/* フッターのnav-btnをヘッダーと同じスタイルに */
-.memo-footer .nav-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0; /* remove default button padding */
-  box-sizing: border-box; /* ensure width/height include border */
-  width: 36px;
-  height: 36px;
-  color: #fff;
-  border-radius: 50%; /* 円形 */
-  cursor: pointer;
-  background-color: #555555; /* 未選択時 */
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  text-decoration: none;
-  font-size: 14px;
-  flex: none;
-  overflow: hidden;
-  transform-origin: center center;
-  border: none;
-}
-
-.memo-footer .nav-btn i {
-  font-size: 14px;
-  line-height: 1; /* keep icon centered */
-  display: inline-flex; /* center icon within button */
-  align-items: center;
-  justify-content: center;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.memo-footer .nav-btn .nav-text {
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  display: none; /* 初期状態では非表示 */
-  overflow: hidden;
-  max-width: 0;
-  margin-left: 0;
-  opacity: 0;
-  white-space: nowrap;
-  transition: opacity 0.3s ease;
-}
-
-.memo-footer .nav-btn:hover {
-  /* アニメーション無効化 */
-  filter: none;
-  transform: none;
-}
-
-/* フッターボタンのホバー時展開 */
-.memo-footer .nav-btn:hover {
-  width: auto;
-  border-radius: 18px;
-  padding: 0 8px; /* match header style */
-  justify-content: flex-start;
-}
-
-/* ホバー時のアイコンを非表示に */
-.memo-footer .nav-btn:hover i {
-  display: block; /* keep icon visible */
-  margin-left: 6px;
-  flex-shrink: 0;
-}
-
-/* ホバー時のテキストをアイコンの右に表示 - 無効化（統一されたfooter動作のため） */
-.memo-footer .nav-btn:hover .nav-text {
-  display: none; /* テキスト非表示 */
-  opacity: 0;
-  max-width: 0;
-  margin-left: 0;
-}
-
-/* アーカイブボタンの色分け（MEMOページと完全統一） */
-.memo-footer .nav-btn.archive-toggle {
-  background-color: #2c2c2c;
-}
-
-/* エクスポートボタンの色分け */
-.memo-footer .nav-btn.encrypt-btn {
-  background-color: #2c2c2c;
-}
-
-.memo-footer .nav-btn.encrypt-btn:disabled {
-  background-color: #1a1a1a;
-  opacity: 0.5;
-  cursor: pointer; /* not-allowedからpointerに変更してホバーを有効化 */
-  filter: grayscale(1);
-  pointer-events: auto; /* ホバーイベントを有効にする */
-}
-
-.memo-footer .nav-btn.encrypt-btn:disabled:hover {
-  transform: none;
-  filter: grayscale(1);
-  width: auto;
-  border-radius: 18px;
-  padding: 0 8px;
-  justify-content: flex-start;
-}
-
-.memo-footer .nav-btn.encrypt-btn:disabled:hover i {
-  display: block;
-  margin-left: 6px;
-  flex-shrink: 0;
-}
-
-.memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
-  opacity: 0; /* テキスト非表示 */
-  max-width: 0;
-  margin-left: 0;
-}
-
-/* ドラッグオーバー時のハイライト（旧スタイル - 削除予定） */
-.clip-item.drag-over {
-  border: 2px dashed rgba(255, 255, 255, 0.6);
-}
-
-/* ─── clipboard用テキストエリア ─── */
-.clipboard-textarea {
-  width: 100%; /* グリッドセル内で最大幅 */
-  min-width: 0; /* 親幅内で縮む */
-  box-sizing: border-box;
-
-  min-height: 48px;
-  padding: 12px 16px;
-  line-height: 24px;
-  white-space: pre-wrap;
-  overflow-x: hidden;
-  overflow-y: hidden; /* 初期状態では縦スクロールを非表示（JSで制御） */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-  resize: none;
-  background: #3a3f4a;
-  color: #e2e8f0;
-  border: none;
-  box-sizing: border-box;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  transition: height 0.2s ease;
-  place-self: center stretch; /* 垂直方向中央、水平方向引き伸ばし */
-}
-
-/* スクロールが必要な場合のスタイル */
-.clipboard-textarea.scrollable {
-  overflow-y: auto !important;
-}
-
-/* プレースホルダーテキストのスタイル */
-.clipboard-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center; /* プレースホルダーテキストを中央揃え */
-  line-height: 24px; /* テキストを垂直方向中央に */
-}
-
-/* Chrome/Safari/Opera のスクロールバー非表示 */
-.clipboard-textarea::-webkit-scrollbar {
-  display: none;
-}
-
+/* 追加ボタン */
 .btn-add-clip {
   width: 100%;
   background: linear-gradient(135deg, #04e949, #00b0cf);
@@ -549,7 +313,9 @@
   max-width: 350px;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .clipboard-empty-state-content.show {
@@ -607,16 +373,140 @@
   box-shadow: 0 6px 16px rgba(7, 138, 185, 0.3);
 }
 
+/* レスポンシブデザイン */
+@media (max-width: 767px) {
+  .clip-item {
+    gap: 8px; /* 間隔を少し狭く */
+    padding: 8px;
+  }
+
+  .clipboard-textarea {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+
+  .clipboard-insert {
+    width: 32px;
+    height: 32px;
+  }
+
+  .clipboard-insert i {
+    font-size: 1.1rem;
+  }
+
+  .clipboard-copy,
+  .clipboard-drag-handle,
+  .clipboard-archive {
+    width: 32px;
+    height: 32px;
+  }
+
+  .clipboard-copy i,
+  .clipboard-drag-handle i,
+  .clipboard-archive i {
+    font-size: 1.1rem;
+  }
+}
+
+/* アクセシビリティ向上 */
+.clipboard-textarea:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.clipboard-insert:focus,
+.clipboard-copy:focus,
+.clipboard-drag-handle:focus,
+.clipboard-archive:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ドラッグ＆ドロップ関連のスタイル */
+.clip-item.dragging {
+  opacity: 0.6;
+  transform: scale(0.96);
+  cursor: grabbing !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  position: relative;
+}
+
+.clip-item.drag-over {
+  outline: 2px dashed #ffffff;
+  outline-offset: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+/* ドロップ位置インジケーター */
+.clip-item.drop-indicator {
+  position: relative;
+}
+
+.clip-item.drop-indicator::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, #00e344, #00b0cf);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(0, 227, 68, 0.6);
+  z-index: 1001;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.2s ease;
+}
+
+.clip-item.drop-indicator.drop-above::after {
+  top: -2px;
+}
+
+.clip-item.drop-indicator.drop-below::after {
+  bottom: -2px;
+}
+
+.clip-item.drop-indicator.active::after {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: clipDropIndicatorPulse 1s ease-in-out infinite;
+}
+
+/* クリップボード用のドロップインジケーターアニメーション */
+@keyframes clipDropIndicatorPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 227, 68, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(0, 227, 68, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 227, 68, 0.6);
+  }
+}
+
+.clip-item.drag-invalid {
+  outline: 2px dashed rgba(255, 0, 0, 0.6);
+  outline-offset: 4px;
+  background: rgba(255, 0, 0, 0.1);
+  cursor: not-allowed;
+}
+
 /*━━━━━━━━━━ ドラッグ＆ドロップ成功トースト通知 ━━━━━━━━━━*/
 .drag-drop-toast {
   position: fixed;
   top: 16px;
   right: 16px;
-  background: linear-gradient(135deg, #00b06b, #6bff97);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 227, 68, 0.8),
+    rgba(0, 176, 207, 0.8)
+  );
   color: rgba(255, 255, 255, 0.9);
   padding: 8px 12px;
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(107, 255, 151, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 227, 68, 0.3);
   font-size: 0.8rem;
   font-weight: 400;
   display: flex;
@@ -659,666 +549,56 @@
   animation: slideInRight 0.3s ease-out;
 }
 
-/*━━━━━━━━━━ アーカイブ画面のスタイル ━━━━━━━━━━*/
-.archive-header {
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.archive-title {
-  color: #ffffff;
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.select-all-label {
-  color: #ffffff;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.select-all-label input[type="checkbox"] {
-  cursor: pointer;
-}
-
-.archive-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0;
-  padding: 16px;
-  list-style: none;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(45, 45, 45, 0.5);
-}
-
-.archive-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.archive-list::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5);
-  border-radius: 4px;
-}
-
-.archive-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-}
-
-.archive-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.archive-item {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #4a4d58, #363940);
-  min-height: 48px;
-  gap: 12px;
-}
-
-.archive-item .arch-check {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.archive-item .arch-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.archive-item .arch-title {
-  color: #e2e8f0;
-  font-size: 1rem;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  min-width: 0;
-  font-weight: 500;
-}
-
-.archive-item .clipboard-preview {
-  color: #a0aec0;
-  font-size: 0.85rem;
-  line-height: 1.3;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  word-break: break-word;
-}
-
-.archive-item .restore-btn {
-  background: #00a31e;
-  color: #ffffff;
-  border: none;
-  box-sizing: border-box;
-  padding: 6px 8px;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  height: 28px;
-  width: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.archive-item .restore-btn:hover:not(:disabled) {
-  filter: brightness(1.15);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 163, 30, 0.3);
-}
-
-.archive-item .restore-btn:disabled {
-  background: #6b7280;
-  cursor: not-allowed;
-  opacity: 0.5;
-  transform: none;
-}
-
-.archive-item .restore-btn:disabled:hover {
-  filter: none;
-  transform: none;
-}
-
-/* 復元アニメーション用スタイル */
-.archive-item.restoring {
-  transition: all 0.5s ease-in-out;
-  transform: translateY(-50px) scale(0.9);
-  opacity: 0;
-  filter: blur(2px);
-}
-
-/* 復元ボタンのアクティブ状態 */
-.archive-item .restore-btn:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-/* アーカイブモード時のコンテンツスタイル */
-.memo-content.archive {
+/* ─── エクスポートメッセージ ─── */
+.export-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
   background: #2d2d2d;
-  border-radius: 12px;
-  margin: 32px 16px 16px 16px;
-  padding: 0;
-  height: calc(
-    100vh - 168px
-  ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ─── レスポンシブデザイン：大画面でのユーザビリティ向上 ─── */
-
-/* 大画面でのレイアウト最適化 */
-@media (min-width: 1200px) {
-  .clipboard-textarea {
-    font-size: 1rem; /* 大画面では少し文字を大きく */
-    padding: 16px 20px; /* パディングを増やして余裕を持たせる */
-  }
-
-  .clip-item {
-    --insert-size: 40px; /* ボタンを少し大きく */
-  }
-
-  .clipboard-insert i {
-    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
-  }
-
-  .clipboard-copy {
-    width: 40px; /* ボタンを少し大きく */
-    height: 40px;
-  }
-
-  .clipboard-copy i {
-    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
-  }
-
-  .clipboard-drag-handle {
-    width: 40px; /* ボタンを少し大きく */
-    height: 40px;
-  }
-
-  .clipboard-drag-handle i {
-    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
-  }
-
-  .clipboard-archive {
-    width: 40px; /* ボタンを少し大きく */
-    height: 40px;
-  }
-
-  .clipboard-archive i {
-    font-size: 1.4rem; /* 大画面ではアイコンを少し大きく */
-  }
-}
-
-/* 中程度の画面サイズでの調整 */
-@media (min-width: 768px) and (max-width: 1199px) {
-  .clipboard-textarea {
-    font-size: 0.95rem;
-    padding: 14px 18px;
-  }
-}
-
-/* 小画面での調整 */
-@media (max-width: 767px) {
-  .clip-item {
-    gap: 8px; /* 間隔を少し狭く */
-    padding: 8px;
-  }
-
-  /* モバイル時のアクセント幅を調整（insert32px + gap8px = 40px） */
-  .clip-item {
-    --insert-size: 32px;
-    --accent-width: 40px;
-  }
-
-  .clipboard-textarea {
-    font-size: 0.85rem;
-    padding: 10px 14px;
-  }
-
-  .clipboard-insert {
-    /* サイズは変数で管理 */
-  }
-
-  .clipboard-insert i {
-    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
-  }
-
-  .clipboard-copy {
-    width: 32px; /* ボタンを小さく */
-    height: 32px;
-  }
-
-  .clipboard-copy i {
-    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
-  }
-
-  .clipboard-drag-handle {
-    width: 32px; /* ボタンを小さく */
-    height: 32px;
-  }
-
-  .clipboard-drag-handle i {
-    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
-  }
-
-  .clipboard-archive {
-    width: 32px; /* ボタンを小さく */
-    height: 32px;
-  }
-
-  .clipboard-archive i {
-    font-size: 1.1rem; /* 小画面ではアイコンを少し小さく */
-  }
-
-  /* モバイル用エクスポートメッセージ */
-  .export-message {
-    top: 10px;
-    right: 10px;
-    left: 10px;
-    max-width: none;
-    transform: translateY(-100%);
-  }
-
-  .export-message.show {
-    transform: translateY(0);
-  }
-
-  /* モバイル用フッターボタンテキスト */
-  .memo-footer .nav-btn .nav-text {
-    font-size: 0.7rem;
-    padding: 3px 6px;
-  }
-}
-
-/* アーカイブモード戻るボタンの矢印アイコンを常に白色に */
-.memo-footer .back-btn i {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px 20px;
   color: #ffffff;
-}
-
-/* アニメーション削除 */
-
-/* ─── カード背景ふわっアニメ（MEMO・PROMPTと統一） ─── */
-/* アニメーション削除 */
-
-/* ─── アクセシビリティ向上 ─── */
-
-/* フォーカス時のアウトライン（キーボードナビゲーション対応） */
-.clipboard-textarea:focus {
-  outline: 2px solid #ffffff;
-  outline-offset: 2px;
-}
-
-.clipboard-insert:focus,
-.clipboard-copy:focus,
-.clipboard-drag-handle:focus,
-.clipboard-archive:focus {
-  outline: 2px solid #ffffff;
-  outline-offset: 2px;
-}
-
-/* ハイコントラストモード対応 */
-@media (prefers-contrast: high) {
-  .clip-item {
-    border: 1px solid #ffffff;
-  }
-
-  .clipboard-textarea {
-    border: 1px solid #ffffff;
-  }
-
-  .clipboard-insert {
-    border: 2px solid #ffffff;
-  }
-
-  .clipboard-copy {
-    border: 2px solid #ffffff;
-  }
-
-  .clipboard-drag-handle {
-    border: 2px solid #ffffff;
-  }
-
-  .clipboard-archive {
-    border: 2px solid #ffffff;
-  }
-}
-
-/* 動きを減らす設定に対応 */
-@media (prefers-reduced-motion: reduce) {
-  .clip-item,
-  .clipboard-copy,
-  .clip-item .actions,
-  .clipboard-textarea {
-    transition: none;
-  }
-
-  .clip-item:hover {
-    transform: none;
-  }
-
-  .clipboard-insert:hover,
-  .clipboard-copy:hover,
-  .clipboard-drag-handle:hover,
-  .clipboard-archive:hover {
-    transform: none;
-  }
-}
-
-/* ドラッグ＆ドロップ関連のスタイル */
-.clip-item.dragging {
-  opacity: 0.6;
-  transform: scale(0.96);
-  cursor: grabbing !important;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  position: relative;
-}
-
-.clip-item.drag-over {
-  outline: 2px dashed #ffffff;
-  outline-offset: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
-}
-
-/* ドロップ位置インジケーター */
-.clip-item.drop-indicator {
-  position: relative;
-}
-
-.clip-item.drop-indicator::after {
-  content: "";
-  position: absolute;
-  left: -4px;
-  right: -4px;
-  height: 3px;
-  background: linear-gradient(90deg, #04e949, #00b0cf);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
-  z-index: 1001;
+  backdrop-filter: blur(10px);
+  z-index: 10000;
   opacity: 0;
-  transform: scaleX(0);
-  transition: all 0.2s ease;
-}
-.clip-item.drop-indicator.drop-above::after {
-  top: -2px;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  max-width: 300px;
 }
 
-.clip-item.drop-indicator.drop-below::after {
-  bottom: -2px;
-}
-
-.clip-item.drop-indicator.active::after {
+.export-message.show {
   opacity: 1;
-  transform: scaleX(1);
-  animation: clipDropIndicatorPulse 1s ease-in-out infinite;
+  transform: translateX(0);
 }
 
-/* クリップボード用のドロップインジケーターアニメーション */
-@keyframes clipDropIndicatorPulse {
-  0% {
-    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(4, 233, 73, 0.8);
-  }
-  100% {
-    box-shadow: 0 0 8px rgba(4, 233, 73, 0.6);
-  }
+.export-message.success {
+  border-color: #00e344;
+  background: rgba(0, 227, 68, 0.1);
 }
 
-.clip-item.drag-invalid {
-  outline: 2px dashed rgba(255, 0, 0, 0.6);
-  outline-offset: 4px;
-  background: rgba(255, 0, 0, 0.1);
-  cursor: not-allowed;
+.export-message.success i {
+  color: #00e344;
+  font-size: 16px;
 }
 
-/* アーカイブ画面のfooterボタン：メイン画面と同じUI/UXに統一 */
-
-/* CLIPBOARDページのfooterボタン：MEMO/PROMPTと同じレイアウトでhover時にテキスト表示、余白・角丸も統一（アニメーションなし） */
-.memo-footer .archive-toggle,
-.memo-footer .encrypt-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  color: #fff;
-  border-radius: 50%;
-  cursor: pointer;
-  background-color: #2c2c2c;
-  transition: none;
-  text-decoration: none;
-  font-size: 14px;
-  flex: none;
-  overflow: hidden;
-  transform-origin: center center;
-  border: none;
-}
-.memo-footer .archive-toggle:hover,
-.memo-footer .encrypt-btn:hover {
-  width: auto !important;
-  min-width: 0;
-  border-radius: 18px !important;
-  padding: 0 8px !important;
-  justify-content: flex-start !important;
-}
-.memo-footer .archive-toggle .nav-text,
-.memo-footer .encrypt-btn .nav-text {
-  display: none !important;
-  max-width: 0;
-  margin-left: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.memo-footer .archive-toggle:hover .nav-text,
-.memo-footer .encrypt-btn:hover .nav-text {
-  display: none !important; /* テキスト非表示 */
-  max-width: 0;
-  margin-left: 0;
-  opacity: 0;
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  vertical-align: middle;
-  transition: opacity 0.3s ease;
-}
-.memo-footer .archive-toggle i,
-.memo-footer .encrypt-btn i {
-  font-size: 14px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0;
-  transition: margin-left 0.3s ease;
-}
-.memo-footer .archive-toggle:hover i,
-.memo-footer .encrypt-btn:hover i {
-  margin-left: 6px;
-  transition: margin-left 0.3s ease;
+.export-message.error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
-/* CLIPBOARDページのfooterボタン：headerと同じアニメーション（右に文字が1つずつ表示） */
-.memo-footer .archive-toggle,
-.memo-footer .encrypt-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  color: #fff;
-  border-radius: 50%;
-  cursor: pointer;
-  background-color: #2c2c2c;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  text-decoration: none;
-  font-size: 14px;
-  flex: none;
-  overflow: hidden;
-  transform-origin: center center;
-  border: none;
-}
-.memo-footer .archive-toggle:hover,
-.memo-footer .encrypt-btn:hover {
-  /* アニメーション無効化 - 形状変更も無効化 */
-  width: 36px !important;
-  min-width: 36px;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  justify-content: center !important;
-  filter: none;
-  transform: none;
-}
-.memo-footer .archive-toggle .nav-text,
-.memo-footer .encrypt-btn .nav-text {
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  display: inline-block;
-  overflow: hidden;
-  max-width: 0;
-  margin-left: 0;
-  opacity: 0;
-  white-space: nowrap;
-  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
-}
-.memo-footer .archive-toggle:hover .nav-text,
-.memo-footer .encrypt-btn:hover .nav-text {
-  opacity: 0; /* テキスト非表示 */
-  max-width: 0;
-  margin-left: 0;
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  vertical-align: middle;
-  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
-}
-.memo-footer .archive-toggle i,
-.memo-footer .encrypt-btn i {
-  font-size: 14px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-.memo-footer .archive-toggle:hover i,
-.memo-footer .encrypt-btn:hover i {
-  margin-left: 6px;
-  flex-shrink: 0;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+.export-message.error i {
+  color: #ef4444;
+  font-size: 16px;
 }
 
-/* アーカイブ画面のfooterボタン：headerと同じアニメーション（右に文字が1つずつ表示） */
-.memo-footer.archive .back-btn,
-.memo-footer.archive .delete-all-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  color: #fff;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  text-decoration: none;
-  font-size: 14px;
-  flex: none;
-  overflow: hidden;
-  transform-origin: center center;
-  border: none;
-}
-
-.memo-footer.archive .back-btn {
-  background-color: #7e7e7e; /* MEMO/PROMPTのアーカイブ画面と同じ */
-}
-
-.memo-footer.archive .delete-all-btn {
-  background-color: #910002; /* MEMO/PROMPTのアーカイブ画面と同じ */
-}
-
-.memo-footer.archive .back-btn:hover,
-.memo-footer.archive .delete-all-btn:hover {
-  /* アニメーション無効化 - 形状変更も無効化 */
-  width: 36px !important;
-  min-width: 36px;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  justify-content: center !important;
-  filter: none;
-  transform: none;
-}
-
-.memo-footer.archive .back-btn .nav-text,
-.memo-footer.archive .delete-all-btn .nav-text {
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  display: none; /* 初期状態では非表示 */
-  overflow: hidden;
-  max-width: 0;
-  margin-left: 0;
-  opacity: 0;
-  white-space: nowrap;
-  transition: opacity 0.3s ease;
-}
-
-.memo-footer.archive .back-btn:hover .nav-text,
-.memo-footer.archive .delete-all-btn:hover .nav-text {
-  display: none; /* テキスト非表示 */
-  opacity: 0;
-  max-width: 0;
-  margin-left: 0;
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  vertical-align: middle;
-  transition: opacity 0.3s ease;
-}
-
-.memo-footer.archive .back-btn i,
-.memo-footer.archive .delete-all-btn i {
-  font-size: 14px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.memo-footer.archive .back-btn:hover i,
-.memo-footer.archive .delete-all-btn:hover i {
-  margin-left: 6px;
-  flex-shrink: 0;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+.export-message span {
+  flex: 1;
+  word-break: break-word;
 }

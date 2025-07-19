@@ -204,8 +204,88 @@ async function renderClipboardView() {
 
   // エクスポート機能の追加
   const exportBtn = document.querySelector(".encrypt-btn");
+  console.log("[CLIPBOARD] バックアップボタン検索結果:", {
+    found: !!exportBtn,
+    element: exportBtn,
+    allEncryptBtns: document.querySelectorAll(".encrypt-btn").length,
+  });
+
   if (exportBtn) {
-    exportBtn.addEventListener("click", exportAllClips);
+    // 既存のイベントリスナーを削除
+    exportBtn.removeEventListener("click", exportAllClips);
+
+    // 新しいイベントリスナーを追加（即座にトースト表示）
+    exportBtn.addEventListener("click", async (e) => {
+      console.log("[CLIPBOARD] バックアップボタンがクリックされました");
+
+      // デバッグ情報を出力
+      console.log("[CLIPBOARD] AppUtils デバッグ情報:", {
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+        showToastType: typeof window.AppUtils?.showToast,
+        AppUtilsKeys: window.AppUtils ? Object.keys(window.AppUtils) : [],
+      });
+
+      // 即座にトーストメッセージを表示
+      if (window.AppUtils && window.AppUtils.showToast) {
+        console.log("[CLIPBOARD] showToast関数を呼び出します");
+        window.AppUtils.showToast("バックアップを開始しています...", "info");
+      } else {
+        console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+        // フォールバック: 直接showToast関数を呼び出し
+        if (typeof showToast === "function") {
+          console.log("[CLIPBOARD] 直接showToast関数を呼び出します");
+          showToast("バックアップを開始しています...", "info");
+        } else {
+          console.error("[CLIPBOARD] showToast関数も見つかりません");
+          // 最後の手段: alert
+          alert("バックアップを開始しています...");
+        }
+      }
+
+      // 少し遅延させてから実際のエクスポート処理を実行
+      setTimeout(async () => {
+        await exportAllClips();
+      }, 100);
+    });
+  } else {
+    console.error(
+      "[CLIPBOARD] バックアップボタン（.encrypt-btn）が見つかりません"
+    );
+    // 代替手段: footer内のボタンを探す
+    const footer = document.querySelector("footer");
+    if (footer) {
+      const footerBtns = footer.querySelectorAll("button");
+      console.log("[CLIPBOARD] footer内のボタン:", footerBtns);
+    }
+
+    // 遅延して再度試行
+    setTimeout(() => {
+      const retryExportBtn = document.querySelector(".encrypt-btn");
+      if (retryExportBtn) {
+        console.log("[CLIPBOARD] 遅延実行でバックアップボタンを発見");
+        retryExportBtn.addEventListener("click", async (e) => {
+          console.log(
+            "[CLIPBOARD] バックアップボタンがクリックされました（遅延実行）"
+          );
+
+          if (window.AppUtils && window.AppUtils.showToast) {
+            window.AppUtils.showToast(
+              "バックアップを開始しています...",
+              "info"
+            );
+          } else if (typeof showToast === "function") {
+            showToast("バックアップを開始しています...", "info");
+          } else {
+            alert("バックアップを開始しています...");
+          }
+
+          setTimeout(async () => {
+            await exportAllClips();
+          }, 100);
+        });
+      }
+    }, 100);
   }
 
   // ボタンの状態を更新
@@ -312,11 +392,11 @@ async function renderClipboardView() {
     li.addEventListener("dragleave", handleClipDragLeave);
     li.addEventListener("drop", handleClipDrop);
 
-    // 左側：挿入ボタン（Arrow-left-circle）
+    // 左側：戻るボタン（緑色の丸いボタン）
     const insertBtn = document.createElement("button");
     insertBtn.className = "clipboard-insert";
-    insertBtn.innerHTML = ""; // アイコンはCSSの::beforeで描画
-    console.log("init: insert button created (icon via ::before)");
+    insertBtn.innerHTML = '<i class="bi bi-arrow-left"></i>'; // 左向き矢印アイコン
+    console.log("init: insert button created with arrow icon");
     insertBtn.title = "挿入";
     insertBtn.addEventListener("click", () => {
       // 最新の textarea の値を取得して送信
@@ -430,10 +510,10 @@ async function renderClipboardView() {
     const actionsContainer = document.createElement("div");
     actionsContainer.className = "clipboard-actions";
 
-    // 右１：コピーボタン（bi bi-copy）
+    // 右１：コピーボタン（重なった四角形アイコン）
     const copyBtn = document.createElement("button");
     copyBtn.className = "clipboard-copy";
-    copyBtn.innerHTML = '<i class="bi bi-copy"></i>';
+    copyBtn.innerHTML = '<i class="bi bi-files"></i>';
     copyBtn.title = "コピー";
     copyBtn.addEventListener("click", async () => {
       const currentText = ta.value;
@@ -489,7 +569,7 @@ async function renderClipboardView() {
     // 右２：ドラッグハンドル（bi bi-grip-vertical）
     const dragHandle = document.createElement("div");
     dragHandle.className = "clipboard-drag-handle";
-    dragHandle.innerHTML = '<i class="bi bi-grip-vertical"></i>';
+    dragHandle.innerHTML = '<i class="bi bi-grip-vertical grip-icon"></i>';
     dragHandle.title = "ドラッグして並び替え";
     dragHandle.draggable = true; // ハンドルのみドラッグ可能
     dragHandle.addEventListener("dragstart", (e) => {
@@ -873,6 +953,9 @@ function renderArchiveFooter() {
   console.log("renderArchiveFooter: back button icon set to white via CSS");
   footer.style.display = "flex";
 
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
+
   // Back → go back to clipboard view
   footer.querySelector(".back-btn").addEventListener("click", () => {
     // 1) Archive 表示を解除
@@ -1254,14 +1337,30 @@ function showExportSuccessMessage(fileName) {
   console.log("[CLIPBOARD] showExportSuccessMessage呼び出し:", {
     fileName: fileName,
     AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
   });
+
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[CLIPBOARD] エクスポート成功トーストを表示");
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "info");
+  } else {
+    console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートエラーメッセージ
 function showExportErrorMessage() {
   console.log("[CLIPBOARD] showExportErrorMessage呼び出し:", {
     AppUtils: !!window.AppUtils,
+    showToast: !!(window.AppUtils && window.AppUtils.showToast),
   });
+
+  if (window.AppUtils && window.AppUtils.showToast) {
+    console.log("[CLIPBOARD] エクスポートエラートーストを表示");
+    window.AppUtils.showToast("エクスポートに失敗しました", "error");
+  } else {
+    console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+  }
 }
 
 // エクスポートボタンとアーカイブボタンの状態を更新
@@ -1307,6 +1406,43 @@ function updateExportButtonState() {
     exportDisabled: !hasActiveClips,
     totalClipCount: clips ? clips.length : 0,
     activeClipCount: activeClips.length,
+  });
+}
+
+// Footerボタンのホバー効果を設定する関数
+function setupFooterHoverEffects() {
+  const footer = document.querySelector(".memo-footer");
+  if (!footer) return;
+
+  footer.querySelectorAll(".nav-btn").forEach((btn) => {
+    const textSpan = btn.querySelector(".nav-text");
+    if (!textSpan) return;
+
+    // 既存のイベントリスナーを削除
+    btn.removeEventListener("mouseenter", btn._footerHoverEnter);
+    btn.removeEventListener("mouseleave", btn._footerHoverLeave);
+
+    // 新しいイベントリスナーを設定
+    btn._footerHoverEnter = () => {
+      const textWidth = textSpan.scrollWidth;
+      btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+      btn.classList.add("show-text");
+      console.log("[CLIPBOARD FOOTER] hover start:", btn.className, {
+        btnWidth: btn.offsetWidth,
+        textWidth,
+      });
+    };
+
+    btn._footerHoverLeave = () => {
+      btn.classList.remove("show-text");
+      btn.style.removeProperty("--nav-text-max");
+      console.log("[CLIPBOARD FOOTER] hover end:", btn.className, {
+        btnWidth: btn.offsetWidth,
+      });
+    };
+
+    btn.addEventListener("mouseenter", btn._footerHoverEnter);
+    btn.addEventListener("mouseleave", btn._footerHoverLeave);
   });
 }
 
@@ -1452,7 +1588,45 @@ function renderMainFooter() {
   // エクスポートボタンのイベントリスナー
   const exportBtn = footer.querySelector(".encrypt-btn");
   if (exportBtn) {
-    exportBtn.addEventListener("click", exportAllClips);
+    // 既存のイベントリスナーを削除
+    exportBtn.removeEventListener("click", exportAllClips);
+
+    // 新しいイベントリスナーを追加（即座にトースト表示）
+    exportBtn.addEventListener("click", async (e) => {
+      console.log(
+        "[CLIPBOARD] バックアップボタンがクリックされました（renderMainFooter）"
+      );
+
+      // デバッグ情報を出力
+      console.log("[CLIPBOARD] AppUtils デバッグ情報:", {
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+        showToastType: typeof window.AppUtils?.showToast,
+        AppUtilsKeys: window.AppUtils ? Object.keys(window.AppUtils) : [],
+      });
+
+      // 即座にトーストメッセージを表示
+      if (window.AppUtils && window.AppUtils.showToast) {
+        console.log("[CLIPBOARD] showToast関数を呼び出します");
+        window.AppUtils.showToast("バックアップを開始しています...", "info");
+      } else {
+        console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
+        // フォールバック: 直接showToast関数を呼び出し
+        if (typeof showToast === "function") {
+          console.log("[CLIPBOARD] 直接showToast関数を呼び出します");
+          showToast("バックアップを開始しています...", "info");
+        } else {
+          console.error("[CLIPBOARD] showToast関数も見つかりません");
+          // 最後の手段: alert
+          alert("バックアップを開始しています...");
+        }
+      }
+
+      // 少し遅延させてから実際のエクスポート処理を実行
+      setTimeout(async () => {
+        await exportAllClips();
+      }, 100);
+    });
     console.log(
       "メイン画面: エクスポートボタンにイベントリスナーを設定しました"
     );
@@ -1460,6 +1634,9 @@ function renderMainFooter() {
 
   // ボタンの状態を更新
   updateExportButtonState();
+
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
 
   console.log("renderMainFooter: end");
 }

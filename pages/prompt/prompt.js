@@ -656,7 +656,43 @@ async function renderList() {
 
   const exportBtn = footer.querySelector(".encrypt-btn");
   if (exportBtn) {
-    exportBtn.addEventListener("click", exportAllPrompts);
+    // 既存のイベントリスナーを削除
+    exportBtn.removeEventListener("click", exportAllPrompts);
+
+    // 新しいイベントリスナーを追加（即座にトースト表示）
+    exportBtn.addEventListener("click", async (e) => {
+      console.log("[PROMPT] バックアップボタンがクリックされました");
+
+      // デバッグ情報を出力
+      console.log("[PROMPT] AppUtils デバッグ情報:", {
+        AppUtils: !!window.AppUtils,
+        showToast: !!(window.AppUtils && window.AppUtils.showToast),
+        showToastType: typeof window.AppUtils?.showToast,
+        AppUtilsKeys: window.AppUtils ? Object.keys(window.AppUtils) : [],
+      });
+
+      // 即座にトーストメッセージを表示
+      if (window.AppUtils && window.AppUtils.showToast) {
+        console.log("[PROMPT] showToast関数を呼び出します");
+        window.AppUtils.showToast("バックアップを開始しています...", "info");
+      } else {
+        console.error("[PROMPT] AppUtils.showToastが利用できません");
+        // フォールバック: 直接showToast関数を呼び出し
+        if (typeof showToast === "function") {
+          console.log("[PROMPT] 直接showToast関数を呼び出します");
+          showToast("バックアップを開始しています...", "info");
+        } else {
+          console.error("[PROMPT] showToast関数も見つかりません");
+          // 最後の手段: alert
+          alert("バックアップを開始しています...");
+        }
+      }
+
+      // 少し遅延させてから実際のエクスポート処理を実行
+      setTimeout(async () => {
+        await exportAllPrompts();
+      }, 100);
+    });
   }
 
   // ボタンの状態を更新
@@ -3586,6 +3622,9 @@ function renderArchiveFooter() {
     </button>
   `;
 
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
+
   // 戻るボタンのイベントリスナー
   footer.querySelector(".back-btn").addEventListener("click", () => {
     // アーカイブ表示を解除
@@ -3963,7 +4002,7 @@ function showExportSuccessMessage(fileName) {
 
   if (window.AppUtils && window.AppUtils.showToast) {
     console.log("[PROMPT] エクスポート成功トーストを表示");
-    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "info");
   } else {
     console.error("[PROMPT] AppUtils.showToastが利用できません");
   }
@@ -4029,6 +4068,43 @@ function updateExportButtonState() {
     exportDisabled: !hasActivePrompts,
     totalPromptCount: prompts ? prompts.length : 0,
     activePromptCount: activePrompts.length,
+  });
+}
+
+// Footerボタンのホバー効果を設定する関数
+function setupFooterHoverEffects() {
+  const footer = document.querySelector(".memo-footer");
+  if (!footer) return;
+
+  footer.querySelectorAll(".nav-btn").forEach((btn) => {
+    const textSpan = btn.querySelector(".nav-text");
+    if (!textSpan) return;
+
+    // 既存のイベントリスナーを削除
+    btn.removeEventListener("mouseenter", btn._footerHoverEnter);
+    btn.removeEventListener("mouseleave", btn._footerHoverLeave);
+
+    // 新しいイベントリスナーを設定
+    btn._footerHoverEnter = () => {
+      const textWidth = textSpan.scrollWidth;
+      btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+      btn.classList.add("show-text");
+      console.log("[PROMPT FOOTER] hover start:", btn.className, {
+        btnWidth: btn.offsetWidth,
+        textWidth,
+      });
+    };
+
+    btn._footerHoverLeave = () => {
+      btn.classList.remove("show-text");
+      btn.style.removeProperty("--nav-text-max");
+      console.log("[PROMPT FOOTER] hover end:", btn.className, {
+        btnWidth: btn.offsetWidth,
+      });
+    };
+
+    btn.addEventListener("mouseenter", btn._footerHoverEnter);
+    btn.addEventListener("mouseleave", btn._footerHoverLeave);
   });
 }
 
@@ -4102,6 +4178,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
   }, 100);
+
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
 
   console.log("[PROMPT] 初期化完了");
 });

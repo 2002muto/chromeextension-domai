@@ -968,11 +968,18 @@ textarea.field-text,
   flex-shrink: 0;
 }
 
-/* ホバー時のテキストをアイコンの右に表示 - 無効化（統一されたfooter動作のため） */
+/* ホバー時のテキストをアイコンの右に表示 */
 .memo-footer .nav-btn:hover .nav-text {
-  opacity: 0; /* テキスト非表示 */
-  max-width: 0;
-  margin-left: 0;
+  opacity: 1; /* テキスト表示 */
+  max-width: var(--nav-text-max, 200px);
+  margin-left: 8px;
+}
+
+/* show-textクラスが適用された時のスタイル */
+.memo-footer .nav-btn.show-text .nav-text {
+  margin-left: 8px;
+  opacity: 1;
+  max-width: var(--nav-text-max, 200px);
 }
 
 /* 一覧表示用フッターの色分け（MEMO・CLIPBOARDと統一） */
@@ -1018,9 +1025,9 @@ textarea.field-text,
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
-  opacity: 0; /* テキスト非表示 */
-  max-width: 0;
-  margin-left: 0;
+  opacity: 1; /* テキスト表示 */
+  max-width: var(--nav-text-max, 200px);
+  margin-left: 8px;
 }
 
 /* 編集モード時のボタンの色分け */
