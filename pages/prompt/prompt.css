@@ -335,7 +335,9 @@
   /* フェードインアニメーション（MEMOページと統一） */
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.5s, transform 0.5s;
+  transition:
+    opacity 0.5s,
+    transform 0.5s;
 
   /* スクロールバーのスタイル（共通設定） */
   scrollbar-width: thin;
@@ -468,6 +470,14 @@ textarea.field-text,
   height: 32px; /* 固定高さを設定して統一 */
 }
 
+/* プロンプトラベルとグリップアイコンのコンテナ */
+.prompt-label-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .prompt-field-actions {
   display: flex;
   align-items: center; /* 中央揃えを確実に適用 */
@@ -542,6 +552,23 @@ textarea.field-text,
 .btn-remove-field:hover {
   background: #c82333;
   transform: scale(1.1);
+}
+
+/* グリップアイコンのスタイル */
+.grip-icon {
+  color: #6b6b6b;
+  font-size: 14px;
+  cursor: grab;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.grip-icon:hover {
+  color: #ffffff;
+}
+
+.grip-icon:active {
+  cursor: grabbing;
 }
 
 /* ⑤ ＋ プロンプトを追加ボタン - 実行画面の一括入力ボタンと統一（カラーコードは元のまま） */
@@ -914,7 +941,10 @@ textarea.field-text,
   margin-left: 0;
   opacity: 0;
   white-space: nowrap;
-  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease,
+    margin-left 0.3s ease;
 }
 
 .memo-footer .nav-btn:hover {
@@ -1038,7 +1068,9 @@ textarea.field-text,
   max-width: 350px;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .prompt-empty-state-content.show {
@@ -1398,7 +1430,9 @@ body .prompt-run-box .prompt-block:last-of-type,
 .prompt-run-box {
   opacity: 1; /* 初期表示を確保 */
   transform: translateY(0); /* 初期位置を設定 */
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .prompt-run-box.show {
@@ -1410,7 +1444,9 @@ body .prompt-run-box .prompt-block:last-of-type,
 .prompt-block {
   opacity: 1; /* 初期表示を確保 */
   transform: translateY(0); /* 初期位置を設定 */
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  transition:
+    opacity 0.4s ease-out,
+    transform 0.4s ease-out;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* ボーダーを再設定 */
 }
 
@@ -1468,7 +1504,9 @@ body .prompt-run-box .prompt-block:last-of-type,
 .memo-input-form .title-section {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  transition:
+    opacity 0.4s ease-out,
+    transform 0.4s ease-out;
 }
 
 .memo-input-form .title-section.show {
@@ -1479,7 +1517,9 @@ body .prompt-run-box .prompt-block:last-of-type,
 .prompt-field {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  transition:
+    opacity 0.4s ease-out,
+    transform 0.4s ease-out;
 }
 
 .prompt-field.show {
@@ -1490,7 +1530,9 @@ body .prompt-run-box .prompt-block:last-of-type,
 .btn-add-field {
   opacity: 0;
   transform: translateY(15px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
 }
 
 .btn-add-field.show {
