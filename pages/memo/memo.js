@@ -397,6 +397,9 @@ function setFooter(mode) {
       </button>
     `;
   }
+
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
 }
 
 // ───────────────────────────────────────
@@ -453,6 +456,9 @@ async function renderListView() {
 
   // ボタンの状態を更新
   updateExportButtonState();
+
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
 
   // animate content
   const content = document.querySelector(".memo-content");
@@ -1822,6 +1828,9 @@ function renderArchiveFooter() {
   `;
   footer.style.display = "flex";
 
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
+
   // Back → go back to last mode (we'll default to MEMO list)
   footer.querySelector(".back-btn").addEventListener("click", () => {
     // 1) Archive 表示を解除
@@ -2354,6 +2363,43 @@ function updateExportButtonState() {
       activeMemoCount: activeMemos.length,
     });
   }
+}
+
+// Footerボタンのホバー効果を設定する関数
+function setupFooterHoverEffects() {
+  const footer = document.querySelector(".memo-footer");
+  if (!footer) return;
+
+  footer.querySelectorAll(".nav-btn").forEach((btn) => {
+    const textSpan = btn.querySelector(".nav-text");
+    if (!textSpan) return;
+
+    // 既存のイベントリスナーを削除
+    btn.removeEventListener("mouseenter", btn._footerHoverEnter);
+    btn.removeEventListener("mouseleave", btn._footerHoverLeave);
+
+    // 新しいイベントリスナーを設定
+    btn._footerHoverEnter = () => {
+      const textWidth = textSpan.scrollWidth;
+      btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+      btn.classList.add("show-text");
+      console.log("[MEMO FOOTER] hover start:", btn.className, {
+        btnWidth: btn.offsetWidth,
+        textWidth,
+      });
+    };
+
+    btn._footerHoverLeave = () => {
+      btn.classList.remove("show-text");
+      btn.style.removeProperty("--nav-text-max");
+      console.log("[MEMO FOOTER] hover end:", btn.className, {
+        btnWidth: btn.offsetWidth,
+      });
+    };
+
+    btn.addEventListener("mouseenter", btn._footerHoverEnter);
+    btn.addEventListener("mouseleave", btn._footerHoverLeave);
+  });
 }
 
 // Function to save the current state of the memo page

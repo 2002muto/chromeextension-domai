@@ -423,12 +423,20 @@
   flex-shrink: 0;
 }
 
-/* ホバー時のテキストをアイコンの右に表示 - 無効化（統一されたfooter動作のため） */
+/* ホバー時のテキストをアイコンの右に表示 */
 .memo-footer .nav-btn:hover .nav-text {
-  display: none; /* テキスト非表示 */
-  opacity: 0;
-  max-width: 0;
-  margin-left: 0;
+  display: block; /* テキスト表示 */
+  opacity: 1;
+  max-width: var(--nav-text-max, 200px);
+  margin-left: 8px;
+}
+
+/* show-textクラスが適用された時のスタイル */
+.memo-footer .nav-btn.show-text .nav-text {
+  display: block;
+  margin-left: 8px;
+  opacity: 1;
+  max-width: var(--nav-text-max, 200px);
 }
 
 /* アーカイブボタンの色分け（MEMOページと完全統一） */
@@ -465,9 +473,9 @@
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover .nav-text {
-  opacity: 0; /* テキスト非表示 */
-  max-width: 0;
-  margin-left: 0;
+  opacity: 1; /* テキスト表示 */
+  max-width: var(--nav-text-max, 200px);
+  margin-left: 8px;
 }
 
 /* ドラッグオーバー時のハイライト（旧スタイル - 削除予定） */

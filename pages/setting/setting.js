@@ -196,6 +196,9 @@ function setFooter(mode) {
 
   // フッターボタンのイベントを設定
   setupFooterListeners();
+
+  // Footerボタンのホバー効果を設定
+  setupFooterHoverEffects();
 }
 
 // フッターボタンのイベントリスナーを設定
@@ -246,6 +249,43 @@ function setupFooterListeners() {
       }
     });
   }
+}
+
+// Footerボタンのホバー効果を設定する関数
+function setupFooterHoverEffects() {
+  const footer = document.querySelector(".memo-footer");
+  if (!footer) return;
+
+  footer.querySelectorAll(".nav-btn").forEach((btn) => {
+    const textSpan = btn.querySelector(".nav-text");
+    if (!textSpan) return;
+
+    // 既存のイベントリスナーを削除
+    btn.removeEventListener("mouseenter", btn._footerHoverEnter);
+    btn.removeEventListener("mouseleave", btn._footerHoverLeave);
+
+    // 新しいイベントリスナーを設定
+    btn._footerHoverEnter = () => {
+      const textWidth = textSpan.scrollWidth;
+      btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+      btn.classList.add("show-text");
+      console.log("[SETTING FOOTER] hover start:", btn.className, {
+        btnWidth: btn.offsetWidth,
+        textWidth,
+      });
+    };
+
+    btn._footerHoverLeave = () => {
+      btn.classList.remove("show-text");
+      btn.style.removeProperty("--nav-text-max");
+      console.log("[SETTING FOOTER] hover end:", btn.className, {
+        btnWidth: btn.offsetWidth,
+      });
+    };
+
+    btn.addEventListener("mouseenter", btn._footerHoverEnter);
+    btn.addEventListener("mouseleave", btn._footerHoverLeave);
+  });
 }
 
 // 設定ページの初期化フラグ

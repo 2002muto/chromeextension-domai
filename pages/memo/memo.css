@@ -20,7 +20,9 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.6);
   color: #fff;
   border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 .card-nav .nav-btn.active {
   background: #fff;
@@ -42,7 +44,9 @@ body {
   box-sizing: border-box;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.5s, transform 0.5s;
+  transition:
+    opacity 0.5s,
+    transform 0.5s;
   /* Firefox用スクロールバー */
   scrollbar-width: thin;
   scrollbar-color: var(--sb-thumb) var(--sb-track);
@@ -179,7 +183,10 @@ body {
   margin-left: 0;
   opacity: 0;
   white-space: nowrap;
-  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease,
+    margin-left 0.3s ease;
 }
 
 .memo-footer .nav-btn:hover {
@@ -205,9 +212,16 @@ body {
 
 /* ホバー時のテキストをアイコンの右隣に配置 */
 .memo-footer .nav-btn:hover .nav-text {
-  opacity: 0; /* テキストを非表示に変更 */
-  max-width: 0; /* 幅も0に設定 */
-  margin-left: 0; /* マージンも0に設定 */
+  opacity: 1; /* テキストを表示 */
+  max-width: var(--nav-text-max, 200px); /* 幅を設定 */
+  margin-left: 8px; /* マージンを設定 */
+}
+
+/* show-textクラスが適用された時のスタイル */
+.memo-footer .nav-btn.show-text .nav-text {
+  margin-left: 8px;
+  opacity: 1;
+  max-width: var(--nav-text-max, 200px);
 }
 
 /* 戻る／保存／削除ボタンの色分け */
@@ -827,7 +841,9 @@ body {
   max-width: 350px;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .memo-empty-state-content.show {

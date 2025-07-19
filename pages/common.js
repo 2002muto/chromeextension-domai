@@ -472,6 +472,41 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Footer: hoverでテキスト表示アニメーションを制御
+  const footer = document.querySelector(".memo-footer");
+  if (footer) {
+    footer.querySelectorAll(".nav-btn").forEach((btn) => {
+      const textSpan = btn.querySelector(".nav-text");
+      if (!textSpan) return;
+
+      btn.addEventListener("mouseenter", () => {
+        const textWidth = textSpan.scrollWidth;
+        btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+        btn.classList.add("show-text");
+        console.log("[FOOTER DEBUG] hover start:", btn.className, {
+          btnWidth: btn.offsetWidth,
+          textWidth,
+        });
+      });
+
+      btn.addEventListener("mouseleave", () => {
+        btn.classList.remove("show-text");
+        btn.style.removeProperty("--nav-text-max");
+        console.log("[FOOTER DEBUG] hover end:", btn.className, {
+          btnWidth: btn.offsetWidth,
+        });
+      });
+
+      textSpan.addEventListener("transitionend", (e) => {
+        if (e.propertyName === "max-width") {
+          console.log("[FOOTER DEBUG] text shown:", btn.className, {
+            finalWidth: textSpan.offsetWidth,
+          });
+        }
+      });
+    });
+  }
+
   // PROMPT編集画面から他ページへ遷移する際の未保存チェック
   function confirmPromptNavigation(e, button) {
     const editContent = document.querySelector(".memo-content.edit-mode");

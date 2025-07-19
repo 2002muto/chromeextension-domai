@@ -55,7 +55,8 @@ header {
 body {
   background-color: #314559;
   margin: 0; /* 余白リセット */
-  font-family: "Segoe UI", "Noto Sans JP", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    "Segoe UI", "Noto Sans JP", "Roboto", "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh; /* コンテンツ長に合わせて伸びる */
 }
 
@@ -123,7 +124,10 @@ body::-webkit-scrollbar,
   text-transform: uppercase;
   opacity: 0;
   white-space: normal; /* 折り返し許可で全表示 */
-  transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+  transition:
+    max-width 0.3s ease,
+    opacity 0.3s ease,
+    margin-left 0.3s ease;
 }
 
 /* JSで付与するクラス。textの横幅に合わせて表示 */
@@ -270,22 +274,29 @@ body::-webkit-scrollbar,
   white-space: normal; /* show entire title */
 }
 
-/* フッターのnav-btnホバー時はテキストを非表示にし、アニメーションも無効化する */
+/* フッターのnav-btnホバー時はヘッダーと同じ効果を適用 */
 footer .nav-btn:hover .nav-text {
-  display: none;
-  opacity: 0;
-  max-width: 0;
-  margin-left: 0;
+  display: block;
+  opacity: 1;
+  max-width: var(--nav-text-max, 200px);
+  margin-left: 8px;
 }
 
-/* フッターのnav-btnホバー時のアニメーションを完全無効化 */
+/* フッターのnav-btnホバー時のアニメーションをヘッダーと同じに */
 footer .nav-btn:hover {
-  filter: none !important;
-  transform: none !important;
-  width: 36px !important;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  justify-content: center !important;
+  width: auto;
+  border-radius: 18px;
+  padding: 0 12px;
+  justify-content: flex-start;
+  filter: brightness(1.2);
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* フッターのnav-btnにshow-textクラスが適用された時のスタイル */
+footer .nav-btn.show-text .nav-text {
+  margin-left: 8px;
+  opacity: 1;
+  max-width: var(--nav-text-max, 200px);
 }
 
 /* ホバー時の❌ボタン表示（一時的に無効化） */
