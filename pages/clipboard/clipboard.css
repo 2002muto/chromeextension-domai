@@ -55,10 +55,10 @@
   cursor: grab;
   display: flex; /* グリッドからflexに変更 */
   align-items: center; /* 垂直方向中央揃え */
-  gap: 12px;
+  gap: 0; /* ギャップを0にして手動で制御 */
   /* 背景は既存のグラデーションを維持 */
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
-  padding: 10px;
+  padding: 0; /* パディングを0にして手動で制御 */
   border-radius: 6px;
   min-height: 64px;
   line-height: 1.2;
@@ -74,7 +74,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 60px; /* 左側の緑色エリアの幅 */
+  width: 55px; /* 左側の緑色エリアの幅を小さく */
   background: #00e344; /* 緑色の背景 */
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
@@ -104,18 +104,19 @@
   color: #00e344; /* アイコンは緑色 */
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 36px;
-  height: 36px;
+  width: 40px; /* ボタンサイズを少し大きく */
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0; /* サイズ固定 */
   position: relative;
   z-index: 1;
+  margin: 12px 0 12px 15px; /* 緑色エリア内での位置調整 */
 }
 
 .clipboard-insert i {
-  font-size: 1.3rem;
+  font-size: 1.4rem; /* アイコンサイズを少し大きく */
   color: #00e344; /* アイコンは緑色 */
 }
 
@@ -148,6 +149,7 @@
   border-radius: 4px;
   font-size: 0.9rem;
   transition: height 0.2s ease;
+  margin: 12px 12px 12px 0; /* 右側と下側の余白を追加 */
 }
 
 /* スクロールが必要な場合のスタイル */
@@ -158,7 +160,7 @@
 /* プレースホルダーテキストのスタイル */
 .clipboard-textarea::placeholder {
   color: rgba(255, 255, 255, 0.5);
-  text-align: center; /* プレースホルダーテキストを中央揃え */
+  text-align: left; /* プレースホルダーテキストを左揃えに変更 */
   line-height: 24px; /* テキストを垂直方向中央に */
 }
 
@@ -171,8 +173,9 @@
 .clipboard-actions {
   display: flex;
   align-items: center;
-  gap: 2px; /* ボタン間をよりコンパクトに */
+  gap: 4px; /* ボタン間の間隔を少し広げる */
   flex-shrink: 0; /* サイズ固定 */
+  margin: 12px 12px 12px 0; /* 右側と下側の余白を追加 */
 }
 
 /* コピーボタン */
@@ -198,6 +201,7 @@
 
 .clipboard-copy:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.1); /* ホバー時に背景色を追加 */
   transform: translateY(-2px);
 }
 
