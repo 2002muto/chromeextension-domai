@@ -74,7 +74,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 40px; /* 左側の緑色エリアの幅を調整 */
+  width: 40px; /* 左側の緑色エリアの幅 */
   background: #00e344; /* 緑色の背景 */
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
@@ -112,7 +112,7 @@
   flex-shrink: 0; /* サイズ固定 */
   position: relative;
   z-index: 1;
-  margin: auto 10px; /* 中央に配置 */
+  margin: auto 0; /* 中央に配置 */
 }
 
 .clipboard-insert i {
@@ -149,7 +149,7 @@
   border-radius: 4px;
   font-size: 0.9rem;
   transition: height 0.2s ease;
-  margin: 12px 12px 12px 4px; /* 右側と下側の余白を追加 */
+  margin: 12px 12px 12px 0; /* 右側と下側の余白を追加 */
 }
 
 /* スクロールが必要な場合のスタイル */
