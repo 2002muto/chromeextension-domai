@@ -312,11 +312,11 @@ async function renderClipboardView() {
     li.addEventListener("dragleave", handleClipDragLeave);
     li.addEventListener("drop", handleClipDrop);
 
-    // 左側：挿入ボタン（Arrow-left-circle）
+    // 左側：戻るボタン（緑色の丸いボタン）
     const insertBtn = document.createElement("button");
     insertBtn.className = "clipboard-insert";
-    insertBtn.innerHTML = ""; // アイコンはCSSの::beforeで描画
-    console.log("init: insert button created (icon via ::before)");
+    insertBtn.innerHTML = '<i class="bi bi-arrow-left"></i>'; // 左向き矢印アイコン
+    console.log("init: insert button created with arrow icon");
     insertBtn.title = "挿入";
     insertBtn.addEventListener("click", () => {
       // 最新の textarea の値を取得して送信
@@ -430,10 +430,10 @@ async function renderClipboardView() {
     const actionsContainer = document.createElement("div");
     actionsContainer.className = "clipboard-actions";
 
-    // 右１：コピーボタン（bi bi-copy）
+    // 右１：コピーボタン（重なった四角形アイコン）
     const copyBtn = document.createElement("button");
     copyBtn.className = "clipboard-copy";
-    copyBtn.innerHTML = '<i class="bi bi-copy"></i>';
+    copyBtn.innerHTML = '<i class="bi bi-files"></i>';
     copyBtn.title = "コピー";
     copyBtn.addEventListener("click", async () => {
       const currentText = ta.value;
@@ -489,7 +489,7 @@ async function renderClipboardView() {
     // 右２：ドラッグハンドル（bi bi-grip-vertical）
     const dragHandle = document.createElement("div");
     dragHandle.className = "clipboard-drag-handle";
-    dragHandle.innerHTML = '<i class="bi bi-grip-vertical"></i>';
+    dragHandle.innerHTML = '<i class="bi bi-grip-vertical grip-icon"></i>';
     dragHandle.title = "ドラッグして並び替え";
     dragHandle.draggable = true; // ハンドルのみドラッグ可能
     dragHandle.addEventListener("dragstart", (e) => {
