@@ -1580,7 +1580,14 @@ function initializeHeaderDragAndDrop() {
 
         console.log("[DragDrop] 移動後のDOM順序:", newOrder);
 
-        // ドラッグ&ドロップ完了（トーストメッセージは不要）
+        // 順番入れ替え完了のトーストメッセージを表示
+        if (window.AppUtils && window.AppUtils.showToast) {
+          window.AppUtils.showToast("順番を保存しました", "info");
+        } else if (typeof showToast === "function") {
+          showToast("順番を保存しました", "info");
+        }
+
+        // ドラッグ&ドロップ完了
         console.log("[DragDrop] 移動完了:", draggedId, "→", button.id);
 
         // ドラッグ&ドロップフラグをリセット

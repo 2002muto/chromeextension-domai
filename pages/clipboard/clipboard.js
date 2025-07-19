@@ -1342,7 +1342,7 @@ function showExportSuccessMessage(fileName) {
 
   if (window.AppUtils && window.AppUtils.showToast) {
     console.log("[CLIPBOARD] エクスポート成功トーストを表示");
-    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "success");
+    window.AppUtils.showToast(`エクスポート完了: ${fileName}`, "info");
   } else {
     console.error("[CLIPBOARD] AppUtils.showToastが利用できません");
   }
