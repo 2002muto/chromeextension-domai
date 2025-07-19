@@ -741,6 +741,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else if (typeof saveAndGoBack === "function") {
                       await saveAndGoBack();
                     }
+                    // saveAndGoBack内でrenderList()が呼び出されるため、ここでは呼び出さない
                   },
                   onDiscard: () => {
                     // 破棄して戻る
@@ -750,6 +751,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else if (typeof discardAndGoBack === "function") {
                       discardAndGoBack();
                     }
+                    // discardAndGoBack内でrenderList()が呼び出されるため、ここでは呼び出さない
                   },
                 });
               } else {
@@ -2479,7 +2481,7 @@ window.addEventListener("load", () => {
       subtree: true,
     });
 
-console.log("COMMON: 今後実装予定のアイコン監視を開始しました");
+    console.log("COMMON: 今後実装予定のアイコン監視を開始しました");
   }
 });
 

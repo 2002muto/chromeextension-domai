@@ -224,14 +224,20 @@ async function saveAndGoBack() {
     }
 
     await save(PROMPT_KEY, prompts);
-    console.log("[PROMPT] 変更を保存して一覧画面に遷移しました");
+    console.log("[PROMPT] 変更を保存しました");
   }
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
+  console.log("[PROMPT] window.promptsを更新:", window.prompts);
 
   // ヘッダーのform-headerを削除
   document.querySelector(".form-header")?.remove();
 
   // 一覧画面に遷移
-  renderList();
+  console.log("[PROMPT] 一覧画面に遷移開始");
+  await renderList();
+  console.log("[PROMPT] 一覧画面に遷移完了");
 }
 
 // 保存せずに戻る処理
@@ -255,13 +261,19 @@ async function discardAndGoBack() {
     }
   }
 
-  console.log("[PROMPT] 変更を破棄して一覧画面に遷移しました");
+  console.log("[PROMPT] 変更を破棄しました");
+
+  // グローバルに最新のpromptsを設定
+  window.prompts = prompts;
+  console.log("[PROMPT] window.promptsを更新:", window.prompts);
 
   // ヘッダーのform-headerを削除
   document.querySelector(".form-header")?.remove();
 
   // 一覧画面に遷移
-  renderList();
+  console.log("[PROMPT] 一覧画面に遷移開始");
+  await renderList();
+  console.log("[PROMPT] 一覧画面に遷移完了");
 }
 
 /* ━━━━━━━━━ 1. グローバル状態 ━━━━━━━━━ */
@@ -596,7 +608,6 @@ async function renderList() {
   // ボタンの状態を更新
   updateExportButtonState();
 
-  // ヘッダーのPROMPTアイコンのクリックイベント
   // common.jsでheaderアイコンのホバー処理が正しく動作するように確認
   console.log("メインページ: common.jsのheaderアイコン初期化処理を確認");
 
@@ -3841,6 +3852,31 @@ document.addEventListener("DOMContentLoaded", async () => {
           console.log(
             `[PROMPT] ${btn.id}: mouseenter=${hasMouseEnter}, mouseleave=${hasMouseLeave}`
           );
+
+          // イベントリスナーが設定されていない場合は手動で設定
+          if (!hasMouseEnter || !hasMouseLeave) {
+            console.log(`[PROMPT] ${btn.id}にホバー処理を手動で設定`);
+            btn.addEventListener("mouseenter", () => {
+              const state = btn.classList.contains("active")
+                ? "active"
+                : "inactive";
+              const textWidth = textSpan.scrollWidth;
+              btn.style.setProperty("--nav-text-max", `${textWidth}px`);
+              btn.classList.add("show-text");
+              console.log("[PROMPT] hover start:", btn.id, state, {
+                btnWidth: btn.offsetWidth,
+                textWidth,
+              });
+            });
+
+            btn.addEventListener("mouseleave", () => {
+              btn.classList.remove("show-text");
+              btn.style.removeProperty("--nav-text-max");
+              console.log("[PROMPT] hover end:", btn.id, {
+                btnWidth: btn.offsetWidth,
+              });
+            });
+          }
         }
       });
     }
