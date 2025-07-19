@@ -96,14 +96,14 @@
 
 /* 左側の白い丸いボタン */
 .clipboard-insert {
-  background: #ffffff; /* 白色の背景 */
-  border: 2px solid #ffffff; /* 白色のボーダー */
+  background: transparent; /* 背景を透明に */
+  border: 3px solid #ffffff; /* 白色のボーダーを太く */
   box-sizing: border-box;
   padding: 8px;
   border-radius: 50%; /* 丸いボタン */
-  color: #00e344; /* アイコンは緑色 */
+  color: #ffffff; /* アイコンは白色 */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: none; /* ホバーアニメーションを無効化 */
   width: 40px; /* ボタンサイズを少し大きく */
   height: 40px;
   display: flex;
@@ -117,15 +117,15 @@
 
 .clipboard-insert i {
   font-size: 1.4rem; /* アイコンサイズを少し大きく */
-  color: #00e344; /* アイコンは緑色 */
+  color: #ffffff; /* アイコンは白色 */
 }
 
-/* ホバー時の効果 */
+/* ホバー時の効果を削除 */
 .clipboard-insert:hover {
-  background: #f8f9fa; /* ホバー時は少し暗い白 */
-  border-color: #e9ecef;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: transparent; /* ホバー時も透明を維持 */
+  border-color: #ffffff; /* ボーダー色を維持 */
+  transform: none; /* アニメーションを無効化 */
+  box-shadow: none; /* シャドウを削除 */
 }
 
 /* 中央のテキストエリア */
