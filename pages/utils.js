@@ -2341,17 +2341,17 @@ function showToast(message, type = "info") {
   // 現在のページのURLからページを判定
   const currentPath = window.location.pathname;
   if (currentPath.includes("/memo/")) {
-    pageColor = "#078ab9"; // MEMO: 青色
+    pageColor = "#2563eb"; // MEMO: 鮮やかな青色
   } else if (currentPath.includes("/clipboard/")) {
-    pageColor = "#04e949"; // CLIPBOARD: 緑色
+    pageColor = "#059669"; // CLIPBOARD: 鮮やかな緑色
   } else if (currentPath.includes("/prompt/")) {
-    pageColor = "#667eea"; // PROMPT: 紫青色
+    pageColor = "#7c3aed"; // PROMPT: 鮮やかな紫色
   } else if (currentPath.includes("/iframe/")) {
-    pageColor = "#c3c3c3"; // IFRAME: グレー
+    pageColor = "#6b7280"; // IFRAME: グレー
   } else if (currentPath.includes("/status/")) {
-    pageColor = "#10b981"; // STATUS: 緑色
+    pageColor = "#dc2626"; // STATUS: 鮮やかな赤色
   } else if (currentPath.includes("/setting/")) {
-    pageColor = "#fff04b"; // SETTING: 黄色
+    pageColor = "#d97706"; // SETTING: 鮮やかなオレンジ色
   }
 
   // アイコンと色をtypeで切り替え（ページカラーを優先）
