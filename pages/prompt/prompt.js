@@ -1982,7 +1982,10 @@ function renderEdit(idx, isNew = false) {
     row.innerHTML = `
       <div class="prompt-section">
         <div class="prompt-header-row">
-          <label class="prompt-field-label"></label>
+          <div class="prompt-label-container">
+            <label class="prompt-field-label"></label>
+            <i class="bi bi-grip-vertical grip-icon"></i>
+          </div>
           <div class="prompt-field-actions">
             <div class="form-check form-switch">
           <input class="form-check-input field-toggle" type="checkbox" ${
