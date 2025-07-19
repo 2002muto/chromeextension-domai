@@ -871,105 +871,24 @@ document.addEventListener("DOMContentLoaded", function () {
                   message:
                     "プロンプト内容に変更があります。<br>保存せずに移動すると変更が失われます。",
                   onSave: async () => {
-                    try {
-                      console.log("[NAV] 保存処理を開始します");
-
-                      // プロンプト配列の初期化確認
-                      if (!window.prompts) {
-                        window.prompts = [];
-                      }
-
-                      const titleInput = document.querySelector(".title-input");
-                      const wrap = document.querySelector("#field-wrap");
-
-                      if (titleInput && wrap) {
-                        let obj;
-
-                        if (isNew) {
-                          // 新規作成の場合は新しいオブジェクトを作成
-                          obj = {
-                            id: Date.now(),
-                            title: titleInput.value.trim() || "(無題)",
-                            fields: [],
-                            archived: false,
-                          };
-                          window.prompts.push(obj);
-                          console.log("[NAV] 新規プロンプトを作成:", obj);
-                        } else {
-                          // 既存編集の場合
-                          obj = window.prompts[promptIndex];
-                          if (!obj) {
-                            console.error(
-                              "[NAV] 既存プロンプトが見つかりません"
-                            );
-                            window.location.href = button.getAttribute("href");
-                            return;
-                          }
-                          obj.title = titleInput.value.trim() || "(無題)";
-                          console.log("[NAV] 既存プロンプトを更新:", obj);
-                        }
-
-                        // フィールドデータを更新
-                        obj.fields = [...wrap.children].map((w) => ({
-                          text:
-                            w.querySelector(".prompt-field-textarea")?.value ||
-                            "",
-                          on:
-                            w.querySelector(".field-toggle")?.checked || false,
-                        }));
-
-                        // 保存してからページ遷移
-                        if (typeof window.save === "function") {
-                          await window.save("prompts", window.prompts);
-                          console.log("[NAV] window.saveで保存成功");
-                        } else if (
-                          typeof window.AppUtils?.saveStorage === "function"
-                        ) {
-                          await window.AppUtils.saveStorage(
-                            "prompts",
-                            window.prompts
-                          );
-                          console.log("[NAV] AppUtils.saveStorageで保存成功");
-                        } else {
-                          // Fallback保存
-                          chrome.storage.local.set(
-                            { prompts: window.prompts },
-                            () => {
-                              if (chrome.runtime.lastError) {
-                                console.error(
-                                  "[NAV] Fallback保存に失敗:",
-                                  chrome.runtime.lastError
-                                );
-                              } else {
-                                console.log("[NAV] Fallback保存成功");
-                              }
-                            }
-                          );
-                        }
-
-                        console.log("[NAV] 変更を保存してページ遷移しました");
-                      } else {
-                        console.error("[NAV] 必要な要素が見つかりません");
-                      }
-
-                      // フォームヘッダーを削除
-                      document.querySelector(".form-header")?.remove();
-                      // ページ遷移を実行
-                      window.location.href = button.getAttribute("href");
-                    } catch (error) {
-                      console.error("[NAV] 保存中にエラーが発生:", error);
-                      // エラーが発生してもページ遷移は実行
-                      document.querySelector(".form-header")?.remove();
-                      window.location.href = button.getAttribute("href");
+                    // 保存して戻る
+                    console.log("[PROMPT] 変更を保存して一覧画面に遷移");
+                    if (window.saveAndGoBack) {
+                      await window.saveAndGoBack();
+                    } else if (typeof saveAndGoBack === "function") {
+                      await saveAndGoBack();
                     }
+                    // saveAndGoBack内でrenderList()が呼び出されるため、ここでは呼び出さない
                   },
                   onDiscard: () => {
-                    // 破棄してページ遷移
-                    console.log("[NAV] 変更を破棄してページ遷移しました");
-                    // フォームヘッダーを削除
-                    document.querySelector(".form-header")?.remove();
-                    // ページ遷移を実行
-                    window.location.href = button.getAttribute("href");
+                    // 破棄して戻る
+                    console.log("[PROMPT] 変更を破棄して一覧画面に遷移");
+                    if (window.discardAndGoBack) {
+                      window.discardAndGoBack();
+                    } else if (typeof discardAndGoBack === "function") {
+                      discardAndGoBack();
+                    }
+                    // discardAndGoBack内でrenderList()が呼び出されるため、ここでは呼び出さない
                   },
                 });
                 return; // ここで処理を終了

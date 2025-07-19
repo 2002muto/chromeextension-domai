@@ -158,6 +158,8 @@ function handlePromptHeaderClick(e) {
             // 保存して戻る
             console.log("[PROMPT] 変更を保存して一覧画面に遷移");
             await saveAndGoBack();
+            // ★ 修正：保存後に一覧画面へ遷移する
+            await renderList();
           },
           onDiscard: () => {
             // 破棄して戻る
@@ -234,10 +236,10 @@ async function saveAndGoBack() {
   // ヘッダーのform-headerを削除
   document.querySelector(".form-header")?.remove();
 
-  // 一覧画面に遷移
-  console.log("[PROMPT] 一覧画面に遷移開始");
-  await renderList();
-  console.log("[PROMPT] 一覧画面に遷移完了");
+  // ★ 修正：一覧画面への遷移は呼び出し元で行うため、ここでは削除
+  // console.log("[PROMPT] 一覧画面に遷移開始");
+  // await renderList();
+  // console.log("[PROMPT] 一覧画面に遷移完了");
 }
 
 // 保存せずに戻る処理
