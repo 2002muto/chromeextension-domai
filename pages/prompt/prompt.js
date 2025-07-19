@@ -543,6 +543,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 async function renderList() {
   console.log("[renderList] start");
 
+  // 実行画面の離脱ハンドラーがあれば解除
+  if (window.runUnloadHandler) {
+    window.removeEventListener("pagehide", window.runUnloadHandler);
+    window.runUnloadHandler = null;
+  }
+
   // ページ状態を保存
   if (window.PageStateManager) {
     window.PageStateManager.savePageState("prompt", {
@@ -2335,6 +2341,10 @@ function renderRun(idx) {
      </button>`
   );
   header.querySelector("button").onclick = () => {
+    if (window.runUnloadHandler) {
+      window.removeEventListener("pagehide", window.runUnloadHandler);
+      window.runUnloadHandler = null;
+    }
     header.remove();
     renderEdit(idx);
   };
@@ -2366,6 +2376,12 @@ function renderRun(idx) {
       histToggleChecked
     );
 
+    // 離脱ハンドラーを解除
+    if (window.runUnloadHandler) {
+      window.removeEventListener("pagehide", window.runUnloadHandler);
+      window.runUnloadHandler = null;
+    }
+
     header.remove();
     renderList();
   };
@@ -2395,6 +2411,10 @@ function renderRun(idx) {
 
     // プロンプト追加ボタンのクリックイベント
     body.querySelector(".btn-add-first-prompt").onclick = () => {
+      if (window.runUnloadHandler) {
+        window.removeEventListener("pagehide", window.runUnloadHandler);
+        window.runUnloadHandler = null;
+      }
       header.remove();
       renderEdit(idx);
     };
@@ -2633,6 +2653,15 @@ function renderRun(idx) {
       }
     });
   });
+
+  // ページ離脱時にも追加入力を保存
+  function handleRunPageHide() {
+    const histToggleChecked = $("#hist-sw")?.checked;
+    const extras = [...body.querySelectorAll(".extra")].map((t) => t.value);
+    handleScreenTransition(obj, extras, "pagehide", histToggleChecked);
+  }
+  window.runUnloadHandler = handleRunPageHide;
+  window.addEventListener("pagehide", handleRunPageHide);
 
   /* ── 内部 send() ── */
   async function send(index) {
