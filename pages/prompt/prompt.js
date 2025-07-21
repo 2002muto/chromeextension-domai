@@ -2621,6 +2621,41 @@ function renderRun(idx) {
   promptBlocks.forEach((block) => {
     // プロンプト実行画面ではdraggableをfalseに設定
     block.draggable = false;
+
+    // ドラッグ開始を完全にブロック
+    block.addEventListener(
+      "dragstart",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("[DEBUG] プロンプト実行画面でドラッグ開始をブロック");
+        return false;
+      },
+      true
+    );
+
+    // ドラッグオーバーをブロック
+    block.addEventListener(
+      "dragover",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      },
+      true
+    );
+
+    // ドロップをブロック
+    block.addEventListener(
+      "drop",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      },
+      true
+    );
+
     console.log("[DEBUG] プロンプト実行画面でdraggableを無効化:", block);
   });
 
@@ -2845,121 +2880,53 @@ function renderRun(idx) {
 
   /* ── ドラッグ&ドロップハンドラー ── */
   function handleRunDragStart(e) {
-    const fromIndex = +e.target.dataset.index;
-    e.dataTransfer.setData("text/plain", fromIndex);
-    e.target.classList.add("dragging");
-    console.log("[DRAG START] from index:", fromIndex);
+    // プロンプト実行画面ではドラッグ＆ドロップを無効化
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(
+      "[DRAG START] プロンプト実行画面ではドラッグ＆ドロップが無効化されています"
+    );
+    return false;
   }
 
   function handleRunDragOver(e) {
+    // プロンプト実行画面ではドラッグ＆ドロップを無効化
     e.preventDefault();
-
-    // 他の要素のドロップインジケーターをクリア
-    body
-      .querySelectorAll(".prompt-block.drop-indicator")
-      .forEach((block) =>
-        block.classList.remove(
-          "drop-indicator",
-          "drop-above",
-          "drop-below",
-          "active"
-        )
-      );
-
-    // マウスの位置に基づいてドロップ位置を判定
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mouseY = e.clientY;
-    const blockCenter = rect.top + rect.height / 2;
-
-    // ドロップ位置のインジケーターを表示
-    e.currentTarget.classList.add("drop-indicator", "active");
-
-    if (mouseY < blockCenter) {
-      // マウスが要素の上半分にある場合、要素の上に挿入
-      e.currentTarget.classList.add("drop-above");
-      console.log("[RUN DND] ドロップ位置: 上に挿入");
-    } else {
-      // マウスが要素の下半分にある場合、要素の下に挿入
-      e.currentTarget.classList.add("drop-below");
-      console.log("[RUN DND] ドロップ位置: 下に挿入");
-    }
+    e.stopPropagation();
+    console.log(
+      "[DRAG OVER] プロンプト実行画面ではドラッグ＆ドロップが無効化されています"
+    );
+    return false;
   }
 
   function handleRunDragLeave(e) {
-    e.currentTarget.classList.remove(
-      "drop-indicator",
-      "drop-above",
-      "drop-below",
-      "active"
+    // プロンプト実行画面ではドラッグ＆ドロップを無効化
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(
+      "[DRAG LEAVE] プロンプト実行画面ではドラッグ＆ドロップが無効化されています"
     );
+    return false;
   }
 
   function handleRunDrop(e) {
+    // プロンプト実行画面ではドラッグ＆ドロップを無効化
     e.preventDefault();
-    const fromIndex = +e.dataTransfer.getData("text/plain");
-    const toIndex = +e.currentTarget.dataset.index;
-
-    if (fromIndex !== toIndex) {
-      console.log("[DRAG DROP] from:", fromIndex, "to:", toIndex);
-
-      // ドロップ位置を判定
-      const rect = e.currentTarget.getBoundingClientRect();
-      const mouseY = e.clientY;
-      const blockCenter = rect.top + rect.height / 2;
-      const dropAbove = mouseY < blockCenter;
-
-      let actualToIndex = toIndex;
-
-      // obj.fields の順序を変更
-      const movedField = obj.fields.splice(fromIndex, 1)[0];
-
-      if (dropAbove) {
-        // 要素の上に挿入
-        obj.fields.splice(toIndex, 0, movedField);
-        console.log("[RUN DND] 要素の上に挿入:", fromIndex, "→", toIndex);
-      } else {
-        // 要素の下に挿入
-        actualToIndex = toIndex + 1;
-        obj.fields.splice(actualToIndex, 0, movedField);
-        console.log("[RUN DND] 要素の下に挿入:", fromIndex, "→", actualToIndex);
-      }
-
-      // プロンプトデータを保存
-      save(PROMPT_KEY, prompts);
-
-      // ドラッグ＆ドロップ成功メッセージを表示
-      console.log("[PROMPT RUN D&D] showDragDropSuccessMessage呼び出し前:", {
-        fromIndex: fromIndex,
-        actualToIndex: actualToIndex,
-        AppUtils: !!window.AppUtils,
-      });
-      showDragDropSuccessMessage(fromIndex + 1, actualToIndex + 1);
-
-      // 画面を再描画
-      renderRun(idx);
-    }
-
-    e.currentTarget.classList.remove(
-      "drop-indicator",
-      "drop-above",
-      "drop-below",
-      "active"
+    e.stopPropagation();
+    console.log(
+      "[DRAG DROP] プロンプト実行画面ではドラッグ＆ドロップが無効化されています"
     );
+    return false;
   }
 
   function handleRunDragEnd(e) {
-    e.target.classList.remove("dragging");
-    // 全ての ドロップインジケーターをクリーンアップ
-    body
-      .querySelectorAll(".prompt-block")
-      .forEach((block) =>
-        block.classList.remove(
-          "drop-indicator",
-          "drop-above",
-          "drop-below",
-          "active"
-        )
-      );
+    // プロンプト実行画面ではドラッグ＆ドロップを無効化
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(
+      "[DRAG END] プロンプト実行画面ではドラッグ＆ドロップが無効化されています"
+    );
+    return false;
   }
 
   /* ── ブロック生成 ── */

@@ -1373,6 +1373,15 @@ body .prompt-run-box .prompt-block:last-of-type,
 /* プロンプト実行画面ではドラッグ＆ドロップ関連のアニメーションを無効化 */
 .memo-content.run-mode .prompt-block {
   transition: none !important;
+  pointer-events: auto !important;
+}
+
+/* プロンプト実行画面ではドラッグ＆ドロップイベントを完全に無効化 */
+.memo-content.run-mode .prompt-block {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
 /* プロンプトヘッダー（ラベル＋COPYボタン） */
