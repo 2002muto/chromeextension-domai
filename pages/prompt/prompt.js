@@ -1947,7 +1947,7 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    row.draggable = true;
+    row.draggable = false; // ドラッグ開始はグリップアイコンのみ
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
@@ -2119,6 +2119,11 @@ function renderEdit(idx, isNew = false) {
                     rows="4">${text}</textarea>
         </div>
       </div>`;
+    // グリップアイコンのみドラッグ可能に設定
+    const grip = row.querySelector(".grip-icon");
+    if (grip) {
+      grip.draggable = true;
+    }
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
 
@@ -2235,7 +2240,8 @@ function renderEdit(idx, isNew = false) {
       }
 
       // ドラッグ＆ドロップの初期化を確実に行う
-      if (row.draggable) {
+      const gripCheck = row.querySelector(".grip-icon");
+      if (gripCheck && gripCheck.draggable) {
         console.log("[DND] 新しいフィールドのドラッグ＆ドロップを初期化:", row);
       }
     }, 50);
