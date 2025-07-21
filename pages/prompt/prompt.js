@@ -1933,8 +1933,7 @@ function renderEdit(idx, isNew = false) {
     );
 
     existingFields.forEach((field, index) => {
-      const handle = field.querySelector(".grip-icon");
-      if (handle && handle.draggable) {
+      if (field.draggable) {
         console.log(
           `[DND] フィールド ${index + 1} のドラッグ＆ドロップ確認済み`
         );
@@ -1948,13 +1947,17 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    row.draggable = false; // drag handle will control dragging
+    row.draggable = true; // enable row dragging
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
 
     const handleDragStart = (e) => {
-      console.log("[DND] ドラッグ開始 (grip icon)");
+      if (!e.target.closest(".grip-icon")) {
+        e.preventDefault();
+        return;
+      }
+      console.log("[DND] ドラッグ開始");
       dragStartIndex = [...wrap.children].indexOf(row);
       e.dataTransfer.setData("text/plain", dragStartIndex.toString());
       e.dataTransfer.effectAllowed = "move";
@@ -2075,7 +2078,7 @@ function renderEdit(idx, isNew = false) {
     });
 
     const handleDragEnd = () => {
-      console.log("[DND] ドラッグ終了 (grip icon)");
+      console.log("[DND] ドラッグ終了");
       row.classList.remove("dragging");
       dragStartIndex = null;
 
@@ -2120,11 +2123,8 @@ function renderEdit(idx, isNew = false) {
                     rows="4">${text}</textarea>
         </div>
       </div>`;
-    const gripIcon = row.querySelector(".grip-icon");
-    if (gripIcon) {
-      gripIcon.addEventListener("dragstart", handleDragStart);
-      gripIcon.addEventListener("dragend", handleDragEnd);
-    }
+    row.addEventListener("dragstart", handleDragStart);
+    row.addEventListener("dragend", handleDragEnd);
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
 
