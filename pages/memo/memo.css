@@ -344,7 +344,7 @@ body {
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
   padding: 10px;
   border-radius: 6px;
-  min-height: 64px;
+  height: 64px;
   line-height: 1.2;
   overflow: visible;
   transition: all 0.3s ease;

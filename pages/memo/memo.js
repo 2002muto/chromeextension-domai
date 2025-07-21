@@ -615,7 +615,7 @@ async function renderListView() {
       // title
       const span = document.createElement("span");
       span.className = "title";
-      span.textContent = m.title || "無題";
+      span.textContent = m.title ? (m.title.length > 20 ? m.title.substring(0, 20) + "..." : m.title) : "無題";
       li.appendChild(span);
 
       // archive-icon (just UI, no action)
