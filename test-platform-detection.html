@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Detection Test</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div style="padding: 20px; color: white">
+      <h1>Platform Detection Test</h1>
+      <div id="platform-info">
+        <p>Platform: <span id="platform-name">Loading...</span></p>
+        <p>CSS Classes: <span id="css-classes">Loading...</span></p>
+        <p>Custom Properties: <span id="custom-props">Loading...</span></p>
+      </div>
+
+      <div style="margin-top: 20px">
+        <h2>Test Elements</h2>
+        <button class="nav-btn">Test Button</button>
+        <div
+          style="
+            height: 100px;
+            overflow-y: scroll;
+            background: #555;
+            margin: 10px 0;
+            padding: 10px;
+          "
+        >
+          <p>Scrollable content to test scrollbar styling</p>
+          <p>Line 1</p>
+          <p>Line 2</p>
+          <p>Line 3</p>
+          <p>Line 4</p>
+          <p>Line 5</p>
+          <p>Line 6</p>
+          <p>Line 7</p>
+          <p>Line 8</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="pages/common.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // プラットフォーム情報を表示
+        setTimeout(() => {
+          const platform = PlatformDetector.detect();
+          const classes = document.body.className;
+          const root = document.documentElement;
+
+          document.getElementById("platform-name").textContent = platform;
+          document.getElementById("css-classes").textContent =
+            classes || "None";
+
+          // カスタムプロパティの値を取得
+          const customProps = {
+            lineHeight: getComputedStyle(root).getPropertyValue(
+              "--platform-line-height-multiplier"
+            ),
+            letterSpacing: getComputedStyle(root).getPropertyValue(
+              "--platform-letter-spacing-offset"
+            ),
+            scrollbarWidth: getComputedStyle(root).getPropertyValue(
+              "--platform-sb-width"
+            ),
+            paddingAdjustment: getComputedStyle(root).getPropertyValue(
+              "--platform-padding-adjustment"
+            ),
+          };
+
+          document.getElementById("custom-props").innerHTML = JSON.stringify(
+            customProps,
+            null,
+            2
+          )
+            .replace(/\n/g, "<br>")
+            .replace(/ /g, "&nbsp;");
+        }, 100);
+      });
+    </script>
+  </body>
+</html>

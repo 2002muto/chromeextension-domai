@@ -1,6 +1,161 @@
 // File: pages/common.js
 // ナビゲーションボタンのクリック時展開機能
 
+// プラットフォーム検出とクロスプラットフォーム対応
+const PlatformDetector = {
+  // プラットフォーム検出
+  detect: () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const platform = navigator.platform.toLowerCase();
+
+    console.log("[Platform] UserAgent:", userAgent);
+    console.log("[Platform] Platform:", platform);
+
+    if (platform.includes("win") || userAgent.includes("windows")) {
+      return "windows";
+    } else if (platform.includes("mac") || userAgent.includes("mac")) {
+      return "mac";
+    } else if (platform.includes("linux") || userAgent.includes("linux")) {
+      return "linux";
+    } else {
+      return "unknown";
+    }
+  },
+
+  // プラットフォーム固有のCSSクラスを適用
+  applyPlatformClasses: () => {
+    const platform = PlatformDetector.detect();
+    const body = document.body;
+
+    // 既存のプラットフォームクラスを削除
+    body.classList.remove(
+      "platform-windows",
+      "platform-mac",
+      "platform-linux",
+      "platform-unknown"
+    );
+
+    // 新しいプラットフォームクラスを追加
+    body.classList.add(`platform-${platform}`);
+
+    console.log(`[Platform] Applied class: platform-${platform}`);
+    return platform;
+  },
+
+  // プラットフォーム固有の値を取得
+  getPlatformSpecificValues: () => {
+    const platform = PlatformDetector.detect();
+
+    const config = {
+      windows: {
+        fontAdjustments: {
+          lineHeightMultiplier: 1.1,
+          letterSpacingOffset: "0.01em",
+          fontWeightAdjustment: 100,
+        },
+        scrollbarConfig: {
+          width: "8px",
+          thumbColor: "#9e9e9e",
+          trackColor: "#f0f0f0",
+        },
+        boxModelFixes: {
+          paddingAdjustment: "1px",
+          marginCompensation: "0.5px",
+        },
+      },
+      mac: {
+        fontAdjustments: {
+          lineHeightMultiplier: 1.0,
+          letterSpacingOffset: "0em",
+          fontWeightAdjustment: 0,
+        },
+        scrollbarConfig: {
+          width: "6px",
+          thumbColor: "#9e9e9e",
+          trackColor: "#f0f0f0",
+        },
+        boxModelFixes: {
+          paddingAdjustment: "0px",
+          marginCompensation: "0px",
+        },
+      },
+      linux: {
+        fontAdjustments: {
+          lineHeightMultiplier: 1.0,
+          letterSpacingOffset: "0em",
+          fontWeightAdjustment: 0,
+        },
+        scrollbarConfig: {
+          width: "6px",
+          thumbColor: "#9e9e9e",
+          trackColor: "#f0f0f0",
+        },
+        boxModelFixes: {
+          paddingAdjustment: "0px",
+          marginCompensation: "0px",
+        },
+      },
+    };
+
+    return config[platform] || config.linux; // デフォルトはLinux設定
+  },
+
+  // CSS カスタムプロパティを設定
+  applyCSSCustomProperties: () => {
+    const values = PlatformDetector.getPlatformSpecificValues();
+    const root = document.documentElement;
+
+    // フォント調整
+    root.style.setProperty(
+      "--platform-line-height-multiplier",
+      values.fontAdjustments.lineHeightMultiplier
+    );
+    root.style.setProperty(
+      "--platform-letter-spacing-offset",
+      values.fontAdjustments.letterSpacingOffset
+    );
+    root.style.setProperty(
+      "--platform-font-weight-adjustment",
+      values.fontAdjustments.fontWeightAdjustment
+    );
+
+    // スクロールバー設定
+    root.style.setProperty("--platform-sb-width", values.scrollbarConfig.width);
+    root.style.setProperty(
+      "--platform-sb-thumb",
+      values.scrollbarConfig.thumbColor
+    );
+    root.style.setProperty(
+      "--platform-sb-track",
+      values.scrollbarConfig.trackColor
+    );
+
+    // ボックスモデル調整
+    root.style.setProperty(
+      "--platform-padding-adjustment",
+      values.boxModelFixes.paddingAdjustment
+    );
+    root.style.setProperty(
+      "--platform-margin-compensation",
+      values.boxModelFixes.marginCompensation
+    );
+
+    console.log("[Platform] Applied CSS custom properties:", values);
+  },
+
+  // 初期化
+  initialize: () => {
+    const platform = PlatformDetector.applyPlatformClasses();
+    PlatformDetector.applyCSSCustomProperties();
+
+    console.log(`[Platform] Initialized for platform: ${platform}`);
+    return platform;
+  },
+};
+
+// グローバルに公開
+window.PlatformDetector = PlatformDetector;
+
 // ページ状態管理のためのユーティリティ関数
 const PageStateManager = {
   // ページ状態を保存
@@ -355,6 +510,9 @@ function restoreSettingPageState(savedState) {
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("[PageState] DOMContentLoaded - ページ状態管理システム初期化");
+
+  // プラットフォーム検出を初期化
+  PlatformDetector.initialize();
 
   // 現在のページを確認
   const currentPage = window.location.pathname;
