@@ -2609,15 +2609,19 @@ function renderRun(idx) {
   });
 
   /* ── ドラッグ&ドロップイベントハンドラー ── */
+  // プロンプト実行画面ではドラッグ＆ドロップを無効化
   const promptBlocks = body.querySelectorAll(".prompt-block");
   console.log("[DEBUG] promptBlocks要素数:", promptBlocks.length);
+  console.log(
+    "[DEBUG] プロンプト実行画面ではドラッグ＆ドロップを無効化しています"
+  );
 
+  // プロンプト実行画面ではドラッグ＆ドロップを無効化
+  // 編集画面でのみドラッグ＆ドロップが有効になります
   promptBlocks.forEach((block) => {
-    block.addEventListener("dragstart", handleRunDragStart);
-    block.addEventListener("dragover", handleRunDragOver);
-    block.addEventListener("dragleave", handleRunDragLeave);
-    block.addEventListener("drop", handleRunDrop);
-    block.addEventListener("dragend", handleRunDragEnd);
+    // プロンプト実行画面ではdraggableをfalseに設定
+    block.draggable = false;
+    console.log("[DEBUG] プロンプト実行画面でdraggableを無効化:", block);
   });
 
   /* ── ドラフト復元・保存 + 自動リサイズ ── */

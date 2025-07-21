@@ -1311,6 +1311,11 @@ textarea.field-text,
   cursor: grab;
 }
 
+/* プロンプト実行画面ではドラッグ＆ドロップを無効化 */
+.memo-content.run-mode .prompt-block {
+  cursor: default;
+}
+
 /* 最後のプロンプトブロックのボーダーを削除（全ての可能性を網羅・詳細度強化） */
 .prompt-field:last-of-type,
 .prompt-block:last-of-type,
@@ -1345,6 +1350,29 @@ body .prompt-run-box .prompt-block:last-of-type,
   background: rgba(255, 255, 255, 0.05);
   transform: translateY(-2px);
   border-radius: 8px;
+}
+
+/* プロンプト実行画面ではドラッグ＆ドロップの視覚効果を無効化 */
+.memo-content.run-mode .prompt-block.dragging,
+.memo-content.run-mode .prompt-block.drag-over,
+.memo-content.run-mode .prompt-block.drop-indicator {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+  outline: none;
+  outline-offset: 0;
+}
+
+/* プロンプト実行画面ではドロップインジケーターを無効化 */
+.memo-content.run-mode .prompt-block.drop-indicator::before {
+  display: none !important;
+}
+
+/* プロンプト実行画面ではドラッグ＆ドロップ関連のアニメーションを無効化 */
+.memo-content.run-mode .prompt-block {
+  transition: none !important;
 }
 
 /* プロンプトヘッダー（ラベル＋COPYボタン） */
