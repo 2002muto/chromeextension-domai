@@ -1829,6 +1829,21 @@ window.addEventListener("load", () => {
   }
 });
 
+// クロスプラットフォーム対応
+function applyPlatformSpecificStyles() {
+  const platform = navigator.platform.toLowerCase();
+  if (platform.includes("win")) {
+    document.body.classList.add("platform-windows");
+  } else if (platform.includes("mac")) {
+    document.body.classList.add("platform-mac");
+  } else if (platform.includes("linux")) {
+    document.body.classList.add("platform-linux");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", applyPlatformSpecificStyles);
+
+
 // グローバルに公開
 window.NavigationOrderManager = NavigationOrderManager;
 window.initializeHeaderDragAndDrop = initializeHeaderDragAndDrop;

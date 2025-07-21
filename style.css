@@ -1,12 +1,12 @@
 /* File: style.css */
 
-/* windows-fix START */
+/* Cross-platform adjustments START */
 * {
   box-sizing: border-box;
 }
-/* windows-fix END */
+/* Cross-platform adjustments END */
 
-/* windows-fix START */
+/* Cross-platform adjustments START */
 :root {
   --sb-width: 6px;
   --sb-thumb: #9e9e9e;
@@ -37,7 +37,7 @@
 *::-webkit-scrollbar-thumb:hover {
   background: var(--sb-thumb-hover);
 }
-/* windows-fix END */
+/* Cross-platform adjustments END */
 
 /* ① ヘッダー全体の上下 padding を少し増やす */
 header {
@@ -92,12 +92,12 @@ body::-webkit-scrollbar,
   flex: none; /* フレックス解除 */
   overflow: visible; /* ❌ボタンが表示されるように変更 */
   transform-origin: center center; /* 中心を基点に */
-  /* windows-fix START */
+  /* Cross-platform adjustments START */
   box-sizing: border-box;
   padding: 0.5rem 0.75rem;
   line-height: 1.2;
   white-space: nowrap;
-  /* windows-fix END */
+  /* Cross-platform adjustments END */
 }
 
 .nav-btn i {
@@ -1047,7 +1047,7 @@ header.updating .nav-btn {
   font-weight: bold;
 }
 
-/* hidpi-fix START */
+/* Cross-platform adjustments START */
 @media (min-resolution: 1.25dppx) {
   .nav-btn {
     padding-inline: 0.6rem;
@@ -1066,4 +1066,15 @@ header.updating .nav-btn {
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
   }
 }
-/* hidpi-fix END */
+/* Cross-platform adjustments END */
+
+.platform-windows {
+  /* Windows-specific font rendering adjustments */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.platform-windows .nav-btn {
+  /* Windows-specific button padding adjustments */
+  padding: 0.45rem 0.7rem;
+}
