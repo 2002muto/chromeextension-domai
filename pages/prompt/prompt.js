@@ -1947,7 +1947,8 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    row.draggable = false; // ドラッグ開始はグリップアイコンのみ
+    // デフォルトでドラッグ可能にし、ハンドル以外からの開始をブロック
+    row.draggable = true;
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
