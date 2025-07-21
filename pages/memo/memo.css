@@ -36,7 +36,8 @@ body {
   flex-direction: column;
   gap: 16px;
   /* SPA環境での高さ調整 */
-  height: calc(100vh - 52px - 68px); /* ヘッダー(52px) + フッター(68px) */
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 24px;

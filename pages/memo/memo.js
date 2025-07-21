@@ -927,47 +927,7 @@ async function renderInputForm(id) {
   }
 
   function autoResizeTextarea() {
-    setDynamicPaddingBottom();
-    ta.style.height = "auto";
-    const minHeight = 200;
-    const contentHeight = ta.scrollHeight;
-    const lines = ta.value.split("\n").length;
-    const computedStyle = window.getComputedStyle(ta);
-    const lineHeight =
-      parseInt(computedStyle.lineHeight) ||
-      parseInt(computedStyle.fontSize) * 1.2;
-    const paddingTop = parseInt(computedStyle.paddingTop) || 0;
-    const paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
-    const viewportHeight = window.innerHeight;
-    const headerHeight =
-      document.querySelector(".memo-input-form .input-header")?.offsetHeight ||
-      0;
-    const footerHeight =
-      document.querySelector(".memo-footer")?.offsetHeight || 0;
-    const formTitleHeight =
-      document.querySelector(".form-title")?.offsetHeight || 0;
-    const cardNavHeight =
-      document.querySelector(".card-nav")?.offsetHeight || 0;
-    const margins = 20; // 余白をさらに縮小
-    const maxAvailableHeight =
-      viewportHeight -
-      headerHeight -
-      footerHeight -
-      formTitleHeight -
-      cardNavHeight -
-      margins;
-    const minLinesHeight =
-      Math.max(50, lines + 20) * lineHeight + paddingTop + paddingBottom;
-    const calculatedHeight = Math.max(
-      contentHeight,
-      minLinesHeight,
-      maxAvailableHeight
-    );
-    const newHeight = Math.max(minHeight, calculatedHeight);
-    ta.style.height = newHeight + "px";
-    console.log(
-      `MEMO textarea auto-resized: ${newHeight}px (content: ${contentHeight}px, lines: ${lines}, minLinesHeight: ${minLinesHeight}px, maxAvailableHeight: ${maxAvailableHeight}px, viewportHeight: ${viewportHeight}px)`
-    );
+    // cross-platform compatibility issue, disabled
   }
 
   // 初期化時にもpadding-bottomを設定
