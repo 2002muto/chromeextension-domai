@@ -27,11 +27,24 @@
 /* clipboardページ（一覧表示）のみカード状背景を適用 */
 .memo-content.clipboard-mode:not(.edit-mode) {
   background: #2d2d2d;
-  border-radius: 12px;
-  margin: 16px 16px 0px 16px;
+  border-radius: var(--container-border-radius);
+  margin: calc(
+      var(--container-margin-top) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    )
+    0px
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    );
   padding: 0; /* パディングを削除してボタンとリストを分離 */
-  /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
-  height: calc(100vh - 138px) !important;
+  /* Standardized container height calculation */
+  height: var(--container-height-base) !important;
+  min-height: var(--container-min-height);
+  max-width: var(--container-max-width);
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */

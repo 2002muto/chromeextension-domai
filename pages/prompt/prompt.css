@@ -50,12 +50,26 @@
 /* PROMPTページ（一覧表示）のみカード状背景を適用 - MEMOページと統一 */
 .memo-content:not(.edit-mode) {
   background: #2d2d2d;
-  border-radius: 12px; /* MEMOページと完全統一 */
-  margin: 32px 16px 16px 16px; /* MEMOページと完全統一 - 下部マージン16px */
+  border-radius: var(--container-border-radius);
+  margin: calc(
+      var(--container-margin-top) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-bottom) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    );
   padding: 0;
-  height: calc(
-    100vh - 138px
-  ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
+  height: var(--container-height-base) !important;
+  min-height: var(--container-min-height);
+  max-width: var(--container-max-width);
   display: flex;
   flex-direction: column;
   overflow: hidden;

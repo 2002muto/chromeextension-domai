@@ -20,7 +20,7 @@
   - Test scrollbar behavior in memo, clipboard, and settings pages
   - _Requirements: 1.3, 2.3, 3.2_
 
-- [ ] 4. Fix navigation button layout consistency
+- [x] 4. Fix navigation button layout consistency
   - Apply box-sizing fixes to navigation buttons
   - Normalize button padding and margins across platforms
   - Ensure consistent hover and active states

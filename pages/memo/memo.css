@@ -62,13 +62,16 @@ body {
 .memo-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  /* SPA環境での高さ調整 */
-  height: calc(100vh - 52px - 68px); /* ヘッダー(52px) + フッター(68px) */
+  gap: calc(
+    var(--container-gap-base) + var(--platform-container-gap-adjustment)
+  );
+  /* Standardized container dimensions using CSS variables */
+  height: var(--container-height-base);
+  min-height: var(--container-min-height);
+  max-width: var(--container-max-width);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 24px;
-  padding-bottom: 24px; /* フッターは固定なので調整不要 */
+  padding: 0;
   box-sizing: border-box;
   opacity: 0;
   transform: translateY(20px);
@@ -77,60 +80,116 @@ body {
     transform 0.5s;
   /* Firefox用スクロールバー */
   scrollbar-width: thin;
-  scrollbar-color: var(--sb-thumb) var(--sb-track);
-  margin: 32px 16px 16px 16px;
-  padding: 0;
-  height: calc(100vh - 168px) !important;
+  scrollbar-color: var(--platform-sb-thumb, var(--sb-thumb))
+    var(--platform-sb-track, var(--sb-track));
+  /* Standardized margin using CSS variables */
+  margin: calc(
+      var(--container-margin-top) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-bottom) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    );
 }
 
 /* MEMOページ（一覧表示）のみカード状背景を適用 */
 .memo-content:not(.edit-mode) {
-  margin: 32px 16px 16px 16px; /* Match CLIPBOARD margin */
-  height: calc(
-    100vh - 138px
-  ) !important; /* 正確な計算: header(52px) + margin(48px) + footer(68px) = 168px */
+  /* Use standardized CSS variables for consistent sizing */
+  height: var(--container-height-base);
   background: #2d2d2d;
-  border-radius: 12px;
+  border-radius: var(--container-border-radius);
   padding: 0; /* パディングを削除してボタンとリストを分離 */
-  /* 一覧表示ではmargin分を追加で考慮: 172px + top-margin(16px) + bottom-margin(16px) = 204px */
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
 }
+
 .memo-content.show {
   opacity: 1;
   transform: translateY(0);
-  margin: 16px 16px 0px 16px;
+  margin: calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    0px
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    );
 }
+
 /* アニメーションを発火させるためのクラス */
 .memo-content.animate {
   animation: slideUpFade 0.4s ease-out both;
 }
+
 /* 実行画面時のコンテンツ高さ調整 */
 .memo-content.run-mode {
   display: flex;
   flex-direction: column;
-  height: calc(-216px + 100vh) !important;
-  background: rgb(45, 45, 45);
-  border-radius: 12px;
-  margin: 32px 16px 16px;
-  padding: 0px 0px 24px;
+  height: calc(100vh - 168px) !important; /* Standardized container height */
+  background: #2d2d2d;
+  border-radius: var(--container-border-radius);
+  margin: calc(32px + var(--platform-container-margin-adjustment))
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    );
+  padding: 0px 0px
+    calc(
+      var(--container-base-padding) +
+        var(--platform-container-padding-adjustment) + 8px
+    );
   overflow: hidden;
 }
+
 .memo-content.run-mode.animate.show {
-  margin: 0px 16px 16px 16px;
+  margin: 0px
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    );
 }
+
 /* 編集モード時もフッターは画面下部に固定（共通スタイル適用） */
 .memo-content.edit-mode + .memo-footer {
   /* フッターの固定スタイルは共通なので、特別な処理は不要 */
 }
 
-/* 編集モード時のコンテンツ高さ調整 - MEMO一覧と統一 */
+/* 編集モード時のコンテンツ高さ調整 - 統一された寸法 */
 .memo-content.edit-mode {
   background: #2d2d2d;
-  border-radius: 12px;
-  margin: 16px 16px 0px 16px; /* MEMO一覧と完全統一 */
-  height: calc(100vh - 138px) !important; /* MEMO一覧と完全統一 */
+  border-radius: var(--container-border-radius);
+  margin: calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    )
+    0px
+    calc(
+      var(--container-base-margin) + var(--platform-container-margin-adjustment)
+    );
+  height: calc(100vh - 168px) !important; /* Standardized container height */
   padding-bottom: 0; /* フッターは固定なので余白不要 */
 }
 /* ─── 統一されたスクロールバーのスタイル ─── */
@@ -233,8 +292,12 @@ body {
 .memo-footer .nav-btn:hover {
   width: auto;
   border-radius: 18px;
-  padding: 0 8px;
+  padding: calc(0px + var(--platform-padding-adjustment, 0px))
+    calc(8px + var(--platform-padding-adjustment, 0px));
   justify-content: flex-start;
+  /* Enhanced cross-platform consistency */
+  box-sizing: border-box;
+  min-height: 36px;
 }
 
 /* ホバー時のアイコンを左端に配置（非表示にしない） */
@@ -289,8 +352,12 @@ body {
   filter: grayscale(1);
   width: auto;
   border-radius: 18px;
-  padding: 0 8px;
+  padding: calc(0px + var(--platform-padding-adjustment, 0px))
+    calc(8px + var(--platform-padding-adjustment, 0px));
   justify-content: flex-start;
+  /* Enhanced cross-platform consistency */
+  box-sizing: border-box;
+  min-height: 36px;
 }
 
 .memo-footer .nav-btn.encrypt-btn:disabled:hover i {

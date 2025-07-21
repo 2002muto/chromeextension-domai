@@ -103,6 +103,25 @@ textarea {
   --platform-padding-adjustment: 0px;
   --platform-margin-compensation: 0px;
 
+  /* Container sizing and spacing normalization */
+  --container-base-margin: 16px;
+  --container-base-padding: 16px;
+  --container-gap-base: 16px;
+  --container-border-radius: 12px;
+
+  /* Platform-specific container adjustments */
+  --platform-container-margin-adjustment: 0px;
+  --platform-container-padding-adjustment: 0px;
+  --platform-container-gap-adjustment: 0px;
+
+  /* Standardized container dimensions */
+  --container-height-base: calc(
+    100vh - 168px
+  ); /* header(52px) + margins(48px) + footer(68px) */
+  --container-margin-top: 32px;
+  --container-margin-horizontal: 16px;
+  --container-margin-bottom: 16px;
+
   /* Base font system with cross-platform fallbacks */
   --font-family-primary:
     system-ui, -apple-system, "Segoe UI", "Noto Sans JP", "Roboto",
@@ -177,6 +196,46 @@ textarea {
 .platform-windows *::-webkit-scrollbar-corner {
   background: var(--platform-sb-corner);
 }
+
+/* Windows-specific container adjustments */
+.platform-windows .memo-content,
+.platform-windows .memo-input-form {
+  padding: calc(
+    var(--container-base-padding) +
+      var(--platform-container-padding-adjustment) + 1px
+  );
+  margin: calc(
+      var(--container-margin-top) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-bottom) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    );
+  min-height: var(--container-min-height);
+  max-width: var(--container-max-width);
+  box-sizing: border-box;
+}
+
+.platform-windows .memo-list,
+.platform-windows .clipboard-list,
+.platform-windows .prompt-list {
+  gap: calc(
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) + 1px
+  );
+  padding: calc(
+    var(--container-base-padding) +
+      var(--platform-container-padding-adjustment) + 1px
+  );
+  box-sizing: border-box;
+}
 /* windows-fix END */
 
 /* ① ヘッダー全体の上下 padding を少し増やす */
@@ -230,11 +289,15 @@ body::-webkit-scrollbar,
   flex: none; /* フレックス解除 */
   overflow: visible; /* ❌ボタンが表示されるように変更 */
   transform-origin: center center; /* 中心を基点に */
-  /* Cross-platform button normalization */
+  /* Enhanced cross-platform button normalization */
   box-sizing: border-box;
-  padding: 0.5rem 0.75rem;
-  line-height: 1.2;
+  padding: calc(0.5rem + var(--platform-padding-adjustment, 0px))
+    calc(0.75rem + var(--platform-padding-adjustment, 0px));
+  line-height: calc(1.2 * var(--platform-line-height-multiplier, 1));
   white-space: nowrap;
+  /* Ensure consistent sizing across platforms */
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .nav-btn i {
@@ -257,14 +320,16 @@ body::-webkit-scrollbar,
   overflow: hidden;
   max-width: 0;
   margin-left: 0;
-  font-weight: bold;
-  text-transform: uppercase;
   opacity: 0;
-  white-space: normal; /* 折り返し許可で全表示 */
+  white-space: nowrap; /* プラットフォーム間で一貫した切り詰め動作 */
+  text-overflow: ellipsis; /* 長いテキストの切り詰め表示 */
   transition:
     max-width 0.3s ease,
     opacity 0.3s ease,
     margin-left 0.3s ease;
+  /* Enhanced cross-platform text rendering */
+  line-height: calc(1.2 * var(--platform-line-height-multiplier, 1));
+  letter-spacing: calc(var(--platform-letter-spacing-offset, 0em) * 0.5);
 }
 
 /* JSで付与するクラス。textの横幅に合わせて表示 */
@@ -295,10 +360,14 @@ body::-webkit-scrollbar,
 #btn-setting:hover:not(.active) {
   width: auto; /* expand based on title length */
   border-radius: 18px;
-  padding: 0 12px;
+  padding: calc(0px + var(--platform-padding-adjustment, 0px))
+    calc(12px + var(--platform-padding-adjustment, 0px));
   justify-content: flex-start;
   display: flex;
   align-items: center;
+  /* Enhanced cross-platform consistency */
+  box-sizing: border-box;
+  min-height: 36px;
 }
 
 /* ホバー時のアイコンを左端に配置（非表示にしない） */
@@ -380,10 +449,14 @@ body::-webkit-scrollbar,
 .nav-btn.active:hover {
   width: auto; /* auto width to fit text */
   border-radius: 18px;
-  padding: 0 12px;
+  padding: calc(0px + var(--platform-padding-adjustment, 0px))
+    calc(12px + var(--platform-padding-adjustment, 0px));
   justify-content: flex-start;
   display: flex;
   align-items: center;
+  /* Enhanced cross-platform consistency */
+  box-sizing: border-box;
+  min-height: 36px;
 }
 
 /* テキスト表示用クラスはJSから付与 */
@@ -423,10 +496,14 @@ footer .nav-btn:hover .nav-text {
 footer .nav-btn:hover {
   width: auto;
   border-radius: 18px;
-  padding: 0 12px;
+  padding: calc(0px + var(--platform-padding-adjustment, 0px))
+    calc(12px + var(--platform-padding-adjustment, 0px));
   justify-content: flex-start;
   filter: brightness(1.2);
   transform: translateY(-2px) scale(1.05);
+  /* Enhanced cross-platform consistency */
+  box-sizing: border-box;
+  min-height: 36px;
 }
 
 /* フッターのnav-btnにshow-textクラスが適用された時のスタイル */
