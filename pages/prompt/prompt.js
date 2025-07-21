@@ -2095,7 +2095,7 @@ function renderEdit(idx, isNew = false) {
         <div class="prompt-header-row">
           <div class="prompt-label-container">
             <label class="prompt-field-label"></label>
-            <i class="bi bi-grip-vertical grip-icon"></i>
+            <i class="bi bi-grip-vertical grip-icon" draggable="true"></i>
           </div>
           <div class="prompt-field-actions">
             <div class="form-check form-switch">
