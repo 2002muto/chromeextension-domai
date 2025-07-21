@@ -1947,16 +1947,13 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    row.draggable = true; // enable row dragging
+    // Row itself is not draggable; use the grip icon as a handle
+    row.draggable = false;
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
 
     const handleDragStart = (e) => {
-      if (!e.target.closest(".grip-icon")) {
-        e.preventDefault();
-        return;
-      }
       console.log("[DND] ドラッグ開始");
       dragStartIndex = [...wrap.children].indexOf(row);
       e.dataTransfer.setData("text/plain", dragStartIndex.toString());
@@ -2123,8 +2120,11 @@ function renderEdit(idx, isNew = false) {
                     rows="4">${text}</textarea>
         </div>
       </div>`;
-    row.addEventListener("dragstart", handleDragStart);
-    row.addEventListener("dragend", handleDragEnd);
+    const handle = row.querySelector(".grip-icon");
+    if (handle) {
+      handle.addEventListener("dragstart", handleDragStart);
+      handle.addEventListener("dragend", handleDragEnd);
+    }
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
 
