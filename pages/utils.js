@@ -2374,31 +2374,25 @@ function showToast(message, type = "info") {
 
   if (type === "success") {
     icon = '<i class="bi bi-check-circle"></i>';
-    borderColor = "#10b981";
-    bgColor = "rgba(16, 185, 129, 0.1)";
     iconColor = "#10b981";
   } else if (type === "error") {
     icon = '<i class="bi bi-exclamation-triangle"></i>';
-    borderColor = "#ef4444";
-    bgColor = "rgba(239, 68, 68, 0.1)";
     iconColor = "#ef4444";
   } else if (type === "info") {
     icon = '<i class="bi bi-info-circle"></i>';
-    // ページカラーを使用
-    borderColor = pageColor;
     iconColor = pageColor;
-    // ページカラーをRGBに変換して背景色を作成
-    const rgb = hexToRgb(pageColor);
-    if (rgb) {
-      bgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-    } else {
-      bgColor = "rgba(59, 130, 246, 0.1)"; // フォールバック
-    }
   } else if (type === "warn" || type === "warning") {
     icon = '<i class="bi bi-exclamation-circle"></i>';
-    borderColor = "#f59e0b";
-    bgColor = "rgba(245, 158, 11, 0.1)";
     iconColor = "#f59e0b";
+  }
+
+  // アイコンカラーに基づいて境界線と背景色を設定
+  borderColor = iconColor;
+  const rgb = hexToRgb(iconColor);
+  if (rgb) {
+    bgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+  } else {
+    bgColor = bgColor || "rgba(59, 130, 246, 0.1)"; // フォールバック
   }
 
   console.log("[UTILS] トースト設定:", {
