@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Windows Font Rendering Test</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>Windows Font Rendering Test</h1>
+      <div id="platform-info">
+        <p>Detected Platform: <span id="platform-name">Loading...</span></p>
+        <p>User Agent: <span id="user-agent">Loading...</span></p>
+        <p>
+          Navigator Platform: <span id="navigator-platform">Loading...</span>
+        </p>
+      </div>
+
+      <div class="font-test-section">
+        <h2>Font Rendering Comparison</h2>
+        <div class="comparison-grid">
+          <div class="test-column">
+            <h3>Standard Rendering</h3>
+            <div class="test-text standard-text memo-title">
+              Memo Title Text
+            </div>
+            <div class="test-text standard-text nav-text">Navigation Text</div>
+            <textarea
+              class="test-text standard-text text-input"
+              placeholder="Text Input Area"
+            >
+Sample text content for testing font rendering consistency across platforms. This text should be clearly readable and properly spaced.</textarea
+            >
+            <div class="test-text standard-text prompt-title">
+              Prompt Title Text
+            </div>
+            <textarea
+              class="test-text standard-text clipboard-textarea"
+              placeholder="Clipboard Textarea"
+            >
+Clipboard content for cross-platform testing with proper line height and letter spacing.</textarea
+            >
+          </div>
+
+          <div class="test-column">
+            <h3>Windows-Optimized Rendering</h3>
+            <div class="test-text windows-optimized memo-title">
+              Memo Title Text
+            </div>
+            <div class="test-text windows-optimized nav-text">
+              Navigation Text
+            </div>
+            <textarea
+              class="test-text windows-optimized text-input"
+              placeholder="Text Input Area"
+            >
+Sample text content for testing font rendering consistency across platforms. This text should be clearly readable and properly spaced.</textarea
+            >
+            <div class="test-text windows-optimized prompt-title">
+              Prompt Title Text
+            </div>
+            <textarea
+              class="test-text windows-optimized clipboard-textarea"
+              placeholder="Clipboard Textarea"
+            >
+Clipboard content for cross-platform testing with proper line height and letter spacing.</textarea
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="css-variables-section">
+        <h2>Applied CSS Variables</h2>
+        <div id="css-variables">
+          <p>
+            Font Family Primary:
+            <span id="font-family-primary">Loading...</span>
+          </p>
+          <p>
+            Font Family Windows:
+            <span id="font-family-windows">Loading...</span>
+          </p>
+          <p>
+            Line Height Multiplier:
+            <span id="line-height-multiplier">Loading...</span>
+          </p>
+          <p>
+            Letter Spacing Offset:
+            <span id="letter-spacing-offset">Loading...</span>
+          </p>
+          <p>
+            Font Weight Adjustment:
+            <span id="font-weight-adjustment">Loading...</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="test-results-section">
+        <h2>Test Results</h2>
+        <div id="test-results">
+          <p>
+            Platform Class Applied: <span id="platform-class">Loading...</span>
+          </p>
+          <p>
+            Windows Font Family Active:
+            <span id="windows-font-active">Loading...</span>
+          </p>
+          <p>
+            Font Smoothing Method: <span id="font-smoothing">Loading...</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="pages/common.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize platform detection
+        const platform = PlatformDetector.initialize();
+
+        // Display platform information
+        document.getElementById("platform-name").textContent = platform;
+        document.getElementById("user-agent").textContent = navigator.userAgent;
+        document.getElementById("navigator-platform").textContent =
+          navigator.platform;
+
+        // Display CSS variable values
+        const root = document.documentElement;
+        const computedStyle = getComputedStyle(root);
+
+        document.getElementById("font-family-primary").textContent =
+          computedStyle.getPropertyValue("--font-family-primary").trim() ||
+          "Not set";
+        document.getElementById("font-family-windows").textContent =
+          computedStyle.getPropertyValue("--font-family-windows").trim() ||
+          "Not set";
+        document.getElementById("line-height-multiplier").textContent =
+          computedStyle
+            .getPropertyValue("--platform-line-height-multiplier")
+            .trim() || "Not set";
+        document.getElementById("letter-spacing-offset").textContent =
+          computedStyle
+            .getPropertyValue("--platform-letter-spacing-offset")
+            .trim() || "Not set";
+        document.getElementById("font-weight-adjustment").textContent =
+          computedStyle
+            .getPropertyValue("--platform-font-weight-adjustment")
+            .trim() || "Not set";
+
+        // Display test results
+        const bodyClasses = document.body.classList;
+        const platformClass =
+          Array.from(bodyClasses).find((cls) => cls.startsWith("platform-")) ||
+          "None";
+        document.getElementById("platform-class").textContent = platformClass;
+
+        const isWindowsFontActive = platform === "windows" ? "Yes" : "No";
+        document.getElementById("windows-font-active").textContent =
+          isWindowsFontActive;
+
+        const fontSmoothing =
+          platform === "windows" ? "subpixel-antialiased" : "antialiased";
+        document.getElementById("font-smoothing").textContent = fontSmoothing;
+
+        console.log("[Test] Platform detection completed:", platform);
+        console.log("[Test] CSS variables applied:", {
+          fontFamilyPrimary: computedStyle.getPropertyValue(
+            "--font-family-primary"
+          ),
+          fontFamilyWindows: computedStyle.getPropertyValue(
+            "--font-family-windows"
+          ),
+          lineHeightMultiplier: computedStyle.getPropertyValue(
+            "--platform-line-height-multiplier"
+          ),
+          letterSpacingOffset: computedStyle.getPropertyValue(
+            "--platform-letter-spacing-offset"
+          ),
+          fontWeightAdjustment: computedStyle.getPropertyValue(
+            "--platform-font-weight-adjustment"
+          ),
+        });
+      });
+    </script>
+
+    <style>
+      .test-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: var(--font-family-primary);
+        background: #314559;
+        color: #e2e8f0;
+        min-height: 100vh;
+      }
+
+      .font-test-section {
+        margin: 30px 0;
+        padding: 20px;
+        background: #2d2d2d;
+        border-radius: 12px;
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+      }
+
+      .test-column {
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+      }
+
+      .test-column h3 {
+        margin-top: 0;
+        color: #ffffff;
+        border-bottom: 2px solid #3b82f6;
+        padding-bottom: 10px;
+      }
+
+      .css-variables-section,
+      .test-results-section {
+        margin: 30px 0;
+        padding: 20px;
+        background: #2d2d2d;
+        border-radius: 12px;
+      }
+
+      .test-text {
+        display: block;
+        margin: 15px 0;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        font-size: 16px;
+        background: #3a3f4a;
+        color: #ffffff;
+      }
+
+      textarea.test-text {
+        width: 100%;
+        min-height: 80px;
+        resize: vertical;
+        font-family: inherit;
+      }
+
+      /* Standard rendering (no Windows optimizations) */
+      .standard-text {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif !important;
+        line-height: 1.5 !important;
+        letter-spacing: normal !important;
+        font-weight: 400 !important;
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
+      }
+
+      /* Windows-optimized rendering */
+      .windows-optimized {
+        font-family: var(--font-family-windows) !important;
+        line-height: calc(1.5 * 1.15) !important;
+        letter-spacing: 0.015em !important;
+        font-weight: calc(400 + 50) !important;
+        -webkit-font-smoothing: subpixel-antialiased !important;
+        -moz-osx-font-smoothing: auto !important;
+        text-rendering: optimizeLegibility !important;
+      }
+
+      .windows-optimized.memo-title,
+      .windows-optimized.prompt-title {
+        font-weight: calc(500 + 50) !important;
+      }
+
+      .windows-optimized.nav-text {
+        font-weight: calc(500 + 50) !important;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+      }
+
+      #platform-info p,
+      #css-variables p,
+      #test-results p {
+        margin: 8px 0;
+        font-weight: bold;
+      }
+
+      #css-variables span,
+      #test-results span {
+        font-family: monospace;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #60a5fa;
+      }
+
+      /* Platform-specific highlighting */
+      .platform-windows .test-container {
+        border: 3px solid #3b82f6;
+      }
+
+      .platform-windows .font-test-section {
+        background: #1e3a8a;
+      }
+
+      .platform-windows .test-column {
+        background: rgba(59, 130, 246, 0.1);
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #ffffff;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2rem;
+      }
+
+      @media (max-width: 768px) {
+        .comparison-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .test-container {
+          padding: 15px;
+        }
+      }
+    </style>
+  </body>
+</html>

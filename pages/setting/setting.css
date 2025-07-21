@@ -4,6 +4,42 @@
    SETTING専用スタイル（MEMO・PROMPT背景統一）
    =================================== */
 
+/* Windows-specific font rendering fixes for SETTING page */
+.platform-windows .setting-item-title,
+.platform-windows .setting-item-description,
+.platform-windows .custom-title,
+.platform-windows .custom-description,
+.platform-windows .setting-label,
+.platform-windows .nav-text {
+  font-family: var(--font-family-windows);
+  line-height: calc(
+    var(--line-height-base) * var(--platform-line-height-multiplier)
+  );
+  letter-spacing: calc(
+    var(--letter-spacing-base) + var(--platform-letter-spacing-offset)
+  );
+}
+
+.platform-windows .setting-item-title,
+.platform-windows .custom-title {
+  font-weight: calc(600 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .setting-item-description,
+.platform-windows .custom-description {
+  font-weight: calc(400 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .setting-label {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .btn-reset,
+.platform-windows .btn-save,
+.platform-windows .btn-compare {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
+}
+
 /* ─── SETTINGページ専用の.memo-contentスタイル調整 ─── */
 .memo-content {
   /* memo.cssの基本スタイルを継承しつつ、SETTINGページ用に調整 */
@@ -96,7 +132,9 @@
   display: none;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
   background: transparent;
   color: #e2e8f0;
   padding: 20px;
@@ -663,7 +701,8 @@
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6),
+    box-shadow:
+      0 4px 20px rgba(59, 130, 246, 0.6),
       0 0 30px rgba(59, 130, 246, 0.4);
   }
 }
@@ -752,7 +791,8 @@
     box-shadow: 0 4px 12px rgba(7, 138, 185, 0.3);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(7, 138, 185, 0.6),
+    box-shadow:
+      0 4px 20px rgba(7, 138, 185, 0.6),
       0 0 30px rgba(7, 138, 185, 0.4);
   }
 }
@@ -763,7 +803,9 @@
     box-shadow: 0 4px 12px rgba(4, 233, 73, 0.3);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(4, 233, 73, 0.6), 0 0 30px rgba(4, 233, 73, 0.4);
+    box-shadow:
+      0 4px 20px rgba(4, 233, 73, 0.6),
+      0 0 30px rgba(4, 233, 73, 0.4);
   }
 }
 
@@ -773,7 +815,8 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6),
+    box-shadow:
+      0 4px 20px rgba(102, 126, 234, 0.6),
       0 0 30px rgba(102, 126, 234, 0.4);
   }
 }
@@ -781,12 +824,15 @@
 @keyframes glowPulseIframe {
   0%,
   100% {
-    box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3),
+    box-shadow:
+      0 4px 12px rgba(192, 192, 192, 0.3),
       0 0 20px rgba(192, 192, 192, 0.2);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(192, 192, 192, 0.6),
-      0 0 30px rgba(192, 192, 192, 0.4), 0 0 40px rgba(192, 192, 192, 0.3);
+    box-shadow:
+      0 4px 20px rgba(192, 192, 192, 0.6),
+      0 0 30px rgba(192, 192, 192, 0.4),
+      0 0 40px rgba(192, 192, 192, 0.3);
   }
 }
 
@@ -796,7 +842,8 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6),
+    box-shadow:
+      0 4px 20px rgba(16, 185, 129, 0.6),
       0 0 30px rgba(16, 185, 129, 0.4);
   }
 }
@@ -807,7 +854,8 @@
     box-shadow: 0 4px 12px rgba(255, 240, 75, 0.3);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(255, 240, 75, 0.6),
+    box-shadow:
+      0 4px 20px rgba(255, 240, 75, 0.6),
       0 0 30px rgba(255, 240, 75, 0.4);
   }
 }

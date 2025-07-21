@@ -49,14 +49,19 @@ const PlatformDetector = {
     const config = {
       windows: {
         fontAdjustments: {
-          lineHeightMultiplier: 1.1,
-          letterSpacingOffset: "0.01em",
-          fontWeightAdjustment: 100,
+          lineHeightMultiplier: 1.15,
+          letterSpacingOffset: "0.015em",
+          fontWeightAdjustment: 50,
         },
         scrollbarConfig: {
           width: "8px",
           thumbColor: "#9e9e9e",
+          thumbHoverColor: "#7b7b7b",
           trackColor: "#f0f0f0",
+          cornerColor: "#f0f0f0",
+          thumbBorder: "1px solid rgba(255, 255, 255, 0.1)",
+          thumbBorderRadius: "4px",
+          trackBorderRadius: "4px",
         },
         boxModelFixes: {
           paddingAdjustment: "1px",
@@ -129,6 +134,38 @@ const PlatformDetector = {
       "--platform-sb-track",
       values.scrollbarConfig.trackColor
     );
+
+    // 追加のスクロールバー設定
+    if (values.scrollbarConfig.thumbHoverColor) {
+      root.style.setProperty(
+        "--platform-sb-thumb-hover",
+        values.scrollbarConfig.thumbHoverColor
+      );
+    }
+    if (values.scrollbarConfig.cornerColor) {
+      root.style.setProperty(
+        "--platform-sb-corner",
+        values.scrollbarConfig.cornerColor
+      );
+    }
+    if (values.scrollbarConfig.thumbBorder) {
+      root.style.setProperty(
+        "--platform-sb-thumb-border",
+        values.scrollbarConfig.thumbBorder
+      );
+    }
+    if (values.scrollbarConfig.thumbBorderRadius) {
+      root.style.setProperty(
+        "--platform-sb-thumb-border-radius",
+        values.scrollbarConfig.thumbBorderRadius
+      );
+    }
+    if (values.scrollbarConfig.trackBorderRadius) {
+      root.style.setProperty(
+        "--platform-sb-track-border-radius",
+        values.scrollbarConfig.trackBorderRadius
+      );
+    }
 
     // ボックスモデル調整
     root.style.setProperty(

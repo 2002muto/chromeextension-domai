@@ -2,6 +2,28 @@
    Clipboard 専用スタイル
    ============================= */
 
+/* Windows-specific font rendering fixes for CLIPBOARD page */
+.platform-windows .clipboard-textarea,
+.platform-windows .nav-text {
+  font-family: var(--font-family-windows);
+  line-height: calc(
+    var(--line-height-base) * var(--platform-line-height-multiplier)
+  );
+  letter-spacing: calc(
+    var(--letter-spacing-base) + var(--platform-letter-spacing-offset)
+  );
+  font-weight: calc(400 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .clipboard-empty-state-title {
+  font-weight: calc(600 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .btn-add-clip,
+.platform-windows .btn-add-first-clip {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
+}
+
 /* clipboardページ（一覧表示）のみカード状背景を適用 */
 .memo-content.clipboard-mode:not(.edit-mode) {
   background: #2d2d2d;
@@ -32,23 +54,29 @@
   scrollbar-color: var(--sb-thumb) var(--sb-track);
 }
 
-/* clipboard-list専用スクロールバー（MEMOページの.memo-listと完全統一） */
+/* clipboard-list専用統一スクロールバー（MEMOページの.memo-listと完全統一） */
 .clipboard-list::-webkit-scrollbar {
-  width: var(--sb-width);
+  width: var(--platform-sb-width, var(--sb-width));
+  height: var(--platform-sb-width, var(--sb-width));
 }
 
 .clipboard-list::-webkit-scrollbar-track {
-  background: var(--sb-track);
-  border-radius: 4px;
+  background: var(--platform-sb-track, var(--sb-track));
+  border-radius: var(--platform-sb-track-border-radius, 4px);
 }
 
 .clipboard-list::-webkit-scrollbar-thumb {
-  background: var(--sb-thumb);
-  border-radius: 4px;
+  background: var(--platform-sb-thumb, var(--sb-thumb));
+  border-radius: var(--platform-sb-thumb-border-radius, 4px);
+  border: var(--platform-sb-thumb-border, none);
 }
 
 .clipboard-list::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-thumb-hover);
+  background: var(--platform-sb-thumb-hover, var(--sb-thumb-hover));
+}
+
+.clipboard-list::-webkit-scrollbar-corner {
+  background: var(--platform-sb-corner, var(--sb-corner));
 }
 
 .clip-item {

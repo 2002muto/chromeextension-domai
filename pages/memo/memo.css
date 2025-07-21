@@ -7,6 +7,34 @@
 body {
   margin: 0;
 }
+
+/* Windows-specific font rendering fixes for MEMO page */
+.platform-windows .memo-title,
+.platform-windows .title-input,
+.platform-windows .text-input,
+.platform-windows .nav-text {
+  font-family: var(--font-family-windows);
+  line-height: calc(
+    var(--line-height-base) * var(--platform-line-height-multiplier)
+  );
+  letter-spacing: calc(
+    var(--letter-spacing-base) + var(--platform-letter-spacing-offset)
+  );
+}
+
+.platform-windows .memo-item .title {
+  font-weight: calc(400 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .memo-input-form .title-input {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .text-input,
+.platform-windows .quill-editor .ql-editor {
+  font-weight: calc(400 + var(--platform-font-weight-adjustment));
+  line-height: calc(1.5 * var(--platform-line-height-multiplier));
+}
 /* カード状背景スタイルは削除（背景のみに変更） */
 /* ─── サブナビ ─── */
 .card-nav {
@@ -105,23 +133,29 @@ body {
   height: calc(100vh - 138px) !important; /* MEMO一覧と完全統一 */
   padding-bottom: 0; /* フッターは固定なので余白不要 */
 }
-/* ─── スクロールバーのスタイル ─── */
+/* ─── 統一されたスクロールバーのスタイル ─── */
 .memo-content::-webkit-scrollbar {
-  width: var(--sb-width);
+  width: var(--platform-sb-width, var(--sb-width));
+  height: var(--platform-sb-width, var(--sb-width));
 }
 
 .memo-content::-webkit-scrollbar-track {
-  background: var(--sb-track);
-  border-radius: 4px;
+  background: var(--platform-sb-track, var(--sb-track));
+  border-radius: var(--platform-sb-track-border-radius, 4px);
 }
 
 .memo-content::-webkit-scrollbar-thumb {
-  background: var(--sb-thumb);
-  border-radius: 4px;
+  background: var(--platform-sb-thumb, var(--sb-thumb));
+  border-radius: var(--platform-sb-thumb-border-radius, 4px);
+  border: var(--platform-sb-thumb-border, none);
 }
 
 .memo-content::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-thumb-hover);
+  background: var(--platform-sb-thumb-hover, var(--sb-thumb-hover));
+}
+
+.memo-content::-webkit-scrollbar-corner {
+  background: var(--platform-sb-corner, var(--sb-corner));
 }
 
 /* ─── フッター：画面下部に完全固定 ─── */
@@ -317,23 +351,29 @@ body {
   max-height: 100%; /* 親要素の高さを超えないようにする */
 }
 
-/* memo-list専用スクロールバー */
+/* memo-list専用統一スクロールバー */
 .memo-list::-webkit-scrollbar {
-  width: var(--sb-width);
+  width: var(--platform-sb-width, var(--sb-width));
+  height: var(--platform-sb-width, var(--sb-width));
 }
 
 .memo-list::-webkit-scrollbar-track {
-  background: var(--sb-track);
-  border-radius: 4px;
+  background: var(--platform-sb-track, var(--sb-track));
+  border-radius: var(--platform-sb-track-border-radius, 4px);
 }
 
 .memo-list::-webkit-scrollbar-thumb {
-  background: var(--sb-thumb);
-  border-radius: 4px;
+  background: var(--platform-sb-thumb, var(--sb-thumb));
+  border-radius: var(--platform-sb-thumb-border-radius, 4px);
+  border: var(--platform-sb-thumb-border, none);
 }
 
 .memo-list::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-thumb-hover);
+  background: var(--platform-sb-thumb-hover, var(--sb-thumb-hover));
+}
+
+.memo-list::-webkit-scrollbar-corner {
+  background: var(--platform-sb-corner, var(--sb-corner));
 }
 .memo-item {
   cursor: move;

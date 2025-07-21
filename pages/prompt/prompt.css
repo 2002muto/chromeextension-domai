@@ -4,6 +4,46 @@
   2024-06 リファクタ – コメント付きフルコード
 ═══════════════════════════════════════════════════════════════*/
 
+/* Windows-specific font rendering fixes for PROMPT page */
+.platform-windows .prompt-title,
+.platform-windows .title-input,
+.platform-windows .field-textarea,
+.platform-windows .prompt-field-textarea,
+.platform-windows .nav-text {
+  font-family: var(--font-family-windows);
+  line-height: calc(
+    var(--line-height-base) * var(--platform-line-height-multiplier)
+  );
+  letter-spacing: calc(
+    var(--letter-spacing-base) + var(--platform-letter-spacing-offset)
+  );
+}
+
+.platform-windows .prompt-title {
+  font-weight: calc(400 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .title-input,
+.platform-windows .prompt-field-label {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .field-textarea,
+.platform-windows .prompt-field-textarea {
+  font-weight: calc(400 + var(--platform-font-weight-adjustment));
+  line-height: calc(1.5 * var(--platform-line-height-multiplier));
+}
+
+.platform-windows .btn-add-prompt,
+.platform-windows .btn-add-first-prompt,
+.platform-windows .btn-add-field {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .prompt-empty-state-title {
+  font-weight: calc(600 + var(--platform-font-weight-adjustment));
+}
+
 /*--------------------------------------------------------------
   A. memo-content レイアウト（MEMOページと同じ構造）
 --------------------------------------------------------------*/

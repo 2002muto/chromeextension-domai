@@ -17,11 +17,38 @@ body {
 
 /* Windows-specific font rendering fixes */
 .platform-windows {
+  font-family: var(--font-family-windows);
   font-weight: calc(400 + var(--platform-font-weight-adjustment));
+  /* Windows-specific text rendering optimizations */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
 }
 
 .platform-windows * {
+  font-family: inherit;
   font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+/* Windows-specific font weight consistency */
+.platform-windows h1,
+.platform-windows h2,
+.platform-windows h3,
+.platform-windows h4,
+.platform-windows h5,
+.platform-windows h6 {
+  font-weight: calc(600 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows .nav-text,
+.platform-windows .memo-title {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
+}
+
+.platform-windows button {
+  font-weight: calc(500 + var(--platform-font-weight-adjustment));
 }
 
 /* Cross-platform button and input normalization */
@@ -55,16 +82,22 @@ textarea {
   --sb-thumb: #9e9e9e;
   --sb-thumb-hover: #7b7b7b;
   --sb-track: #f0f0f0;
+  --sb-corner: #f0f0f0;
 
   /* Platform-specific font properties */
   --platform-line-height-multiplier: 1;
   --platform-letter-spacing-offset: 0em;
   --platform-font-weight-adjustment: 0;
 
-  /* Platform-specific scrollbar properties */
+  /* Enhanced platform-specific scrollbar properties */
   --platform-sb-width: 6px;
   --platform-sb-thumb: #9e9e9e;
+  --platform-sb-thumb-hover: #7b7b7b;
   --platform-sb-track: #f0f0f0;
+  --platform-sb-corner: #f0f0f0;
+  --platform-sb-thumb-border: none;
+  --platform-sb-thumb-border-radius: 4px;
+  --platform-sb-track-border-radius: 4px;
 
   /* Platform-specific box model properties */
   --platform-padding-adjustment: 0px;
@@ -74,6 +107,11 @@ textarea {
   --font-family-primary:
     system-ui, -apple-system, "Segoe UI", "Noto Sans JP", "Roboto",
     "Helvetica Neue", Arial, sans-serif;
+
+  /* Windows-specific font family with better fallbacks */
+  --font-family-windows:
+    "Segoe UI", "Yu Gothic UI", "Meiryo UI", "MS UI Gothic", "Noto Sans JP",
+    system-ui, -apple-system, sans-serif;
   --line-height-base: calc(1.5 * var(--platform-line-height-multiplier));
   --letter-spacing-base: var(--platform-letter-spacing-offset);
 
@@ -81,7 +119,7 @@ textarea {
   --border-width-base: 1px;
 }
 
-/* Cross-platform scrollbar styling */
+/* Enhanced cross-platform scrollbar styling */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--platform-sb-thumb, var(--sb-thumb))
@@ -95,16 +133,49 @@ textarea {
 
 *::-webkit-scrollbar-track {
   background: var(--platform-sb-track, var(--sb-track));
-  border-radius: 4px;
+  border-radius: var(--platform-sb-track-border-radius, 4px);
 }
 
 *::-webkit-scrollbar-thumb {
   background: var(--platform-sb-thumb, var(--sb-thumb));
-  border-radius: 4px;
+  border-radius: var(--platform-sb-thumb-border-radius, 4px);
+  border: var(--platform-sb-thumb-border, none);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-thumb-hover);
+  background: var(--platform-sb-thumb-hover, var(--sb-thumb-hover));
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--platform-sb-corner, var(--sb-corner));
+}
+
+/* Windows-specific scrollbar enhancements */
+.platform-windows *::-webkit-scrollbar {
+  width: var(--platform-sb-width);
+  height: var(--platform-sb-width);
+}
+
+.platform-windows *::-webkit-scrollbar-track {
+  background: var(--platform-sb-track);
+  border-radius: var(--platform-sb-track-border-radius);
+  box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.platform-windows *::-webkit-scrollbar-thumb {
+  background: var(--platform-sb-thumb);
+  border-radius: var(--platform-sb-thumb-border-radius);
+  border: var(--platform-sb-thumb-border);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.platform-windows *::-webkit-scrollbar-thumb:hover {
+  background: var(--platform-sb-thumb-hover);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.platform-windows *::-webkit-scrollbar-corner {
+  background: var(--platform-sb-corner);
 }
 /* windows-fix END */
 
@@ -1158,6 +1229,23 @@ header.updating .nav-btn {
   .platform-windows select,
   .platform-windows textarea {
     font-weight: calc(400 + var(--platform-font-weight-adjustment));
+  }
+
+  /* Enhanced Windows font rendering for high DPI */
+  .platform-windows {
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: optimizeLegibility;
+  }
+
+  .platform-windows .memo-title,
+  .platform-windows .prompt-title,
+  .platform-windows .clipboard-textarea {
+    font-weight: calc(500 + var(--platform-font-weight-adjustment));
+    letter-spacing: calc(
+      var(--letter-spacing-base) + var(--platform-letter-spacing-offset) +
+        0.005em
+    );
   }
 }
 

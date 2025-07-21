@@ -6,14 +6,14 @@
   - Create base normalization rules for consistent box model behavior
   - _Requirements: 1.1, 2.1, 2.4_
 
-- [ ] 2. Implement Windows-specific font rendering fixes
+- [x] 2. Implement Windows-specific font rendering fixes
   - Add Windows font family fallbacks and adjustments
   - Normalize line height calculations across platforms
   - Implement letter spacing compensation for Windows
   - Create font weight consistency rules
   - _Requirements: 1.2, 2.2, 3.2_
 
-- [ ] 3. Standardize scrollbar appearance across platforms
+- [x] 3. Standardize scrollbar appearance across platforms
   - Enhance existing scrollbar CSS variables system
   - Implement consistent scrollbar styling for all components
   - Add Windows-specific scrollbar width and color adjustments
