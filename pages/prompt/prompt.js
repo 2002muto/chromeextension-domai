@@ -1933,7 +1933,8 @@ function renderEdit(idx, isNew = false) {
     );
 
     existingFields.forEach((field, index) => {
-      if (field.draggable) {
+      const handle = field.querySelector(".grip-icon");
+      if (handle && handle.draggable) {
         console.log(
           `[DND] フィールド ${index + 1} のドラッグ＆ドロップ確認済み`
         );
@@ -1947,19 +1948,19 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    row.draggable = true;
+    row.draggable = false; // drag handle will control dragging
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
 
-    row.addEventListener("dragstart", (e) => {
-      console.log("[DND] ドラッグ開始");
+    const handleDragStart = (e) => {
+      console.log("[DND] ドラッグ開始 (grip icon)");
       dragStartIndex = [...wrap.children].indexOf(row);
       e.dataTransfer.setData("text/plain", dragStartIndex.toString());
       e.dataTransfer.effectAllowed = "move";
       row.classList.add("dragging");
       console.log("[DND] ドラッグ開始インデックス:", dragStartIndex);
-    });
+    };
 
     row.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -2073,8 +2074,8 @@ function renderEdit(idx, isNew = false) {
       );
     });
 
-    row.addEventListener("dragend", (e) => {
-      console.log("[DND] ドラッグ終了");
+    const handleDragEnd = () => {
+      console.log("[DND] ドラッグ終了 (grip icon)");
       row.classList.remove("dragging");
       dragStartIndex = null;
 
@@ -2087,7 +2088,7 @@ function renderEdit(idx, isNew = false) {
           "active"
         );
       });
-    });
+    };
 
     /* --- 行 HTML --- */
     row.innerHTML = `
@@ -2119,6 +2120,11 @@ function renderEdit(idx, isNew = false) {
                     rows="4">${text}</textarea>
         </div>
       </div>`;
+    const gripIcon = row.querySelector(".grip-icon");
+    if (gripIcon) {
+      gripIcon.addEventListener("dragstart", handleDragStart);
+      gripIcon.addEventListener("dragend", handleDragEnd);
+    }
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
 
@@ -2235,7 +2241,8 @@ function renderEdit(idx, isNew = false) {
       }
 
       // ドラッグ＆ドロップの初期化を確実に行う
-      if (row.draggable) {
+      const newHandle = row.querySelector(".grip-icon");
+      if (newHandle && newHandle.draggable) {
         console.log("[DND] 新しいフィールドのドラッグ＆ドロップを初期化:", row);
       }
     }, 50);
