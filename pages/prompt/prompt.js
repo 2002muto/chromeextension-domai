@@ -1953,7 +1953,12 @@ function renderEdit(idx, isNew = false) {
     let dragStartIndex = null;
 
     row.addEventListener("dragstart", (e) => {
-      console.log("[DND] ドラッグ開始");
+      console.log("[DND] dragstart from element:", e.target);
+      if (!e.target.closest(".grip-icon")) {
+        console.log("[DND] dragstart canceled - not grip icon");
+        e.preventDefault();
+        return;
+      }
       dragStartIndex = [...wrap.children].indexOf(row);
       e.dataTransfer.setData("text/plain", dragStartIndex.toString());
       e.dataTransfer.effectAllowed = "move";
@@ -2209,6 +2214,8 @@ function renderEdit(idx, isNew = false) {
       // 新しく追加されたtextareaに自動リサイズ機能を適用
       const newTextarea = row.querySelector(".prompt-field-textarea");
       if (newTextarea) {
+        newTextarea.draggable = false;
+        console.log("[DND] disable dragging for textarea");
         // 自動リサイズのイベントリスナーを追加
         newTextarea.addEventListener("input", () => autoResize(newTextarea));
         newTextarea.addEventListener("paste", () =>
