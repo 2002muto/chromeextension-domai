@@ -1947,8 +1947,8 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    // Row itself is not draggable; use the grip icon as a handle
-    row.draggable = false;
+    // Allow dragging the entire row but only start when dragging the grip icon
+    row.draggable = true;
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
@@ -2096,7 +2096,7 @@ function renderEdit(idx, isNew = false) {
         <div class="prompt-header-row">
           <div class="prompt-label-container">
             <label class="prompt-field-label"></label>
-            <i class="bi bi-grip-vertical grip-icon" draggable="true"></i>
+            <i class="bi bi-grip-vertical grip-icon"></i>
           </div>
           <div class="prompt-field-actions">
             <div class="form-check form-switch">
@@ -2122,8 +2122,18 @@ function renderEdit(idx, isNew = false) {
       </div>`;
     const handle = row.querySelector(".grip-icon");
     if (handle) {
-      handle.addEventListener("dragstart", handleDragStart);
-      handle.addEventListener("dragend", handleDragEnd);
+      // Style the grip icon as a drag handle
+      handle.style.cursor = "grab";
+
+      // Start dragging only when the grip icon is used as the handle
+      row.addEventListener("dragstart", (e) => {
+        if (!e.target.classList.contains("grip-icon")) {
+          e.preventDefault();
+          return;
+        }
+        handleDragStart(e);
+      });
+      row.addEventListener("dragend", handleDragEnd);
     }
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
@@ -2242,7 +2252,7 @@ function renderEdit(idx, isNew = false) {
 
       // ドラッグ＆ドロップの初期化を確実に行う
       const newHandle = row.querySelector(".grip-icon");
-      if (newHandle && newHandle.draggable) {
+      if (newHandle && row.draggable) {
         console.log("[DND] 新しいフィールドのドラッグ＆ドロップを初期化:", row);
       }
     }, 50);
