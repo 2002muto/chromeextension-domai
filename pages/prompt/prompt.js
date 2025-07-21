@@ -1953,6 +1953,13 @@ function renderEdit(idx, isNew = false) {
     let dragStartIndex = null;
 
     row.addEventListener("dragstart", (e) => {
+      // グリップアイコン以外からのドラッグ開始は無効化
+      if (!e.target.closest(".grip-icon")) {
+        e.preventDefault();
+        console.log("[DND] グリップアイコン以外からのドラッグを無視");
+        return;
+      }
+
       console.log("[DND] ドラッグ開始");
       dragStartIndex = [...wrap.children].indexOf(row);
       e.dataTransfer.setData("text/plain", dragStartIndex.toString());
