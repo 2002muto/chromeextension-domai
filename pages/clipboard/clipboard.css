@@ -35,19 +35,30 @@
       var(--container-margin-horizontal) +
         var(--platform-container-margin-adjustment)
     )
-    0px
+    calc(
+      var(--container-margin-bottom) +
+        var(--platform-container-margin-adjustment)
+    )
     calc(
       var(--container-margin-horizontal) +
         var(--platform-container-margin-adjustment)
     );
-  padding: 0; /* パディングを削除してボタンとリストを分離 */
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  ); /* Standardized padding */
   /* Standardized container height calculation */
-  height: var(--container-height-base) !important;
+  height: calc(
+    var(--container-height-base) + var(--platform-container-height-adjustment)
+  ) !important;
+  width: calc(
+    var(--container-width-base) + var(--platform-container-width-adjustment)
+  );
   min-height: var(--container-min-height);
   max-width: var(--container-max-width);
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
+  box-sizing: border-box;
 }
 
 /* ─── clipboard ─── */
@@ -55,16 +66,24 @@
 .clipboard-list {
   list-style: none !important;
   margin: 0;
-  padding: 16px;
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  );
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: calc(
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) +
+      var(--platform-flex-gap-adjustment)
+  );
   flex: 1; /* 残りの高さを使用 */
   overflow-y: auto; /* スクロール可能 */
   overflow-x: hidden;
   /* スクロールバーのスタイル（共通設定に合わせる） */
   scrollbar-width: thin;
   scrollbar-color: var(--sb-thumb) var(--sb-track);
+  box-sizing: border-box;
+  height: calc(100% + var(--platform-container-height-adjustment));
+  width: calc(100% + var(--platform-container-width-adjustment));
 }
 
 /* clipboard-list専用統一スクロールバー（MEMOページの.memo-listと完全統一） */
@@ -96,7 +115,9 @@
   cursor: grab;
   display: flex; /* グリッドからflexに変更 */
   align-items: center; /* 垂直方向中央揃え */
-  gap: 0; /* ギャップを0にして手動で制御 */
+  gap: calc(
+    var(--platform-flex-gap-adjustment)
+  ); /* プラットフォーム間の一貫性を確保 */
   /* 背景は既存のグラデーションを維持 */
   background: linear-gradient(90deg, #6b6b6b, #3a3f4a);
   padding: 0; /* パディングを0にして手動で制御 */
@@ -106,6 +127,7 @@
   overflow: visible;
   transition: all 0.3s ease;
   position: relative;
+  box-sizing: border-box;
 }
 
 /* 左側の緑色エリア */

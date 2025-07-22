@@ -63,15 +63,23 @@ body {
   display: flex;
   flex-direction: column;
   gap: calc(
-    var(--container-gap-base) + var(--platform-container-gap-adjustment)
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) +
+      var(--platform-flex-gap-adjustment)
   );
   /* Standardized container dimensions using CSS variables */
-  height: var(--container-height-base);
+  height: calc(
+    var(--container-height-base) + var(--platform-container-height-adjustment)
+  );
+  width: calc(
+    var(--container-width-base) + var(--platform-container-width-adjustment)
+  );
   min-height: var(--container-min-height);
   max-width: var(--container-max-width);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0;
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  );
   box-sizing: border-box;
   opacity: 0;
   transform: translateY(20px);
@@ -82,7 +90,7 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--platform-sb-thumb, var(--sb-thumb))
     var(--platform-sb-track, var(--sb-track));
-  /* Standardized margin using CSS variables */
+  /* Standardized margin using CSS variables - simplified format */
   margin: calc(
       var(--container-margin-top) + var(--platform-container-margin-adjustment)
     )
@@ -103,13 +111,19 @@ body {
 /* MEMOページ（一覧表示）のみカード状背景を適用 */
 .memo-content:not(.edit-mode) {
   /* Use standardized CSS variables for consistent sizing */
-  height: var(--container-height-base);
+  height: calc(
+    var(--container-height-base) + var(--platform-container-height-adjustment)
+  );
+  width: calc(
+    var(--container-width-base) + var(--platform-container-width-adjustment)
+  );
   background: #2d2d2d;
   border-radius: var(--container-border-radius);
   padding: 0; /* パディングを削除してボタンとリストを分離 */
   display: flex;
   flex-direction: column;
   overflow: hidden; /* memo-content自体のスクロールを無効 */
+  box-sizing: border-box;
 }
 
 .memo-content.show {
@@ -136,7 +150,12 @@ body {
 .memo-content.run-mode {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 168px) !important; /* Standardized container height */
+  height: calc(
+    100vh - 168px + var(--platform-container-height-adjustment)
+  ) !important; /* Standardized container height */
+  width: calc(
+    var(--container-width-base) + var(--platform-container-width-adjustment)
+  );
   background: #2d2d2d;
   border-radius: var(--container-border-radius);
   margin: calc(32px + var(--platform-container-margin-adjustment))
@@ -155,6 +174,7 @@ body {
         var(--platform-container-padding-adjustment) + 8px
     );
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .memo-content.run-mode.animate.show {
@@ -189,8 +209,14 @@ body {
     calc(
       var(--container-base-margin) + var(--platform-container-margin-adjustment)
     );
-  height: calc(100vh - 168px) !important; /* Standardized container height */
+  height: calc(
+    100vh - 168px + var(--platform-container-height-adjustment)
+  ) !important; /* Standardized container height */
+  width: calc(
+    var(--container-width-base) + var(--platform-container-width-adjustment)
+  );
   padding-bottom: 0; /* フッターは固定なので余白不要 */
+  box-sizing: border-box;
 }
 /* ─── 統一されたスクロールバーのスタイル ─── */
 .memo-content::-webkit-scrollbar {
@@ -403,19 +429,28 @@ body {
 .memo-list {
   list-style: none !important;
   margin: 0;
-  padding: 16px;
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  );
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: calc(
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) +
+      var(--platform-flex-gap-adjustment)
+  );
   flex: 1; /* 残りの高さを使用 */
   overflow-y: auto; /* スクロール可能 */
   overflow-x: hidden;
   /* スクロールバーのスタイル */
   scrollbar-width: thin;
-  scrollbar-color: var(--sb-thumb) var(--sb-track);
+  scrollbar-color: var(--platform-sb-thumb, var(--sb-thumb))
+    var(--platform-sb-track, var(--sb-track));
   /* SPA環境での追加設定 */
   min-height: 0; /* flexアイテムが縮まるようにする */
   max-height: 100%; /* 親要素の高さを超えないようにする */
+  height: calc(100% + var(--platform-container-height-adjustment));
+  width: calc(100% + var(--platform-container-width-adjustment));
+  box-sizing: border-box;
 }
 
 /* memo-list専用統一スクロールバー */

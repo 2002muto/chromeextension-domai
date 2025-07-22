@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Container Sizing Test</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="pages/common-containers.css" />
+    <style>
+      body {
+        background-color: #314559;
+        color: white;
+        padding: 20px;
+      }
+
+      .test-section {
+        margin-bottom: 30px;
+      }
+
+      .test-container {
+        background: #2d2d2d;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .test-flex-container {
+        background: #3a3f4a;
+        min-height: 100px;
+      }
+
+      .test-flex-item {
+        background: #555;
+        padding: 10px;
+        border-radius: 4px;
+      }
+
+      .dimensions-display {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 8px;
+        margin-top: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="padding: 20px; color: white">
+      <h1>Container Sizing and Spacing Test</h1>
+      <div id="platform-info">
+        <p>Platform: <span id="platform-name">Loading...</span></p>
+        <p>CSS Classes: <span id="css-classes">Loading...</span></p>
+        <p>Container Variables: <span id="container-vars">Loading...</span></p>
+      </div>
+
+      <div class="test-section">
+        <h2>Standard Container</h2>
+        <div class="page-container test-container">
+          <p>Standard page container</p>
+          <div class="dimensions-display" id="page-container-dimensions">
+            Calculating dimensions...
+          </div>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>Content Container</h2>
+        <div class="content-container test-container">
+          <p>Standard content container</p>
+          <div class="dimensions-display" id="content-container-dimensions">
+            Calculating dimensions...
+          </div>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>Flex Container (Column)</h2>
+        <div class="flex-container test-flex-container">
+          <div class="test-flex-item">Flex Item 1</div>
+          <div class="test-flex-item">Flex Item 2</div>
+          <div class="test-flex-item">Flex Item 3</div>
+          <div class="dimensions-display" id="flex-container-dimensions">
+            Calculating dimensions...
+          </div>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>Flex Container (Row)</h2>
+        <div class="flex-container-row test-flex-container">
+          <div class="test-flex-item">Flex Item 1</div>
+          <div class="test-flex-item">Flex Item 2</div>
+          <div class="test-flex-item">Flex Item 3</div>
+          <div class="dimensions-display" id="flex-row-dimensions">
+            Calculating dimensions...
+          </div>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>List Container</h2>
+        <div class="list-container test-container" style="height: 200px">
+          <div class="test-flex-item">List Item 1</div>
+          <div class="test-flex-item">List Item 2</div>
+          <div class="test-flex-item">List Item 3</div>
+          <div class="dimensions-display" id="list-container-dimensions">
+            Calculating dimensions...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="pages/common.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // プラットフォーム情報を表示
+        setTimeout(() => {
+          const platform = PlatformDetector.detect();
+          const classes = document.body.className;
+          const root = document.documentElement;
+
+          document.getElementById("platform-name").textContent = platform;
+          document.getElementById("css-classes").textContent =
+            classes || "None";
+
+          // コンテナ関連のカスタムプロパティの値を取得
+          const containerVars = {
+            containerHeightBase: getComputedStyle(root).getPropertyValue(
+              "--container-height-base"
+            ),
+            containerHeightAdjustment: getComputedStyle(root).getPropertyValue(
+              "--platform-container-height-adjustment"
+            ),
+            containerMarginAdjustment: getComputedStyle(root).getPropertyValue(
+              "--platform-container-margin-adjustment"
+            ),
+            containerPaddingAdjustment: getComputedStyle(root).getPropertyValue(
+              "--platform-container-padding-adjustment"
+            ),
+            containerGapAdjustment: getComputedStyle(root).getPropertyValue(
+              "--platform-container-gap-adjustment"
+            ),
+            flexGapAdjustment: getComputedStyle(root).getPropertyValue(
+              "--platform-flex-gap-adjustment"
+            ),
+          };
+
+          document.getElementById("container-vars").innerHTML = JSON.stringify(
+            containerVars,
+            null,
+            2
+          )
+            .replace(/\n/g, "<br>")
+            .replace(/ /g, "&nbsp;");
+
+          // 各コンテナの寸法を表示
+          displayDimensions(
+            "page-container-dimensions",
+            document.querySelector(".page-container")
+          );
+          displayDimensions(
+            "content-container-dimensions",
+            document.querySelector(".content-container")
+          );
+          displayDimensions(
+            "flex-container-dimensions",
+            document.querySelector(".flex-container")
+          );
+          displayDimensions(
+            "flex-row-dimensions",
+            document.querySelector(".flex-container-row")
+          );
+          displayDimensions(
+            "list-container-dimensions",
+            document.querySelector(".list-container")
+          );
+        }, 100);
+      });
+
+      function displayDimensions(elementId, container) {
+        if (!container) return;
+
+        const style = window.getComputedStyle(container);
+        const dimensions = {
+          width: style.width,
+          height: style.height,
+          padding: `${style.paddingTop} ${style.paddingRight} ${style.paddingBottom} ${style.paddingLeft}`,
+          margin: `${style.marginTop} ${style.marginRight} ${style.marginBottom} ${style.marginLeft}`,
+          gap: style.gap || "N/A",
+          boxSizing: style.boxSizing,
+        };
+
+        document.getElementById(elementId).innerHTML = JSON.stringify(
+          dimensions,
+          null,
+          2
+        )
+          .replace(/\n/g, "<br>")
+          .replace(/ /g, "&nbsp;");
+      }
+    </script>
+  </body>
+</html>

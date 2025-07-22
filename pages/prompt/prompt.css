@@ -66,13 +66,17 @@
       var(--container-margin-horizontal) +
         var(--platform-container-margin-adjustment)
     );
-  padding: 0;
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  );
   height: var(--container-height-base) !important;
+  width: var(--container-width-base);
   min-height: var(--container-min-height);
   max-width: var(--container-max-width);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .memo-content.show {

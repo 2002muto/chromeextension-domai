@@ -122,6 +122,11 @@ textarea {
   --container-margin-horizontal: 16px;
   --container-margin-bottom: 16px;
 
+  /* Additional container sizing variables */
+  --container-min-height: 300px;
+  --container-max-width: 100%;
+  --container-width-base: 100%;
+
   /* Base font system with cross-platform fallbacks */
   --font-family-primary:
     system-ui, -apple-system, "Segoe UI", "Noto Sans JP", "Roboto",
@@ -234,6 +239,67 @@ textarea {
     var(--container-base-padding) +
       var(--platform-container-padding-adjustment) + 1px
   );
+  box-sizing: border-box;
+}
+
+/* Enhanced Windows-specific container sizing and spacing normalization */
+.platform-windows .setting-container,
+.platform-windows .iframe-container,
+.platform-windows .status-container {
+  padding: calc(
+    var(--container-base-padding) +
+      var(--platform-container-padding-adjustment) + 1px
+  );
+  margin: calc(
+      var(--container-margin-top) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-bottom) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    );
+  min-height: var(--container-min-height);
+  max-width: var(--container-max-width);
+  box-sizing: border-box;
+}
+
+/* Windows-specific flex layout gap adjustments */
+.platform-windows .flex-container,
+.platform-windows .flex-container-row {
+  gap: calc(
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) + 1px
+  );
+}
+
+/* Windows-specific page container adjustments */
+.platform-windows .page-container {
+  height: calc(var(--container-height-base) - 2px);
+  padding: calc(
+    var(--container-base-padding) +
+      var(--platform-container-padding-adjustment) + 1px
+  );
+  margin: calc(
+      var(--container-margin-top) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-bottom) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    );
   box-sizing: border-box;
 }
 /* windows-fix END */

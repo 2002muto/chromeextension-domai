@@ -1,60 +1,67 @@
 /* 
- * Common container sizing and spacing variables
- * This file provides standardized container dimensions and spacing
- * for consistent cross-platform layout
+ * Cross-platform container sizing and spacing normalization
+ * This file provides consistent container dimensions across different platforms
  */
 
+/* Base container variables - these are referenced by platform-specific overrides */
 :root {
-  /* Base container dimensions */
+  /* Container sizing */
   --container-height-base: calc(
     100vh - 168px
   ); /* header(52px) + margins(48px) + footer(68px) */
   --container-width-base: 100%;
-
-  /* Container margins */
-  --container-margin-top: 32px;
-  --container-margin-horizontal: 16px;
-  --container-margin-bottom: 16px;
-
-  /* Container padding */
-  --container-padding-base: 16px;
-
-  /* Container gap spacing for flex layouts */
-  --container-gap-base: 16px;
-
-  /* Container border radius */
-  --container-border-radius: 12px;
-
-  /* Platform-specific container adjustments */
-  --platform-container-margin-adjustment: 0px;
-  --platform-container-padding-adjustment: 0px;
-  --platform-container-gap-adjustment: 0px;
-
-  /* Standardized container dimensions for consistent sizing */
   --container-min-height: 300px;
   --container-max-width: 100%;
 
-  /* Standardized spacing units for consistent layout */
-  --spacing-unit-xs: 4px;
-  --spacing-unit-sm: 8px;
-  --spacing-unit-md: 16px;
-  --spacing-unit-lg: 24px;
-  --spacing-unit-xl: 32px;
+  /* Container spacing */
+  --container-base-margin: 16px;
+  --container-margin-top: 32px;
+  --container-margin-horizontal: 16px;
+  --container-margin-bottom: 16px;
+  --container-base-padding: 16px;
+  --container-gap-base: 16px;
+  --container-border-radius: 12px;
+
+  /* Platform-specific adjustments (default values) */
+  --platform-container-margin-adjustment: 0px;
+  --platform-container-padding-adjustment: 0px;
+  --platform-container-gap-adjustment: 0px;
+  --platform-container-height-adjustment: 0px;
+  --platform-container-width-adjustment: 0px;
+
+  /* Flex layout adjustments */
+  --platform-flex-gap-adjustment: 0px;
+  --platform-flex-padding-adjustment: 0px;
 }
 
 /* Windows-specific container adjustments */
 .platform-windows {
+  /* Enhanced container sizing and spacing for Windows */
   --platform-container-margin-adjustment: 1px;
   --platform-container-padding-adjustment: 1px;
   --platform-container-gap-adjustment: 1px;
+  --platform-container-height-adjustment: -2px; /* Compensate for Windows box model differences */
+  --platform-container-width-adjustment: 0px;
+
+  /* Windows-specific flex layout adjustments */
+  --platform-flex-gap-adjustment: 1px;
+  --platform-flex-padding-adjustment: 1px;
 }
 
-/* Standardized container class */
-.standard-container {
-  height: var(--container-height-base);
-  width: var(--container-width-base);
-  max-width: var(--container-max-width);
+/* Standardized container base styles */
+.page-container {
+  height: calc(
+    var(--container-height-base) + var(--platform-container-height-adjustment)
+  );
+  width: calc(
+    var(--container-width-base) + var(--platform-container-width-adjustment)
+  );
   min-height: var(--container-min-height);
+  max-width: var(--container-max-width);
+  box-sizing: border-box;
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  );
   margin: calc(
       var(--container-margin-top) + var(--platform-container-margin-adjustment)
     )
@@ -70,75 +77,77 @@
       var(--container-margin-horizontal) +
         var(--platform-container-margin-adjustment)
     );
-  padding: calc(
-    var(--container-padding-base) + var(--platform-container-padding-adjustment)
-  );
   border-radius: var(--container-border-radius);
-  box-sizing: border-box;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-/* Standardized flex container with gap */
+/* Standardized flex container spacing */
 .flex-container {
   display: flex;
   flex-direction: column;
   gap: calc(
-    var(--container-gap-base) + var(--platform-container-gap-adjustment)
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) +
+      var(--platform-flex-gap-adjustment)
   );
-  width: 100%;
+  padding: calc(var(--platform-flex-padding-adjustment));
   box-sizing: border-box;
 }
 
-/* Horizontal flex container variant */
 .flex-container-row {
   display: flex;
   flex-direction: row;
   gap: calc(
-    var(--container-gap-base) + var(--platform-container-gap-adjustment)
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) +
+      var(--platform-flex-gap-adjustment)
   );
-  width: 100%;
+  padding: calc(var(--platform-flex-padding-adjustment));
   box-sizing: border-box;
-  align-items: center;
 }
 
-/* Standardized scrollable container */
-.scrollable-container {
+/* Standardized content containers */
+.content-container {
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  );
+  margin: calc(
+      var(--container-margin-top) + var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-bottom) +
+        var(--platform-container-margin-adjustment)
+    )
+    calc(
+      var(--container-margin-horizontal) +
+        var(--platform-container-margin-adjustment)
+    );
+  box-sizing: border-box;
+  border-radius: var(--container-border-radius);
+  height: calc(
+    var(--container-height-base) + var(--platform-container-height-adjustment)
+  );
+  width: calc(
+    var(--container-width-base) + var(--platform-container-width-adjustment)
+  );
+}
+
+/* Standardized list containers */
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: calc(
+    var(--container-gap-base) + var(--platform-container-gap-adjustment) +
+      var(--platform-flex-gap-adjustment)
+  );
+  padding: calc(
+    var(--container-base-padding) + var(--platform-container-padding-adjustment)
+  );
+  box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
-  flex: 1;
-  min-height: 0; /* Allows flex items to shrink below content size */
-  scrollbar-width: thin;
-  scrollbar-color: var(--platform-sb-thumb, var(--sb-thumb))
-    var(--platform-sb-track, var(--sb-track));
-  box-sizing: border-box;
-  padding-right: calc(
-    var(--spacing-unit-xs) + var(--platform-container-padding-adjustment)
-  ); /* Add slight padding for scrollbar */
-}
-
-/* Standardized scrollable container scrollbar styling */
-.scrollable-container::-webkit-scrollbar {
-  width: var(--platform-sb-width, var(--sb-width));
-  height: var(--platform-sb-width, var(--sb-width));
-}
-
-.scrollable-container::-webkit-scrollbar-track {
-  background: var(--platform-sb-track, var(--sb-track));
-  border-radius: var(--platform-sb-track-border-radius, 4px);
-}
-
-.scrollable-container::-webkit-scrollbar-thumb {
-  background: var(--platform-sb-thumb, var(--sb-thumb));
-  border-radius: var(--platform-sb-thumb-border-radius, 4px);
-  border: var(--platform-sb-thumb-border, none);
-}
-
-.scrollable-container::-webkit-scrollbar-thumb:hover {
-  background: var(--platform-sb-thumb-hover, var(--sb-thumb-hover));
-}
-
-.scrollable-container::-webkit-scrollbar-corner {
-  background: var(--platform-sb-corner, var(--sb-corner));
+  height: calc(100% + var(--platform-container-height-adjustment));
+  width: calc(100% + var(--platform-container-width-adjustment));
 }
