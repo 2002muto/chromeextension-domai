@@ -91,9 +91,19 @@ function setupAddButtons() {
 function setupModalEvents() {
   const modal = document.getElementById("timerModal");
   const saveBtn = document.getElementById("btnSaveTimer");
+  const resetBtn = document.querySelector(".modal-footer .btn-secondary");
 
   saveBtn.addEventListener("click", () => {
     saveTimerItem();
+  });
+
+  // リセットボタンの機能
+  resetBtn.addEventListener("click", () => {
+    // 現在の時間にリセット
+    setCurrentTime();
+
+    // 名前フィールドをクリア
+    document.getElementById("timerName").value = "";
   });
 
   // モーダル表示時の設定
@@ -121,6 +131,12 @@ function setupModalEvents() {
       timeInputGroup.style.display = "block";
       alarmTimeGroup.style.display = "none";
       repeatGroup.style.display = "none";
+
+      // 時間ボタンの初期化（より確実に実行）
+      setTimeout(() => {
+        console.log("TIMER: カウントダウンモーダルで時間ボタンを初期化");
+        setupTimeButtons();
+      }, 200);
     } else {
       timeInputGroup.style.display = "block";
       alarmTimeGroup.style.display = "block";
@@ -144,6 +160,14 @@ function showAddModal(type, title) {
   document.getElementById("timerForm").reset();
 
   modal.show();
+
+  // カウントダウンの場合は時間設定を確実に行う
+  if (type === "countdown") {
+    setTimeout(() => {
+      console.log("TIMER: showAddModalで時間設定を実行");
+      setCurrentTime();
+    }, 300);
+  }
 }
 
 // タイマーアイテム保存
@@ -965,6 +989,68 @@ window.addEventListener("focus", function () {
     restoreRunningTimers();
   }, 100);
 });
+
+// 現在の時間を取得して設定
+function setCurrentTime() {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+
+  console.log("TIMER: 現在の時間を設定中", { hours, minutes, seconds });
+
+  // 時間入力フィールドに現在の時間を設定
+  const hoursInput = document.getElementById("hours");
+  const minutesInput = document.getElementById("minutes");
+  const secondsInput = document.getElementById("seconds");
+
+  if (hoursInput && minutesInput && secondsInput) {
+    hoursInput.value = hours.toString().padStart(2, "0");
+    minutesInput.value = minutes.toString().padStart(2, "0");
+    secondsInput.value = seconds.toString().padStart(2, "0");
+
+    console.log("TIMER: 時間設定完了", {
+      hours: hoursInput.value,
+      minutes: minutesInput.value,
+      seconds: secondsInput.value,
+    });
+  } else {
+    console.log("TIMER: 時間入力フィールドが見つかりません", {
+      hoursInput: !!hoursInput,
+      minutesInput: !!minutesInput,
+      secondsInput: !!secondsInput,
+    });
+  }
+}
+
+// 時間入力ボタンの機能設定
+function setupTimeButtons() {
+  // 現在の時間を設定
+  setCurrentTime();
+
+  // 時間調整ボタンのイベントリスナー
+  document.querySelectorAll(".time-btn").forEach((button) => {
+    button.addEventListener("click", function () {
+      const target = this.getAttribute("data-target");
+      const input = document.getElementById(target);
+      const isUp = this.classList.contains("time-btn-up");
+      let value = parseInt(input.value) || 0;
+
+      // 最大値と最小値を設定
+      const maxValues = { hours: 23, minutes: 59, seconds: 59 };
+      const maxValue = maxValues[target];
+
+      if (isUp) {
+        value = (value + 1) % (maxValue + 1);
+      } else {
+        value = value === 0 ? maxValue : value - 1;
+      }
+
+      // 2桁で表示
+      input.value = value.toString().padStart(2, "0");
+    });
+  });
+}
 
 // 時間入力フィールドの自動半角変換設定
 function setupAutoFullWidth() {

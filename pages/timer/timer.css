@@ -505,6 +505,102 @@
   border: 2px dashed rgba(255, 255, 255, 0.2);
 }
 
+/* 新しいカウントダウンレイアウト */
+.time-input-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.time-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #ffffff;
+  width: 40px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.time-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.time-btn:active {
+  transform: scale(0.95);
+}
+
+.time-input {
+  width: 80px !important;
+  height: 50px !important;
+  text-align: center !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+}
+
+.time-input:focus {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1) !important;
+}
+
+.time-input::-webkit-outer-spin-button,
+.time-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* モーダルボタンのスタイル調整 */
+.modal-footer .btn-secondary {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  border: none;
+  color: #ffffff;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.modal-footer .btn-secondary:hover {
+  background: linear-gradient(135deg, #5a6268, #404040);
+  transform: translateY(-1px);
+}
+
+.modal-footer .btn-primary {
+  background: linear-gradient(135deg, #e95404, #a600cf);
+  border: none;
+  color: #ffffff;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.modal-footer .btn-primary:hover {
+  background: linear-gradient(135deg, #d44a03, #9500b8);
+  transform: translateY(-1px);
+}
+
 /* アニメーション定義 */
 @keyframes slideUpFade {
   0% {
