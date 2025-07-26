@@ -40,6 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }, 100);
 
+  // 自動全角変換の設定
+  setupAutoFullWidth();
+
   console.log("TIMER: 初期化完了");
 });
 
@@ -873,3 +876,28 @@ window.addEventListener("focus", function () {
     restoreRunningTimers();
   }, 100);
 });
+
+// 時間入力フィールドの自動半角変換設定
+function setupAutoFullWidth() {
+  // 時間入力フィールドの自動半角変換（時・分・秒のみ）
+  const timeInputs = ["hours", "minutes", "seconds"];
+  timeInputs.forEach((inputId) => {
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.addEventListener("input", function (e) {
+        // 全角数字を半角に変換（時間入力フィールドのみ）
+        let value = e.target.value;
+        value = value.replace(/[０-９]/g, function (match) {
+          return String.fromCharCode(match.charCodeAt(0) - 0xfee0);
+        });
+        e.target.value = value;
+      });
+    }
+  });
+
+  // 名前フィールドには変換処理を適用しないことを確認
+  const timerNameInput = document.getElementById("timerName");
+  if (timerNameInput) {
+    console.log("TIMER: 名前フィールドの変換処理は適用されません");
+  }
+}
