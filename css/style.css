@@ -13,7 +13,7 @@
 }
 
 body {
-  font-family: 'UbuntuFont', 'Ubuntu', 'Segoe UI', Arial, sans-serif;
+  font-family: 'UbuntuFont';
   width: 280px;
   padding: 15px;
   color: #333;
@@ -25,13 +25,13 @@ h1 {
   font-size: 20px;
   line-height: 1.2;
   color: #2c2c2c;
-  font-weight: bold;
+  font-weight: normal;
   margin-bottom: 10px;
 }
 
 p {
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.6;
   color: #555;
   font-weight: normal;
 }
