@@ -354,6 +354,12 @@
   display: none !important;
 }
 
+/* カウントダウンモーダル用の非表示設定 */
+.modal-content[data-type="countdown"] #alarmTimeGroup,
+.modal-content[data-type="countdown"] #repeatGroup {
+  display: none !important;
+}
+
 .modal-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);

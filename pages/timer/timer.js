@@ -104,10 +104,15 @@ function setupModalEvents() {
       timeInputGroup.style.display = "none";
       alarmTimeGroup.style.display = "none";
       repeatGroup.style.display = "none";
-    } else {
+    } else if (type === "countdown") {
+      // カウントダウンは時間設定のみ表示（アラーム時刻は不要）
       timeInputGroup.style.display = "block";
       alarmTimeGroup.style.display = "none";
       repeatGroup.style.display = "none";
+    } else {
+      timeInputGroup.style.display = "block";
+      alarmTimeGroup.style.display = "block";
+      repeatGroup.style.display = "block";
     }
   });
 }
