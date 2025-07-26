@@ -589,8 +589,8 @@ function createAlarmItem(item) {
         </button>
       </div>
     </div>
-    <div class="alarm-info">
-      <span class="alarm-time">${timeString}</span>
+    <div class="timer-display">
+      <p class="timer-time">${timeString}</p>
     </div>
   `;
 }
