@@ -29,6 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // 初期表示
   renderAllTabs();
 
+  // 実行中のタイマーを復元
+  restoreRunningTimers();
+
   console.log("TIMER: 初期化完了");
 });
 
@@ -49,6 +52,10 @@ function setupTabNavigation() {
       document.getElementById(`${targetTab}-content`).classList.add("active");
 
       currentTab = targetTab;
+
+      // タブ切り替え時に表示を更新（実行中のタイマーは再描画しない）
+      updateTabDisplay(targetTab);
+
       console.log("TIMER: タブ切り替え:", targetTab);
     });
   });
@@ -224,6 +231,131 @@ function renderTab(type) {
     const itemElement = createTimerItem(type, item);
     list.appendChild(itemElement);
   });
+}
+
+// タブ表示更新（実行中のタイマーを保持）
+function updateTabDisplay(type) {
+  const list = document.getElementById(`${type}-list`);
+  const items = timerData[type];
+
+  if (items.length === 0) {
+    list.innerHTML = "";
+    return;
+  }
+
+  // 既存のアイテムを確認
+  const existingItems = list.querySelectorAll(".timer-item");
+  const existingIds = Array.from(existingItems).map((el) => el.dataset.id);
+
+  // 新しいアイテムを確認
+  const newItems = items.filter((item) => !existingIds.includes(item.id));
+  const removedItems = existingIds.filter(
+    (id) => !items.find((item) => item.id === id)
+  );
+
+  // 削除されたアイテムを削除
+  removedItems.forEach((id) => {
+    const element = list.querySelector(`[data-id="${id}"]`);
+    if (element) {
+      element.remove();
+    }
+  });
+
+  // 新しいアイテムを追加
+  newItems.forEach((item) => {
+    const itemElement = createTimerItem(type, item);
+    list.appendChild(itemElement);
+  });
+
+  // 既存のアイテムの表示を更新（実行中は更新しない）
+  items.forEach((item) => {
+    const element = list.querySelector(`[data-id="${item.id}"]`);
+    if (element && !item.isRunning) {
+      // 実行中でない場合のみ更新
+      const newElement = createTimerItem(type, item);
+      element.replaceWith(newElement);
+    } else if (element && item.isRunning) {
+      // 実行中の場合は時間表示のみ更新
+      updateRunningTimerDisplay(item);
+    }
+  });
+
+  // 実行中のアイテムが存在しない場合は新しく作成
+  items.forEach((item) => {
+    if (item.isRunning) {
+      const element = list.querySelector(`[data-id="${item.id}"]`);
+      if (!element) {
+        const itemElement = createTimerItem(type, item);
+        list.appendChild(itemElement);
+      }
+    }
+  });
+}
+
+// 実行中のタイマーの表示更新
+function updateRunningTimerDisplay(item) {
+  const element = document.querySelector(`[data-id="${item.id}"]`);
+  if (!element) return;
+
+  const timeElement = element.querySelector(".timer-time");
+  if (!timeElement) return;
+
+  if (item.totalSeconds !== undefined) {
+    // カウントダウン
+    timeElement.textContent = formatTime(item.remainingSeconds);
+  } else if (item.elapsedSeconds !== undefined) {
+    // ストップウォッチ
+    timeElement.textContent = formatTime(item.elapsedSeconds);
+  }
+}
+
+// アラームの表示更新
+function updateAlarmDisplay(item) {
+  const element = document.querySelector(`[data-id="${item.id}"]`);
+  if (!element) return;
+
+  const alarmTimeElement = element.querySelector(".alarm-time");
+  if (!alarmTimeElement) return;
+
+  const nextAlarm = new Date(item.nextAlarm);
+  const timeString = nextAlarm.toLocaleTimeString("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  alarmTimeElement.textContent = timeString;
+}
+
+// 実行中のタイマーを復元
+function restoreRunningTimers() {
+  console.log("TIMER: 実行中のタイマーを復元開始");
+
+  // カウントダウンの復元
+  timerData.countdown.forEach((item) => {
+    if (item.isRunning && !item.interval) {
+      console.log("TIMER: カウントダウン復元:", item.name);
+      startCountdown(item.id);
+    }
+  });
+
+  // ストップウォッチの復元
+  timerData.stopwatch.forEach((item) => {
+    if (item.isRunning && !item.interval) {
+      console.log("TIMER: ストップウォッチ復元:", item.name);
+      startStopwatch(item.id);
+    }
+  });
+
+  // アラームの復元（有効なアラームを表示）
+  timerData.alarm.forEach((item) => {
+    if (item.isActive) {
+      console.log("TIMER: アラーム復元:", item.name);
+      // アラームの表示を更新
+      updateAlarmDisplay(item);
+    }
+  });
+
+  console.log("TIMER: 実行中のタイマー復元完了");
 }
 
 // タイマーアイテム作成
@@ -676,6 +808,14 @@ function loadTimerData() {
     if (result.timerData) {
       timerData = result.timerData;
       console.log("TIMER: データ読み込み完了");
+
+      // データ読み込み後に表示を更新
+      renderAllTabs();
+
+      // データ読み込み後に実行中のタイマーを復元
+      setTimeout(() => {
+        restoreRunningTimers();
+      }, 200);
     }
   });
 }
@@ -711,3 +851,20 @@ setInterval(() => {
 if ("Notification" in window && Notification.permission === "default") {
   Notification.requestPermission();
 }
+
+// ページの可視性変更時にタイマーを復元
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden) {
+    // ページが表示された時にタイマーを復元
+    setTimeout(() => {
+      restoreRunningTimers();
+    }, 100);
+  }
+});
+
+// ページフォーカス時にタイマーを復元
+window.addEventListener("focus", function () {
+  setTimeout(() => {
+    restoreRunningTimers();
+  }, 100);
+});
