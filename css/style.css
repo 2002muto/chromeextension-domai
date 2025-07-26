@@ -1,0 +1,33 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+@font-face {
+  font-family: 'UbuntuFont';
+  src: url('../fonts/Ubuntu-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: 'UbuntuFont', sans-serif;
+  width: 280px;
+  padding: 15px;
+  color: #333;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 1.2;
+  color: #2c2c2c;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #555;
+}

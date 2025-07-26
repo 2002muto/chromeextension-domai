@@ -73,7 +73,8 @@
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    }
+    },
+    "default_popup": "popup.html"
   },
   "side_panel": {
     "default_path": "pages/memo/memo.html"
@@ -96,6 +97,7 @@
     {
       "resources": [
         "pages/*",
+        "fonts/Ubuntu-Regular.woff2",
         "icons/*",
         "vendor/*",
         "*.js",
