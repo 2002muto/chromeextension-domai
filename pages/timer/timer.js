@@ -32,6 +32,14 @@ document.addEventListener("DOMContentLoaded", function () {
   // 実行中のタイマーを復元
   restoreRunningTimers();
 
+  // アニメーション発火
+  setTimeout(() => {
+    const timerMain = document.querySelector(".timer-main");
+    if (timerMain) {
+      timerMain.classList.add("animate");
+    }
+  }, 100);
+
   console.log("TIMER: 初期化完了");
 });
 

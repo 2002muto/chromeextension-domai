@@ -14,6 +14,16 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+
+/* アニメーション適用時のスタイル */
+.timer-main.animate {
+  animation: slideUpFade 0.4s ease-out both;
 }
 
 /* タブナビゲーション */
@@ -469,4 +479,16 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+/* アニメーション定義 */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
