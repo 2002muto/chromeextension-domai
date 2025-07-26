@@ -597,6 +597,9 @@ function updateCountdown(id) {
 
   // 終了チェック
   if (item.remainingSeconds <= 0) {
+    // アラート音を鳴らす
+    playAlertSound();
+
     stopCountdown(id);
     showNotification(item.name, "カウントダウンが完了しました");
   }
@@ -801,6 +804,38 @@ function generateDefaultName(type) {
   }
 }
 
+// アラート音を鳴らす
+function playAlertSound() {
+  try {
+    // ブラウザの標準アラート音を使用
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
+
+    // 3回リピート
+    for (let i = 0; i < 3; i++) {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      const startTime = audioContext.currentTime + i * 2; // 2秒間隔で3回
+
+      oscillator.frequency.setValueAtTime(800, startTime);
+      oscillator.frequency.setValueAtTime(600, startTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, startTime + 0.2);
+
+      gainNode.gain.setValueAtTime(0.3, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 1.5);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 1.5);
+    }
+  } catch (error) {
+    console.log("TIMER: アラート音の再生に失敗しました", error);
+  }
+}
+
 // 通知表示
 function showNotification(title, message) {
   if ("Notification" in window && Notification.permission === "granted") {
@@ -841,6 +876,9 @@ setInterval(() => {
 
   timerData.alarm.forEach((alarm) => {
     if (alarm.isActive && alarm.nextAlarm && now >= alarm.nextAlarm) {
+      // アラート音を鳴らす
+      playAlertSound();
+
       showNotification(alarm.name, "アラーム時刻です");
 
       // 次回アラーム時刻を計算
