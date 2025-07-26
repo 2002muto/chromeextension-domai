@@ -109,7 +109,17 @@ function setupModalEvents() {
   // モーダル表示時の設定
   modal.addEventListener("show.bs.modal", function (event) {
     const button = event.relatedTarget;
-    const type = button.dataset.type;
+    let type = null;
+
+    // relatedTargetが存在する場合はそこからtypeを取得、そうでなければモーダルコンテンツから取得
+    if (button && button.dataset.type) {
+      type = button.dataset.type;
+    } else {
+      const modalContent = document.querySelector(".modal-content");
+      type = modalContent ? modalContent.dataset.type : null;
+    }
+
+    console.log("TIMER: モーダル表示イベント:", type);
 
     // フォーム要素の表示/非表示を制御
     const timeInputGroup = document.getElementById("timeInputGroup");
@@ -132,11 +142,11 @@ function setupModalEvents() {
       alarmTimeGroup.style.display = "none";
       repeatGroup.style.display = "none";
 
-      // 時間ボタンの初期化（より確実に実行）
-      setTimeout(() => {
-        console.log("TIMER: カウントダウンモーダルで時間ボタンを初期化");
-        setupTimeButtons();
-      }, 200);
+      console.log("TIMER: カウントダウンモーダル設定完了");
+
+      // 時間ボタンの初期化（1回のみ実行）
+      console.log("TIMER: カウントダウンモーダルで時間ボタンを初期化");
+      setupTimeButtons();
     } else {
       timeInputGroup.style.display = "block";
       alarmTimeGroup.style.display = "block";
@@ -159,13 +169,27 @@ function showAddModal(type, title) {
   // フォームリセット
   document.getElementById("timerForm").reset();
 
+  // ダミーのボタン要素を作成してrelatedTargetとして設定
+  const dummyButton = document.createElement("button");
+  dummyButton.dataset.type = type;
+  dummyButton.style.display = "none";
+  document.body.appendChild(dummyButton);
+
+  // モーダルを表示（relatedTargetを設定）
   modal.show();
+
+  // ダミーボタンを削除
+  setTimeout(() => {
+    document.body.removeChild(dummyButton);
+  }, 100);
 
   // カウントダウンの場合は時間設定を確実に行う
   if (type === "countdown") {
     setTimeout(() => {
       console.log("TIMER: showAddModalで時間設定を実行");
       setCurrentTime();
+      // 時間ボタンの初期化も実行
+      setupTimeButtons();
     }, 300);
   }
 }
@@ -1025,16 +1049,60 @@ function setCurrentTime() {
 
 // 時間入力ボタンの機能設定
 function setupTimeButtons() {
+  console.log("TIMER: setupTimeButtons 開始");
+
   // 現在の時間を設定
   setCurrentTime();
 
-  // 時間調整ボタンのイベントリスナー
+  // 既存のイベントリスナーを削除（重複を防ぐ）
   document.querySelectorAll(".time-btn").forEach((button) => {
-    button.addEventListener("click", function () {
+    if (button._timeButtonHandler) {
+      button.removeEventListener("click", button._timeButtonHandler);
+      button.onclick = null; // onclickも削除
+    }
+  });
+
+  // 時間調整ボタンのイベントリスナー
+  const buttons = document.querySelectorAll(".time-btn");
+  console.log("TIMER: 時間ボタン数:", buttons.length);
+
+  buttons.forEach((button, index) => {
+    console.log(`TIMER: ボタン${index + 1}設定:`, {
+      classList: button.classList.toString(),
+      dataTarget: button.getAttribute("data-target"),
+      textContent: button.textContent,
+      offsetWidth: button.offsetWidth,
+      offsetHeight: button.offsetHeight,
+    });
+
+    // ボタンがクリック可能かテスト
+    button.style.cursor = "pointer";
+    button.style.pointerEvents = "auto";
+
+    // イベントハンドラー関数を作成
+    const handler = function (e) {
+      console.log("TIMER: ボタンクリック検出！");
+      e.preventDefault();
+      e.stopPropagation();
+
+      console.log("TIMER: 時間ボタンクリック:", {
+        target: this.getAttribute("data-target"),
+        isUp: this.classList.contains("time-btn-up"),
+        currentValue: document.getElementById(this.getAttribute("data-target"))
+          ?.value,
+      });
+
       const target = this.getAttribute("data-target");
       const input = document.getElementById(target);
       const isUp = this.classList.contains("time-btn-up");
+
+      if (!input) {
+        console.log("TIMER: 入力フィールドが見つかりません:", target);
+        return;
+      }
+
       let value = parseInt(input.value) || 0;
+      console.log("TIMER: 現在の値:", value);
 
       // 最大値と最小値を設定
       const maxValues = { hours: 23, minutes: 59, seconds: 59 };
@@ -1042,14 +1110,25 @@ function setupTimeButtons() {
 
       if (isUp) {
         value = (value + 1) % (maxValue + 1);
+        console.log("TIMER: 値を増加:", value);
       } else {
         value = value === 0 ? maxValue : value - 1;
+        console.log("TIMER: 値を減少:", value);
       }
 
       // 2桁で表示
       input.value = value.toString().padStart(2, "0");
-    });
+      console.log("TIMER: 新しい値:", input.value);
+    };
+
+    // addEventListenerのみを使用（onclickは使用しない）
+    button.addEventListener("click", handler);
+
+    // ハンドラーを保存（後で削除するため）
+    button._timeButtonHandler = handler;
   });
+
+  console.log("TIMER: setupTimeButtons 完了");
 }
 
 // 時間入力フィールドの自動半角変換設定

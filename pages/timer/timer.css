@@ -512,6 +512,8 @@
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .time-input-group {
@@ -519,6 +521,8 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  position: relative;
+  z-index: 2;
 }
 
 .time-btn {
@@ -531,18 +535,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: pointer !important;
   transition: all 0.2s ease;
   font-size: 12px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  pointer-events: auto !important;
+  z-index: 10;
+  position: relative;
 }
 
 .time-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
 }
 
 .time-btn:active {
   transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.time-btn:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
 .time-input {
