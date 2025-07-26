@@ -868,11 +868,23 @@ function playAlertSound() {
 
 // 通知表示
 function showNotification(title, message) {
+  // ブラウザ通知を表示（許可されている場合）
   if ("Notification" in window && Notification.permission === "granted") {
     new Notification(title, { body: message });
   } else {
     alert(`${title}: ${message}`);
   }
+
+  // ウェブページに通知を送信
+  chrome.runtime
+    .sendMessage({
+      type: "TIMER_NOTIFICATION",
+      title: title,
+      message: message,
+    })
+    .catch((error) => {
+      console.log("TIMER: ウェブページ通知送信に失敗しました", error);
+    });
 }
 
 // データ読み込み
