@@ -407,6 +407,10 @@ function createCountdownItem(item) {
     <div class="timer-item-header">
       <h3 class="timer-item-name">${item.name}</h3>
       <div class="timer-item-actions">
+        <button class="timer-btn reset" data-action="reset">
+          <i class="bi bi-arrow-clockwise"></i>
+          <span>リセット</span>
+        </button>
         <button class="timer-btn delete" data-action="delete">
           <i class="bi bi-trash"></i>
           <span>削除</span>
@@ -513,6 +517,10 @@ function createAlarmItem(item) {
           <i class="bi bi-${item.isActive ? "pause" : "play"}"></i>
           <span>${item.isActive ? "無効" : "有効"}</span>
         </button>
+        <button class="timer-btn reset" data-action="reset">
+          <i class="bi bi-arrow-clockwise"></i>
+          <span>リセット</span>
+        </button>
         <button class="timer-btn delete" data-action="delete">
           <i class="bi bi-trash"></i>
           <span>削除</span>
@@ -554,6 +562,9 @@ function setupItemEvents(element, type, item) {
           break;
         case "toggle":
           if (type === "alarm") toggleAlarm(item.id);
+          break;
+        case "reset":
+          if (type === "alarm") resetAlarm(item.id);
           break;
         case "delete":
           deleteItem(type, item.id);
@@ -600,8 +611,23 @@ function updateCountdown(id) {
     // アラート音を鳴らす
     playAlertSound();
 
-    stopCountdown(id);
+    // カウントダウン終了時に設定時間にリセット
+    item.remainingSeconds = item.totalSeconds;
+    item.isRunning = false;
+    item.isPaused = false;
+
+    if (item.interval) {
+      clearInterval(item.interval);
+      item.interval = null;
+    }
+
+    // 表示を更新
+    setTimeout(() => {
+      updateTabDisplay("countdown");
+    }, 100);
+
     showNotification(item.name, "カウントダウンが完了しました");
+    saveTimerData();
   }
 }
 
@@ -742,6 +768,21 @@ function toggleAlarm(id) {
 
   renderTab("alarm");
   saveTimerData();
+}
+
+// アラームリセット
+function resetAlarm(id) {
+  const item = timerData.alarm.find((item) => item.id === id);
+  if (!item) return;
+
+  // 設定時刻に戻す
+  item.nextAlarm = calculateNextAlarm(item.alarmTime, "none");
+  item.isActive = false;
+
+  renderTab("alarm");
+  saveTimerData();
+
+  console.log("TIMER: アラームリセット:", item.name);
 }
 
 // アイテム削除
@@ -885,8 +926,17 @@ setInterval(() => {
       if (alarm.repeatType !== "none") {
         alarm.nextAlarm = calculateNextAlarm(alarm.alarmTime, alarm.repeatType);
       } else {
+        // 繰り返しなしの場合は設定時刻に戻す
+        alarm.nextAlarm = calculateNextAlarm(alarm.alarmTime, "none");
         alarm.isActive = false;
       }
+
+      // 表示を更新（即座に反映）
+      setTimeout(() => {
+        updateTabDisplay("alarm");
+        // アラーム表示も更新
+        updateAlarmDisplay(alarm);
+      }, 100);
 
       saveTimerData();
     }
