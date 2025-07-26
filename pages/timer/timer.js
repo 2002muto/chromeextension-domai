@@ -1,61 +1,713 @@
 // File: pages/timer/timer.js
-(function () {
-  "use strict";
 
-  const timerDisplay = document.createElement("div");
-  timerDisplay.id = "timer-display";
-  timerDisplay.textContent = "00:00:00";
+// タイマーデータ管理
+let timerData = {
+  countdown: [],
+  stopwatch: [],
+  alarm: [],
+};
 
-  const startButton = document.createElement("button");
-  startButton.className = "btn btn-success";
-  startButton.textContent = "Start";
+// 現在のタブ
+let currentTab = "countdown";
 
-  const stopButton = document.createElement("button");
-  stopButton.className = "btn btn-danger";
-  stopButton.textContent = "Stop";
+// 初期化
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("TIMER: 初期化開始");
 
-  const resetButton = document.createElement("button");
-  resetButton.className = "btn btn-warning";
-  resetButton.textContent = "Reset";
+  // データ読み込み
+  loadTimerData();
 
-  const controls = document.createElement("div");
-  controls.className = "timer-controls";
-  controls.append(startButton, stopButton, resetButton);
+  // タブ切り替えイベント
+  setupTabNavigation();
 
-  const timerContent = document.querySelector(".timer-content");
-  timerContent.append(timerDisplay, controls);
+  // 追加ボタンイベント
+  setupAddButtons();
 
-  let timer;
-  let seconds = 0;
+  // モーダルイベント
+  setupModalEvents();
 
-  const updateDisplay = () => {
-    const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
-    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-    const s = String(seconds % 60).padStart(2, "0");
-    timerDisplay.textContent = `${h}:${m}:${s}`;
-  };
+  // 初期表示
+  renderAllTabs();
 
-  const startTimer = () => {
-    if (!timer) {
-      timer = setInterval(() => {
-        seconds++;
-        updateDisplay();
-      }, 1000);
+  console.log("TIMER: 初期化完了");
+});
+
+// タブナビゲーション設定
+function setupTabNavigation() {
+  const tabs = document.querySelectorAll(".timer-tab");
+  const contents = document.querySelectorAll(".timer-content");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const targetTab = tab.dataset.tab;
+
+      // タブ切り替え
+      tabs.forEach((t) => t.classList.remove("active"));
+      contents.forEach((c) => c.classList.remove("active"));
+
+      tab.classList.add("active");
+      document.getElementById(`${targetTab}-content`).classList.add("active");
+
+      currentTab = targetTab;
+      console.log("TIMER: タブ切り替え:", targetTab);
+    });
+  });
+}
+
+// 追加ボタン設定
+function setupAddButtons() {
+  document.getElementById("btn-add-countdown").addEventListener("click", () => {
+    showAddModal("countdown", "新しいカウントダウン");
+  });
+
+  document.getElementById("btn-add-stopwatch").addEventListener("click", () => {
+    showAddModal("stopwatch", "新しいストップウォッチ");
+  });
+
+  document.getElementById("btn-add-alarm").addEventListener("click", () => {
+    showAddModal("alarm", "新しいアラーム");
+  });
+}
+
+// モーダルイベント設定
+function setupModalEvents() {
+  const modal = document.getElementById("timerModal");
+  const saveBtn = document.getElementById("btnSaveTimer");
+
+  saveBtn.addEventListener("click", () => {
+    saveTimerItem();
+  });
+
+  // モーダル表示時の設定
+  modal.addEventListener("show.bs.modal", function (event) {
+    const button = event.relatedTarget;
+    const type = button.dataset.type;
+
+    // フォーム要素の表示/非表示を制御
+    const timeInputGroup = document.getElementById("timeInputGroup");
+    const alarmTimeGroup = document.getElementById("alarmTimeGroup");
+    const repeatGroup = document.getElementById("repeatGroup");
+
+    if (type === "alarm") {
+      timeInputGroup.style.display = "none";
+      alarmTimeGroup.style.display = "block";
+      repeatGroup.style.display = "block";
+    } else if (type === "stopwatch") {
+      // ストップウォッチは名前のみ表示
+      timeInputGroup.style.display = "none";
+      alarmTimeGroup.style.display = "none";
+      repeatGroup.style.display = "none";
+    } else {
+      timeInputGroup.style.display = "block";
+      alarmTimeGroup.style.display = "none";
+      repeatGroup.style.display = "none";
     }
+  });
+}
+
+// モーダル表示
+function showAddModal(type, title) {
+  const modal = new bootstrap.Modal(document.getElementById("timerModal"));
+  const modalTitle = document.getElementById("modalTitle");
+  const saveBtn = document.getElementById("btnSaveTimer");
+  const modalContent = document.querySelector(".modal-content");
+
+  modalTitle.textContent = title;
+  saveBtn.dataset.type = type;
+  modalContent.dataset.type = type;
+
+  // フォームリセット
+  document.getElementById("timerForm").reset();
+
+  modal.show();
+}
+
+// タイマーアイテム保存
+function saveTimerItem() {
+  const type = document.getElementById("btnSaveTimer").dataset.type;
+  let name = document.getElementById("timerName").value.trim();
+
+  // 名前が空の場合、自動生成名を設定
+  if (!name) {
+    name = generateDefaultName(type);
+  }
+
+  let item = {
+    id: generateId(),
+    name: name,
+    created: Date.now(),
   };
 
-  const stopTimer = () => {
-    clearInterval(timer);
-    timer = null;
+  if (type === "countdown") {
+    const hours = parseInt(document.getElementById("hours").value) || 0;
+    const minutes = parseInt(document.getElementById("minutes").value) || 0;
+    const seconds = parseInt(document.getElementById("seconds").value) || 0;
+
+    if (hours === 0 && minutes === 0 && seconds === 0) {
+      alert("時間を設定してください");
+      return;
+    }
+
+    item.totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    item.remainingSeconds = item.totalSeconds;
+    item.isRunning = false;
+    item.isPaused = false;
+  } else if (type === "stopwatch") {
+    item.elapsedSeconds = 0;
+    item.isRunning = false;
+    item.lapTimes = [];
+    item.startTime = null;
+  } else if (type === "alarm") {
+    const alarmTime = document.getElementById("alarmTime").value;
+    const repeatType = document.getElementById("repeatType").value;
+
+    if (!alarmTime) {
+      alert("アラーム時刻を設定してください");
+      return;
+    }
+
+    item.alarmTime = alarmTime;
+    item.repeatType = repeatType;
+    item.isActive = true;
+    item.nextAlarm = calculateNextAlarm(alarmTime, repeatType);
+  }
+
+  // データに追加
+  timerData[type].push(item);
+
+  // 保存
+  saveTimerData();
+
+  // 表示更新
+  renderTab(type);
+
+  // モーダルを閉じる
+  bootstrap.Modal.getInstance(document.getElementById("timerModal")).hide();
+
+  console.log("TIMER: アイテム追加:", type, item);
+}
+
+// 次回アラーム時刻計算
+function calculateNextAlarm(alarmTime, repeatType) {
+  const now = new Date();
+  const [hours, minutes] = alarmTime.split(":").map(Number);
+  const nextAlarm = new Date();
+
+  nextAlarm.setHours(hours, minutes, 0, 0);
+
+  if (nextAlarm <= now) {
+    nextAlarm.setDate(nextAlarm.getDate() + 1);
+  }
+
+  return nextAlarm.getTime();
+}
+
+// 全タブ表示
+function renderAllTabs() {
+  renderTab("countdown");
+  renderTab("stopwatch");
+  renderTab("alarm");
+}
+
+// タブ表示
+function renderTab(type) {
+  const list = document.getElementById(`${type}-list`);
+  const items = timerData[type];
+
+  list.innerHTML = "";
+
+  if (items.length === 0) {
+    return;
+  }
+
+  items.forEach((item) => {
+    const itemElement = createTimerItem(type, item);
+    list.appendChild(itemElement);
+  });
+}
+
+// タイマーアイテム作成
+function createTimerItem(type, item) {
+  const div = document.createElement("div");
+  div.className = "timer-item";
+  div.dataset.id = item.id;
+
+  let content = "";
+
+  if (type === "countdown") {
+    content = createCountdownItem(item);
+  } else if (type === "stopwatch") {
+    content = createStopwatchItem(item);
+  } else if (type === "alarm") {
+    content = createAlarmItem(item);
+  }
+
+  div.innerHTML = content;
+
+  // イベントリスナー設定
+  setupItemEvents(div, type, item);
+
+  return div;
+}
+
+// カウントダウンアイテム作成
+function createCountdownItem(item) {
+  const time = formatTime(item.remainingSeconds);
+  const status = item.isRunning ? "running" : "";
+
+  return `
+    <div class="timer-item-header">
+      <h3 class="timer-item-name">${item.name}</h3>
+      <div class="timer-item-actions">
+        <button class="timer-btn delete" data-action="delete">
+          <i class="bi bi-trash"></i>
+          <span>削除</span>
+        </button>
+      </div>
+    </div>
+    <div class="timer-display">
+      <p class="timer-time ${status}">${time}</p>
+    </div>
+    <div class="timer-controls">
+      ${
+        item.isRunning
+          ? `<button class="timer-control-btn stop" data-action="pause">
+          <i class="bi bi-pause"></i>
+          <span>一時停止</span>
+        </button>`
+          : `<button class="timer-control-btn start" data-action="start">
+          <i class="bi bi-play"></i>
+          <span>開始</span>
+        </button>`
+      }
+      <button class="timer-control-btn reset" data-action="reset">
+        <i class="bi bi-arrow-clockwise"></i>
+        <span>リセット</span>
+      </button>
+    </div>
+  `;
+}
+
+// ストップウォッチアイテム作成
+function createStopwatchItem(item) {
+  const time = formatTime(item.elapsedSeconds);
+  const status = item.isRunning ? "running" : "";
+
+  let lapTimesHtml = "";
+  if (item.lapTimes.length > 0) {
+    lapTimesHtml = `
+      <div class="lap-times">
+        ${item.lapTimes
+          .map(
+            (lap, index) => `
+          <div class="lap-time">
+            <span>ラップ ${index + 1}</span>
+            <span>${formatTime(lap)}</span>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="timer-item-header">
+      <h3 class="timer-item-name">${item.name}</h3>
+      <div class="timer-item-actions">
+        <button class="timer-btn delete" data-action="delete">
+          <i class="bi bi-trash"></i>
+          <span>削除</span>
+        </button>
+      </div>
+    </div>
+    <div class="timer-display">
+      <p class="timer-time ${status}">${time}</p>
+    </div>
+    <div class="timer-controls">
+      ${
+        item.isRunning
+          ? `<button class="timer-control-btn stop" data-action="stop">
+          <i class="bi bi-stop"></i>
+          <span>停止</span>
+        </button>
+        <button class="timer-control-btn" data-action="lap">
+          <i class="bi bi-flag"></i>
+          <span>ラップ</span>
+        </button>`
+          : `<button class="timer-control-btn start" data-action="start">
+          <i class="bi bi-play"></i>
+          <span>開始</span>
+        </button>
+        <button class="timer-control-btn reset" data-action="reset">
+          <i class="bi bi-arrow-clockwise"></i>
+          <span>リセット</span>
+        </button>`
+      }
+    </div>
+    ${lapTimesHtml}
+  `;
+}
+
+// アラームアイテム作成
+function createAlarmItem(item) {
+  const nextAlarm = new Date(item.nextAlarm);
+  const timeString = nextAlarm.toLocaleTimeString("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const repeatText = {
+    none: "繰り返しなし",
+    daily: "毎日",
+    weekdays: "平日",
+    weekends: "週末",
+  }[item.repeatType];
+
+  return `
+    <div class="timer-item-header">
+      <h3 class="timer-item-name">${item.name}</h3>
+      <div class="timer-item-actions">
+        <button class="timer-btn" data-action="toggle">
+          <i class="bi bi-${item.isActive ? "pause" : "play"}"></i>
+          <span>${item.isActive ? "無効" : "有効"}</span>
+        </button>
+        <button class="timer-btn delete" data-action="delete">
+          <i class="bi bi-trash"></i>
+          <span>削除</span>
+        </button>
+      </div>
+    </div>
+    <div class="alarm-info">
+      <span class="alarm-time">${timeString}</span>
+      <span class="alarm-repeat">${repeatText}</span>
+    </div>
+  `;
+}
+
+// アイテムイベント設定
+function setupItemEvents(element, type, item) {
+  const buttons = element.querySelectorAll("[data-action]");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", (e) => {
+      e.preventDefault();
+      const action = button.dataset.action;
+
+      switch (action) {
+        case "start":
+          if (type === "countdown") startCountdown(item.id);
+          else if (type === "stopwatch") startStopwatch(item.id);
+          break;
+        case "pause":
+          if (type === "countdown") pauseCountdown(item.id);
+          break;
+        case "stop":
+          if (type === "stopwatch") stopStopwatch(item.id);
+          break;
+        case "reset":
+          if (type === "countdown") resetCountdown(item.id);
+          else if (type === "stopwatch") resetStopwatch(item.id);
+          break;
+        case "lap":
+          if (type === "stopwatch") addLapTime(item.id);
+          break;
+        case "toggle":
+          if (type === "alarm") toggleAlarm(item.id);
+          break;
+        case "delete":
+          deleteItem(type, item.id);
+          break;
+      }
+    });
+  });
+}
+
+// カウントダウン開始
+function startCountdown(id) {
+  const item = timerData.countdown.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isRunning = true;
+  item.isPaused = false;
+  item.startTime = Date.now();
+
+  // タイマー開始
+  item.interval = setInterval(() => {
+    updateCountdown(id);
+  }, 1000);
+
+  renderTab("countdown");
+  saveTimerData();
+}
+
+// カウントダウン更新
+function updateCountdown(id) {
+  const item = timerData.countdown.find((item) => item.id === id);
+  if (!item || !item.isRunning) return;
+
+  const elapsed = Math.floor((Date.now() - item.startTime) / 1000);
+  item.remainingSeconds = Math.max(0, item.totalSeconds - elapsed);
+
+  // 表示更新
+  const element = document.querySelector(`[data-id="${id}"] .timer-time`);
+  if (element) {
+    element.textContent = formatTime(item.remainingSeconds);
+  }
+
+  // 終了チェック
+  if (item.remainingSeconds <= 0) {
+    stopCountdown(id);
+    showNotification(item.name, "カウントダウンが完了しました");
+  }
+}
+
+// カウントダウン一時停止
+function pauseCountdown(id) {
+  const item = timerData.countdown.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isRunning = false;
+  item.isPaused = true;
+
+  if (item.interval) {
+    clearInterval(item.interval);
+    item.interval = null;
+  }
+
+  renderTab("countdown");
+  saveTimerData();
+}
+
+// カウントダウンリセット
+function resetCountdown(id) {
+  const item = timerData.countdown.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isRunning = false;
+  item.isPaused = false;
+  item.remainingSeconds = item.totalSeconds;
+
+  if (item.interval) {
+    clearInterval(item.interval);
+    item.interval = null;
+  }
+
+  renderTab("countdown");
+  saveTimerData();
+}
+
+// カウントダウン停止
+function stopCountdown(id) {
+  const item = timerData.countdown.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isRunning = false;
+  item.isPaused = false;
+
+  if (item.interval) {
+    clearInterval(item.interval);
+    item.interval = null;
+  }
+
+  renderTab("countdown");
+  saveTimerData();
+}
+
+// ストップウォッチ開始
+function startStopwatch(id) {
+  const item = timerData.stopwatch.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isRunning = true;
+  item.startTime = Date.now() - item.elapsedSeconds * 1000;
+
+  // タイマー開始
+  item.interval = setInterval(() => {
+    updateStopwatch(id);
+  }, 100);
+
+  renderTab("stopwatch");
+  saveTimerData();
+}
+
+// ストップウォッチ更新
+function updateStopwatch(id) {
+  const item = timerData.stopwatch.find((item) => item.id === id);
+  if (!item || !item.isRunning) return;
+
+  item.elapsedSeconds = Math.floor((Date.now() - item.startTime) / 1000);
+
+  // 表示更新
+  const element = document.querySelector(`[data-id="${id}"] .timer-time`);
+  if (element) {
+    element.textContent = formatTime(item.elapsedSeconds);
+  }
+}
+
+// ストップウォッチ停止
+function stopStopwatch(id) {
+  const item = timerData.stopwatch.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isRunning = false;
+
+  if (item.interval) {
+    clearInterval(item.interval);
+    item.interval = null;
+  }
+
+  renderTab("stopwatch");
+  saveTimerData();
+}
+
+// ストップウォッチリセット
+function resetStopwatch(id) {
+  const item = timerData.stopwatch.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isRunning = false;
+  item.elapsedSeconds = 0;
+  item.lapTimes = [];
+
+  if (item.interval) {
+    clearInterval(item.interval);
+    item.interval = null;
+  }
+
+  renderTab("stopwatch");
+  saveTimerData();
+}
+
+// ラップタイム追加
+function addLapTime(id) {
+  const item = timerData.stopwatch.find((item) => item.id === id);
+  if (!item || !item.isRunning) return;
+
+  item.lapTimes.unshift(item.elapsedSeconds);
+
+  renderTab("stopwatch");
+  saveTimerData();
+}
+
+// アラーム切り替え
+function toggleAlarm(id) {
+  const item = timerData.alarm.find((item) => item.id === id);
+  if (!item) return;
+
+  item.isActive = !item.isActive;
+
+  renderTab("alarm");
+  saveTimerData();
+}
+
+// アイテム削除
+function deleteItem(type, id) {
+  const item = timerData[type].find((item) => item.id === id);
+  if (!item) return;
+
+  // 実行中のタイマーを停止
+  if (item.interval) {
+    clearInterval(item.interval);
+  }
+
+  // 配列から削除
+  timerData[type] = timerData[type].filter((item) => item.id !== id);
+
+  renderTab(type);
+  saveTimerData();
+
+  console.log("TIMER: アイテム削除:", type, id);
+}
+
+// 時間フォーマット
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  } else {
+    return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
+}
+
+// ID生成
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// デフォルト名生成
+function generateDefaultName(type) {
+  const typeNames = {
+    countdown: "カウントダウン",
+    stopwatch: "ストップウォッチ",
+    alarm: "アラーム",
   };
 
-  const resetTimer = () => {
-    stopTimer();
-    seconds = 0;
-    updateDisplay();
-  };
+  const baseName = typeNames[type] || "タイマー";
+  const existingItems = timerData[type] || [];
 
-  startButton.addEventListener("click", startTimer);
-  stopButton.addEventListener("click", stopTimer);
-  resetButton.addEventListener("click", resetTimer);
-})();
+  // 既存の「無題」アイテムをカウント
+  const untitledCount = existingItems.filter((item) =>
+    item.name.startsWith("無題")
+  ).length;
+
+  if (untitledCount === 0) {
+    return "無題1";
+  } else {
+    return `無題${untitledCount + 1}`;
+  }
+}
+
+// 通知表示
+function showNotification(title, message) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body: message });
+  } else {
+    alert(`${title}: ${message}`);
+  }
+}
+
+// データ読み込み
+function loadTimerData() {
+  chrome.storage.local.get(["timerData"], (result) => {
+    if (result.timerData) {
+      timerData = result.timerData;
+      console.log("TIMER: データ読み込み完了");
+    }
+  });
+}
+
+// データ保存
+function saveTimerData() {
+  chrome.storage.local.set({ timerData: timerData }, () => {
+    console.log("TIMER: データ保存完了");
+  });
+}
+
+// アラームチェック（定期的に実行）
+setInterval(() => {
+  const now = Date.now();
+
+  timerData.alarm.forEach((alarm) => {
+    if (alarm.isActive && alarm.nextAlarm && now >= alarm.nextAlarm) {
+      showNotification(alarm.name, "アラーム時刻です");
+
+      // 次回アラーム時刻を計算
+      if (alarm.repeatType !== "none") {
+        alarm.nextAlarm = calculateNextAlarm(alarm.alarmTime, alarm.repeatType);
+      } else {
+        alarm.isActive = false;
+      }
+
+      saveTimerData();
+    }
+  });
+}, 1000);
+
+// 通知許可リクエスト
+if ("Notification" in window && Notification.permission === "default") {
+  Notification.requestPermission();
+}

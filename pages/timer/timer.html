@@ -47,14 +47,157 @@
         <span class="nav-text">SETTING</span>
       </a>
     </header>
+
     <!-- メインコンテンツ -->
-    <div class="timer-content">
-      <!-- Timer UI will be generated here by timer.js -->
+    <main class="timer-main">
+      <!-- タブナビゲーション -->
+      <div class="timer-nav">
+        <button class="timer-tab active" data-tab="countdown">
+          <i class="bi bi-clock"></i>
+          <span>カウントダウン</span>
+        </button>
+        <button class="timer-tab" data-tab="stopwatch">
+          <i class="bi bi-stopwatch"></i>
+          <span>ストップウォッチ</span>
+        </button>
+        <button class="timer-tab" data-tab="alarm">
+          <i class="bi bi-alarm"></i>
+          <span>アラーム</span>
+        </button>
+      </div>
+
+      <!-- カウントダウンタブ -->
+      <div class="timer-content active" id="countdown-content">
+        <div class="timer-header">
+          <h2><i class="bi bi-clock"></i> カウントダウン</h2>
+          <button class="btn-add-timer" id="btn-add-countdown">
+            <i class="bi bi-plus-lg"></i>
+            <span>新しいタイマー</span>
+          </button>
+        </div>
+        <div class="timer-list" id="countdown-list">
+          <!-- カウントダウンアイテムがここに生成されます -->
+        </div>
+      </div>
+
+      <!-- ストップウォッチタブ -->
+      <div class="timer-content" id="stopwatch-content">
+        <div class="timer-header">
+          <h2><i class="bi bi-stopwatch"></i> ストップウォッチ</h2>
+          <button class="btn-add-timer" id="btn-add-stopwatch">
+            <i class="bi bi-plus-lg"></i>
+            <span>新しいストップウォッチ</span>
+          </button>
+        </div>
+        <div class="timer-list" id="stopwatch-list">
+          <!-- ストップウォッチアイテムがここに生成されます -->
+        </div>
+      </div>
+
+      <!-- アラームタブ -->
+      <div class="timer-content" id="alarm-content">
+        <div class="timer-header">
+          <h2><i class="bi bi-alarm"></i> アラーム</h2>
+          <button class="btn-add-timer" id="btn-add-alarm">
+            <i class="bi bi-plus-lg"></i>
+            <span>新しいアラーム</span>
+          </button>
+        </div>
+        <div class="timer-list" id="alarm-list">
+          <!-- アラームアイテムがここに生成されます -->
+        </div>
+      </div>
+    </main>
+
+    <!-- モーダル（新しいアイテム追加用） -->
+    <div class="modal fade" id="timerModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">新しいタイマー</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="timerForm">
+              <div class="mb-3">
+                <label class="form-label">名前</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="timerName"
+                  placeholder="タイマー名を入力"
+                />
+              </div>
+              <div class="mb-3" id="timeInputGroup">
+                <label class="form-label">時間</label>
+                <div class="row">
+                  <div class="col">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="hours"
+                      placeholder="時"
+                      min="0"
+                      max="99"
+                    />
+                  </div>
+                  <div class="col">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="minutes"
+                      placeholder="分"
+                      min="0"
+                      max="59"
+                    />
+                  </div>
+                  <div class="col">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="seconds"
+                      placeholder="秒"
+                      min="0"
+                      max="59"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3" id="alarmTimeGroup" style="display: none">
+                <label class="form-label">アラーム時刻</label>
+                <input type="time" class="form-control" id="alarmTime" />
+              </div>
+              <div class="mb-3" id="repeatGroup" style="display: none">
+                <label class="form-label">繰り返し</label>
+                <select class="form-control" id="repeatType">
+                  <option value="none">繰り返しなし</option>
+                  <option value="daily">毎日</option>
+                  <option value="weekdays">平日</option>
+                  <option value="weekends">週末</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              キャンセル
+            </button>
+            <button type="button" class="btn btn-primary" id="btnSaveTimer">
+              保存
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-    <!-- フッター -->
-    <footer class="timer-footer">
-      <!-- Footer content can be added here if needed -->
-    </footer>
+
     <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../utils.js"></script>
     <script src="../common.js"></script>

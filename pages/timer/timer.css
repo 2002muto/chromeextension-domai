@@ -1,17 +1,466 @@
 /* File: pages/timer/timer.css */
+
+/* ===================================
+   TIMER専用スタイル（モダン型・グレー系）
+   =================================== */
+
+/* メインコンテナ */
+.timer-main {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  margin: 16px;
+  background: linear-gradient(135deg, #2d2d2d, #3a3a3a);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* タブナビゲーション */
+.timer-nav {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+}
+
+.timer-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #b0b0b0;
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.timer-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.timer-tab.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.timer-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e95404, #a600cf);
+  border-radius: 2px 2px 0 0;
+}
+
+.timer-tab i {
+  font-size: 18px;
+}
+
+/* コンテンツエリア */
 .timer-content {
+  display: none;
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.timer-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダー */
+.timer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timer-header h2 {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timer-header h2 i {
+  color: #e95404;
+}
+
+/* 追加ボタン */
+.btn-add-timer {
+  background: linear-gradient(135deg, #e95404, #a600cf);
+  border: none;
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
+}
+
+.btn-add-timer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(233, 84, 4, 0.4);
+}
+
+.btn-add-timer:active {
+  transform: translateY(0);
+}
+
+/* タイマーリスト */
+.timer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* タイマーアイテム */
+.timer-item {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   padding: 20px;
-  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.timer-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.timer-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e95404, #a600cf);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.timer-item:hover::before {
+  opacity: 1;
+}
+
+/* アイテムヘッダー */
+.timer-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.timer-item-name {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.timer-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.timer-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timer-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.timer-btn.delete {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.timer-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+/* タイマー表示 */
+.timer-display {
   text-align: center;
+  margin: 20px 0;
 }
 
-#timer-display {
-  font-size: 4rem;
-  font-weight: bold;
-  margin-bottom: 20px;
+.timer-time {
+  font-size: 48px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  margin: 0;
 }
 
-.timer-controls button {
-  margin: 0 10px;
-  font-size: 1.2rem;
+.timer-time.running {
+  color: #e95404;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* コントロールボタン */
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.timer-control-btn {
+  background: linear-gradient(135deg, #4a4a4a, #5a5a5a);
+  border: none;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.timer-control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.timer-control-btn:active {
+  transform: translateY(0);
+}
+
+.timer-control-btn.start {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.timer-control-btn.stop {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.timer-control-btn.reset {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+/* ストップウォッチ用 */
+.lap-times {
+  margin-top: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.lap-time {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  color: #b0b0b0;
+  font-size: 14px;
+}
+
+.lap-time:first-child {
+  background: rgba(233, 84, 4, 0.1);
+  color: #e95404;
+  font-weight: 600;
+}
+
+/* アラーム用 */
+.alarm-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.alarm-time {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.alarm-repeat {
+  color: #b0b0b0;
+  font-size: 12px;
+}
+
+/* モーダル */
+.modal-content {
+  background: #2d2d2d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+/* ストップウォッチモーダル用の非表示設定 */
+.modal-content[data-type="stopwatch"] #timeInputGroup,
+.modal-content[data-type="stopwatch"] #alarmTimeGroup,
+.modal-content[data-type="stopwatch"] #repeatGroup {
+  display: none !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.modal-title {
+  color: #ffffff;
+}
+
+.btn-close {
+  filter: invert(1);
+}
+
+.modal-body {
+  background: #2d2d2d;
+}
+
+.form-label {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.form-control {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-radius: 8px;
+}
+
+.form-control:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #e95404;
+  box-shadow: 0 0 0 0.2rem rgba(233, 84, 4, 0.25);
+  color: #ffffff;
+}
+
+.form-control::placeholder {
+  color: #b0b0b0;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #e95404, #a600cf);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #d44a03, #9500b8);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #6b7280;
+  border: none;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .timer-main {
+    margin: 8px;
+    border-radius: 12px;
+  }
+
+  .timer-tab {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .timer-tab i {
+    font-size: 16px;
+  }
+
+  .timer-content {
+    padding: 16px;
+  }
+
+  .timer-header h2 {
+    font-size: 20px;
+  }
+
+  .timer-time {
+    font-size: 36px;
+  }
+
+  .timer-controls {
+    flex-wrap: wrap;
+  }
+
+  .timer-control-btn {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+}
+
+/* 空の状態 */
+.timer-list:empty::after {
+  content: "アイテムがありません";
+  display: block;
+  text-align: center;
+  color: #b0b0b0;
+  font-size: 16px;
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
 }
