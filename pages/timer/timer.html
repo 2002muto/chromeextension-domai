@@ -214,7 +214,58 @@
               </div>
               <div class="mb-3" id="alarmTimeGroup" style="display: none">
                 <label class="form-label">アラーム時刻</label>
-                <input type="time" class="form-control" id="alarmTime" />
+                <div class="time-input-container">
+                  <div class="time-input-group">
+                    <button
+                      type="button"
+                      class="time-btn time-btn-up"
+                      data-target="alarmHours"
+                    >
+                      <i class="bi bi-chevron-up"></i>
+                    </button>
+                    <input
+                      type="text"
+                      class="form-control time-input"
+                      id="alarmHours"
+                      value=""
+                      pattern="[0-9]*"
+                      inputmode="numeric"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="time-btn time-btn-down"
+                      data-target="alarmHours"
+                    >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
+                  </div>
+                  <div class="time-input-group">
+                    <button
+                      type="button"
+                      class="time-btn time-btn-up"
+                      data-target="alarmMinutes"
+                    >
+                      <i class="bi bi-chevron-up"></i>
+                    </button>
+                    <input
+                      type="text"
+                      class="form-control time-input"
+                      id="alarmMinutes"
+                      value=""
+                      pattern="[0-9]*"
+                      inputmode="numeric"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="time-btn time-btn-down"
+                      data-target="alarmMinutes"
+                    >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
               <div class="mb-3" id="repeatGroup" style="display: none">
                 <label class="form-label">繰り返し</label>

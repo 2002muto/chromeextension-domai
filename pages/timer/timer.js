@@ -131,6 +131,12 @@ function setupModalEvents() {
       timeInputGroup.style.display = "none";
       alarmTimeGroup.style.display = "block";
       repeatGroup.style.display = "none";
+
+      console.log("TIMER: アラームモーダル設定完了");
+
+      // アラーム時間ボタンの初期化
+      console.log("TIMER: アラームモーダルで時間ボタンを初期化");
+      setupAlarmTimeButtons();
     } else if (type === "stopwatch") {
       // ストップウォッチは名前のみ表示
       timeInputGroup.style.display = "none";
@@ -192,6 +198,16 @@ function showAddModal(type, title) {
       setupTimeButtons();
     }, 300);
   }
+
+  // アラームの場合はアラーム時間設定を確実に行う
+  if (type === "alarm") {
+    setTimeout(() => {
+      console.log("TIMER: showAddModalでアラーム時間設定を実行");
+      setCurrentAlarmTime();
+      // アラーム時間ボタンの初期化も実行
+      setupAlarmTimeButtons();
+    }, 300);
+  }
 }
 
 // タイマーアイテム保存
@@ -230,12 +246,18 @@ function saveTimerItem() {
     item.lapTimes = [];
     item.startTime = null;
   } else if (type === "alarm") {
-    const alarmTime = document.getElementById("alarmTime").value;
+    const alarmHours =
+      parseInt(document.getElementById("alarmHours").value) || 0;
+    const alarmMinutes =
+      parseInt(document.getElementById("alarmMinutes").value) || 0;
 
-    if (!alarmTime) {
+    if (alarmHours === 0 && alarmMinutes === 0) {
       alert("アラーム時刻を設定してください");
       return;
     }
+
+    // HH:MM形式でアラーム時刻を作成
+    const alarmTime = `${alarmHours.toString().padStart(2, "0")}:${alarmMinutes.toString().padStart(2, "0")}`;
 
     item.alarmTime = alarmTime;
     item.repeatType = "none"; // 繰り返しなしに固定
@@ -1016,24 +1038,19 @@ window.addEventListener("focus", function () {
 
 // 現在の時間を取得して設定
 function setCurrentTime() {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
+  console.log("TIMER: カウントダウン用の時間を設定中");
 
-  console.log("TIMER: 現在の時間を設定中", { hours, minutes, seconds });
-
-  // 時間入力フィールドに現在の時間を設定
+  // カウントダウン用は00:00:00で初期化
   const hoursInput = document.getElementById("hours");
   const minutesInput = document.getElementById("minutes");
   const secondsInput = document.getElementById("seconds");
 
   if (hoursInput && minutesInput && secondsInput) {
-    hoursInput.value = hours.toString().padStart(2, "0");
-    minutesInput.value = minutes.toString().padStart(2, "0");
-    secondsInput.value = seconds.toString().padStart(2, "0");
+    hoursInput.value = "00";
+    minutesInput.value = "00";
+    secondsInput.value = "00";
 
-    console.log("TIMER: 時間設定完了", {
+    console.log("TIMER: カウントダウン時間設定完了", {
       hours: hoursInput.value,
       minutes: minutesInput.value,
       seconds: secondsInput.value,
@@ -1043,6 +1060,33 @@ function setCurrentTime() {
       hoursInput: !!hoursInput,
       minutesInput: !!minutesInput,
       secondsInput: !!secondsInput,
+    });
+  }
+}
+
+// 現在の時間をアラーム用に設定
+function setCurrentAlarmTime() {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+
+  console.log("TIMER: 現在のアラーム時間を設定中", { hours, minutes });
+
+  const alarmHoursInput = document.getElementById("alarmHours");
+  const alarmMinutesInput = document.getElementById("alarmMinutes");
+
+  if (alarmHoursInput && alarmMinutesInput) {
+    alarmHoursInput.value = hours.toString().padStart(2, "0");
+    alarmMinutesInput.value = minutes.toString().padStart(2, "0");
+
+    console.log("TIMER: アラーム時間設定完了", {
+      alarmHours: alarmHoursInput.value,
+      alarmMinutes: alarmMinutesInput.value,
+    });
+  } else {
+    console.log("TIMER: アラーム時間入力フィールドが見つかりません", {
+      alarmHoursInput: !!alarmHoursInput,
+      alarmMinutesInput: !!alarmMinutesInput,
     });
   }
 }
@@ -1104,8 +1148,14 @@ function setupTimeButtons() {
       let value = parseInt(input.value) || 0;
       console.log("TIMER: 現在の値:", value);
 
-      // 最大値と最小値を設定
-      const maxValues = { hours: 23, minutes: 59, seconds: 59 };
+      // 最大値と最小値を設定（アラーム用も含む）
+      const maxValues = {
+        hours: 23,
+        minutes: 59,
+        seconds: 59,
+        alarmHours: 23,
+        alarmMinutes: 59,
+      };
       const maxValue = maxValues[target];
 
       if (isUp) {
@@ -1129,6 +1179,93 @@ function setupTimeButtons() {
   });
 
   console.log("TIMER: setupTimeButtons 完了");
+}
+
+// アラーム時間ボタンの機能設定
+function setupAlarmTimeButtons() {
+  console.log("TIMER: setupAlarmTimeButtons 開始");
+
+  // 現在のアラーム時間を設定
+  setCurrentAlarmTime();
+
+  // 既存のイベントリスナーを削除（重複を防ぐ）
+  document.querySelectorAll(".time-btn").forEach((button) => {
+    if (button._timeButtonHandler) {
+      button.removeEventListener("click", button._timeButtonHandler);
+      button.onclick = null; // onclickも削除
+    }
+  });
+
+  // 時間調整ボタンのイベントリスナー
+  const buttons = document.querySelectorAll(".time-btn");
+  console.log("TIMER: アラーム時間ボタン数:", buttons.length);
+
+  buttons.forEach((button, index) => {
+    console.log(`TIMER: アラームボタン${index + 1}設定:`, {
+      classList: button.classList.toString(),
+      dataTarget: button.getAttribute("data-target"),
+      textContent: button.textContent,
+      offsetWidth: button.offsetWidth,
+      offsetHeight: button.offsetHeight,
+    });
+
+    // ボタンがクリック可能かテスト
+    button.style.cursor = "pointer";
+    button.style.pointerEvents = "auto";
+
+    // イベントハンドラー関数を作成
+    const handler = function (e) {
+      console.log("TIMER: アラームボタンクリック検出！");
+      e.preventDefault();
+      e.stopPropagation();
+
+      console.log("TIMER: アラーム時間ボタンクリック:", {
+        target: this.getAttribute("data-target"),
+        isUp: this.classList.contains("time-btn-up"),
+        currentValue: document.getElementById(this.getAttribute("data-target"))
+          ?.value,
+      });
+
+      const target = this.getAttribute("data-target");
+      const input = document.getElementById(target);
+      const isUp = this.classList.contains("time-btn-up");
+
+      if (!input) {
+        console.log("TIMER: アラーム入力フィールドが見つかりません:", target);
+        return;
+      }
+
+      let value = parseInt(input.value) || 0;
+      console.log("TIMER: 現在のアラーム値:", value);
+
+      // 最大値と最小値を設定
+      const maxValues = {
+        alarmHours: 23,
+        alarmMinutes: 59,
+      };
+      const maxValue = maxValues[target];
+
+      if (isUp) {
+        value = (value + 1) % (maxValue + 1);
+        console.log("TIMER: アラーム値を増加:", value);
+      } else {
+        value = value === 0 ? maxValue : value - 1;
+        console.log("TIMER: アラーム値を減少:", value);
+      }
+
+      // 2桁で表示
+      input.value = value.toString().padStart(2, "0");
+      console.log("TIMER: 新しいアラーム値:", input.value);
+    };
+
+    // addEventListenerのみを使用（onclickは使用しない）
+    button.addEventListener("click", handler);
+
+    // ハンドラーを保存（後で削除するため）
+    button._timeButtonHandler = handler;
+  });
+
+  console.log("TIMER: setupAlarmTimeButtons 完了");
 }
 
 // 時間入力フィールドの自動半角変換設定
