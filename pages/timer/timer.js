@@ -407,10 +407,6 @@ function createCountdownItem(item) {
     <div class="timer-item-header">
       <h3 class="timer-item-name">${item.name}</h3>
       <div class="timer-item-actions">
-        <button class="timer-btn reset" data-action="reset">
-          <i class="bi bi-arrow-clockwise"></i>
-          <span>リセット</span>
-        </button>
         <button class="timer-btn delete" data-action="delete">
           <i class="bi bi-trash"></i>
           <span>削除</span>
@@ -513,13 +509,9 @@ function createAlarmItem(item) {
     <div class="timer-item-header">
       <h3 class="timer-item-name">${item.name}</h3>
       <div class="timer-item-actions">
-        <button class="timer-btn" data-action="toggle">
+        <button class="timer-btn ${item.isActive ? "active" : ""}" data-action="toggle">
           <i class="bi bi-${item.isActive ? "pause" : "play"}"></i>
           <span>${item.isActive ? "無効" : "有効"}</span>
-        </button>
-        <button class="timer-btn reset" data-action="reset">
-          <i class="bi bi-arrow-clockwise"></i>
-          <span>リセット</span>
         </button>
         <button class="timer-btn delete" data-action="delete">
           <i class="bi bi-trash"></i>
@@ -562,9 +554,6 @@ function setupItemEvents(element, type, item) {
           break;
         case "toggle":
           if (type === "alarm") toggleAlarm(item.id);
-          break;
-        case "reset":
-          if (type === "alarm") resetAlarm(item.id);
           break;
         case "delete":
           deleteItem(type, item.id);

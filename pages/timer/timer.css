@@ -202,7 +202,7 @@
 }
 
 .timer-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #10b981, #059669);
   border: none;
   color: #ffffff;
   padding: 8px 12px;
@@ -213,20 +213,36 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
 .timer-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #0ea371, #047857);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .timer-btn.delete {
   background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  color: #ffffff;
 }
 
 .timer-btn.delete:hover {
-  background: rgba(239, 68, 68, 0.3);
+  background: rgba(255, 0, 0, 0.3);
+  color: #ffffff;
+}
+
+/* アラーム有効時のカラー（グレー） */
+.timer-btn.active {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+}
+
+.timer-btn.active:hover {
+  background: linear-gradient(135deg, #5b6368, #3b4249);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
 }
 
 /* タイマー表示 */
