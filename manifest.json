@@ -97,16 +97,11 @@
     {
       "resources": [
         "pages/*",
-        "fonts/Ubuntu-Regular.woff2",
-        "icons/*",
-        "vendor/*",
-        "*.js",
-        "*.css",
-        "*.html",
-        "*.json"
+        "css/*",
+        "fonts/*",
+        "vendor/*"
       ],
-      "matches": ["*://*/*"],
-      "use_dynamic_url": true
+      "matches": ["<all_urls>"]
     }
   ],
   "externally_connectable": {
