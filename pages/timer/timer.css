@@ -223,13 +223,15 @@
 }
 
 .timer-btn.delete {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ffffff;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
 .timer-btn.delete:hover {
-  background: rgba(255, 0, 0, 0.3);
-  color: #ffffff;
+  background: rgba(255, 0, 0, 0.3) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
 /* アラーム有効時のカラー（グレー） */
