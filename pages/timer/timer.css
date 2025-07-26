@@ -370,6 +370,12 @@
   display: none !important;
 }
 
+/* アラームモーダル用の非表示設定 */
+.modal-content[data-type="alarm"] #timeInputGroup,
+.modal-content[data-type="alarm"] #repeatGroup {
+  display: none !important;
+}
+
 .modal-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);

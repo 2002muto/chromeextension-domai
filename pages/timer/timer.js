@@ -104,9 +104,10 @@ function setupModalEvents() {
     const repeatGroup = document.getElementById("repeatGroup");
 
     if (type === "alarm") {
+      // アラームは名前とアラーム時刻のみ表示
       timeInputGroup.style.display = "none";
       alarmTimeGroup.style.display = "block";
-      repeatGroup.style.display = "block";
+      repeatGroup.style.display = "none";
     } else if (type === "stopwatch") {
       // ストップウォッチは名前のみ表示
       timeInputGroup.style.display = "none";
@@ -179,7 +180,6 @@ function saveTimerItem() {
     item.startTime = null;
   } else if (type === "alarm") {
     const alarmTime = document.getElementById("alarmTime").value;
-    const repeatType = document.getElementById("repeatType").value;
 
     if (!alarmTime) {
       alert("アラーム時刻を設定してください");
@@ -187,9 +187,9 @@ function saveTimerItem() {
     }
 
     item.alarmTime = alarmTime;
-    item.repeatType = repeatType;
+    item.repeatType = "none"; // 繰り返しなしに固定
     item.isActive = true;
-    item.nextAlarm = calculateNextAlarm(alarmTime, repeatType);
+    item.nextAlarm = calculateNextAlarm(alarmTime, "none");
   }
 
   // データに追加
@@ -502,13 +502,6 @@ function createAlarmItem(item) {
     minute: "2-digit",
   });
 
-  const repeatText = {
-    none: "繰り返しなし",
-    daily: "毎日",
-    weekdays: "平日",
-    weekends: "週末",
-  }[item.repeatType];
-
   return `
     <div class="timer-item-header">
       <h3 class="timer-item-name">${item.name}</h3>
@@ -525,7 +518,6 @@ function createAlarmItem(item) {
     </div>
     <div class="alarm-info">
       <span class="alarm-time">${timeString}</span>
-      <span class="alarm-repeat">${repeatText}</span>
     </div>
   `;
 }
