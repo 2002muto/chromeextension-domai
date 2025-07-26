@@ -21,17 +21,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1 {
-  font-size: 20px;
+body h1 {
+  font-size: 18px;
   line-height: 1.2;
   color: #2c2c2c;
   font-weight: normal;
   margin-bottom: 10px;
 }
 
-p {
+body p {
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.5;
   color: #555;
   font-weight: normal;
 }
