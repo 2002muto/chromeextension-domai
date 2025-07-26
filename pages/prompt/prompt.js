@@ -1862,6 +1862,16 @@ function renderEdit(idx, isNew = false) {
   setTimeout(() => {
     const existingTextareas = form.querySelectorAll(".prompt-field-textarea");
     existingTextareas.forEach((textarea) => {
+      // textareaのドラッグを明示的に無効化（テキスト選択を保護）
+      textarea.draggable = false;
+
+      // textareaのドラッグイベントをブロック
+      textarea.addEventListener("dragstart", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      });
+
       // 自動リサイズのイベントリスナーを追加
       textarea.addEventListener("input", () => autoResize(textarea));
       textarea.addEventListener("paste", () =>
@@ -1947,13 +1957,20 @@ function renderEdit(idx, isNew = false) {
   /*━━━━━━━━━━ 6. プロンプト行生成 ━━━━━━━━━━*/
   function addField(text = "", enabled = true) {
     const row = ce("div", "prompt-field");
-    row.draggable = true;
+    row.draggable = false; // デフォルトではドラッグ無効
 
     /* --- 改善されたDnD handlers --- */
     let dragStartIndex = null;
+    let isDraggingFromGrip = false;
 
     row.addEventListener("dragstart", (e) => {
-      console.log("[DND] ドラッグ開始");
+      // grip-icon以外からのドラッグ開始を防ぐ
+      if (!isDraggingFromGrip) {
+        e.preventDefault();
+        return false;
+      }
+
+      console.log("[DND] ドラッグ開始（grip-iconから）");
       dragStartIndex = [...wrap.children].indexOf(row);
       e.dataTransfer.setData("text/plain", dragStartIndex.toString());
       e.dataTransfer.effectAllowed = "move";
@@ -2077,6 +2094,14 @@ function renderEdit(idx, isNew = false) {
       console.log("[DND] ドラッグ終了");
       row.classList.remove("dragging");
       dragStartIndex = null;
+      isDraggingFromGrip = false; // ドラッグ状態をリセット
+      row.draggable = false; // ドラッグを無効化
+
+      // grip-iconのカーソルをリセット
+      const gripIcon = row.querySelector(".grip-icon");
+      if (gripIcon) {
+        gripIcon.style.cursor = "grab";
+      }
 
       // 他の要素のドロップインジケーターも削除
       wrap.querySelectorAll(".drop-indicator").forEach((el) => {
@@ -2119,6 +2144,38 @@ function renderEdit(idx, isNew = false) {
                     rows="4">${text}</textarea>
         </div>
       </div>`;
+
+    // grip-iconのドラッグイベントを設定
+    const gripIcon = row.querySelector(".grip-icon");
+    if (gripIcon) {
+      gripIcon.style.cursor = "grab";
+
+      gripIcon.addEventListener("mousedown", (e) => {
+        e.stopPropagation(); // preventDefaultは削除
+        console.log("[DND] grip-icon mousedown");
+        isDraggingFromGrip = true;
+        row.draggable = true;
+        gripIcon.style.cursor = "grabbing";
+      });
+
+      gripIcon.addEventListener("mouseup", (e) => {
+        e.stopPropagation(); // preventDefaultは削除
+        console.log("[DND] grip-icon mouseup");
+        // ドラッグが開始されていない場合のみリセット
+        if (!row.classList.contains("dragging")) {
+          isDraggingFromGrip = false;
+          row.draggable = false;
+          gripIcon.style.cursor = "grab";
+        }
+      });
+
+      gripIcon.addEventListener("mouseleave", (e) => {
+        // ドラッグ中でない場合のみカーソルをリセット
+        if (!isDraggingFromGrip && !row.classList.contains("dragging")) {
+          gripIcon.style.cursor = "grab";
+        }
+      });
+    }
     row.querySelector(".btn-remove-field").onclick = async () => {
       console.log("削除ボタンがクリックされました");
 
@@ -2204,6 +2261,16 @@ function renderEdit(idx, isNew = false) {
       // 新しく追加されたtextareaに自動リサイズ機能を適用
       const newTextarea = row.querySelector(".prompt-field-textarea");
       if (newTextarea) {
+        // textareaのドラッグを明示的に無効化（テキスト選択を保護）
+        newTextarea.draggable = false;
+
+        // textareaのドラッグイベントをブロック
+        newTextarea.addEventListener("dragstart", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        });
+
         // 自動リサイズのイベントリスナーを追加
         newTextarea.addEventListener("input", () => autoResize(newTextarea));
         newTextarea.addEventListener("paste", () =>
