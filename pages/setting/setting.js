@@ -418,8 +418,9 @@ function getDefaultCustomSettings() {
       "prompt",
       "iframe",
       "status",
+      "timer",
       "setting",
-    ], // 指定された順序: MEMO・CLIPBOARD・PROMPT・IFRAME・STATUS・SETTING
+    ], // 指定された順序: MEMO・CLIPBOARD・PROMPT・IFRAME・STATUS・TIMER・SETTING
   };
 }
 
@@ -675,6 +676,7 @@ function getSelectedIcons() {
     "prompt",
     "iframe",
     "status",
+    "timer",
     "setting",
   ];
   selectedIcons.sort((a, b) => {
@@ -906,6 +908,7 @@ function getIconTypeFromId(buttonId) {
     "btn-todolist": "todolist",
     "btn-qrcode": "qrcode",
     "btn-status": "status",
+    "btn-timer": "timer",
     "btn-setting": "setting",
   };
 
