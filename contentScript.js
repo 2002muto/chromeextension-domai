@@ -88,3 +88,155 @@ chrome.runtime.onMessage.addListener((msg) => {
     el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 });
+
+// ───────── 4. タイマーポップアップ通知 ─────────
+// ポップアップ通知のHTMLを作成
+function createTimerPopup() {
+  // スタイル定義
+  const styles = `
+    #timerPopupNotification {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+      z-index: 999999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #2d2d2d, #3a3a3a);
+      border-radius: 16px;
+      padding: 0;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      color: white;
+      opacity: 0;
+      transform: translate(-50%, -40%) scale(0.95);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    #timerPopupNotification.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    #timerPopupNotification .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    #timerPopupNotification .title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    #timerPopupNotification .close-btn {
+      background: none;
+      border: none;
+      color: #b0b0b0;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    #timerPopupNotification .body {
+      padding: 24px;
+    }
+    #timerPopupNotification .message {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    #timerPopupNotification .footer {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: right;
+    }
+    #timerPopupNotification .ok-btn {
+      background: linear-gradient(135deg, #e95404, #a600cf);
+      border: none;
+      color: #ffffff;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+  `;
+
+  // style要素を作成して追加
+  const styleSheet = document.createElement("style");
+  styleSheet.id = "timerPopupStyles";
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+
+  // HTML構造
+  const popup = document.createElement("div");
+  popup.id = "timerPopupNotification";
+  popup.innerHTML = `
+    <div class="header">
+      <h3 id="timerPopupTitle" class="title"></h3>
+      <button id="timerPopupCloseBtn" class="close-btn">✕</button>
+    </div>
+    <div class="body">
+      <p id="timerPopupMessage" class="message"></p>
+    </div>
+    <div class="footer">
+      <button id="timerPopupOkBtn" class="ok-btn">OK</button>
+    </div>
+  `;
+
+  // イベントリスナー
+  popup.querySelector("#timerPopupCloseBtn").onclick = () => removeTimerPopup();
+  popup.querySelector("#timerPopupOkBtn").onclick = () => removeTimerPopup();
+
+  return popup;
+}
+
+// ポップアップ通知を表示
+function showTimerPopup(title, message) {
+  removeTimerPopup(); // 既存のポップアップを削除
+
+  const popup = createTimerPopup();
+  document.body.appendChild(popup);
+
+  popup.querySelector("#timerPopupTitle").textContent = title;
+  popup.querySelector("#timerPopupMessage").textContent = message;
+
+  // 表示アニメーション
+  requestAnimationFrame(() => {
+    popup.classList.add("visible");
+  });
+
+  // 5秒後に自動で閉じる
+  setTimeout(() => {
+    removeTimerPopup();
+  }, 5000);
+}
+
+// ポップアップ通知を削除
+function removeTimerPopup() {
+  const popup = document.getElementById("timerPopupNotification");
+  if (popup) {
+    popup.classList.remove("visible");
+    // アニメーション後に要素を削除
+    setTimeout(() => {
+      popup.remove();
+      const styleSheet = document.getElementById("timerPopupStyles");
+      if (styleSheet) {
+        styleSheet.remove();
+      }
+    }, 300);
+  }
+}
+
+// タイマー通知メッセージを受信
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === "SHOW_TIMER_POPUP") {
+    console.log("[CS] タイマーポップアップ通知を受信:", request);
+    showTimerPopup(request.title, request.message);
+    sendResponse({ success: true });
+    return true;
+  }
+});

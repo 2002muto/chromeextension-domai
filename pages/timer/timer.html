@@ -114,7 +114,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalTitle">新しいタイマー</h5>
+            <h5 class="modal-title" id="modalTitle">新しいカウントダウン</h5>
             <button
               type="button"
               class="btn-close"
@@ -134,42 +134,138 @@
               </div>
               <div class="mb-3" id="timeInputGroup">
                 <label class="form-label">時間</label>
-                <div class="row">
-                  <div class="col">
+                <div class="time-input-container">
+                  <div class="time-input-group">
+                    <button
+                      type="button"
+                      class="time-btn time-btn-up"
+                      data-target="hours"
+                    >
+                      <i class="bi bi-chevron-up"></i>
+                    </button>
                     <input
-                      type="number"
-                      class="form-control"
+                      type="text"
+                      class="form-control time-input"
                       id="hours"
-                      placeholder="時"
-                      min="0"
-                      max="99"
+                      value=""
+                      pattern="[0-9]*"
+                      inputmode="numeric"
+                      readonly
                     />
+                    <button
+                      type="button"
+                      class="time-btn time-btn-down"
+                      data-target="hours"
+                    >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
                   </div>
-                  <div class="col">
+                  <div class="time-input-group">
+                    <button
+                      type="button"
+                      class="time-btn time-btn-up"
+                      data-target="minutes"
+                    >
+                      <i class="bi bi-chevron-up"></i>
+                    </button>
                     <input
-                      type="number"
-                      class="form-control"
+                      type="text"
+                      class="form-control time-input"
                       id="minutes"
-                      placeholder="分"
-                      min="0"
-                      max="59"
+                      value=""
+                      pattern="[0-9]*"
+                      inputmode="numeric"
+                      readonly
                     />
+                    <button
+                      type="button"
+                      class="time-btn time-btn-down"
+                      data-target="minutes"
+                    >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
                   </div>
-                  <div class="col">
+                  <div class="time-input-group">
+                    <button
+                      type="button"
+                      class="time-btn time-btn-up"
+                      data-target="seconds"
+                    >
+                      <i class="bi bi-chevron-up"></i>
+                    </button>
                     <input
-                      type="number"
-                      class="form-control"
+                      type="text"
+                      class="form-control time-input"
                       id="seconds"
-                      placeholder="秒"
-                      min="0"
-                      max="59"
+                      value=""
+                      pattern="[0-9]*"
+                      inputmode="numeric"
+                      readonly
                     />
+                    <button
+                      type="button"
+                      class="time-btn time-btn-down"
+                      data-target="seconds"
+                    >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
                   </div>
                 </div>
               </div>
               <div class="mb-3" id="alarmTimeGroup" style="display: none">
                 <label class="form-label">アラーム時刻</label>
-                <input type="time" class="form-control" id="alarmTime" />
+                <div class="time-input-container">
+                  <div class="time-input-group">
+                    <button
+                      type="button"
+                      class="time-btn time-btn-up"
+                      data-target="alarmHours"
+                    >
+                      <i class="bi bi-chevron-up"></i>
+                    </button>
+                    <input
+                      type="text"
+                      class="form-control time-input"
+                      id="alarmHours"
+                      value=""
+                      pattern="[0-9]*"
+                      inputmode="numeric"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="time-btn time-btn-down"
+                      data-target="alarmHours"
+                    >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
+                  </div>
+                  <div class="time-input-group">
+                    <button
+                      type="button"
+                      class="time-btn time-btn-up"
+                      data-target="alarmMinutes"
+                    >
+                      <i class="bi bi-chevron-up"></i>
+                    </button>
+                    <input
+                      type="text"
+                      class="form-control time-input"
+                      id="alarmMinutes"
+                      value=""
+                      pattern="[0-9]*"
+                      inputmode="numeric"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="time-btn time-btn-down"
+                      data-target="alarmMinutes"
+                    >
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
               <div class="mb-3" id="repeatGroup" style="display: none">
                 <label class="form-label">繰り返し</label>
@@ -188,10 +284,10 @@
               class="btn btn-secondary"
               data-bs-dismiss="modal"
             >
-              キャンセル
+              リセット
             </button>
             <button type="button" class="btn btn-primary" id="btnSaveTimer">
-              保存
+              スタート
             </button>
           </div>
         </div>

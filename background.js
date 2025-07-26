@@ -583,5 +583,30 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
+// タイマー通知機能
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === "TIMER_NOTIFICATION") {
+    console.log("[BG] タイマー通知を受信:", request);
+
+    // アクティブなタブに通知を送信
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs[0]) {
+        chrome.tabs
+          .sendMessage(tabs[0].id, {
+            type: "SHOW_TIMER_POPUP",
+            title: request.title,
+            message: request.message,
+          })
+          .catch((error) => {
+            console.log("[BG] タブへの通知送信に失敗:", error);
+          });
+      }
+    });
+
+    sendResponse({ success: true });
+    return true;
+  }
+});
+
 // サイドパネルAPIの設定
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
