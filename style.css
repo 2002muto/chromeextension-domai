@@ -155,6 +155,7 @@ body::-webkit-scrollbar,
 #btn-todolist:hover:not(.active),
 #btn-qrcode:hover:not(.active),
 #btn-status:hover:not(.active),
+#btn-timer:hover:not(.active),
 #btn-setting:hover:not(.active) {
   width: auto; /* expand based on title length */
   border-radius: 18px;
@@ -172,6 +173,7 @@ body::-webkit-scrollbar,
 #btn-todolist:hover:not(.active) i,
 #btn-qrcode:hover:not(.active) i,
 #btn-status:hover:not(.active) i,
+#btn-timer:hover:not(.active) i,
 #btn-setting:hover:not(.active) i {
   display: block; /* アイコンを表示したまま */
   margin-left: 6px; /* アイコンを左端から少し離す */

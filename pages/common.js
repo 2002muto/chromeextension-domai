@@ -370,6 +370,8 @@ document.addEventListener("DOMContentLoaded", function () {
     currentPageName = "ai";
   } else if (currentPage.includes("/setting/")) {
     currentPageName = "setting";
+  } else if (currentPage.includes("/timer/")) {
+    currentPageName = "timer";
   }
 
   console.log(
@@ -1661,6 +1663,9 @@ function restoreActiveIconState() {
   } else if (currentPage.includes("/status/")) {
     currentPageName = "status";
     activeButtonId = "btn-status";
+  } else if (currentPage.includes("/timer/")) {
+    currentPageName = "timer";
+    activeButtonId = "btn-timer";
   } else if (currentPage.includes("/setting/")) {
     currentPageName = "setting";
     activeButtonId = "btn-setting";
@@ -1674,12 +1679,12 @@ function restoreActiveIconState() {
   );
 
   if (activeButtonId) {
-    // すべてのアイコンからactiveクラスを削除
+    // すべてのアイコンからactiveクラスとhidden-iconクラスを削除
     const header = document.querySelector("header");
     if (header) {
       const navButtons = header.querySelectorAll(".nav-btn");
       navButtons.forEach((button) => {
-        button.classList.remove("active");
+        button.classList.remove("active", "hidden-icon");
       });
 
       // 現在のページに対応するアイコンにactiveクラスを追加
