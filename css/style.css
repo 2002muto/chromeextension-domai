@@ -1,0 +1,58 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* windows-fix: DPR scale factor */
+:root {
+  --dpr-scale: 1;
+}
+
+@font-face {
+  font-family: 'UbuntuFont';
+  src: url('../fonts/Ubuntu-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: 'UbuntuFont', sans-serif;
+  width: 280px;
+  padding: 15px;
+  color: #333;
+  background-color: #fff;
+  /* windows-fix: unify text smoothing */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased; /* windows-fix: unify anti-aliasing */
+  -moz-osx-font-smoothing: grayscale;  /* windows-fix: unify anti-aliasing */
+  -webkit-text-size-adjust: 100%; /* windows-fix: prevent font scaling */
+  text-size-adjust: 100%;
+  zoom: var(--dpr-scale); /* windows-fix: absorb DPI scaling */
+  transform-origin: top left; /* windows-fix: align scaling anchor */
+}
+
+body h1 {
+  font-size: 18px;
+  line-height: 1.2;
+  color: #2c2c2c;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+
+body p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+  font-weight: normal;
+}
+
+/* windows-fix: ensure controls look the same on all OS */
+button,
+input {
+  font-family: 'UbuntuFont', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 4px 6px;
+}

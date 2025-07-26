@@ -73,7 +73,8 @@
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    }
+    },
+    "default_popup": "popup.html"
   },
   "side_panel": {
     "default_path": "pages/memo/memo.html"
@@ -96,15 +97,11 @@
     {
       "resources": [
         "pages/*",
-        "icons/*",
-        "vendor/*",
-        "*.js",
-        "*.css",
-        "*.html",
-        "*.json"
+        "css/*",
+        "fonts/*",
+        "vendor/*"
       ],
-      "matches": ["*://*/*"],
-      "use_dynamic_url": true
+      "matches": ["<all_urls>"]
     }
   ],
   "externally_connectable": {
