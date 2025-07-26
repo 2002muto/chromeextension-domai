@@ -1122,6 +1122,7 @@ const NavigationOrderManager = {
     "btn-prompt",
     "btn-iframe",
     "btn-status",
+    "btn-timer",
     "btn-setting",
   ],
 
@@ -1712,7 +1713,7 @@ function removeIconFromHeader(buttonId) {
   // 現在の設定を取得
   chrome.storage.local.get(["customSettings"], (result) => {
     const settings = result.customSettings || {
-      selectedIcons: ["memo", "clipboard", "prompt", "iframe", "ai", "status"],
+      selectedIcons: ["memo", "clipboard", "prompt", "iframe", "ai", "status", "timer"],
     };
 
     // アイコンタイプを取得

@@ -1,0 +1,17 @@
+/* File: pages/timer/timer.css */
+.timer-content {
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+#timer-display {
+  font-size: 4rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.timer-controls button {
+  margin: 0 10px;
+  font-size: 1.2rem;
+}

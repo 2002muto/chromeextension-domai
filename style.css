@@ -399,6 +399,11 @@ footer .nav-btn.show-text .nav-text {
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
+#btn-timer.active {
+  background: linear-gradient(135deg, #e95404, #a600cf);
+  box-shadow: 0 4px 12px rgba(233, 84, 4, 0.3);
+}
+
 #btn-setting.active {
   background: linear-gradient(135deg, #fff04b, #99902d);
   box-shadow: 0 4px 12px rgba(255, 240, 75, 0.3);
