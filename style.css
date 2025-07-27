@@ -312,9 +312,16 @@ body.platform-linux .memo-input-form,
   padding: 24px !important; /* Restore original padding */
   margin: 16px !important; /* Restore original margin */
   border-radius: 16px !important; /* Restore original border radius */
-  min-height: var(--container-min-height) !important;
+  min-height: calc(
+    100vh - 120px
+  ) !important; /* Full height minus header/footer */
+  height: calc(100vh - 120px) !important; /* Force full height */
   max-width: var(--container-max-width) !important;
   box-sizing: border-box !important;
+  /* Add left/right spacing to match header and footer */
+  margin-left: 16px !important; /* Match header/footer spacing */
+  margin-right: 16px !important; /* Match header/footer spacing */
+  width: calc(100% - 32px) !important; /* Adjust width to account for margins */
 }
 
 .platform-linux .memo-list,
@@ -349,6 +356,63 @@ body.platform-linux .memo-input-form,
   margin: 16px; /* Restore original margin */
   border-radius: 16px; /* Restore original border radius */
   box-sizing: border-box;
+}
+
+/* Linux-specific body and main container adjustments */
+body.platform-linux {
+  width: 100% !important;
+  min-width: 400px !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.platform-linux main,
+body.platform-linux main {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 400px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Linux-specific container width restoration */
+body.platform-linux .container,
+.platform-linux .container {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 400px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Linux-specific side panel width restoration */
+body.platform-linux,
+html.platform-linux {
+  min-width: 400px !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Chrome Extension Side Panel width override for Linux - Remove forced width */
+body.platform-linux {
+  width: 100% !important;
+  min-width: 400px !important;
+  max-width: none !important;
+  overflow-x: hidden !important; /* 横スクロールバーを無効化 */
+  overflow-y: auto !important; /* 縦スクロールは維持 */
+}
+
+/* Linux-specific footer padding to match header */
+.platform-linux .memo-footer {
+  padding: 0 16px 16px !important; /* Match header padding: left(16px) right(16px) bottom(16px) */
+  box-sizing: border-box !important;
+  width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: 0 !important;
 }
 
 /* ① ヘッダー全体の上下 padding を少し増やす */
