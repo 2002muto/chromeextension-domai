@@ -1,0 +1,131 @@
+/* File: css-performance-optimized.css */
+/* Optimized CSS custom properties for cross-platform compatibility */
+
+:root {
+  /* Consolidated font system with optimized fallbacks */
+  --font-primary:
+    system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif;
+  --font-windows:
+    "Segoe UI", "Yu Gothic UI", "Meiryo UI", system-ui, sans-serif;
+
+  /* Optimized line height calculations */
+  --line-height-base: 1.5;
+  --line-height-windows: 1.575; /* Pre-calculated: 1.5 * 1.05 */
+
+  /* Simplified letter spacing */
+  --letter-spacing-base: 0;
+  --letter-spacing-windows: 0.015em;
+
+  /* Consolidated scrollbar system */
+  --sb-width: 6px;
+  --sb-width-windows: 8px;
+  --sb-thumb: #9e9e9e;
+  --sb-thumb-hover: #7b7b7b;
+  --sb-track: #f0f0f0;
+  --sb-corner: #f0f0f0;
+
+  /* Simplified container system */
+  --container-padding: 16px;
+  --container-padding-windows: 17px; /* Pre-calculated: 16px + 1px */
+  --container-margin: 16px;
+  --container-margin-windows: 17px; /* Pre-calculated: 16px + 1px */
+  --container-gap: 16px;
+  --container-gap-windows: 17px; /* Pre-calculated: 16px + 1px */
+
+  /* Optimized button sizing */
+  --btn-size: 36px;
+  --btn-padding: 0.5rem 0.75rem;
+  --btn-padding-windows: 0.5625rem 0.8125rem; /* Pre-calculated adjustments */
+}
+
+/* Platform-specific optimizations using efficient selectors */
+.platform-windows {
+  --font-family-active: var(--font-windows);
+  --line-height-active: var(--line-height-windows);
+  --letter-spacing-active: var(--letter-spacing-windows);
+  --sb-width-active: var(--sb-width-windows);
+  --container-padding-active: var(--container-padding-windows);
+  --container-margin-active: var(--container-margin-windows);
+  --container-gap-active: var(--container-gap-windows);
+  --btn-padding-active: var(--btn-padding-windows);
+}
+
+.platform-linux,
+.platform-mac,
+:root:not(.platform-windows) {
+  --font-family-active: var(--font-primary);
+  --line-height-active: var(--line-height-base);
+  --letter-spacing-active: var(--letter-spacing-base);
+  --sb-width-active: var(--sb-width);
+  --container-padding-active: var(--container-padding);
+  --container-margin-active: var(--container-margin);
+  --container-gap-active: var(--container-gap);
+  --btn-padding-active: var(--btn-padding);
+}
+
+/* Optimized base styles */
+body {
+  font-family: var(--font-family-active);
+  line-height: var(--line-height-active);
+  letter-spacing: var(--letter-spacing-active);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimized scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+*::-webkit-scrollbar {
+  width: var(--sb-width-active);
+  height: var(--sb-width-active);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
+}
+
+/* Optimized container styles */
+.page-container,
+.content-container {
+  padding: var(--container-padding-active);
+  margin: var(--container-margin-active);
+  box-sizing: border-box;
+}
+
+.flex-container {
+  gap: var(--container-gap-active);
+}
+
+/* Optimized button styles */
+.nav-btn {
+  padding: var(--btn-padding-active);
+  box-sizing: border-box;
+  width: var(--btn-size);
+  height: var(--btn-size);
+}
+
+/* High DPI optimizations */
+@media (min-resolution: 1.25dppx) {
+  .platform-windows {
+    --line-height-active: 1.6125; /* Slightly increased for high DPI */
+  }
+}
+
+@media (min-resolution: 1.5dppx) {
+  .platform-windows {
+    --line-height-active: 1.65; /* Further increased for very high DPI */
+  }
+}

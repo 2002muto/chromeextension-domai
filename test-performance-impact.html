@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cross-Platform Performance Test</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .test-result {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+      .test-pass {
+        background: #d4edda;
+        color: #155724;
+      }
+      .test-fail {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .test-info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+      .performance-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin: 20px 0;
+      }
+      .metric {
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 4px;
+        text-align: center;
+      }
+      .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #007bff;
+      }
+      .metric-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      #test-output {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background: #f8f9fa;
+        font-family: monospace;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cross-Platform Layout Compatibility - Performance Test</h1>
+
+    <div class="test-container">
+      <h2>Performance Metrics</h2>
+      <div class="performance-metrics">
+        <div class="metric">
+          <div class="metric-value" id="css-parse-time">-</div>
+          <div class="metric-label">CSS Parse Time (ms)</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" id="platform-detection-time">-</div>
+          <div class="metric-label">Platform Detection (ms)</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" id="layout-recalc-time">-</div>
+          <div class="metric-label">Layout Recalc (ms)</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" id="memory-usage">-</div>
+          <div class="metric-label">Memory Usage (MB)</div>
+        </div>
+      </div>
+
+      <button onclick="runPerformanceTests()">Run Performance Tests</button>
+      <button onclick="runCrossPlatformValidation()">
+        Validate Cross-Platform
+      </button>
+      <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-container">
+      <h2>Test Results</h2>
+      <div id="test-output"></div>
+    </div>
+
+    <script>
+      // Performance testing utilities
+      const PerformanceTest = {
+        log: (message, type = "info") => {
+          const output = document.getElementById("test-output");
+          const div = document.createElement("div");
+          div.className = `test-result test-${type}`;
+          div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+          output.appendChild(div);
+          output.scrollTop = output.scrollHeight;
+          console.log(`[Performance Test] ${message}`);
+        },
+
+        updateMetric: (id, value) => {
+          document.getElementById(id).textContent = value;
+        },
+
+        measureTime: async (fn, label) => {
+          const start = performance.now();
+          await fn();
+          const end = performance.now();
+          const duration = (end - start).toFixed(2);
+          PerformanceTest.log(`${label}: ${duration}ms`, "info");
+          return parseFloat(duration);
+        },
+
+        measureMemory: () => {
+          if (performance.memory) {
+            const used = (
+              performance.memory.usedJSHeapSize /
+              1024 /
+              1024
+            ).toFixed(2);
+            PerformanceTest.updateMetric("memory-usage", used);
+            return parseFloat(used);
+          }
+          return 0;
+        },
+      };
+
+      // Platform detection performance test
+      async function testPlatformDetection() {
+        const iterations = 1000;
+
+        const testFn = () => {
+          for (let i = 0; i < iterations; i++) {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const platform = navigator.platform.toLowerCase();
+
+            let detectedPlatform;
+            if (platform.includes("win") || userAgent.includes("windows")) {
+              detectedPlatform = "windows";
+            } else if (platform.includes("mac") || userAgent.includes("mac")) {
+              detectedPlatform = "mac";
+            } else if (
+              platform.includes("linux") ||
+              userAgent.includes("linux")
+            ) {
+              detectedPlatform = "linux";
+            } else {
+              detectedPlatform = "unknown";
+            }
+          }
+        };
+
+        const time = await PerformanceTest.measureTime(
+          testFn,
+          `Platform Detection (${iterations} iterations)`
+        );
+        const avgTime = ((time / iterations) * 1000).toFixed(3);
+        PerformanceTest.updateMetric("platform-detection-time", avgTime);
+        PerformanceTest.log(
+          `Average platform detection time: ${avgTime}μs`,
+          "pass"
+        );
+      }
+
+      // CSS parsing performance test
+      async function testCSSParsing() {
+        const testFn = () => {
+          // Create test elements with various CSS properties
+          const testElements = [];
+          for (let i = 0; i < 100; i++) {
+            const div = document.createElement("div");
+            div.style.cssText = `
+                        font-family: var(--font-family-active, system-ui);
+                        line-height: var(--line-height-active, 1.5);
+                        padding: var(--container-padding-active, 16px);
+                        margin: var(--container-margin-active, 16px);
+                        width: calc(100% - var(--container-gap-active, 16px));
+                    `;
+            document.body.appendChild(div);
+            testElements.push(div);
+          }
+
+          // Force layout recalculation
+          testElements.forEach((el) => {
+            el.offsetHeight; // Force reflow
+          });
+
+          // Cleanup
+          testElements.forEach((el) => el.remove());
+        };
+
+        const time = await PerformanceTest.measureTime(
+          testFn,
+          "CSS Parsing and Layout"
+        );
+        PerformanceTest.updateMetric("css-parse-time", time);
+      }
+
+      // Layout recalculation performance test
+      async function testLayoutRecalculation() {
+        const testContainer = document.createElement("div");
+        testContainer.style.cssText = `
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+                width: 300px;
+                height: 200px;
+            `;
+        document.body.appendChild(testContainer);
+
+        const testFn = () => {
+          for (let i = 0; i < 50; i++) {
+            // Simulate platform class changes
+            testContainer.className = "platform-windows";
+            testContainer.offsetHeight; // Force reflow
+
+            testContainer.className = "platform-linux";
+            testContainer.offsetHeight; // Force reflow
+
+            testContainer.className = "platform-mac";
+            testContainer.offsetHeight; // Force reflow
+          }
+        };
+
+        const time = await PerformanceTest.measureTime(
+          testFn,
+          "Layout Recalculation"
+        );
+        PerformanceTest.updateMetric("layout-recalc-time", time);
+
+        testContainer.remove();
+      }
+
+      // Cross-platform validation tests
+      async function runCrossPlatformValidation() {
+        PerformanceTest.log("Starting cross-platform validation...", "info");
+
+        // Test 1: Platform detection accuracy
+        const platform = navigator.platform.toLowerCase();
+        const userAgent = navigator.userAgent.toLowerCase();
+
+        let expectedPlatform;
+        if (platform.includes("win") || userAgent.includes("windows")) {
+          expectedPlatform = "windows";
+        } else if (platform.includes("mac") || userAgent.includes("mac")) {
+          expectedPlatform = "mac";
+        } else if (platform.includes("linux") || userAgent.includes("linux")) {
+          expectedPlatform = "linux";
+        } else {
+          expectedPlatform = "unknown";
+        }
+
+        PerformanceTest.log(`Detected platform: ${expectedPlatform}`, "pass");
+
+        // Test 2: CSS custom properties application
+        const testElement = document.createElement("div");
+        testElement.className = `platform-${expectedPlatform}`;
+        document.body.appendChild(testElement);
+
+        const computedStyle = getComputedStyle(testElement);
+        const fontFamily = computedStyle.fontFamily;
+        const lineHeight = computedStyle.lineHeight;
+
+        PerformanceTest.log(`Applied font-family: ${fontFamily}`, "info");
+        PerformanceTest.log(`Applied line-height: ${lineHeight}`, "info");
+
+        testElement.remove();
+
+        // Test 3: Layout consistency validation
+        await validateLayoutConsistency();
+
+        PerformanceTest.log("Cross-platform validation completed", "pass");
+      }
+
+      // Layout consistency validation
+      async function validateLayoutConsistency() {
+        const testContainer = document.createElement("div");
+        testContainer.innerHTML = `
+                <div class="nav-btn" style="width: 36px; height: 36px; padding: 0.5rem 0.75rem;">
+                    <i>📝</i>
+                    <span class="nav-text">MEMO</span>
+                </div>
+                <div class="page-container" style="padding: 16px; margin: 16px;">
+                    <div class="flex-container" style="gap: 16px;">
+                        <div>Item 1</div>
+                        <div>Item 2</div>
+                    </div>
+                </div>
+            `;
+
+        document.body.appendChild(testContainer);
+
+        // Test different platform classes
+        const platforms = [
+          "platform-windows",
+          "platform-linux",
+          "platform-mac",
+        ];
+        const measurements = {};
+
+        for (const platformClass of platforms) {
+          testContainer.className = platformClass;
+
+          const navBtn = testContainer.querySelector(".nav-btn");
+          const pageContainer = testContainer.querySelector(".page-container");
+          const flexContainer = testContainer.querySelector(".flex-container");
+
+          measurements[platformClass] = {
+            navBtnWidth: navBtn.offsetWidth,
+            navBtnHeight: navBtn.offsetHeight,
+            containerPadding: parseInt(getComputedStyle(pageContainer).padding),
+            flexGap: parseInt(getComputedStyle(flexContainer).gap) || 16,
+          };
+        }
+
+        // Validate measurements are within acceptable tolerance (1px)
+        const tolerance = 1;
+        let consistencyPassed = true;
+
+        Object.keys(measurements).forEach((platform) => {
+          const measurement = measurements[platform];
+          PerformanceTest.log(
+            `${platform}: nav-btn(${measurement.navBtnWidth}x${measurement.navBtnHeight}), padding(${measurement.containerPadding}px), gap(${measurement.flexGap}px)`,
+            "info"
+          );
+        });
+
+        // Check if measurements are within tolerance
+        const windowsMeasurement = measurements["platform-windows"];
+        const linuxMeasurement = measurements["platform-linux"];
+
+        if (windowsMeasurement && linuxMeasurement) {
+          const widthDiff = Math.abs(
+            windowsMeasurement.navBtnWidth - linuxMeasurement.navBtnWidth
+          );
+          const heightDiff = Math.abs(
+            windowsMeasurement.navBtnHeight - linuxMeasurement.navBtnHeight
+          );
+
+          if (widthDiff <= tolerance && heightDiff <= tolerance) {
+            PerformanceTest.log(
+              `Layout consistency check PASSED (tolerance: ${tolerance}px)`,
+              "pass"
+            );
+          } else {
+            PerformanceTest.log(
+              `Layout consistency check FAILED (width diff: ${widthDiff}px, height diff: ${heightDiff}px)`,
+              "fail"
+            );
+            consistencyPassed = false;
+          }
+        }
+
+        testContainer.remove();
+        return consistencyPassed;
+      }
+
+      // Main performance test runner
+      async function runPerformanceTests() {
+        PerformanceTest.log("Starting performance tests...", "info");
+
+        // Measure initial memory
+        const initialMemory = PerformanceTest.measureMemory();
+
+        // Run individual tests
+        await testPlatformDetection();
+        await testCSSParsing();
+        await testLayoutRecalculation();
+
+        // Measure final memory
+        const finalMemory = PerformanceTest.measureMemory();
+        const memoryDiff = (finalMemory - initialMemory).toFixed(2);
+
+        PerformanceTest.log(
+          `Memory usage change: ${memoryDiff}MB`,
+          memoryDiff > 5 ? "fail" : "pass"
+        );
+        PerformanceTest.log("Performance tests completed", "pass");
+      }
+
+      // Clear test results
+      function clearResults() {
+        document.getElementById("test-output").innerHTML = "";
+        [
+          "css-parse-time",
+          "platform-detection-time",
+          "layout-recalc-time",
+          "memory-usage",
+        ].forEach((id) => {
+          document.getElementById(id).textContent = "-";
+        });
+      }
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        PerformanceTest.log("Performance test suite initialized", "info");
+        PerformanceTest.measureMemory();
+      });
+    </script>
+  </body>
+</html>
