@@ -304,6 +304,53 @@ textarea {
 }
 /* windows-fix END */
 
+/* Linux-specific container adjustments to restore original layout */
+body.platform-linux .memo-content,
+body.platform-linux .memo-input-form,
+.platform-linux .memo-content,
+.platform-linux .memo-input-form {
+  padding: 24px !important; /* Restore original padding */
+  margin: 16px !important; /* Restore original margin */
+  border-radius: 16px !important; /* Restore original border radius */
+  min-height: var(--container-min-height) !important;
+  max-width: var(--container-max-width) !important;
+  box-sizing: border-box !important;
+}
+
+.platform-linux .memo-list,
+.platform-linux .clipboard-list,
+.platform-linux .prompt-list {
+  gap: 20px; /* Restore original gap */
+  padding: 24px; /* Restore original padding */
+  box-sizing: border-box;
+}
+
+/* Linux-specific container sizing to match original layout */
+.platform-linux .setting-container,
+.platform-linux .iframe-container,
+.platform-linux .status-container {
+  padding: 24px; /* Restore original padding */
+  margin: 16px; /* Restore original margin */
+  border-radius: 16px; /* Restore original border radius */
+  min-height: var(--container-min-height);
+  max-width: var(--container-max-width);
+  box-sizing: border-box;
+}
+
+/* Linux-specific flex layout adjustments */
+.platform-linux .flex-container,
+.platform-linux .flex-container-row {
+  gap: 20px; /* Restore original gap */
+}
+
+/* Linux-specific page container adjustments */
+.platform-linux .page-container {
+  padding: 24px; /* Restore original padding */
+  margin: 16px; /* Restore original margin */
+  border-radius: 16px; /* Restore original border radius */
+  box-sizing: border-box;
+}
+
 /* ① ヘッダー全体の上下 padding を少し増やす */
 header {
   display: flex;
