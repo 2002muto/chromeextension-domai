@@ -309,19 +309,16 @@ body.platform-linux .memo-content,
 body.platform-linux .memo-input-form,
 .platform-linux .memo-content,
 .platform-linux .memo-input-form {
-  padding: 24px !important; /* Restore original padding */
-  margin: 16px !important; /* Restore original margin */
+  padding: 24px 40px !important; /* Restore original padding + add left/right spacing like header */
+  margin: 16px 0 !important; /* Only top/bottom margin, no left/right */
   border-radius: 16px !important; /* Restore original border radius */
   min-height: calc(
-    100vh - 120px
+    99vh - 120px
   ) !important; /* Full height minus header/footer */
-  height: calc(100vh - 120px) !important; /* Force full height */
+  height: calc(99vh - 120px) !important; /* Force full height */
   max-width: var(--container-max-width) !important;
   box-sizing: border-box !important;
-  /* Add left/right spacing to match header and footer */
-  margin-left: 16px !important; /* Match header/footer spacing */
-  margin-right: 16px !important; /* Match header/footer spacing */
-  width: calc(100% - 32px) !important; /* Adjust width to account for margins */
+  width: 100% !important; /* Full width like header */
 }
 
 .platform-linux .memo-list,
